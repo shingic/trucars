@@ -6,27 +6,30 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('dealers', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('city')->nullable();
-            $table->string('omvic_number')->nullable(); // their Ontario dealer licence number
+            $table->string('city');
+            $table->string('omvic_number')->nullable();
             $table->timestamps();
+        });
+
+        Schema::table('users', function (Blueprint $table) {
+            $table->foreign('dealer_id')
+                ->references('id')
+                ->on('dealers')
+                ->nullOnDelete();
         });
     }
 
-
-
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropForeign(['dealer_id']);
+        });
+
         Schema::dropIfExists('dealers');
     }
 };
