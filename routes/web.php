@@ -7,6 +7,9 @@ Route::livewire('/', 'pages::marketplace');
 
 Route::livewire('/cars/{vehicle}', 'pages::vehicle');
 
+Route::livewire('/cars/{vehicle}/reserve', 'pages::checkout')
+    ->name('checkout');
+
 Route::livewire('/dealer/login', 'pages::login')
     ->middleware('guest')
     ->name('dealer.login');
