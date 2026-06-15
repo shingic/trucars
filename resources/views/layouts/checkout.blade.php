@@ -53,7 +53,7 @@
 
         /* ===== top: brand + vehicle chip + named stepper ===== */
         .top { position:sticky; top:0; z-index:40; background:rgba(255,255,255,.9); backdrop-filter:saturate(160%) blur(14px); border-bottom:1px solid var(--line); }
-        .top-inner { max-width:1080px; margin:0 auto; display:flex; align-items:center; gap:16px; height:64px; padding:0 26px; }
+        .top-inner { max-width:1220px; margin:0 auto; display:flex; align-items:center; gap:16px; height:64px; padding:0 26px; }
         .brand { display:flex; align-items:center; gap:10px; font-weight:800; font-size:18px; letter-spacing:-.02em; text-decoration:none; }
         .brand .glyph { width:28px; height:28px; border-radius:9px; background:var(--primary); color:#fff; display:grid; place-items:center; font-weight:800; font-size:15px; box-shadow:var(--shadow-primary); }
         .veh-chip { margin-left:auto; display:flex; align-items:center; gap:11px; background:var(--card); border:1px solid var(--line); border-radius:var(--radius-pill); padding:6px 16px 6px 8px; box-shadow:var(--shadow-sm); }
@@ -61,7 +61,7 @@
         .veh-chip .vt { font-size:13px; font-weight:600; }
         .veh-chip .vp { font-size:13px; color:var(--ink-3); }
 
-        .stepper { display:flex; max-width:1040px; margin:0 auto; padding:12px 26px 14px; }
+        .stepper { display:flex; max-width:1180px; margin:0 auto; padding:12px 26px 14px; }
         .st-step { flex:1 1 0; min-width:0; display:flex; flex-direction:column; align-items:center; gap:8px; position:relative; background:none; padding:0; }
         .st-step::before { content:""; position:absolute; top:13px; left:-50%; width:100%; height:2px; background:var(--line-strong); z-index:0; }
         .st-step:first-child::before { display:none; }
@@ -76,7 +76,7 @@
         .st-step.current .st-label { color:var(--primary); font-weight:700; }
 
         /* ===== two-column: content + sticky summary rail ===== */
-        .layout { max-width:1140px; margin:0 auto; padding:40px 26px; display:grid; grid-template-columns:1fr 360px; gap:34px; align-items:start; }
+        .layout { max-width:1280px; margin:0 auto; padding:40px 26px; display:grid; grid-template-columns:1fr 360px; gap:34px; align-items:start; }
         .layout-solo { grid-template-columns:1fr; max-width:760px; }
         .content { min-width:0; }
         .step-meta { font-size:13px; font-weight:600; color:var(--primary); letter-spacing:.02em; margin-bottom:10px; }
@@ -148,7 +148,7 @@
 
         /* ===== sticky bottom pay-bar ===== */
         .paybar { position:fixed; left:0; right:0; bottom:0; z-index:45; background:rgba(255,255,255,.9); backdrop-filter:saturate(150%) blur(16px); border-top:1px solid var(--line); box-shadow:0 -10px 30px rgba(27,27,46,.06); }
-        .paybar-inner { max-width:1080px; margin:0 auto; display:flex; align-items:center; gap:18px; padding:14px 26px; }
+        .paybar-inner { max-width:1220px; margin:0 auto; display:flex; align-items:center; gap:18px; padding:14px 26px; }
         .paybar-back { display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600; color:var(--ink-2); padding:10px 6px; }
         .paybar-back:hover { color:var(--primary); }
         .paybar-price { display:none; flex-direction:column; }

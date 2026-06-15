@@ -8,34 +8,10 @@ use Livewire\Component;
 new class extends Component {
     public Vehicle $vehicle;
 
-    public string $name = '';
-    public string $email = '';
-    public string $phone = '';
-    public bool $submitted = false;
-
     #[Computed]
     public function certification(): ?CertificationProgram
     {
         return CertificationProgram::resolveFor($this->vehicle);
-    }
-
-    public function reserve(): void
-    {
-        $validated = $this->validate([
-            'name'  => ['required', 'string', 'max:120'],
-            'email' => ['required', 'email', 'max:160'],
-            'phone' => ['nullable', 'string', 'max:40'],
-        ]);
-
-        $this->vehicle->leads()->create([
-            'dealer_id' => $this->vehicle->dealer_id,
-            'name'      => $validated['name'],
-            'email'     => $validated['email'],
-            'phone'     => $validated['phone'] ?: null,
-            'status'    => 'reservation',
-        ]);
-
-        $this->submitted = true;
     }
 };
 ?>
@@ -179,28 +155,11 @@ new class extends Component {
                     @endif
                 </div>
 
-                <div class="buy-actions" x-data="{ reserving: false }">
-                    @if ($submitted)
-                        <div class="buy-thanks">
-                            Reservation started, {{ $name }}. {{ ucwords(strtolower($vehicle->dealer->name)) }} will confirm this {{ $vehicle->make }} {{ $vehicle->model }} is available and walk you through the refundable $150 hold.
-                        </div>
-                    @else
-                        <button type="button" class="btn btn-primary" x-show="!reserving" x-on:click="reserving = true">
-                            Reserve my car now
-                            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-                        </button>
-                        <form x-show="reserving" x-cloak wire:submit="reserve" class="inquiry-form">
-                            <input type="text" placeholder="Your name" wire:model="name">
-                            @error('name') <span class="err">{{ $message }}</span> @enderror
-                            <input type="email" placeholder="Email" wire:model="email">
-                            @error('email') <span class="err">{{ $message }}</span> @enderror
-                            <input type="tel" placeholder="Phone (optional)" wire:model="phone">
-                            @error('phone') <span class="err">{{ $message }}</span> @enderror
-                            <p class="reserve-note">No charge now — {{ ucwords(strtolower($vehicle->dealer->name)) }} confirms the car is available, then takes your fully refundable $150 hold.</p>
-                            <button type="submit" class="btn btn-primary">Confirm reservation</button>
-                            <button type="button" class="btn btn-ghost" x-on:click="reserving = false">Back</button>
-                        </form>
-                    @endif
+                <div class="buy-actions">
+                    <a href="{{ route('checkout', $vehicle) }}" wire:navigate class="btn btn-primary">
+                        Reserve my car now
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                    </a>
                 </div>
 
                 <div class="buy-assure">
@@ -293,17 +252,9 @@ new class extends Component {
         .buy-cert-mini .t { font-size:12.5px; font-weight:700; color:#0E5A43; }
         .buy-cert-mini .s { font-size:11px; color:#12805F; }
         .buy-actions { padding:0 22px 22px; }
-        .btn { border-radius:var(--radius-pill); font-weight:700; font-size:15px; padding:15px 22px; display:inline-flex; align-items:center; justify-content:center; gap:9px; transition:all .16s ease; width:100%; cursor:pointer; }
+        .btn { border-radius:var(--radius-pill); font-weight:700; font-size:15px; padding:15px 22px; display:inline-flex; align-items:center; justify-content:center; gap:9px; transition:all .16s ease; width:100%; cursor:pointer; text-decoration:none; }
         .btn-primary { background:var(--primary); color:#fff; box-shadow:var(--shadow-primary); border:none; }
         .btn-primary:hover { background:var(--primary-press); transform:translateY(-1px); }
-        .btn-ghost { background:var(--card); color:var(--ink); border:1.5px solid var(--line-strong); margin-top:10px; }
-        .btn-ghost:hover { border-color:var(--primary); color:var(--primary); }
-        .inquiry-form { display:flex; flex-direction:column; gap:10px; }
-        .inquiry-form input { border:1.5px solid var(--line-strong); border-radius:12px; padding:12px 14px; font-size:14px; outline:none; background:var(--card); color:var(--ink); }
-        .inquiry-form input:focus { border-color:var(--primary); }
-        .inquiry-form .err { color:#DC2626; font-size:12px; margin-top:-4px; }
-        .reserve-note { font-size:11.5px; color:var(--ink-3); line-height:1.5; margin:2px 0 4px; }
-        .buy-thanks { background:var(--good-soft); border:1px solid rgba(18,184,134,.3); border-radius:14px; padding:16px; font-size:13.5px; color:#0E5A43; font-weight:600; line-height:1.5; }
         .buy-assure { padding:16px 22px; border-top:1px solid var(--line); display:flex; flex-direction:column; gap:11px; }
         .ba { display:flex; align-items:center; gap:10px; font-size:13px; color:var(--ink-2); }
         .ba svg { color:var(--good); flex-shrink:0; }

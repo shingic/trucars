@@ -1,5 +1,6 @@
 <?php
 
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -51,7 +52,7 @@ class Vehicle extends Model
      */
     protected function primaryPhotoUrl(): Attribute
     {
-        return Attribute::get(fn (): ?string => $this->photos[0] ?? null);
+        return Attribute::get(fn(): ?string => $this->photos[0] ?? null);
     }
 
     /**
@@ -59,7 +60,7 @@ class Vehicle extends Model
      */
     protected function displayPrice(): Attribute
     {
-        return Attribute::get(fn (): string => '$' . number_format($this->price_in_cents / 100));
+        return Attribute::get(fn(): string => '$' . number_format($this->price_in_cents / 100));
     }
 
     /**
@@ -73,7 +74,7 @@ class Vehicle extends Model
             $biweeklyRate = 0.075 / 26;
             $numberOfPayments = 72 / 12 * 26;
 
-            return (int) round($taxedPrice * $biweeklyRate / (1 - (1 + $biweeklyRate) ** -$numberOfPayments));
+            return (int)round($taxedPrice * $biweeklyRate / (1 - (1 + $biweeklyRate) ** -$numberOfPayments));
         });
     }
 
@@ -82,7 +83,7 @@ class Vehicle extends Model
      */
     protected function displayKilometres(): Attribute
     {
-        return Attribute::get(fn (): string => $this->kilometres < 1000
+        return Attribute::get(fn(): string => $this->kilometres < 1000
             ? number_format($this->kilometres) . ' km'
             : round($this->kilometres / 1000) . 'k km');
     }

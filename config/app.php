@@ -123,4 +123,6 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    'staff_domain' => env('STAFF_DOMAIN', 'dealer.' . parse_url((string) env('APP_URL'), PHP_URL_HOST)),
+
 ];

@@ -39,7 +39,10 @@
         .nav-right { margin-left:auto; display:flex; align-items:center; gap:16px; }
         .nav-loc { display:flex; align-items:center; gap:7px; font-size:13.5px; color:var(--ink-2); font-weight:500; }
         .nav-loc svg { color:var(--primary); }
-        .nav-acct { width:36px; height:36px; border-radius:50%; background:var(--bg-2); border:1px solid var(--line); display:grid; place-items:center; font-weight:700; font-size:13px; color:var(--ink-2); }
+        .nav-acct { width:36px; height:36px; border-radius:50%; background:var(--bg-2); border:1px solid var(--line); display:grid; place-items:center; font-weight:700; font-size:13px; color:var(--ink-2); text-decoration:none; transition:border-color .15s ease, color .15s ease; }
+        .nav-acct:hover { border-color:var(--primary); color:var(--primary); }
+        .nav-signin { display:inline-flex; align-items:center; font-size:14.5px; font-weight:700; color:var(--ink); text-decoration:none; border:1.5px solid var(--line-strong); border-radius:var(--radius-pill); padding:8px 18px; transition:border-color .15s ease, color .15s ease; }
+        .nav-signin:hover { border-color:var(--primary); color:var(--primary); }
 
         .page { max-width:1600px; margin:0 auto; padding:32px 24px 64px; }
 
@@ -67,7 +70,15 @@
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                     Thornhill, ON
                 </span>
-            <span class="nav-acct">SC</span>
+            @auth
+                @if (auth()->user()->dealer_id === null)
+                    <a href="{{ route('garage') }}" wire:navigate class="nav-acct" title="My Garage">{{ auth()->user()->initials }}</a>
+                @else
+                    <a href="{{ route('dealer.reservations') }}" wire:navigate class="nav-acct" title="Dealer console">{{ auth()->user()->initials }}</a>
+                @endif
+            @else
+                <a href="{{ route('buyer.login') }}" wire:navigate class="nav-signin">Sign in</a>
+            @endauth
         </div>
     </div>
 </nav>
