@@ -35,6 +35,15 @@
                     </td>
                 </tr>
 
+                {{-- Vehicle hero photo — omitted cleanly when the feed has no photo --}}
+                @if ($deal->vehicle->primary_photo_url)
+                    <tr>
+                        <td style="padding:0; font-size:0; line-height:0;">
+                            <img src="{{ $deal->vehicle->primary_photo_url }}" alt="{{ $deal->vehicle->model_year }} {{ $deal->vehicle->make }} {{ $deal->vehicle->model }}" width="600" style="display:block; width:100%; max-width:600px; height:auto; border:0; outline:none; text-decoration:none;">
+                        </td>
+                    </tr>
+                @endif
+
                 {{-- Hero --}}
                 <tr>
                     <td style="padding:38px 36px 8px;">
@@ -95,10 +104,16 @@
                                     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                                         <tr>
                                             <td style="font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:22px; font-weight:800; letter-spacing:-0.02em; color:#16181D;">
-                                                ${{ number_format($deal->vehicle->price_in_cents / 100) }}
+                                                {{ $deal->vehicle->display_price }}
                                             </td>
                                             <td align="right" style="font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:13px; color:#9AA0A6;">
-                                                @if ($deal->purchase_type === 'finance' && $deal->term_months){{ $deal->term_months }}-month finance estimate@elseif ($deal->purchase_type === 'lease')Lease estimate@else Cash @endif
+                                                @if ($deal->purchase_type === 'finance' && $deal->term_months)
+                                                    {{ $deal->term_months }}-month finance estimate
+                                                @elseif ($deal->purchase_type === 'lease')
+                                                    Lease estimate
+                                                @else
+                                                    Cash
+                                                @endif
                                             </td>
                                         </tr>
                                     </table>

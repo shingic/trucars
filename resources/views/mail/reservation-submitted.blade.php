@@ -10,7 +10,7 @@
 
 {{-- Preheader: shows in the inbox preview, hidden in the body. --}}
 <div style="display:none; max-height:0; overflow:hidden; font-size:1px; line-height:1px; color:#F4F4F2; opacity:0;">
-    {{ $deal->first_name }} reserved a {{ $deal->vehicle->model_year }} {{ $deal->vehicle->make }} {{ $deal->vehicle->model }} — reference {{ $deal->reference }}. Deposit placed, identity verified. Reach out to confirm financing.
+    {{ $deal->customer_full_name }} reserved a {{ $deal->vehicle->model_year }} {{ $deal->vehicle->make }} {{ $deal->vehicle->model }} — reference {{ $deal->reference }}. Deposit placed, identity verified. Reach out to confirm financing.
 </div>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4F4F2;">
@@ -35,6 +35,15 @@
                     </td>
                 </tr>
 
+                {{-- Vehicle hero photo — omitted cleanly when the feed has no photo --}}
+                @if ($deal->vehicle->primary_photo_url)
+                    <tr>
+                        <td style="padding:0; font-size:0; line-height:0;">
+                            <img src="{{ $deal->vehicle->primary_photo_url }}" alt="{{ $deal->vehicle->model_year }} {{ $deal->vehicle->make }} {{ $deal->vehicle->model }}" width="600" style="display:block; width:100%; max-width:600px; height:auto; border:0; outline:none; text-decoration:none;">
+                        </td>
+                    </tr>
+                @endif
+
                 {{-- Hero --}}
                 <tr>
                     <td style="padding:38px 36px 8px;">
@@ -42,8 +51,42 @@
                             {{ $deal->first_name }} just reserved a car.
                         </h1>
                         <p style="margin:0; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:15px; line-height:1.6; color:#5B6068;">
-                            A deposit is down and identity is already verified. Here's the deal — work it in your console.
+                            A deposit is down and identity is already verified. Here's the buyer and the car — work it in your console.
                         </p>
+                    </td>
+                </tr>
+
+                {{-- Buyer card --}}
+                <tr>
+                    <td style="padding:22px 36px 0;">
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #ECECEA; border-radius:12px;">
+                            <tr>
+                                <td style="padding:20px 22px;">
+                                    <p style="margin:0 0 4px; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:#9AA0A6;">
+                                        The buyer
+                                    </p>
+                                    <p style="margin:0; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:18px; font-weight:700; letter-spacing:-0.01em; color:#16181D;">
+                                        {{ $deal->customer_full_name }}
+                                    </p>
+                                    <p style="margin:7px 0 0; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:14px; line-height:1.6; color:#5B6068;">
+                                        @if ($deal->phone)
+                                            <a href="tel:{{ $deal->phone }}" style="color:#16181D; text-decoration:none; font-weight:600;">{{ $deal->phone }}</a>
+                                        @endif
+                                        @if ($deal->phone && $deal->email)
+                                            ·
+                                        @endif
+                                        @if ($deal->email)
+                                            <a href="mailto:{{ $deal->email }}" style="color:#16181D; text-decoration:none; font-weight:600;">{{ $deal->email }}</a>
+                                        @endif
+                                    </p>
+                                    @if ($deal->city)
+                                        <p style="margin:4px 0 0; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:13px; color:#9AA0A6;">
+                                            {{ $deal->city }}@if ($deal->province), {{ $deal->province }}@endif
+                                        </p>
+                                    @endif
+                                </td>
+                            </tr>
+                        </table>
                     </td>
                 </tr>
 
@@ -73,7 +116,7 @@
                                         {{ $deal->vehicle->model_year }} {{ $deal->vehicle->make }} {{ $deal->vehicle->model }}
                                     </p>
                                     <p style="margin:5px 0 0; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:14px; color:#5B6068;">
-                                        @if ($deal->vehicle->trim){{ $deal->vehicle->trim }} · @endif${{ number_format($deal->vehicle->price_in_cents / 100) }}
+                                        @if ($deal->vehicle->trim){{ $deal->vehicle->trim }} · @endif{{ $deal->vehicle->display_price }} · {{ ucfirst($deal->purchase_type) }}@if ($deal->purchase_type === 'finance' && $deal->term_months) · {{ $deal->term_months }} mo @endif
                                     </p>
                                 </td>
                             </tr>
@@ -88,7 +131,7 @@
                             <tr>
                                 <td style="padding:18px 22px;">
                                     <p style="margin:0 0 3px; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:15px; font-weight:700; color:#0B7355;">
-                                        $150 deposit placed · identity verified
+                                        ${{ number_format($deal->deposit_in_cents / 100) }} deposit placed · identity verified
                                     </p>
                                     <p style="margin:0; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:14px; line-height:1.55; color:#1B6B53;">
                                         This is a committed buyer — money down and ID checked at checkout — not a cold lead.
