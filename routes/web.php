@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureBuyerEmailIsVerified;
 use App\Http\Middleware\EnsureUserIsStaff;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -27,6 +28,11 @@ $staffDomain  = config('app.staff_domain');
 | Single shared `web` guard with the dealer staff (one users table, buyers
 | have a null dealer_id). The auth pages deliberately carry NO auth/guest
 | middleware: each page self-guards in mount() and redirects to buyer.login.
+|
+| /verify follows the same self-guarding pattern — it needs a signed-in but
+| not-yet-confirmed buyer, so it carries no middleware and bounces guests to
+| buyer.login from mount(). /garage is the one consumer surface that demands
+| a confirmed email, so it runs EnsureBuyerEmailIsVerified.
 */
 Route::domain($publicDomain)->group(function () {
     Route::livewire('/', 'pages::marketplace');
@@ -39,7 +45,10 @@ Route::domain($publicDomain)->group(function () {
     Route::livewire('/login', 'pages::buyer-login')->name('buyer.login');
     Route::livewire('/register', 'pages::buyer-register')->name('buyer.register');
 
+    Route::livewire('/verify', 'pages::verify')->name('verify');
+
     Route::livewire('/garage', 'pages::garage')
+        ->middleware(EnsureBuyerEmailIsVerified::class)
         ->name('garage');
 });
 

@@ -1,9 +1,12 @@
 <?php
 
 use App\Models\User;
+use App\Mail\EmailVerificationCode;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 new #[Layout('layouts.checkout')] class extends Component {
     public string $name = '';
@@ -14,6 +17,10 @@ new #[Layout('layouts.checkout')] class extends Component {
     public function mount(): void
     {
         if (Auth::check()) {
+            if (Auth::user()->email_verified_at === null) {
+                $this->redirect(route('verify'));
+                return;
+            }
             $this->redirectIntended(default: route('garage'));
         }
     }
@@ -35,11 +42,51 @@ new #[Layout('layouts.checkout')] class extends Component {
             'password' => $accountDetails['password'], // hashed by the model's cast
         ]);
 
+        // Stamp a fresh code on the account before logging in.
+        $verificationCode = $this->issueVerificationCode($newBuyer);
+
         Auth::login($newBuyer, remember: true);
         session()->regenerate();
 
-        // Straight back into the reserve journey if that's what brought them here.
-        $this->redirectIntended(default: route('garage'));
+        // Send the code now. The welcome email is deliberately held until the
+        // email is actually confirmed — it fires from the verify page instead.
+        $this->emailVerificationCode($newBuyer, $verificationCode);
+
+        $this->redirect(route('verify'));
+    }
+
+    /**
+     * Stamp a fresh 6-digit code on the buyer, valid for 10 minutes, and reset
+     * the failed-attempt counter. Returns the plain code for the email.
+     */
+    private function issueVerificationCode(User $buyer): string
+    {
+        $verificationCode = (string) random_int(100000, 999999);
+
+        $buyer->forceFill([
+            'email_verification_code'            => $verificationCode,
+            'email_verification_code_expires_at' => now()->addMinutes(10),
+            'email_verification_attempts'        => 0,
+        ])->save();
+
+        return $verificationCode;
+    }
+
+    /**
+     * A mail failure must never block account creation, so it's swallowed and
+     * logged — the buyer can always resend the code from the verify page.
+     */
+    private function emailVerificationCode(User $buyer, string $verificationCode): void
+    {
+        try {
+            Mail::to($buyer->email)->send(new EmailVerificationCode($buyer, $verificationCode));
+        } catch (\Throwable $sendFailure) {
+            Log::error('Verification code email failed to send.', [
+                'user_id' => $buyer->id,
+                'email'   => $buyer->email,
+                'error'   => $sendFailure->getMessage(),
+            ]);
+        }
     }
 }; ?>
 

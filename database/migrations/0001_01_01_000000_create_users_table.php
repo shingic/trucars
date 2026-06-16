@@ -14,6 +14,14 @@ return new class extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
+
+            // OTP email verification: the active 6-digit code, its expiry, and a
+            // failed-attempt counter for lockout. All cleared once the email is
+            // confirmed (email_verified_at set).
+            $table->string('email_verification_code')->nullable();
+            $table->timestamp('email_verification_code_expires_at')->nullable();
+            $table->unsignedTinyInteger('email_verification_attempts')->default(0);
+
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();
