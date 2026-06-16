@@ -10,7 +10,7 @@
 
 {{-- Preheader: shows in the inbox preview, hidden in the body. --}}
 <div style="display:none; max-height:0; overflow:hidden; font-size:1px; line-height:1px; color:#F4F4F2; opacity:0;">
-    {{ $code }} is your Trueleads verification code. It expires in {{ $expiresInMinutes }} minutes. Don't share it with anyone.
+    {{ $code }} is your TruCars verification code. It expires in {{ $expiresInMinutes }} minutes. Don't share it with anyone.
 </div>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4F4F2;">
@@ -25,7 +25,7 @@
                         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                             <tr>
                                 <td style="font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:20px; font-weight:800; letter-spacing:-0.02em; color:#FFFFFF;">
-                                    Trueleads
+                                    TruCars
                                 </td>
                                 <td align="right" style="font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:12px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:#FFE2D2;">
                                     Verify your email
@@ -42,7 +42,7 @@
                             Here's your code, {{ $firstName }}.
                         </h1>
                         <p style="margin:0; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:15px; line-height:1.6; color:#5B6068;">
-                            Enter this code back on Trueleads to confirm your email and finish setting up your account.
+                            Enter this code back on TruCars to confirm your email and finish setting up your account.
                         </p>
                     </td>
                 </tr>
@@ -58,7 +58,7 @@
                             </tr>
                         </table>
                         <p style="margin:14px 0 0; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:13px; line-height:1.55; color:#9AA0A6;">
-                            This code expires in {{ $expiresInMinutes }} minutes. Don't share it with anyone — Trueleads will never ask you to read it out.
+                            This code expires in {{ $expiresInMinutes }} minutes. Don't share it with anyone — TruCars will never ask you to read it out.
                         </p>
                     </td>
                 </tr>
@@ -67,7 +67,7 @@
                 <tr>
                     <td style="padding:24px 36px 0;">
                         <p style="margin:0; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:14px; line-height:1.6; color:#5B6068;">
-                            Didn't try to create a Trueleads account? You can safely ignore this email — nothing happens without this code.
+                            Didn't try to create a TruCars account? You can safely ignore this email — nothing happens without this code.
                         </p>
                     </td>
                 </tr>
@@ -79,7 +79,7 @@
                             <tr>
                                 <td style="border-top:1px solid #ECECEA; padding-top:20px;">
                                     <p style="margin:0; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:12px; line-height:1.6; color:#C2C6CB;">
-                                        Sent because someone entered this email to create a Trueleads account.
+                                        Sent because someone entered this email to create a TruCars account.
                                     </p>
                                 </td>
                             </tr>

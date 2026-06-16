@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ?? 'Reservations' }} · Trueleads</title>
+    <title>{{ $title ?? 'Reservations' }} · TruCars</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -89,7 +89,7 @@
     <aside class="sidebar">
         <div class="sb-brand">
             <span class="glyph">T</span>
-            <span class="nm">Trueleads</span>
+            <span class="nm">TruCars</span>
         </div>
 
         <nav class="sb-scroll">

@@ -4,13 +4,13 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Welcome to Trueleads</title>
+    <title>Welcome to TruCars</title>
 </head>
 <body style="margin:0; padding:0; background-color:#F4F4F2; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%;">
 
 {{-- Preheader: shows in the inbox preview, hidden in the body. --}}
 <div style="display:none; max-height:0; overflow:hidden; font-size:1px; line-height:1px; color:#F4F4F2; opacity:0;">
-    Your Trueleads account is ready. Browse certified cars, reserve in minutes, and track everything in My Garage. Creating an account never starts a purchase.
+    Your TruCars account is ready. Browse certified cars, reserve in minutes, and track everything in My Garage. Creating an account never starts a purchase.
 </div>
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4F4F2;">
@@ -25,7 +25,7 @@
                         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                             <tr>
                                 <td style="font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:20px; font-weight:800; letter-spacing:-0.02em; color:#FFFFFF;">
-                                    Trueleads
+                                    TruCars
                                 </td>
                                 <td align="right" style="font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:12px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:#FFE2D2;">
                                     Welcome
@@ -117,10 +117,10 @@
                             <tr>
                                 <td style="border-top:1px solid #ECECEA; padding-top:20px;">
                                     <p style="margin:0; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:12px; line-height:1.6; color:#9AA0A6;">
-                                        Trueleads handles your reservation and checkout. The dealership owns the vehicle, the financing and the delivery, and confirms all final figures with you before anything is signed.
+                                        TruCars handles your reservation and checkout. The dealership owns the vehicle, the financing and the delivery, and confirms all final figures with you before anything is signed.
                                     </p>
                                     <p style="margin:10px 0 0; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:12px; line-height:1.6; color:#C2C6CB;">
-                                        Sent because you created a Trueleads account.
+                                        Sent because you created a TruCars account.
                                     </p>
                                 </td>
                             </tr>

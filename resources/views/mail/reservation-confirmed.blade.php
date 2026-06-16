@@ -25,7 +25,7 @@
                         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                             <tr>
                                 <td style="font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:20px; font-weight:800; letter-spacing:-0.02em; color:#FFFFFF;">
-                                    Trueleads
+                                    TruCars
                                 </td>
                                 <td align="right" style="font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:12px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:#FFE2D2;">
                                     Reservation confirmed
@@ -301,10 +301,10 @@
                             <tr>
                                 <td style="border-top:1px solid #ECECEA; padding-top:20px;">
                                     <p style="margin:0; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:12px; line-height:1.6; color:#9AA0A6;">
-                                        Trueleads handles your reservation and checkout. {{ $deal->vehicle->dealer?->name ?? 'The dealership' }} owns the vehicle, the financing and the delivery, and confirms all final figures with you before anything is signed.
+                                        TruCars handles your reservation and checkout. {{ $deal->vehicle->dealer?->name ?? 'The dealership' }} owns the vehicle, the financing and the delivery, and confirms all final figures with you before anything is signed.
                                     </p>
                                     <p style="margin:10px 0 0; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:12px; line-height:1.6; color:#C2C6CB;">
-                                        Sent because you placed a reservation at Trueleads.
+                                        Sent because you placed a reservation at TruCars.
                                     </p>
                                 </td>
                             </tr>

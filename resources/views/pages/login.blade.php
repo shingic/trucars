@@ -112,7 +112,7 @@ new #[Layout('layouts.auth')] class extends Component {
 
 <div class="auth-screen">
     <aside class="auth-brand">
-        <div class="auth-brand-mark"><span class="auth-brand-glyph">T</span> Trueleads</div>
+        <div class="auth-brand-mark"><span class="auth-brand-glyph">T</span> TruCars</div>
 
         <div class="auth-brand-body">
             <h1 class="auth-brand-headline">Your digital retail desk.</h1>
@@ -125,7 +125,7 @@ new #[Layout('layouts.auth')] class extends Component {
     </aside>
 
     <main class="auth-form-panel">
-        <div class="auth-mobile-brand"><span class="auth-brand-glyph">T</span> Trueleads</div>
+        <div class="auth-mobile-brand"><span class="auth-brand-glyph">T</span> TruCars</div>
 
         <div class="auth-form" x-data="{ showPassword: false }">
             <span class="auth-kicker">Dealer desk</span>
@@ -168,6 +168,6 @@ new #[Layout('layouts.auth')] class extends Component {
             </form>
         </div>
 
-        <p class="auth-legal">Trueleads · Dealer access only</p>
+        <p class="auth-legal">TruCars · Dealer access only</p>
     </main>
 </div>

@@ -33,7 +33,7 @@ class BuyerWelcome extends Mailable
         // (MAIL_FROM_ADDRESS / MAIL_FROM_NAME), matching ReservationConfirmed —
         // the verified Postmark sender stays in .env, never hard-coded here.
         return new Envelope(
-            subject: 'Welcome to Trueleads',
+            subject: 'Welcome to TruCars',
         );
     }
 

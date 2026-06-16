@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('kind'); // system | status | sms | email | note
             $table->string('direction')->nullable(); // inbound | outbound
             $table->text('body');
-            $table->string('author_name')->nullable(); // null = Trueleads system
+            $table->string('author_name')->nullable(); // null = TruCars system
 
             $table->timestamps();
 

@@ -32,7 +32,7 @@ class EmailVerificationCode extends Mailable
     {
         // Code in the subject so it surfaces in the notification preview.
         return new Envelope(
-            subject: $this->code . ' is your Trueleads verification code',
+            subject: $this->code . ' is your TruCars verification code',
         );
     }
 

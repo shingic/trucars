@@ -1026,7 +1026,7 @@ new #[Layout('layouts.checkout')] class extends Component {
             $deal->recordActivity(
                 'sms',
                 'Hi ' . $this->firstName . ' — your ' . $this->vehicle->model_year . ' ' . $this->vehicle->make . ' ' . $this->vehicle->model
-                . ' is reserved! Reference ' . $deal->reference . '. The dealership will reach out shortly to confirm financing and next steps. — Trueleads',
+                . ' is reserved! Reference ' . $deal->reference . '. The dealership will reach out shortly to confirm financing and next steps. — TruCars',
                 null,
                 'outbound',
             );
@@ -1285,7 +1285,7 @@ new #[Layout('layouts.checkout')] class extends Component {
 <div id="checkout-app" x-data @checkout-step-changed.window="window.scrollTo({ top: 0, behavior: 'smooth' })">
     <header class="top">
         <div class="top-inner">
-            <a href="/" class="brand"><span class="glyph">T</span> Trueleads</a>
+            <a href="/" class="brand"><span class="glyph">T</span> TruCars</a>
             <div class="veh-chip">
                 <span class="thumb" @if ($this->heroPhoto) style="background-image:url('{{ $this->heroPhoto }}');" @endif></span>
                 <span><span class="vt">{{ $vehicle->model_year }} {{ $vehicle->make }} {{ $vehicle->model }}</span> &nbsp;<span class="vp">{{ $this->asMoney($this->priceDollars) }}</span></span>

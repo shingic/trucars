@@ -344,7 +344,7 @@ new #[Layout('layouts.checkout')] class extends Component {
 <div x-data @garage-deal-changed.window="window.scrollTo({ top: 0, behavior: 'smooth' })">
     <header class="g-top">
         <div class="g-top-inner">
-            <a href="/" class="brand"><span class="glyph">T</span> Trueleads</a>
+            <a href="/" class="brand"><span class="glyph">T</span> TruCars</a>
             <span class="sep">·</span>
             <span class="garage-word">My Garage</span>
             <div class="g-account">
@@ -534,7 +534,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                     <div class="g-lc-item"><div class="yr">Year 2</div><div class="ev">Warranty renewal</div><div class="de">Reminders before it lapses</div></div>
                     <div class="g-lc-item"><div class="yr">Year 3</div><div class="ev">Trade-in offer</div><div class="de">A real number, unprompted</div></div>
                     <div class="g-lc-item"><div class="yr">Year 4</div><div class="ev">Upgrade picks</div><div class="de">Matched to your history</div></div>
-                    <div class="g-lc-item"><div class="yr">Year 5</div><div class="ev">Sell it for you</div><div class="de">List or sell to Trueleads</div></div>
+                    <div class="g-lc-item"><div class="yr">Year 5</div><div class="ev">Sell it for you</div><div class="de">List or sell to TruCars</div></div>
                 </div>
             </section>
 
