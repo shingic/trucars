@@ -1,7 +1,9 @@
 <?php
 
 use App\Mail\ReservationConfirmed;
+use App\Mail\ReservationSubmitted;
 use App\Models\Deal;
+use App\Models\User;
 use App\Models\Vehicle;
 use App\Services\Valuation\Data\TradeInput;
 use App\Services\Valuation\TradeValuation;
@@ -1036,6 +1038,7 @@ new #[Layout('layouts.checkout')] class extends Component {
         // kept outside the transaction above so a Postmark hiccup can never undo
         // a reservation the buyer has already paid for.
         $this->emailReservationConfirmation($newDeal);
+        $this->emailDealerReservation($newDeal);
 
         $this->dealReference = $newDeal->reference;
         $this->stepIndex = count($this->steps) - 1;
@@ -1070,6 +1073,53 @@ new #[Layout('layouts.checkout')] class extends Component {
                 'system',
                 'Reservation confirmation email could not be sent to ' . $newDeal->email
                 . ' — the dealership may want to follow up directly.',
+            );
+        }
+    }
+
+    /**
+     * Notify the dealership that a reservation just landed, through Postmark.
+     *
+     * Same posture as the buyer confirmation: runs after the reservation has
+     * committed, so a Postmark hiccup can never undo a paid reservation. There
+     * are no staff roles yet, so every user attached to the deal's dealer is
+     * notified — in practice the F&I user. When a second staff member exists
+     * and the team shouldn't all be pinged, this is where a dealer
+     * notification_email or a role filter would slot in.
+     */
+    private function emailDealerReservation(Deal $newDeal): void
+    {
+        $dealerStaff = User::where('dealer_id', $newDeal->dealer_id)->get();
+
+        if ($dealerStaff->isEmpty()) {
+            $newDeal->recordActivity(
+                'system',
+                'No staff are attached to this dealership, so the new-reservation email was not sent — the deal is still in the console.',
+            );
+
+            return;
+        }
+
+        try {
+            Mail::to($dealerStaff)->send(new ReservationSubmitted($newDeal));
+
+            $recipientCount = $dealerStaff->count();
+
+            $newDeal->recordActivity(
+                'system',
+                'New-reservation email sent to the dealership (' . $recipientCount
+                . ' recipient' . ($recipientCount === 1 ? '' : 's') . ').',
+            );
+        } catch (\Throwable $sendFailure) {
+            Log::error('Dealer new-reservation email failed to send.', [
+                'deal_reference' => $newDeal->reference,
+                'dealer_id'      => $newDeal->dealer_id,
+                'error'          => $sendFailure->getMessage(),
+            ]);
+
+            $newDeal->recordActivity(
+                'system',
+                'New-reservation email to the dealership could not be sent — the deal is still visible in the console.',
             );
         }
     }

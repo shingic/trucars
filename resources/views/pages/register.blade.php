@@ -1,9 +1,12 @@
 <?php
 
 use App\Models\User;
+use App\Mail\BuyerWelcome;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 new #[Layout('layouts.checkout')] class extends Component {
     public string $name = '';
@@ -38,8 +41,33 @@ new #[Layout('layouts.checkout')] class extends Component {
         Auth::login($newBuyer, remember: true);
         session()->regenerate();
 
+        // Fire the welcome email before redirecting. This is hooked on the
+        // registration method (not a Registered listener) on purpose: it sends
+        // only for real buyer sign-ups and never fires during migrate:fresh
+        // --seed. Same post-action try/catch posture as the reservation email.
+        $this->emailWelcome($newBuyer);
+
         // Straight back into the reserve journey if that's what brought them here.
         $this->redirectIntended(default: route('garage'));
+    }
+
+    /**
+     * Send the welcome email. A mail failure must never block account creation
+     * or the redirect, so it's swallowed and logged. There's no deal at this
+     * point, so this logs only (the reservation emailer also writes a deal
+     * activity — there's nothing to attach one to here).
+     */
+    private function emailWelcome(User $buyer): void
+    {
+        try {
+            Mail::to($buyer->email)->send(new BuyerWelcome($buyer));
+        } catch (\Throwable $sendFailure) {
+            Log::error('Welcome email failed to send.', [
+                'user_id' => $buyer->id,
+                'email'   => $buyer->email,
+                'error'   => $sendFailure->getMessage(),
+            ]);
+        }
     }
 }; ?>
 
