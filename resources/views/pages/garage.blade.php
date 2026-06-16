@@ -7,9 +7,23 @@ use Livewire\Component;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Livewire\WithFileUploads;
 
 new #[Layout('layouts.checkout')] class extends Component {
+    use WithFileUploads;
+
     public ?int $selectedDealId = null;
+
+    /**
+     * Per-document temporary uploads, keyed by deal_document id. Livewire holds
+     * the browser's file here as a TemporaryUploadedFile until we validate it and
+     * move it onto the private disk; keying by id lets each outstanding row drive
+     * its own file input independently.
+     *
+     * @var array<int, \Livewire\Features\SupportFileUploads\TemporaryUploadedFile>
+     */
+    public array $pendingFiles = [];
 
     /**
      * How far along each stage sits on the garage's four-milestone track:
@@ -212,27 +226,104 @@ new #[Layout('layouts.checkout')] class extends Component {
     }
 
     /**
-     * Placeholder upload: marks the document received so the buyer watches the
-     * checklist advance. Real file capture (Livewire WithFileUploads, a storage
-     * disk, validation) is the next slice — wire it here once the disk is chosen.
-     * Scoped to the buyer's own deals so no one can touch another buyer's docs.
+     * The status line shown under each document. Buyer-uploaded items carry an
+     * uploaded_at, so we append a friendly relative time ("Uploaded · 2 minutes
+     * ago"); the auto-verified licence and any still-pending items just show
+     * their stored status copy unchanged.
      */
-    public function uploadDocument(int $documentId): void
+    public function documentStatusLine(DealDocument $document): string
     {
-        $document = DealDocument::whereKey($documentId)
+        if ($document->uploaded_at !== null) {
+            return $document->status . ' · ' . $document->uploaded_at->diffForHumans();
+        }
+
+        return $document->status;
+    }
+
+    /**
+     * Livewire fires this the moment a file finishes its temporary upload. Every
+     * outstanding document binds its input to pendingFiles.{documentId}, so we
+     * recover the id from the property name and hand off to the store routine —
+     * that's what lets each row upload on its own without a shared submit button.
+     */
+    public function updated(string $propertyName): void
+    {
+        if (! str_starts_with($propertyName, 'pendingFiles.')) {
+            return;
+        }
+
+        $documentId = (int) str_replace('pendingFiles.', '', $propertyName);
+
+        $this->storeDocument($documentId);
+    }
+
+    /**
+     * Validate one freshly-uploaded file against the KYC constraints, move it
+     * onto the private deal_documents disk, and flip the checklist row to done.
+     * A re-upload replaces the previous file in place. Everything is fenced to
+     * the buyer's own deals, and a DealActivity is written so the dealer sees
+     * the document land in their feed.
+     */
+    public function storeDocument(int $documentId): void
+    {
+        $uploadedFile = $this->pendingFiles[$documentId] ?? null;
+
+        if ($uploadedFile === null) {
+            return;
+        }
+
+        $this->validate([
+            "pendingFiles.$documentId" => [
+                'required',
+                'file',
+                'mimetypes:application/pdf,image/jpeg,image/png,image/heic,image/webp',
+                'extensions:pdf,jpg,jpeg,png,heic,webp',
+                'max:10240',
+            ],
+        ], [
+            "pendingFiles.$documentId.mimetypes"  => 'That file type isn\'t accepted — please upload a PDF or a photo.',
+            "pendingFiles.$documentId.extensions" => 'That file type isn\'t accepted — please upload a PDF or a photo.',
+            "pendingFiles.$documentId.max"        => 'That file is over 10 MB — please upload a smaller copy.',
+        ]);
+
+        // Ownership fence: the row must belong to one of this buyer's own deals.
+        // The deal itself is read from the already-loaded garage collection,
+        // which has the DealerScope dropped, so there are no scoping surprises.
+        $document = DealDocument::query()
+            ->whereKey($documentId)
             ->whereIn('deal_id', Auth::user()->deals()->pluck('id'))
             ->first();
 
         if ($document === null) {
+            unset($this->pendingFiles[$documentId]);
+
             return;
         }
 
+        $owningDeal = $this->garageDeals->firstWhere('id', $document->deal_id);
+        $previousFilePath = $document->file_path;
+
+        // Land the file in a per-deal folder on the private disk. store() returns
+        // the path relative to the disk root, which is exactly what we persist.
+        $storedFilePath = $uploadedFile->store('deal-' . $document->deal_id, 'deal_documents');
+
         $document->update([
             'is_done'     => true,
-            'status'      => 'Received',
+            'status'      => 'Uploaded',
+            'file_path'   => $storedFilePath,
             'uploaded_at' => now(),
         ]);
 
+        // On a replace, drop the file the buyer just superseded.
+        if ($previousFilePath !== null && $previousFilePath !== $storedFilePath) {
+            Storage::disk('deal_documents')->delete($previousFilePath);
+        }
+
+        if ($owningDeal !== null) {
+            $owningDeal->recordActivity('document', "Buyer uploaded {$document->name}", $owningDeal->customer_full_name, 'in');
+        }
+
+        unset($this->pendingFiles[$documentId]);
         unset($this->garageDeals, $this->featuredDeal);
     }
 }; ?>
@@ -300,8 +391,9 @@ new #[Layout('layouts.checkout')] class extends Component {
         .g-t-lbl { font-size:13px; font-weight:600; }
         .g-t-sub { font-size:11.5px; color:var(--ink-3); }
 
-        .g-doc-row { display:flex; align-items:center; gap:14px; padding:15px 0; border-bottom:1px solid var(--line); }
-        .g-doc-row:last-child { border-bottom:none; }
+        .g-doc { padding:15px 0; border-bottom:1px solid var(--line); }
+        .g-doc:last-child { border-bottom:none; }
+        .g-doc-row { display:flex; align-items:center; gap:14px; }
         .g-doc-check { width:28px; height:28px; border-radius:50%; display:grid; place-items:center; flex-shrink:0; }
         .g-doc-check.done { background:var(--good); color:#fff; }
         .g-doc-check.todo { border:2px dashed var(--line-strong); color:var(--ink-3); }
@@ -310,6 +402,11 @@ new #[Layout('layouts.checkout')] class extends Component {
         .g-doc-action { margin-left:auto; }
         .g-doc-done { font-size:13px; font-weight:600; color:var(--good); }
         .g-doc-upload { padding:7px 16px; font-size:13px; }
+        .g-doc-input { display:none; }
+        .g-doc-done-wrap { display:flex; align-items:center; gap:14px; }
+        .g-doc-replace { font-size:12.5px; font-weight:600; color:var(--ink-3); cursor:pointer; }
+        .g-doc-replace:hover { color:var(--primary); }
+        .g-doc-error { font-size:12.5px; font-weight:600; color:var(--bad); margin:8px 0 0 42px; }
 
         .g-cancelled-note { display:flex; gap:12px; align-items:flex-start; padding:16px 18px; border:1px solid var(--line); border-radius:var(--radius-sm); background:var(--bg-2); font-size:13.5px; color:var(--ink-2); line-height:1.55; }
         .g-cancelled-note svg { flex-shrink:0; color:var(--ink-3); margin-top:1px; }
@@ -484,25 +581,43 @@ new #[Layout('layouts.checkout')] class extends Component {
 
                     <div class="g-docs">
                         @foreach ($this->featuredDeal->documents as $document)
-                            <div class="g-doc-row">
-                                <span class="g-doc-check {{ $document->is_done ? 'done' : 'todo' }}">
-                                    @if ($document->is_done)
-                                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 4.5 4.5L19 7"/></svg>
-                                    @else
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
-                                    @endif
-                                </span>
-                                <div class="g-doc-meta">
-                                    <div class="g-doc-name">{{ $document->name }}</div>
-                                    <div class="g-doc-status">{{ $document->status }}</div>
+                            <div class="g-doc" wire:key="doc-{{ $document->id }}">
+                                <div class="g-doc-row">
+                                    <span class="g-doc-check {{ $document->is_done ? 'done' : 'todo' }}">
+                                        @if ($document->is_done)
+                                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 4.5 4.5L19 7"/></svg>
+                                        @else
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>
+                                        @endif
+                                    </span>
+                                    <div class="g-doc-meta">
+                                        <div class="g-doc-name">{{ $document->name }}</div>
+                                        <div class="g-doc-status">{{ $this->documentStatusLine($document) }}</div>
+                                    </div>
+                                    <div class="g-doc-action">
+                                        @if ($document->is_done)
+                                            <div class="g-doc-done-wrap">
+                                                <span class="g-doc-done">Done</span>
+                                                @if (filled($document->file_path))
+                                                    <label class="g-doc-replace">
+                                                        <span wire:loading.remove wire:target="pendingFiles.{{ $document->id }}">Replace</span>
+                                                        <span wire:loading wire:target="pendingFiles.{{ $document->id }}">Uploading…</span>
+                                                        <input type="file" class="g-doc-input" wire:model="pendingFiles.{{ $document->id }}" accept=".pdf,.jpg,.jpeg,.png,.heic,.webp">
+                                                    </label>
+                                                @endif
+                                            </div>
+                                        @else
+                                            <label class="btn btn-primary g-doc-upload">
+                                                <span wire:loading.remove wire:target="pendingFiles.{{ $document->id }}">Upload</span>
+                                                <span wire:loading wire:target="pendingFiles.{{ $document->id }}">Uploading…</span>
+                                                <input type="file" class="g-doc-input" wire:model="pendingFiles.{{ $document->id }}" accept=".pdf,.jpg,.jpeg,.png,.heic,.webp">
+                                            </label>
+                                        @endif
+                                    </div>
                                 </div>
-                                <div class="g-doc-action">
-                                    @if ($document->is_done)
-                                        <span class="g-doc-done">Done</span>
-                                    @else
-                                        <button type="button" class="btn btn-primary g-doc-upload" wire:click="uploadDocument({{ $document->id }})">Upload</button>
-                                    @endif
-                                </div>
+                                @error('pendingFiles.' . $document->id)
+                                <div class="g-doc-error">{{ $message }}</div>
+                                @enderror
                             </div>
                         @endforeach
                     </div>
