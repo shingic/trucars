@@ -1,5 +1,6 @@
 <?php
 
+use App\Mail\ReservationConfirmed;
 use App\Models\Deal;
 use App\Models\Vehicle;
 use App\Services\Valuation\Data\TradeInput;
@@ -8,6 +9,8 @@ use Livewire\Component;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 new #[Layout('layouts.checkout')] class extends Component {
     public Vehicle $vehicle;
@@ -1029,9 +1032,46 @@ new #[Layout('layouts.checkout')] class extends Component {
             return $deal;
         });
 
+        // The reservation is committed. Send the buyer their confirmation now —
+        // kept outside the transaction above so a Postmark hiccup can never undo
+        // a reservation the buyer has already paid for.
+        $this->emailReservationConfirmation($newDeal);
+
         $this->dealReference = $newDeal->reference;
         $this->stepIndex = count($this->steps) - 1;
         $this->dispatch('checkout-step-changed');
+    }
+
+    /**
+     * Email the buyer their reservation confirmation through Postmark.
+     *
+     * Runs after the reservation has committed, so the buyer is already
+     * reserved no matter what happens here. If Postmark is unreachable we
+     * swallow the failure, log it, and leave a note on the deal so the
+     * dealership can follow up directly instead of the customer hitting a 500.
+     */
+    private function emailReservationConfirmation(Deal $newDeal): void
+    {
+        try {
+            Mail::to($newDeal->email)->send(new ReservationConfirmed($newDeal));
+
+            $newDeal->recordActivity(
+                'system',
+                'Reservation confirmation emailed to ' . $newDeal->email . '.',
+            );
+        } catch (\Throwable $sendFailure) {
+            Log::error('Reservation confirmation email failed to send.', [
+                'deal_reference' => $newDeal->reference,
+                'buyer_email'    => $newDeal->email,
+                'error'          => $sendFailure->getMessage(),
+            ]);
+
+            $newDeal->recordActivity(
+                'system',
+                'Reservation confirmation email could not be sent to ' . $newDeal->email
+                . ' — the dealership may want to follow up directly.',
+            );
+        }
     }
 }; ?>
 
