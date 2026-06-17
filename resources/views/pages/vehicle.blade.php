@@ -65,7 +65,7 @@ new class extends Component {
 
             @if ($this->certification)
                 <div class="vdp-section" style="border-top:none; padding-top:4px;">
-                    <div class="cert-block">
+                    <div class="cert-block" x-data="{ certDetails: false }" :class="{ 'is-expanded': certDetails }">
                         <div class="cert-head">
                             <div class="cert-shield"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3 4 6v6c0 5 8 9 8 9s8-4 8-9V6Z"/><path d="m9 12 2 2 4-4"/></svg></div>
                             <div>
@@ -85,6 +85,10 @@ new class extends Component {
                                 </div>
                             @endforeach
                         </div>
+                        <button type="button" class="cert-more" x-on:click="certDetails = ! certDetails">
+                            <span x-text="certDetails ? 'Hide details' : 'What\'s covered'">What's covered</span>
+                            <svg class="cert-more-chev" :class="{ 'is-up': certDetails }" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 9 6 6 6-6"/></svg>
+                        </button>
                         <div class="cert-foot">
                             <span class="cert-link"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1Z"/></svg> {{ $this->certification->inspectionPoints }}-point inspection report</span>
                             <span class="cert-link"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9 9 0 0 0-6.4 2.6L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg> CARFAX history report</span>
@@ -233,6 +237,9 @@ new class extends Component {
         .cert-link { display:inline-flex; align-items:center; gap:7px; font-size:13px; font-weight:700; color:var(--ink); background:var(--card); border:1px solid var(--line-strong); border-radius:10px; padding:9px 14px; }
         .cert-link svg { color:var(--good); }
         .cert-foot .note { font-size:11.5px; color:var(--ink-3); margin-left:auto; max-width:230px; text-align:right; }
+        .cert-more { display:none; align-items:center; justify-content:center; gap:7px; width:100%; padding:13px; background:var(--good-soft); border-top:1px solid rgba(18,184,134,.2); font-size:13.5px; font-weight:700; color:#0E5A43; }
+        .cert-more-chev { transition:transform .2s ease; }
+        .cert-more-chev.is-up { transform:rotate(180deg); }
 
         .specs { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--line); border:1px solid var(--line); border-radius:14px; overflow:hidden; }
         .spec { background:var(--card); padding:13px 17px; display:flex; justify-content:space-between; gap:12px; font-size:13.5px; }
@@ -312,6 +319,10 @@ new class extends Component {
             .cert-shield { width:44px; height:44px; }
             .cert-head h3 { font-size:16px; }
             .cert-benefits { grid-template-columns:1fr; }
+            .cert-head p { display:none; }
+            .cben .s { display:none; }
+            .cert-block.is-expanded .cben .s { display:block; }
+            .cert-more { display:flex; }
             .cert-foot { padding:14px 16px; }
             .cert-foot .note { margin-left:0; max-width:none; width:100%; text-align:left; }
             .specs { grid-template-columns:1fr; }
