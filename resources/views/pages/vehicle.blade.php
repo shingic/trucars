@@ -171,14 +171,15 @@ new class extends Component {
         </aside>
     </div>
 
-    <!-- mobile-only sticky action bar: price always visible, Reserve always a thumb away -->
+    <!-- mobile-only sticky action bar: price + biweekly on top, full-width Reserve pinned to the bottom -->
     <div class="vdp-stickybar">
-        <div class="sb-price">
+        <div class="sb-line">
             <span class="sb-amount">{{ $vehicle->display_price }}</span>
-            <span class="sb-note">All-in · +HST &amp; lic.</span>
+            <span class="sb-bw">or <b>${{ number_format($vehicle->estimated_biweekly) }}</b>/biweekly</span>
+            <span class="sb-allin">All-in · +HST &amp; lic.</span>
         </div>
         <a href="{{ route('checkout', $vehicle) }}" wire:navigate class="btn btn-primary sb-cta">
-            Reserve
+            Reserve my car now
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </a>
     </div>
@@ -275,22 +276,24 @@ new class extends Component {
         .vdp-stickybar {
             display:none;
             position:fixed; left:0; right:0; bottom:0; z-index:50;
-            align-items:center; gap:14px;
-            background:rgba(255,255,255,.96); backdrop-filter:saturate(160%) blur(14px);
+            flex-direction:column; gap:10px;
+            background:rgba(255,255,255,.97); backdrop-filter:saturate(160%) blur(14px);
             border-top:1px solid var(--line);
-            box-shadow:0 -8px 30px rgba(22,24,29,.10);
+            box-shadow:0 -10px 34px rgba(22,24,29,.12);
             padding:12px 16px calc(12px + env(safe-area-inset-bottom));
         }
-        .vdp-stickybar .sb-price { display:flex; flex-direction:column; min-width:0; flex:1; }
-        .vdp-stickybar .sb-amount { font-size:21px; font-weight:800; letter-spacing:-.025em; line-height:1.05; }
-        .vdp-stickybar .sb-note { font-size:11px; color:var(--ink-3); font-weight:600; margin-top:2px; }
-        .vdp-stickybar .sb-cta { width:auto; flex:0 0 auto; padding:14px 26px; font-size:15px; }
+        .vdp-stickybar .sb-line { display:flex; align-items:baseline; flex-wrap:wrap; gap:5px 9px; }
+        .vdp-stickybar .sb-amount { font-size:20px; font-weight:800; letter-spacing:-.025em; }
+        .vdp-stickybar .sb-bw { font-size:13px; color:var(--ink-2); font-weight:500; }
+        .vdp-stickybar .sb-bw b { color:var(--ink); font-weight:700; }
+        .vdp-stickybar .sb-allin { margin-left:auto; font-size:11px; color:var(--ink-3); font-weight:600; white-space:nowrap; }
+        .vdp-stickybar .sb-cta { width:100%; padding:15px 22px; font-size:15.5px; }
 
         @media (max-width:1000px) {
             .vdp-grid { grid-template-columns:1fr; gap:30px; }
             .buy-rail { position:static; }
             .gallery-hero { height:380px; }
-            .vdp { padding-bottom:calc(80px + env(safe-area-inset-bottom)); }
+            .vdp { padding-bottom:calc(124px + env(safe-area-inset-bottom)); }
             .vdp-stickybar { display:flex; }
         }
 
