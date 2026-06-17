@@ -260,7 +260,7 @@ new class extends Component {
      @keydown.escape.window="filtersOpen = false">
 
     <header class="srp-head">
-        <h1 class="srp-title">Certified used cars in the GTA</h1>
+        <h1 class="srp-title">Certified Pre-Owned cars in the GTA</h1>
         <p class="srp-sub">Every car is inspected, certified, and priced all-in — no as-is cars, ever. HST &amp; licensing extra.</p>
     </header>
 
