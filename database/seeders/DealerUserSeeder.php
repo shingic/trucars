@@ -24,7 +24,7 @@ class DealerUserSeeder extends Seeder
             ]);
 
         User::updateOrCreate(
-            ['email' => 'dealer@trucars.test'],
+            ['email' => 'shingi@trueleads.ca'],
             [
                 'name' => 'Dealer Desk',
                 'password' => Hash::make('password'),
