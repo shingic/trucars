@@ -75,6 +75,20 @@
         .st-step.done .st-label { color:var(--ink-2); }
         .st-step.current .st-label { color:var(--primary); font-weight:700; }
 
+        /* compact mobile progress — swaps in for the named rail below 900px */
+        .stepper-mini { display:none; max-width:1180px; margin:0 auto; padding:10px 26px 14px; }
+        .smini-track { height:4px; border-radius:var(--radius-pill); background:var(--line-strong); overflow:hidden; }
+        .smini-fill { height:100%; border-radius:var(--radius-pill); background:var(--primary); transition:width .3s ease; }
+        .smini-meta { display:flex; align-items:center; gap:7px; margin-top:9px; font-size:13px; }
+        .smini-count { color:var(--ink-3); font-weight:600; }
+        .smini-dot { color:var(--ink-3); }
+        .smini-step { color:var(--primary); font-weight:700; letter-spacing:-.01em; }
+        @media (max-width:900px){
+            .stepper { display:none; }
+            .stepper-mini { display:block; }
+            .veh-chip .vt { display:none; }
+        }
+
         /* ===== two-column: content + sticky summary rail ===== */
         .layout { max-width:1280px; margin:0 auto; padding:40px 26px; display:grid; grid-template-columns:1fr 360px; gap:34px; align-items:start; }
         .layout-solo { grid-template-columns:1fr; max-width:760px; }
