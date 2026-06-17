@@ -1307,6 +1307,17 @@ new #[Layout('layouts.checkout')] class extends Component {
                 </button>
             @endforeach
         </nav>
+
+        <div class="stepper-mini">
+            <div class="smini-track">
+                <div class="smini-fill" style="width: {{ round((($stepIndex + 1) / count($steps)) * 100) }}%"></div>
+            </div>
+            <div class="smini-meta">
+                <span class="smini-count">Step {{ $stepIndex + 1 }} of {{ count($steps) }}</span>
+                <span class="smini-dot">·</span>
+                <span class="smini-step">{{ $steps[$stepIndex]['label'] }}</span>
+            </div>
+        </div>
     </header>
 
     <main class="layout {{ $this->stepKey() === 'done' ? 'layout-solo' : '' }}">
