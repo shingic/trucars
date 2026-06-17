@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>TruCars — Certified used cars</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,6 +24,7 @@
             --font-mono:"Geist Mono",ui-monospace,monospace;
         }
         * { box-sizing:border-box; }
+        [x-cloak] { display:none !important; }
         body { margin:0; font-family:var(--font-ui); color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; line-height:1.45; }
         button { font-family:inherit; cursor:pointer; border:none; background:none; }
         input { font-family:inherit; }
@@ -44,6 +45,44 @@
         .nav-signin { display:inline-flex; align-items:center; font-size:14.5px; font-weight:700; color:var(--ink); text-decoration:none; border:1.5px solid var(--line-strong); border-radius:var(--radius-pill); padding:8px 18px; transition:border-color .15s ease, color .15s ease; }
         .nav-signin:hover { border-color:var(--primary); color:var(--primary); }
 
+        /* hamburger — hidden on desktop, shown under 860px */
+        .nav-burger { display:none; margin-left:auto; width:42px; height:42px; border-radius:12px; align-items:center; justify-content:center; color:var(--ink); }
+        .nav-burger:active { background:var(--bg-2); }
+
+        /* slide-out drawer + scrim (mobile) */
+        .nav-scrim { position:fixed; inset:0; background:rgba(22,24,29,.5); backdrop-filter:blur(2px); z-index:55; }
+        .nav-drawer {
+            position:fixed; top:0; right:0;
+            height:100vh; height:100dvh;
+            width:min(86vw, 360px);
+            background:var(--card); z-index:60;
+            box-shadow:-24px 0 60px rgba(22,24,29,.2);
+            transform:translateX(100%);
+            transition:transform .3s cubic-bezier(.32,.72,0,1);
+            display:flex; flex-direction:column;
+            padding-top:env(safe-area-inset-top);
+        }
+        .nav-drawer.is-open { transform:translateX(0); }
+        .drawer-top { display:flex; align-items:center; justify-content:space-between; padding:16px 18px; border-bottom:1px solid var(--line); }
+        .drawer-close { width:40px; height:40px; border-radius:50%; background:var(--bg-2); display:grid; place-items:center; color:var(--ink-2); }
+        .drawer-close:active { color:var(--ink); }
+        .drawer-auth { padding:16px 18px; border-bottom:1px solid var(--line); }
+        .drawer-signin { display:flex; align-items:center; justify-content:center; width:100%; font-size:15px; font-weight:700; color:#fff; text-decoration:none; background:var(--ink); border-radius:var(--radius-pill); padding:13px 18px; }
+        .drawer-account { display:flex; align-items:center; gap:12px; text-decoration:none; color:var(--ink); }
+        .drawer-account .da-name { font-size:15.5px; font-weight:700; letter-spacing:-.01em; }
+        .drawer-account .da-sub { font-size:12.5px; color:var(--ink-3); margin-top:1px; }
+        .drawer-rows { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+        .drawer-row { display:flex; align-items:center; gap:14px; padding:18px; border-bottom:1px solid var(--line); text-decoration:none; color:var(--ink); }
+        .drawer-row:active { background:var(--bg-2); }
+        .drawer-row .dr-main { flex:1; min-width:0; }
+        .drawer-row .dr-title { font-size:17px; font-weight:700; letter-spacing:-.01em; }
+        .drawer-row.active .dr-title { color:var(--primary); }
+        .drawer-row .dr-sub { font-size:13px; color:var(--ink-3); margin-top:2px; }
+        .drawer-row .dr-chev { color:var(--ink-3); flex-shrink:0; }
+        .drawer-foot { padding:16px 18px calc(16px + env(safe-area-inset-bottom)); border-top:1px solid var(--line); }
+        .drawer-loc { display:inline-flex; align-items:center; gap:7px; font-size:13.5px; color:var(--ink-2); font-weight:500; }
+        .drawer-loc svg { color:var(--primary); }
+
         .page { max-width:1600px; margin:0 auto; padding:32px 24px 64px; }
 
         .site-foot { border-top:1px solid var(--line); background:var(--bg-2); }
@@ -53,23 +92,37 @@
         .site-foot-links a { font-size:13px; color:var(--ink-2); text-decoration:none; }
         .site-foot-links a:hover { color:var(--ink); }
         .site-foot-legal { font-size:12px; color:var(--ink-3); width:100%; }
+
+        @media (max-width:860px) {
+            .nav-inner { padding:10px 16px; gap:12px; padding-top:max(10px, env(safe-area-inset-top)); }
+            .nav-links, .nav-right { display:none; }
+            .nav-burger { display:flex; }
+            .page { padding:18px 16px calc(40px + env(safe-area-inset-bottom)); }
+            .site-foot-inner { padding:22px 16px calc(22px + env(safe-area-inset-bottom)); gap:12px; }
+            .site-foot-legal { font-size:11.5px; }
+        }
     </style>
 </head>
 <body>
-<nav class="nav">
+<nav class="nav"
+     x-data="{ menuOpen: false }"
+     x-effect="document.body.style.overflow = menuOpen ? 'hidden' : ''"
+     @keydown.escape.window="menuOpen = false">
     <div class="nav-inner">
         <a href="/" class="brand"><span class="glyph">T</span> TruCars</a>
+
         <div class="nav-links">
             <a href="/" class="active">Shop</a>
             <a href="#">Sell / Trade</a>
             <a href="#">Financing</a>
             <a href="#">How it works</a>
         </div>
+
         <div class="nav-right">
-                <span class="nav-loc">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                    Thornhill, ON
-                </span>
+            <span class="nav-loc">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                Thornhill, ON
+            </span>
             @auth
                 @if (auth()->user()->dealer_id === null)
                     <a href="{{ route('garage') }}" wire:navigate class="nav-acct" title="My Garage">{{ auth()->user()->initials }}</a>
@@ -80,7 +133,85 @@
                 <a href="{{ route('buyer.login') }}" wire:navigate class="nav-signin">Sign in</a>
             @endauth
         </div>
+
+        <button type="button" class="nav-burger" @click="menuOpen = true" aria-label="Open menu">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="21" y2="17"/></svg>
+        </button>
     </div>
+
+    <!-- mobile drawer -->
+    <div class="nav-scrim" x-cloak x-show="menuOpen" x-transition.opacity @click="menuOpen = false"></div>
+
+    <aside class="nav-drawer" :class="{ 'is-open': menuOpen }" x-cloak>
+        <div class="drawer-top">
+            <a href="/" class="brand" @click="menuOpen = false"><span class="glyph">T</span> TruCars</a>
+            <button type="button" class="drawer-close" @click="menuOpen = false" aria-label="Close menu">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
+        </div>
+
+        <div class="drawer-auth">
+            @auth
+                @if (auth()->user()->dealer_id === null)
+                    <a href="{{ route('garage') }}" wire:navigate class="drawer-account" @click="menuOpen = false">
+                        <span class="nav-acct">{{ auth()->user()->initials }}</span>
+                        <span>
+                            <span class="da-name">My Garage</span>
+                            <span class="da-sub">Saved cars, documents &amp; deals</span>
+                        </span>
+                    </a>
+                @else
+                    <a href="{{ route('dealer.reservations') }}" wire:navigate class="drawer-account" @click="menuOpen = false">
+                        <span class="nav-acct">{{ auth()->user()->initials }}</span>
+                        <span>
+                            <span class="da-name">Dealer console</span>
+                            <span class="da-sub">Reservations &amp; leads</span>
+                        </span>
+                    </a>
+                @endif
+            @else
+                <a href="{{ route('buyer.login') }}" wire:navigate class="drawer-signin" @click="menuOpen = false">Sign in</a>
+            @endauth
+        </div>
+
+        <nav class="drawer-rows">
+            <a href="/" wire:navigate class="drawer-row active" @click="menuOpen = false">
+                <span class="dr-main">
+                    <span class="dr-title">Shop cars</span>
+                    <span class="dr-sub">Hundreds of certified cars</span>
+                </span>
+                <svg class="dr-chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
+            </a>
+            <a href="#" class="drawer-row" @click="menuOpen = false">
+                <span class="dr-main">
+                    <span class="dr-title">Sell or trade</span>
+                    <span class="dr-sub">Get a preliminary trade estimate</span>
+                </span>
+                <svg class="dr-chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
+            </a>
+            <a href="#" class="drawer-row" @click="menuOpen = false">
+                <span class="dr-main">
+                    <span class="dr-title">Financing</span>
+                    <span class="dr-sub">Built right into checkout</span>
+                </span>
+                <svg class="dr-chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
+            </a>
+            <a href="#" class="drawer-row" @click="menuOpen = false">
+                <span class="dr-main">
+                    <span class="dr-title">How it works</span>
+                    <span class="dr-sub">Reserve, certify, deliver</span>
+                </span>
+                <svg class="dr-chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
+            </a>
+        </nav>
+
+        <div class="drawer-foot">
+            <span class="drawer-loc">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                Thornhill, ON
+            </span>
+        </div>
+    </aside>
 </nav>
 
 <main class="page">

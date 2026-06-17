@@ -172,6 +172,43 @@ new class extends Component {
     }
 
     /**
+     * How many filters the buyer currently has applied — drives the mobile
+     * "Filters" button badge so they can see at a glance that the sheet is
+     * narrowing results without having to open it.
+     */
+    #[Computed]
+    public function activeFilterCount(): int
+    {
+        $activeCount = 0;
+
+        $activeCount += count($this->selectedMakes);
+        $activeCount += count($this->selectedBodyTypes);
+        $activeCount += count($this->selectedFuels);
+        $activeCount += count($this->selectedDrivetrains);
+        $activeCount += count($this->selectedTransmissions);
+        $activeCount += count($this->selectedColours);
+        $activeCount += count($this->selectedDealers);
+
+        if ($this->priceMin !== null || $this->priceMax !== null) {
+            $activeCount++;
+        }
+
+        if ($this->yearMin !== null || $this->yearMax !== null) {
+            $activeCount++;
+        }
+
+        if ($this->kmMax < 200000) {
+            $activeCount++;
+        }
+
+        if ($this->search !== '') {
+            $activeCount++;
+        }
+
+        return $activeCount;
+    }
+
+    /**
      * @return Collection<int, Vehicle>
      */
     #[Computed]
@@ -218,196 +255,241 @@ new class extends Component {
 };
 ?>
 
-<div>
+<div x-data="{ filtersOpen: false }"
+     x-effect="document.body.style.overflow = filtersOpen ? 'hidden' : ''"
+     @keydown.escape.window="filtersOpen = false">
+
     <header class="srp-head">
-        <h1 class="srp-title">Certified Pre-Owned GTA</h1>
+        <h1 class="srp-title">Certified used cars in the GTA</h1>
         <p class="srp-sub">Every car is inspected, certified, and priced all-in — no as-is cars, ever. HST &amp; licensing extra.</p>
     </header>
 
+    <!-- mobile-only: search + filters + sort toolbar (inventory leads, filters fold into a sheet) -->
+    <div class="srp-mobilebar">
+        <label class="mb-search">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" placeholder="Make, model or keyword" wire:model.live.debounce.300ms="search">
+        </label>
+        <div class="mb-tools">
+            <button type="button" class="mb-btn" @click="filtersOpen = true">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="9" cy="6" r="2.2" fill="var(--card)"/><circle cx="15" cy="12" r="2.2" fill="var(--card)"/><circle cx="9" cy="18" r="2.2" fill="var(--card)"/></svg>
+                <span>Filters</span>
+                @if ($this->activeFilterCount > 0)
+                    <span class="mb-badge">{{ $this->activeFilterCount }}</span>
+                @endif
+            </button>
+            <label class="mb-btn mb-sort">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h12M3 12h8M3 18h5M17 6v12m0 0 3-3m-3 3-3-3"/></svg>
+                <select wire:model.live="sort">
+                    <option value="newest">Newest</option>
+                    <option value="price-low">Price: low to high</option>
+                    <option value="price-high">Price: high to low</option>
+                    <option value="km-low">Mileage: lowest</option>
+                    <option value="year-new">Year: newest</option>
+                </select>
+                <svg class="mb-sort-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+            </label>
+        </div>
+    </div>
+
     <div class="srp-body">
-        <aside class="sidebar">
+        <aside class="sidebar" :class="{ 'is-open': filtersOpen }">
             <div class="sidebar-head">
                 <span>Filters</span>
-                <button class="clear-all" wire:click="clearFilters">Clear all</button>
-            </div>
-
-            <div class="filter-search">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-                <input type="text" placeholder="Make, model or keyword" wire:model.live.debounce.300ms="search">
-            </div>
-
-            <div class="cert-promise">
-                <span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg></span>
-                <div>
-                    <div class="t">Every car is certified</div>
-                    <div class="s">Inspected, warrantied &amp; CARFAX-backed.</div>
+                <div class="sidebar-head-right">
+                    <button class="clear-all" wire:click="clearFilters">Clear all</button>
+                    <button type="button" class="sidebar-close" @click="filtersOpen = false" aria-label="Close filters">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                    </button>
                 </div>
             </div>
 
-            <div class="fgroup" wire:key="group-price" x-data="{ open: false }">
-                <button type="button" class="fgroup-head" x-on:click="open = !open">
-                    Price
-                    <svg class="chev" :class="{ 'chev-closed': !open }" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
-                </button>
-                <div class="fgroup-body" x-show="open" x-cloak>
-                    <div class="frange">
-                        <div class="money-field"><span>$</span><input type="number" placeholder="Min" wire:model.live.debounce.500ms="priceMin"></div>
-                        <span class="dash">–</span>
-                        <div class="money-field"><span>$</span><input type="number" placeholder="Max" wire:model.live.debounce.500ms="priceMax"></div>
-                    </div>
-                    <div class="fpills" style="margin-top:11px;">
-                        <button class="fpill {{ $priceMin === 0 && $priceMax === 20000 ? 'on' : '' }}" wire:click="setPriceRange(0, 20000)">Under $20k</button>
-                        <button class="fpill {{ $priceMin === 20000 && $priceMax === 30000 ? 'on' : '' }}" wire:click="setPriceRange(20000, 30000)">$20–30k</button>
-                        <button class="fpill {{ $priceMin === 30000 && $priceMax === 40000 ? 'on' : '' }}" wire:click="setPriceRange(30000, 40000)">$30–40k</button>
-                        <button class="fpill {{ $priceMin === 40000 && $priceMax === null ? 'on' : '' }}" wire:click="setPriceRange(40000, null)">$40k+</button>
+            <div class="sidebar-scroll">
+                <div class="filter-search">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+                    <input type="text" placeholder="Make, model or keyword" wire:model.live.debounce.300ms="search">
+                </div>
+
+                <div class="cert-promise">
+                    <span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg></span>
+                    <div>
+                        <div class="t">Every car is certified</div>
+                        <div class="s">Inspected, warrantied &amp; CARFAX-backed.</div>
                     </div>
                 </div>
-            </div>
 
-            <div class="fgroup" wire:key="group-make" x-data="{ open: false }">
-                <button type="button" class="fgroup-head" x-on:click="open = !open">
-                    Make
-                    <svg class="chev" :class="{ 'chev-closed': !open }" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
-                </button>
-                <div class="fgroup-body" x-show="open" x-cloak>
-                    @foreach ($this->availableMakes as $makeRow)
-                        <label class="fopt {{ in_array($makeRow->value, $selectedMakes) ? 'on' : '' }}" wire:key="make-{{ $makeRow->value }}">
-                            <input type="checkbox" wire:model.live="selectedMakes" value="{{ $makeRow->value }}" hidden>
-                            <span class="box"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>
-                            <span class="fopt-label">{{ $makeRow->value }}</span>
-                            <span class="count">{{ $makeRow->total }}</span>
-                        </label>
-                    @endforeach
-                </div>
-            </div>
-
-            <div class="fgroup" wire:key="group-body" x-data="{ open: false }">
-                <button type="button" class="fgroup-head" x-on:click="open = !open">
-                    Body type
-                    <svg class="chev" :class="{ 'chev-closed': !open }" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
-                </button>
-                <div class="fgroup-body" x-show="open" x-cloak>
-                    @foreach ($this->availableBodyTypes as $bodyRow)
-                        <label class="fopt {{ in_array($bodyRow->value, $selectedBodyTypes) ? 'on' : '' }}" wire:key="body-{{ $bodyRow->value }}">
-                            <input type="checkbox" wire:model.live="selectedBodyTypes" value="{{ $bodyRow->value }}" hidden>
-                            <span class="box"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>
-                            <span class="fopt-label">{{ $bodyRow->value }}</span>
-                            <span class="count">{{ $bodyRow->total }}</span>
-                        </label>
-                    @endforeach
-                </div>
-            </div>
-
-            <div class="fgroup" wire:key="group-year" x-data="{ open: false }">
-                <button type="button" class="fgroup-head" x-on:click="open = !open">
-                    Year
-                    <svg class="chev" :class="{ 'chev-closed': !open }" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
-                </button>
-                <div class="fgroup-body" x-show="open" x-cloak>
-                    <div class="frange">
-                        <input type="number" class="num-field" placeholder="From" wire:model.live.debounce.500ms="yearMin">
-                        <span class="dash">–</span>
-                        <input type="number" class="num-field" placeholder="To" wire:model.live.debounce.500ms="yearMax">
+                <div class="fgroup" wire:key="group-price" x-data="{ open: false }">
+                    <button type="button" class="fgroup-head" x-on:click="open = !open">
+                        Price
+                        <svg class="chev" :class="{ 'chev-closed': !open }" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div class="fgroup-body" x-show="open" x-cloak>
+                        <div class="frange">
+                            <div class="money-field"><span>$</span><input type="number" placeholder="Min" wire:model.live.debounce.500ms="priceMin"></div>
+                            <span class="dash">–</span>
+                            <div class="money-field"><span>$</span><input type="number" placeholder="Max" wire:model.live.debounce.500ms="priceMax"></div>
+                        </div>
+                        <div class="fpills" style="margin-top:11px;">
+                            <button class="fpill {{ $priceMin === 0 && $priceMax === 20000 ? 'on' : '' }}" wire:click="setPriceRange(0, 20000)">Under $20k</button>
+                            <button class="fpill {{ $priceMin === 20000 && $priceMax === 30000 ? 'on' : '' }}" wire:click="setPriceRange(20000, 30000)">$20–30k</button>
+                            <button class="fpill {{ $priceMin === 30000 && $priceMax === 40000 ? 'on' : '' }}" wire:click="setPriceRange(30000, 40000)">$30–40k</button>
+                            <button class="fpill {{ $priceMin === 40000 && $priceMax === null ? 'on' : '' }}" wire:click="setPriceRange(40000, null)">$40k+</button>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="fgroup" wire:key="group-mileage" x-data="{ open: false }">
-                <button type="button" class="fgroup-head" x-on:click="open = !open">
-                    Mileage
-                    <svg class="chev" :class="{ 'chev-closed': !open }" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
-                </button>
-                <div class="fgroup-body" x-show="open" x-cloak>
-                    <div class="km-readout"><b>{{ $kmMax < 200000 ? number_format($kmMax) : 'Any' }}</b>{{ $kmMax < 200000 ? ' km or less' : '' }}</div>
-                    <input type="range" class="slider" min="20000" max="200000" step="10000" wire:model.live="kmMax">
-                    <div class="slider-ends"><span>20,000</span><span>200,000+</span></div>
+                <div class="fgroup" wire:key="group-make" x-data="{ open: false }">
+                    <button type="button" class="fgroup-head" x-on:click="open = !open">
+                        Make
+                        <svg class="chev" :class="{ 'chev-closed': !open }" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div class="fgroup-body" x-show="open" x-cloak>
+                        @foreach ($this->availableMakes as $makeRow)
+                            <label class="fopt {{ in_array($makeRow->value, $selectedMakes) ? 'on' : '' }}" wire:key="make-{{ $makeRow->value }}">
+                                <input type="checkbox" wire:model.live="selectedMakes" value="{{ $makeRow->value }}" hidden>
+                                <span class="box"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>
+                                <span class="fopt-label">{{ $makeRow->value }}</span>
+                                <span class="count">{{ $makeRow->total }}</span>
+                            </label>
+                        @endforeach
+                    </div>
                 </div>
-            </div>
 
-            <div class="fgroup" wire:key="group-fuel" x-data="{ open: false }">
-                <button type="button" class="fgroup-head" x-on:click="open = !open">
-                    Fuel
-                    <svg class="chev" :class="{ 'chev-closed': !open }" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
-                </button>
-                <div class="fgroup-body" x-show="open" x-cloak>
-                    @foreach ($this->availableFuels as $fuelRow)
-                        <label class="fopt {{ in_array($fuelRow->value, $selectedFuels) ? 'on' : '' }}" wire:key="fuel-{{ $fuelRow->value }}">
-                            <input type="checkbox" wire:model.live="selectedFuels" value="{{ $fuelRow->value }}" hidden>
-                            <span class="box"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>
-                            <span class="fopt-label">{{ $fuelRow->value }}</span>
-                            <span class="count">{{ $fuelRow->total }}</span>
-                        </label>
-                    @endforeach
+                <div class="fgroup" wire:key="group-body" x-data="{ open: false }">
+                    <button type="button" class="fgroup-head" x-on:click="open = !open">
+                        Body type
+                        <svg class="chev" :class="{ 'chev-closed': !open }" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div class="fgroup-body" x-show="open" x-cloak>
+                        @foreach ($this->availableBodyTypes as $bodyRow)
+                            <label class="fopt {{ in_array($bodyRow->value, $selectedBodyTypes) ? 'on' : '' }}" wire:key="body-{{ $bodyRow->value }}">
+                                <input type="checkbox" wire:model.live="selectedBodyTypes" value="{{ $bodyRow->value }}" hidden>
+                                <span class="box"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>
+                                <span class="fopt-label">{{ $bodyRow->value }}</span>
+                                <span class="count">{{ $bodyRow->total }}</span>
+                            </label>
+                        @endforeach
+                    </div>
                 </div>
-            </div>
 
-            <div class="fgroup" wire:key="group-drivetrain" x-data="{ open: false }">
-                <button type="button" class="fgroup-head" x-on:click="open = !open">
-                    Drivetrain
-                    <svg class="chev" :class="{ 'chev-closed': !open }" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
-                </button>
-                <div class="fgroup-body" x-show="open" x-cloak>
-                    @foreach ($this->availableDrivetrains as $drivetrainRow)
-                        <label class="fopt {{ in_array($drivetrainRow->value, $selectedDrivetrains) ? 'on' : '' }}" wire:key="drivetrain-{{ $drivetrainRow->value }}">
-                            <input type="checkbox" wire:model.live="selectedDrivetrains" value="{{ $drivetrainRow->value }}" hidden>
-                            <span class="box"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>
-                            <span class="fopt-label">{{ $drivetrainRow->value }}</span>
-                            <span class="count">{{ $drivetrainRow->total }}</span>
-                        </label>
-                    @endforeach
+                <div class="fgroup" wire:key="group-year" x-data="{ open: false }">
+                    <button type="button" class="fgroup-head" x-on:click="open = !open">
+                        Year
+                        <svg class="chev" :class="{ 'chev-closed': !open }" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div class="fgroup-body" x-show="open" x-cloak>
+                        <div class="frange">
+                            <input type="number" class="num-field" placeholder="From" wire:model.live.debounce.500ms="yearMin">
+                            <span class="dash">–</span>
+                            <input type="number" class="num-field" placeholder="To" wire:model.live.debounce.500ms="yearMax">
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="fgroup" wire:key="group-transmission" x-data="{ open: false }">
-                <button type="button" class="fgroup-head" x-on:click="open = !open">
-                    Transmission
-                    <svg class="chev" :class="{ 'chev-closed': !open }" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
-                </button>
-                <div class="fgroup-body" x-show="open" x-cloak>
-                    @foreach ($this->availableTransmissions as $transmissionRow)
-                        <label class="fopt {{ in_array($transmissionRow->value, $selectedTransmissions) ? 'on' : '' }}" wire:key="transmission-{{ $transmissionRow->value }}">
-                            <input type="checkbox" wire:model.live="selectedTransmissions" value="{{ $transmissionRow->value }}" hidden>
-                            <span class="box"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>
-                            <span class="fopt-label">{{ $transmissionRow->value }}</span>
-                            <span class="count">{{ $transmissionRow->total }}</span>
-                        </label>
-                    @endforeach
+                <div class="fgroup" wire:key="group-mileage" x-data="{ open: false }">
+                    <button type="button" class="fgroup-head" x-on:click="open = !open">
+                        Mileage
+                        <svg class="chev" :class="{ 'chev-closed': !open }" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div class="fgroup-body" x-show="open" x-cloak>
+                        <div class="km-readout"><b>{{ $kmMax < 200000 ? number_format($kmMax) : 'Any' }}</b>{{ $kmMax < 200000 ? ' km or less' : '' }}</div>
+                        <input type="range" class="slider" min="20000" max="200000" step="10000" wire:model.live="kmMax">
+                        <div class="slider-ends"><span>20,000</span><span>200,000+</span></div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="fgroup" wire:key="group-colour" x-data="{ open: false }">
-                <button type="button" class="fgroup-head" x-on:click="open = !open">
-                    Colour
-                    <svg class="chev" :class="{ 'chev-closed': !open }" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
-                </button>
-                <div class="fgroup-body" x-show="open" x-cloak>
-                    <div class="swatch-grid">
-                        @foreach ($this->availableColourFamilies as $family)
-                            <label class="cswatch {{ in_array($family, $selectedColours) ? 'on' : '' }}" wire:key="colour-{{ $family }}">
-                                <input type="checkbox" wire:model.live="selectedColours" value="{{ $family }}" hidden>
-                                <span class="dot" style="background: {{ $this->colourSwatches[$family] }}"></span>
-                                {{ $family }}
+                <div class="fgroup" wire:key="group-fuel" x-data="{ open: false }">
+                    <button type="button" class="fgroup-head" x-on:click="open = !open">
+                        Fuel
+                        <svg class="chev" :class="{ 'chev-closed': !open }" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div class="fgroup-body" x-show="open" x-cloak>
+                        @foreach ($this->availableFuels as $fuelRow)
+                            <label class="fopt {{ in_array($fuelRow->value, $selectedFuels) ? 'on' : '' }}" wire:key="fuel-{{ $fuelRow->value }}">
+                                <input type="checkbox" wire:model.live="selectedFuels" value="{{ $fuelRow->value }}" hidden>
+                                <span class="box"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>
+                                <span class="fopt-label">{{ $fuelRow->value }}</span>
+                                <span class="count">{{ $fuelRow->total }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                </div>
+
+                <div class="fgroup" wire:key="group-drivetrain" x-data="{ open: false }">
+                    <button type="button" class="fgroup-head" x-on:click="open = !open">
+                        Drivetrain
+                        <svg class="chev" :class="{ 'chev-closed': !open }" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div class="fgroup-body" x-show="open" x-cloak>
+                        @foreach ($this->availableDrivetrains as $drivetrainRow)
+                            <label class="fopt {{ in_array($drivetrainRow->value, $selectedDrivetrains) ? 'on' : '' }}" wire:key="drivetrain-{{ $drivetrainRow->value }}">
+                                <input type="checkbox" wire:model.live="selectedDrivetrains" value="{{ $drivetrainRow->value }}" hidden>
+                                <span class="box"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>
+                                <span class="fopt-label">{{ $drivetrainRow->value }}</span>
+                                <span class="count">{{ $drivetrainRow->total }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                </div>
+
+                <div class="fgroup" wire:key="group-transmission" x-data="{ open: false }">
+                    <button type="button" class="fgroup-head" x-on:click="open = !open">
+                        Transmission
+                        <svg class="chev" :class="{ 'chev-closed': !open }" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div class="fgroup-body" x-show="open" x-cloak>
+                        @foreach ($this->availableTransmissions as $transmissionRow)
+                            <label class="fopt {{ in_array($transmissionRow->value, $selectedTransmissions) ? 'on' : '' }}" wire:key="transmission-{{ $transmissionRow->value }}">
+                                <input type="checkbox" wire:model.live="selectedTransmissions" value="{{ $transmissionRow->value }}" hidden>
+                                <span class="box"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>
+                                <span class="fopt-label">{{ $transmissionRow->value }}</span>
+                                <span class="count">{{ $transmissionRow->total }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                </div>
+
+                <div class="fgroup" wire:key="group-colour" x-data="{ open: false }">
+                    <button type="button" class="fgroup-head" x-on:click="open = !open">
+                        Colour
+                        <svg class="chev" :class="{ 'chev-closed': !open }" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div class="fgroup-body" x-show="open" x-cloak>
+                        <div class="swatch-grid">
+                            @foreach ($this->availableColourFamilies as $family)
+                                <label class="cswatch {{ in_array($family, $selectedColours) ? 'on' : '' }}" wire:key="colour-{{ $family }}">
+                                    <input type="checkbox" wire:model.live="selectedColours" value="{{ $family }}" hidden>
+                                    <span class="dot" style="background: {{ $this->colourSwatches[$family] }}"></span>
+                                    {{ $family }}
+                                </label>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+
+                <div class="fgroup" wire:key="group-dealer" x-data="{ open: false }">
+                    <button type="button" class="fgroup-head" x-on:click="open = !open">
+                        Dealer
+                        <svg class="chev" :class="{ 'chev-closed': !open }" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div class="fgroup-body" x-show="open" x-cloak>
+                        @foreach ($this->availableDealers as $dealer)
+                            <label class="fopt {{ in_array($dealer->id, $selectedDealers) ? 'on' : '' }}" wire:key="dealer-{{ $dealer->id }}">
+                                <input type="checkbox" wire:model.live="selectedDealers" value="{{ $dealer->id }}" hidden>
+                                <span class="box"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>
+                                <span class="fopt-label">{{ ucwords(strtolower($dealer->name)) }}</span>
+                                <span class="count">{{ $dealer->vehicles_count }}</span>
                             </label>
                         @endforeach
                     </div>
                 </div>
             </div>
 
-            <div class="fgroup" wire:key="group-dealer" x-data="{ open: false }">
-                <button type="button" class="fgroup-head" x-on:click="open = !open">
-                    Dealer
-                    <svg class="chev" :class="{ 'chev-closed': !open }" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+            <!-- mobile-only sheet footer -->
+            <div class="sidebar-foot">
+                <button type="button" class="sheet-apply" @click="filtersOpen = false">
+                    Show {{ $this->publishedVehicles->count() }} {{ $this->publishedVehicles->count() === 1 ? 'car' : 'cars' }}
                 </button>
-                <div class="fgroup-body" x-show="open" x-cloak>
-                    @foreach ($this->availableDealers as $dealer)
-                        <label class="fopt {{ in_array($dealer->id, $selectedDealers) ? 'on' : '' }}" wire:key="dealer-{{ $dealer->id }}">
-                            <input type="checkbox" wire:model.live="selectedDealers" value="{{ $dealer->id }}" hidden>
-                            <span class="box"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>
-                            <span class="fopt-label">{{ ucwords(strtolower($dealer->name)) }}</span>
-                            <span class="count">{{ $dealer->vehicles_count }}</span>
-                        </label>
-                    @endforeach
-                </div>
             </div>
         </aside>
 
@@ -501,6 +583,9 @@ new class extends Component {
         </div>
     </div>
 
+    <!-- scrim behind the mobile filter sheet -->
+    <div class="srp-scrim" x-cloak x-show="filtersOpen" x-transition.opacity @click="filtersOpen = false"></div>
+
     <style>
         [x-cloak] { display:none !important; }
 
@@ -513,8 +598,11 @@ new class extends Component {
         .sidebar::-webkit-scrollbar { width:6px; } .sidebar::-webkit-scrollbar-thumb { background:var(--line-strong); border-radius:3px; }
         .sidebar-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
         .sidebar-head span { font-size:16px; font-weight:800; letter-spacing:-.01em; }
+        .sidebar-head-right { display:flex; align-items:center; gap:12px; }
         .clear-all { font-size:12.5px; font-weight:700; color:var(--primary); }
         .clear-all:hover { text-decoration:underline; }
+        .sidebar-close { display:none; }
+        .sidebar-foot { display:none; }
         .filter-search { display:flex; align-items:center; gap:9px; background:var(--bg-2); border:1px solid var(--line); border-radius:12px; padding:11px 14px; margin-bottom:14px; }
         .filter-search svg { color:var(--ink-3); flex-shrink:0; }
         .filter-search input { border:none; outline:none; background:transparent; font-size:14px; width:100%; color:var(--ink); }
@@ -572,10 +660,13 @@ new class extends Component {
         .vt-btn.on { background:var(--card); color:var(--primary); box-shadow:var(--shadow-sm); }
         .sort-select { border:1.5px solid var(--line-strong); border-radius:10px; padding:9px 13px; font-size:13.5px; font-weight:600; color:var(--ink); outline:none; background:var(--card); }
 
+        /* mobile toolbar + filter sheet — hidden on desktop */
+        .srp-mobilebar { display:none; }
+        .srp-scrim { display:none; }
+
         .grid { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:24px; }
         @media (max-width:1350px) { .grid { grid-template-columns:repeat(3, minmax(0, 1fr)); } }
         @media (max-width:1000px) { .grid { grid-template-columns:repeat(2, minmax(0, 1fr)); } }
-        @media (max-width:600px)  { .grid { grid-template-columns:1fr; } }
 
         .vcard { position:relative; background:var(--card); border:1px solid var(--line); border-radius:var(--radius-sm); overflow:hidden; transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease; display:flex; flex-direction:column; }
         .vcard:hover { transform:translateY(-4px); box-shadow:var(--shadow-md); border-color:transparent; }
@@ -615,10 +706,78 @@ new class extends Component {
         .grid.is-list .vcard-body { flex:1; }
 
         @media (max-width: 860px) {
-            .srp-body { grid-template-columns:1fr; }
-            .sidebar { position:static; max-height:none; }
+            .srp-head { margin-bottom:16px; }
+            .srp-title { font-size:25px; }
+            .srp-sub { font-size:14px; }
+
+            /* inventory leads; the sidebar lives off-canvas as a sheet */
+            .srp-body { grid-template-columns:1fr; gap:0; }
+
+            .srp-mobilebar { display:flex; flex-direction:column; gap:10px; margin-bottom:16px; }
+            .mb-search { display:flex; align-items:center; gap:9px; background:var(--bg-2); border:1px solid var(--line); border-radius:13px; padding:13px 15px; }
+            .mb-search svg { color:var(--ink-3); flex-shrink:0; }
+            .mb-search input { border:none; outline:none; background:transparent; font-size:15px; width:100%; color:var(--ink); }
+            .mb-tools { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+            .mb-btn { display:flex; align-items:center; justify-content:center; gap:8px; height:46px; border:1.5px solid var(--line-strong); border-radius:13px; background:var(--card); font-size:14.5px; font-weight:700; color:var(--ink); }
+            .mb-btn:active { border-color:var(--primary); }
+            .mb-btn svg { color:var(--ink-2); flex-shrink:0; }
+            .mb-badge { display:inline-grid; place-items:center; min-width:20px; height:20px; padding:0 6px; border-radius:var(--radius-pill); background:var(--primary); color:#fff; font-size:11.5px; font-weight:700; }
+            .mb-sort { position:relative; }
+            .mb-sort select { -webkit-appearance:none; appearance:none; border:none; outline:none; background:transparent; font-family:inherit; font-size:14.5px; font-weight:700; color:var(--ink); padding:0; cursor:pointer; }
+            .mb-sort .mb-sort-chev { color:var(--ink-2); }
+
+            /* off-canvas bottom sheet */
+            .sidebar {
+                position:fixed; left:0; right:0; bottom:0; top:auto;
+                width:auto; max-width:none; max-height:90dvh;
+                z-index:70; padding:0; padding-right:0;
+                background:var(--card);
+                border-top-left-radius:22px; border-top-right-radius:22px;
+                box-shadow:0 -20px 60px rgba(22,24,29,.28);
+                transform:translateY(100%);
+                transition:transform .32s cubic-bezier(.32,.72,0,1);
+                display:flex; flex-direction:column; overflow:hidden;
+            }
+            .sidebar.is-open { transform:translateY(0); }
+            .sidebar-head { padding:18px 18px 14px; margin:0; border-bottom:1px solid var(--line); }
+            .sidebar-head span { font-size:18px; }
+            .sidebar-close { display:grid; place-items:center; width:34px; height:34px; border-radius:50%; background:var(--bg-2); color:var(--ink-2); }
+            .sidebar-scroll { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:4px 18px 12px; }
+            .fopt { padding:10px 0; font-size:15px; }
+            .fopt .box { width:22px; height:22px; }
+            .fgroup-head { padding:17px 0 15px; font-size:15px; }
+            .cswatch { padding:10px 12px; font-size:13.5px; }
+            .fpill { padding:10px 14px; font-size:13.5px; }
+            .sidebar-foot {
+                display:block;
+                padding:14px 18px calc(14px + env(safe-area-inset-bottom));
+                border-top:1px solid var(--line);
+                background:var(--card);
+            }
+            .sheet-apply {
+                width:100%; height:52px;
+                border-radius:var(--radius-pill);
+                background:var(--primary); color:#fff;
+                font-size:15.5px; font-weight:700;
+                box-shadow:var(--shadow-primary);
+            }
+            .sheet-apply:active { background:var(--primary-press); }
+
+            .srp-scrim { display:block; position:fixed; inset:0; background:rgba(22,24,29,.45); backdrop-filter:blur(2px); z-index:65; }
+
+            /* count stays, desktop tools fold away (search + sort live in the toolbar) */
+            .results-bar { margin-bottom:14px; }
+            .results-tools { display:none; }
+
+            /* full-width cards with a taller hero */
+            .grid, .grid.is-list { grid-template-columns:1fr; gap:14px; }
             .grid.is-list .vcard { flex-direction:column; }
-            .grid.is-list .vcard-photo { width:100%; height:178px; }
+            .vcard { border-radius:18px; }
+            .vcard-photo, .grid.is-list .vcard-photo { width:100%; height:210px; }
+            .vcard-fav { width:38px; height:38px; }
+            .vcard-body { padding:16px 17px 17px; }
+            .vcard-title { font-size:16.5px; }
+            .vcard-price { font-size:20px; }
         }
     </style>
 </div>
