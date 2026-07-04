@@ -42,6 +42,24 @@
         .nav-loc svg { color:var(--primary); }
         .nav-acct { width:36px; height:36px; border-radius:50%; background:var(--bg-2); border:1px solid var(--line); display:grid; place-items:center; font-weight:700; font-size:13px; color:var(--ink-2); text-decoration:none; transition:border-color .15s ease, color .15s ease; }
         .nav-acct:hover { border-color:var(--primary); color:var(--primary); }
+
+        /* desktop account dropdown */
+        .acct { position:relative; display:inline-flex; }
+        .acct-badge { position:absolute; top:-4px; right:-4px; min-width:18px; height:18px; padding:0 5px; border-radius:var(--radius-pill); background:var(--primary); color:#fff; font-size:10.5px; font-weight:700; display:grid; place-items:center; border:2px solid var(--bg); box-shadow:var(--shadow-sm); }
+        .acct-menu { position:absolute; top:calc(100% + 10px); right:0; width:252px; background:var(--card); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow-md); padding:8px; z-index:50; }
+        .acct-menu-head { padding:10px 12px 12px; border-bottom:1px solid var(--line); margin-bottom:6px; }
+        .acct-menu-name { display:block; font-size:14.5px; font-weight:700; letter-spacing:-.01em; }
+        .acct-menu-email { display:block; font-size:12.5px; color:var(--ink-3); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .acct-menu form { margin:0; }
+        .acct-menu-item { display:flex; align-items:center; gap:11px; width:100%; padding:10px 12px; border-radius:10px; font-size:14px; font-weight:600; color:var(--ink); text-decoration:none; text-align:left; background:none; transition:background .14s ease, color .14s ease; }
+        .acct-menu-item:hover { background:var(--bg-2); }
+        .acct-menu-item svg { color:var(--ink-3); flex-shrink:0; }
+        .acct-menu-item:hover svg { color:var(--primary); }
+        .acct-menu-label { flex:1; }
+        .acct-menu-count { min-width:20px; height:20px; padding:0 6px; border-radius:var(--radius-pill); background:var(--primary-soft); color:var(--primary); font-size:11.5px; font-weight:700; display:grid; place-items:center; }
+        .acct-menu-sep { height:1px; background:var(--line); margin:6px 4px; }
+        .acct-menu-signout { color:var(--ink-2); }
+        .acct-menu-signout:hover { background:var(--primary-soft); color:var(--primary); }
         .nav-signin { display:inline-flex; align-items:center; font-size:14.5px; font-weight:700; color:var(--ink); text-decoration:none; border:1.5px solid var(--line-strong); border-radius:var(--radius-pill); padding:8px 18px; transition:border-color .15s ease, color .15s ease; }
         .nav-signin:hover { border-color:var(--primary); color:var(--primary); }
 
@@ -79,7 +97,12 @@
         .drawer-row.active .dr-title { color:var(--primary); }
         .drawer-row .dr-sub { font-size:13px; color:var(--ink-3); margin-top:2px; }
         .drawer-row .dr-chev { color:var(--ink-3); flex-shrink:0; }
+        .drawer-row .dr-count { min-width:22px; height:22px; padding:0 7px; border-radius:var(--radius-pill); background:var(--primary); color:#fff; font-size:12px; font-weight:700; display:grid; place-items:center; flex-shrink:0; }
         .drawer-foot { padding:16px 18px calc(16px + env(safe-area-inset-bottom)); border-top:1px solid var(--line); }
+        .drawer-signout-form { margin:0 0 14px; }
+        .drawer-signout { display:flex; align-items:center; justify-content:center; gap:9px; width:100%; font-size:15px; font-weight:700; color:var(--ink); background:var(--bg-2); border-radius:var(--radius-pill); padding:13px 18px; }
+        .drawer-signout svg { color:var(--ink-2); flex-shrink:0; }
+        .drawer-signout:active { background:var(--line); }
         .drawer-loc { display:inline-flex; align-items:center; gap:7px; font-size:13.5px; color:var(--ink-2); font-weight:500; }
         .drawer-loc svg { color:var(--primary); }
 
@@ -125,7 +148,55 @@
             </span>
             @auth
                 @if (auth()->user()->dealer_id === null)
-                    <a href="{{ route('garage') }}" wire:navigate class="nav-acct" title="My Garage">{{ auth()->user()->initials }}</a>
+                    <div class="acct" x-data="{ open: false }" @click.outside="open = false" @keydown.escape.window="open = false">
+                        <button type="button"
+                                class="nav-acct"
+                                @click="open = !open"
+                                :aria-expanded="open"
+                                aria-haspopup="true"
+                                aria-label="Account menu">
+                            {{ auth()->user()->initials }}
+                            <span class="acct-badge"
+                                  x-data="{ count: {{ auth()->user()->favouriteVehiclesCount }} }"
+                                  x-show="count > 0"
+                                  x-text="count"
+                                  x-cloak
+                                  @favourites-updated.window="count = $event.detail.count"></span>
+                        </button>
+
+                        <div class="acct-menu" x-show="open" x-transition x-cloak>
+                            <div class="acct-menu-head">
+                                <span class="acct-menu-name">{{ auth()->user()->firstName }}</span>
+                                <span class="acct-menu-email">{{ auth()->user()->email }}</span>
+                            </div>
+
+                            <a href="{{ route('garage') }}" wire:navigate class="acct-menu-item" @click="open = false">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6"/></svg>
+                                <span class="acct-menu-label">My Garage</span>
+                            </a>
+
+                            <a href="{{ route('saved') }}" wire:navigate class="acct-menu-item" @click="open = false">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.5-1.5 3-3.3 3-5.5A4.5 4.5 0 0 0 12 5 4.5 4.5 0 0 0 2 8.5c0 2.2 1.5 4 3 5.5l7 7Z"/></svg>
+                                <span class="acct-menu-label">Saved cars</span>
+                                <span class="acct-menu-count"
+                                      x-data="{ count: {{ auth()->user()->favouriteVehiclesCount }} }"
+                                      x-show="count > 0"
+                                      x-text="count"
+                                      x-cloak
+                                      @favourites-updated.window="count = $event.detail.count"></span>
+                            </a>
+
+                            <div class="acct-menu-sep"></div>
+
+                            <form method="POST" action="{{ route('buyer.logout') }}">
+                                @csrf
+                                <button type="submit" class="acct-menu-item acct-menu-signout">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+                                    <span class="acct-menu-label">Sign out</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 @else
                     <a href="{{ route('dealer.reservations') }}" wire:navigate class="nav-acct" title="Dealer console">{{ auth()->user()->initials }}</a>
                 @endif
@@ -182,6 +253,23 @@
                 </span>
                 <svg class="dr-chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
             </a>
+            @auth
+                @if (auth()->user()->dealer_id === null)
+                    <a href="{{ route('saved') }}" wire:navigate class="drawer-row" @click="menuOpen = false">
+                        <span class="dr-main">
+                            <span class="dr-title">Saved cars</span>
+                            <span class="dr-sub">Cars you've hearted</span>
+                        </span>
+                        <span class="dr-count"
+                              x-data="{ count: {{ auth()->user()->favouriteVehiclesCount }} }"
+                              x-show="count > 0"
+                              x-text="count"
+                              x-cloak
+                              @favourites-updated.window="count = $event.detail.count"></span>
+                        <svg class="dr-chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
+                    </a>
+                @endif
+            @endauth
             <a href="#" class="drawer-row" @click="menuOpen = false">
                 <span class="dr-main">
                     <span class="dr-title">Sell or trade</span>
@@ -206,6 +294,17 @@
         </nav>
 
         <div class="drawer-foot">
+            @auth
+                @if (auth()->user()->dealer_id === null)
+                    <form method="POST" action="{{ route('buyer.logout') }}" class="drawer-signout-form">
+                        @csrf
+                        <button type="submit" class="drawer-signout">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+                            Sign out
+                        </button>
+                    </form>
+                @endif
+            @endauth
             <span class="drawer-loc">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                 Thornhill, ON

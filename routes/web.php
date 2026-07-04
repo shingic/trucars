@@ -45,7 +45,25 @@ Route::domain($publicDomain)->group(function () {
     Route::livewire('/login', 'pages::buyer-login')->name('buyer.login');
     Route::livewire('/register', 'pages::buyer-register')->name('buyer.register');
 
+    // Sign a buyer out. Mirrors dealer.logout on the staff host — full session
+    // invalidation and token regeneration — but lands back on the marketplace
+    // floor rather than a login screen, since the floor is public.
+    Route::post('/logout', function () {
+        Auth::logout();
+        request()->session()->invalidate();
+        request()->session()->regenerateToken();
+
+        return redirect('/');
+    })->middleware('auth')->name('buyer.logout');
+
     Route::livewire('/verify', 'pages::verify')->name('verify');
+
+    // Saved cars. Carries no middleware and self-guards in mount() like the
+    // other consumer pages — a guest is sent to buyer.login, dealer staff back
+    // to the floor. Deliberately not behind EnsureBuyerEmailIsVerified: a buyer
+    // can save the moment they have an account, so they can view those saves
+    // without clearing verification first.
+    Route::livewire('/saved', 'pages::saved')->name('saved');
 
     Route::livewire('/garage', 'pages::garage')
         ->middleware(EnsureBuyerEmailIsVerified::class)
@@ -89,6 +107,15 @@ Route::domain($staffDomain)->group(function () {
     Route::livewire('/reservations', 'pages::reservations')
         ->middleware(EnsureUserIsStaff::class)
         ->name('dealer.reservations');
+
+    // The committed-deal workspace. A separate /deals/{deal} path (not nested
+    // under /reservations) so it can never collide with the lead detail route
+    // below — leads and deals are different models on different keys. DealerScope
+    // on Deal fences the bound model to the signed-in rooftop, so a deal from
+    // another dealership 404s before the page loads.
+    Route::livewire('/deals/{deal}', 'pages::deal-detail')
+        ->middleware(EnsureUserIsStaff::class)
+        ->name('dealer.deal');
 
     Route::livewire('/reservations/{lead}', 'pages::lead-detail')
         ->middleware(EnsureUserIsStaff::class)

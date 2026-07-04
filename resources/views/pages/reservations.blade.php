@@ -3,7 +3,6 @@
 use App\Models\Deal;
 use App\Models\Lead;
 use Livewire\Component;
-use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Illuminate\Support\Facades\Auth;
 
@@ -72,7 +71,12 @@ new #[Layout('layouts.dealer')] class extends Component {
         }
     }
 
-    #[Computed]
+    /**
+     * The reservations shown under the current stage filter. Plain methods
+     * (not #[Computed]) on purpose: computed properties memoise for the whole
+     * request, which bites when an action mutates state and then reads the
+     * value back. A fresh query per call is the predictable choice here.
+     */
     public function deals()
     {
         return Deal::query()
@@ -85,7 +89,6 @@ new #[Layout('layouts.dealer')] class extends Component {
             ->get();
     }
 
-    #[Computed]
     public function stageCounts(): array
     {
         $countedByStage = Deal::query()
@@ -99,7 +102,6 @@ new #[Layout('layouts.dealer')] class extends Component {
         return array_merge($emptyTally, $countedByStage);
     }
 
-    #[Computed]
     public function leads()
     {
         return Lead::query()
@@ -112,7 +114,6 @@ new #[Layout('layouts.dealer')] class extends Component {
             ->get();
     }
 
-    #[Computed]
     public function statusCounts(): array
     {
         $countedByStatus = Lead::query()
@@ -124,6 +125,22 @@ new #[Layout('layouts.dealer')] class extends Component {
         $emptyTally = ['new' => 0, 'contacted' => 0, 'confirmed' => 0, 'closed' => 0];
 
         return array_merge($emptyTally, $countedByStatus);
+    }
+
+    /**
+     * Hand the view its data computed exactly once per render. This is what
+     * replaces the old #[Computed] properties: the counts and lists are derived
+     * fresh on every render (so a stage advance shows immediately) but only
+     * once, and the template stays free of inline PHP.
+     */
+    public function with(): array
+    {
+        return [
+            'stageCounts'  => $this->stageCounts(),
+            'statusCounts' => $this->statusCounts(),
+            'reservations' => $this->activeTab === 'reservations' ? $this->deals() : collect(),
+            'inquiries'    => $this->activeTab === 'inquiries' ? $this->leads() : collect(),
+        ];
     }
 }; ?>
 
@@ -218,36 +235,36 @@ new #[Layout('layouts.dealer')] class extends Component {
 
     <div class="inbox-tabs">
         <button type="button" class="tab-btn {{ $activeTab === 'reservations' ? 'on' : '' }}" wire:click="switchTab('reservations')">
-            Reservations <span class="tab-n">{{ array_sum($this->stageCounts) }}</span>
+            Reservations <span class="tab-n">{{ array_sum($stageCounts) }}</span>
         </button>
         <button type="button" class="tab-btn {{ $activeTab === 'inquiries' ? 'on' : '' }}" wire:click="switchTab('inquiries')">
-            Inquiries <span class="tab-n">{{ array_sum($this->statusCounts) }}</span>
+            Inquiries <span class="tab-n">{{ array_sum($statusCounts) }}</span>
         </button>
     </div>
 
     @if ($activeTab === 'reservations')
         <div class="inbox-toolbar">
-            <span class="inbox-count">{{ $this->deals->count() }} shown</span>
+            <span class="inbox-count">{{ $reservations->count() }} shown</span>
 
             <div class="stage-filter">
                 <button type="button"
                         class="sf-pill {{ $stageFilter === 'all' ? 'on' : '' }}"
                         wire:click="filterByStage('all')">
-                    All <span class="sf-n">{{ array_sum($this->stageCounts) }}</span>
+                    All <span class="sf-n">{{ array_sum($stageCounts) }}</span>
                 </button>
 
                 @foreach (App\Models\Deal::STAGE_LABELS as $stageKey => $stageLabel)
                     <button type="button"
                             class="sf-pill {{ $stageFilter === $stageKey ? 'on' : '' }}"
                             wire:click="filterByStage('{{ $stageKey }}')">
-                        {{ $stageLabel }} <span class="sf-n">{{ $this->stageCounts[$stageKey] }}</span>
+                        {{ $stageLabel }} <span class="sf-n">{{ $stageCounts[$stageKey] }}</span>
                     </button>
                 @endforeach
             </div>
         </div>
 
         <div class="deal-list">
-            @forelse ($this->deals as $deal)
+            @forelse ($reservations as $deal)
                 <div class="deal-row" wire:key="deal-{{ $deal->id }}">
                     <div class="dr-cust">
                         <span class="dr-name">{{ $deal->customer_full_name }}</span>
@@ -277,6 +294,8 @@ new #[Layout('layouts.dealer')] class extends Component {
                     </div>
 
                     <div class="dr-action">
+                        <a href="{{ route('dealer.deal', $deal) }}" class="open-btn">Open</a>
+
                         @if (isset(App\Models\Deal::NEXT_STAGE[$deal->stage]))
                             <button type="button"
                                     class="advance-btn"
@@ -296,27 +315,27 @@ new #[Layout('layouts.dealer')] class extends Component {
         </div>
     @else
         <div class="inbox-toolbar">
-            <span class="inbox-count">{{ $this->leads->count() }} shown</span>
+            <span class="inbox-count">{{ $inquiries->count() }} shown</span>
 
             <div class="stage-filter">
                 <button type="button"
                         class="sf-pill {{ $statusFilter === 'all' ? 'on' : '' }}"
                         wire:click="filterByStatus('all')">
-                    All <span class="sf-n">{{ array_sum($this->statusCounts) }}</span>
+                    All <span class="sf-n">{{ array_sum($statusCounts) }}</span>
                 </button>
 
                 @foreach ($leadFilterOrder as $statusKey)
                     <button type="button"
                             class="sf-pill {{ $statusFilter === $statusKey ? 'on' : '' }}"
                             wire:click="filterByStatus('{{ $statusKey }}')">
-                        {{ $leadStatusLabels[$statusKey] }} <span class="sf-n">{{ $this->statusCounts[$statusKey] }}</span>
+                        {{ $leadStatusLabels[$statusKey] }} <span class="sf-n">{{ $statusCounts[$statusKey] }}</span>
                     </button>
                 @endforeach
             </div>
         </div>
 
         <div class="deal-list">
-            @forelse ($this->leads as $lead)
+            @forelse ($inquiries as $lead)
                 <div class="deal-row" wire:key="lead-{{ $lead->id }}">
                     <div class="dr-cust">
                         <span class="dr-name">{{ $lead->name }}</span>

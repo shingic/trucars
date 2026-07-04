@@ -252,6 +252,83 @@ new class extends Component {
             ->when($this->sort === 'newest', fn (Builder $query) => $query->latest())
             ->get();
     }
+
+    /**
+     * Save or unsave a car from the buyer's favourites.
+     *
+     * A guest who taps the heart is sent to sign in rather than failing
+     * silently — saving needs an account. Dealer staff never keep favourites,
+     * so their tap is a no-op (the heart is hidden from them in the template
+     * anyway; this is the matching server-side guard). For a signed-in buyer
+     * the pivot is toggled: present rows detach, absent rows attach, in one
+     * atomic call, so a double-tap lands back where it started.
+     *
+     * This is a plain action, not a computed — the saved set is recomputed
+     * fresh on the re-render that follows, which keeps the heart from rendering
+     * one click behind the way memoised reads have bitten us before.
+     */
+    public function toggleFavourite(int $vehicleId): void
+    {
+        $user = auth()->user();
+
+        if ($user !== null && $user->dealer_id !== null) {
+            return;
+        }
+
+        if ($user === null) {
+            $this->redirect(route('buyer.login'));
+
+            return;
+        }
+
+        $user->favouriteVehicles()->toggle($vehicleId);
+
+        $this->dispatch('favourites-updated', count: $user->favouriteVehicles()->count());
+    }
+
+    /**
+     * The vehicle ids this buyer has already saved, as a flat array the card
+     * loop can check against in O(1). Empty for guests and for dealer staff —
+     * neither has a favourites set on this side.
+     *
+     * @return array<int, int>
+     */
+    private function resolveSavedVehicleIds(): array
+    {
+        $user = auth()->user();
+
+        if ($user === null || $user->dealer_id !== null) {
+            return [];
+        }
+
+        return $user->favouriteVehicles()->pluck('vehicles.id')->all();
+    }
+
+    /**
+     * Whether the heart should render at all. Buyers and guests see it (a guest
+     * tap routes to sign in); dealer staff never do.
+     */
+    private function favouritesAreVisible(): bool
+    {
+        $user = auth()->user();
+
+        return $user === null || $user->dealer_id === null;
+    }
+
+    /**
+     * Fresh view data each render. The saved set is resolved here rather than
+     * in a #[Computed] on purpose, matching the convention that drives the
+     * heart from a freshly-read value every time the component renders.
+     *
+     * @return array<string, mixed>
+     */
+    public function with(): array
+    {
+        return [
+            'savedVehicleIds' => $this->resolveSavedVehicleIds(),
+            'favouritesAreVisible' => $this->favouritesAreVisible(),
+        ];
+    }
 };
 ?>
 
@@ -517,65 +594,11 @@ new class extends Component {
 
             <div class="grid" :class="{ 'is-list': view === 'list' }">
                 @forelse ($this->publishedVehicles as $vehicle)
-                    <article class="vcard" wire:key="vehicle-{{ $vehicle->id }}">
-                        <a href="/cars/{{ $vehicle->id }}" wire:navigate class="vcard-link" aria-label="View {{ $vehicle->model_year }} {{ $vehicle->make }} {{ $vehicle->model }}"></a>
-                        <div class="vcard-photo">
-                            <div class="vcard-tags">
-                                @if ($vehicle->is_certified)
-                                    <span class="vcard-badge">
-                                        <span class="dot"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>
-                                        Certified
-                                    </span>
-                                @endif
-                            </div>
-                            <button type="button" class="vcard-fav" x-data="{ saved: false }" :class="{ on: saved }" x-on:click="saved = !saved" title="Save">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.5-1.5 3-3.3 3-5.5A4.5 4.5 0 0 0 12 5 4.5 4.5 0 0 0 2 8.5c0 2.2 1.5 4 3 5.5l7 7Z"/></svg>
-                            </button>
-                            @if ($vehicle->primary_photo_url)
-                                <img src="{{ $vehicle->primary_photo_url }}" alt="{{ $vehicle->model_year }} {{ $vehicle->make }} {{ $vehicle->model }}">
-                            @endif
-                            @if ($vehicle->fuel_type === 'Electric')
-                                <span class="vcard-fuel-tag">⚡ Electric</span>
-                            @endif
-                        </div>
-                        <div class="vcard-body">
-                            <div class="vcard-title">{{ $vehicle->model_year }} {{ $vehicle->make }} {{ $vehicle->model }}</div>
-                            @if ($vehicle->trim)
-                                <div class="vcard-trim">{{ $vehicle->trim }}</div>
-                            @endif
-                            <div class="vcard-priceline">
-                                <span class="vcard-price">{{ $vehicle->display_price }}</span>
-                                <span class="vcard-pay">from <b>${{ number_format($vehicle->estimated_biweekly) }}</b>/bw</span>
-                            </div>
-                            <div class="vcard-spec-row">
-                                <span class="vspec">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg>
-                                    {{ $vehicle->display_kilometres }}
-                                </span>
-                                @if ($vehicle->drivetrain)
-                                    <span class="vspec">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 13h18M5 13 7 6h10l2 7"/></svg>
-                                        {{ $vehicle->drivetrain }}
-                                    </span>
-                                @endif
-                                @if ($vehicle->fuel_type === 'Electric')
-                                    <span class="vspec">Electric</span>
-                                @elseif ($vehicle->transmission)
-                                    <span class="vspec">{{ $vehicle->transmission }}</span>
-                                @endif
-                            </div>
-                            <div class="vcard-foot">
-                                <div class="vcard-dealer">
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6"/></svg>
-                                    <span class="vcard-dealer-name">{{ ucwords(strtolower($vehicle->dealer->name)) }}</span>
-                                    @if ($vehicle->dealer->rating)
-                                        <span class="star">★{{ $vehicle->dealer->rating }}</span>
-                                    @endif
-                                </div>
-                                <span class="vcard-cta">View →</span>
-                            </div>
-                        </div>
-                    </article>
+                    @include('partials.vehicle-card', [
+                        'vehicle' => $vehicle,
+                        'savedVehicleIds' => $savedVehicleIds,
+                        'favouritesAreVisible' => $favouritesAreVisible,
+                    ])
                 @empty
                     <div class="floor-empty">No cars match those filters — try widening them.</div>
                 @endforelse
