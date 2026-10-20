@@ -7,6 +7,7 @@ use App\Support\ShopperLocation;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 
 new class extends Component {
@@ -25,11 +26,16 @@ new class extends Component {
         'Gray' => '#6B7280', 'Blue' => '#2563EB', 'Red' => '#DC2626', 'Green' => '#16A34A',
     ];
 
+    // Search, make, body style and max price are in the URL, so the homepage
+    // (and anyone sharing a link) can open the shop already filtered.
+    #[Url(as: 'q', except: '')]
     public string $search = '';
 
     /** @var array<int, string> */
+    #[Url(as: 'make', except: [])]
     public array $selectedMakes = [];
     /** @var array<int, string> */
+    #[Url(as: 'body', except: [])]
     public array $selectedBodyTypes = [];
     /** @var array<int, string> */
     public array $selectedFuels = [];
@@ -43,6 +49,7 @@ new class extends Component {
     public array $selectedDealers = [];
 
     public ?int $priceMin = null;
+    #[Url(as: 'max')]
     public ?int $priceMax = null;
     public ?int $yearMin = null;
     public ?int $yearMax = null;

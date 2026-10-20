@@ -188,7 +188,7 @@ class OwnerAccessTest extends TestCase
         $this->assertTrue($this->dealer->fresh()->isSuspended());
         auth()->logout();
 
-        $this->get('/')->assertDontSee('Suspended Outlander');
+        $this->get('/shop')->assertDontSee('Suspended Outlander');
         $this->get('/cars/' . $vehicle->id)->assertNotFound();
         $this->actingAs($staff)->get(route('dealer.reservations'))->assertForbidden();
         auth()->logout();

@@ -460,7 +460,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                 </div>
                 <h1>Your garage is waiting</h1>
                 <p>Reserve a car and it lands here, {{ Auth::user()->first_name }} — live deal status, your documents, and a direct line to the dealership, all in one place.</p>
-                <a href="/" class="btn btn-primary btn-lg">Browse cars →</a>
+                <a href="{{ route('shop') }}" class="btn btn-primary btn-lg">Browse cars →</a>
             </div>
 
         @else

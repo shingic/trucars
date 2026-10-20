@@ -137,11 +137,11 @@ class DealerCampaignTest extends TestCase
         $this->cpoVehicle($this->rival, ['model' => 'Eclipse Cross']);
         $campaign = $this->campaign($this->dealer);
 
-        $this->get('/')->assertOk()->assertSee('Outlander')->assertSee('Eclipse Cross');
+        $this->get('/shop')->assertOk()->assertSee('Outlander')->assertSee('Eclipse Cross');
 
         // Even after a campaign visit in the same session, the open floor isn't locked.
         $this->get($campaign->trackableUrl())->assertOk();
-        $this->get('/')->assertOk()->assertSee('Outlander')->assertSee('Eclipse Cross');
+        $this->get('/shop')->assertOk()->assertSee('Outlander')->assertSee('Eclipse Cross');
     }
 
     public function test_a_google_referrer_alone_does_not_scope_the_marketplace(): void
@@ -251,7 +251,7 @@ class DealerCampaignTest extends TestCase
     {
         $vehicle = $this->cpoVehicle($this->dealer);
 
-        $this->get('/')->assertOk();
+        $this->get('/shop')->assertOk();
 
         $this->assertNull($this->deal($vehicle)->campaign_id);
     }

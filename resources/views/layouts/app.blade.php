@@ -132,23 +132,22 @@
     // referred experience keeps every "shop" link on that dealer's storefront
     // so it never leads into competing dealers' stock on the open floor.
     $referredCampaign ??= null;
-    $shopHomeUrl = $referredCampaign?->shopUrl() ?? '/';
+    $shopHomeUrl = $referredCampaign?->shopUrl() ?? route('shop');
+    $brandUrl = $referredCampaign?->shopUrl() ?? route('home');
 @endphp
 <nav class="nav"
      x-data="{ menuOpen: false }"
      x-effect="document.body.style.overflow = menuOpen ? 'hidden' : ''"
      @keydown.escape.window="menuOpen = false">
     <div class="nav-inner">
-        <a href="{{ $shopHomeUrl }}" class="brand"><span class="glyph">T</span> TruCars</a>
+        <a href="{{ $brandUrl }}" wire:navigate class="brand"><span class="glyph">T</span> TruCars</a>
 
         <div class="nav-links">
             @if ($referredCampaign)
                 <a href="{{ $shopHomeUrl }}" class="active">{{ ucwords(strtolower($referredCampaign->dealer->name)) }} · Certified inventory</a>
             @else
-                <a href="/" class="active">Shop</a>
-                <a href="#">Sell / Trade</a>
-                <a href="#">Financing</a>
-                <a href="#">How it works</a>
+                <a href="{{ route('shop') }}" wire:navigate class="{{ request()->routeIs('shop') ? 'active' : '' }}">Shop cars</a>
+                <a href="{{ route('how-it-works') }}" wire:navigate class="{{ request()->routeIs('how-it-works') ? 'active' : '' }}">How it works</a>
             @endif
         </div>
 
@@ -231,7 +230,7 @@
 
     <aside class="nav-drawer" :class="{ 'is-open': menuOpen }" x-cloak>
         <div class="drawer-top">
-            <a href="{{ $shopHomeUrl }}" class="brand" @click="menuOpen = false"><span class="glyph">T</span> TruCars</a>
+            <a href="{{ $brandUrl }}" wire:navigate class="brand" @click="menuOpen = false"><span class="glyph">T</span> TruCars</a>
             <button type="button" class="drawer-close" @click="menuOpen = false" aria-label="Close menu">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg>
             </button>
@@ -262,10 +261,10 @@
         </div>
 
         <nav class="drawer-rows">
-            <a href="{{ $shopHomeUrl }}" wire:navigate class="drawer-row active" @click="menuOpen = false">
+            <a href="{{ $shopHomeUrl }}" wire:navigate class="drawer-row {{ $referredCampaign || request()->routeIs('shop') ? 'active' : '' }}" @click="menuOpen = false">
                 <span class="dr-main">
                     <span class="dr-title">Shop cars</span>
-                    <span class="dr-sub">{{ $referredCampaign ? ucwords(strtolower($referredCampaign->dealer->name)) . ' certified inventory' : 'Hundreds of certified cars' }}</span>
+                    <span class="dr-sub">{{ $referredCampaign ? ucwords(strtolower($referredCampaign->dealer->name)) . ' certified inventory' : 'All-in prices from licensed dealers' }}</span>
                 </span>
                 <svg class="dr-chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
             </a>
@@ -286,27 +285,15 @@
                     </a>
                 @endif
             @endauth
-            <a href="#" class="drawer-row" @click="menuOpen = false">
-                <span class="dr-main">
-                    <span class="dr-title">Sell or trade</span>
-                    <span class="dr-sub">Get a preliminary trade estimate</span>
-                </span>
-                <svg class="dr-chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
-            </a>
-            <a href="#" class="drawer-row" @click="menuOpen = false">
-                <span class="dr-main">
-                    <span class="dr-title">Financing</span>
-                    <span class="dr-sub">Built right into checkout</span>
-                </span>
-                <svg class="dr-chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
-            </a>
-            <a href="#" class="drawer-row" @click="menuOpen = false">
-                <span class="dr-main">
-                    <span class="dr-title">How it works</span>
-                    <span class="dr-sub">Reserve, certify, deliver</span>
-                </span>
-                <svg class="dr-chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
-            </a>
+            @unless ($referredCampaign)
+                <a href="{{ route('how-it-works') }}" wire:navigate class="drawer-row {{ request()->routeIs('how-it-works') ? 'active' : '' }}" @click="menuOpen = false">
+                    <span class="dr-main">
+                        <span class="dr-title">How it works</span>
+                        <span class="dr-sub">Find, hold for $150, confirm, drive</span>
+                    </span>
+                    <svg class="dr-chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
+                </a>
+            @endunless
         </nav>
 
         <div class="drawer-foot">
@@ -337,11 +324,10 @@
     <div class="site-foot-inner">
         <span class="brand"><span class="glyph">T</span> TruCars</span>
         <nav class="site-foot-links">
-            <a href="#">Shop</a>
-            <a href="#">Sell / Trade</a>
-            <a href="#">Financing</a>
-            <a href="#">How it works</a>
-            <a href="#">Contact</a>
+            <a href="{{ route('home') }}" wire:navigate>Home</a>
+            <a href="{{ route('shop') }}" wire:navigate>Shop cars</a>
+            <a href="{{ route('how-it-works') }}" wire:navigate>How it works</a>
+            @guest <a href="{{ route('buyer.login') }}" wire:navigate>Sign in</a> @endguest
         </nav>
         <span class="site-foot-legal">© {{ date('Y') }} TruCars — every price all-in per OMVIC. Ontario.</span>
     </div>

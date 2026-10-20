@@ -38,7 +38,10 @@ $adminDomain  = config('app.admin_domain');
 | a confirmed email, so it runs EnsureBuyerEmailIsVerified.
 */
 Route::domain($publicDomain)->middleware(TreatNonCustomersAsGuests::class)->group(function () {
-    Route::livewire('/', 'pages::marketplace');
+    // Visitors land on the homepage; the shop (search floor) is at /shop.
+    Route::livewire('/', 'pages::home')->name('home');
+    Route::livewire('/shop', 'pages::marketplace')->name('shop');
+    Route::livewire('/how-it-works', 'pages::how-it-works')->name('how-it-works');
 
     Route::livewire('/cars/{vehicle}', 'pages::vehicle');
 

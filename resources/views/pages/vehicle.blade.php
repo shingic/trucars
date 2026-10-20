@@ -56,7 +56,7 @@ new class extends Component {
     {
         return $this->campaignToken !== null
             ? route('campaign.shop', ['token' => $this->campaignToken])
-            : '/';
+            : route('shop');
     }
 
     /**

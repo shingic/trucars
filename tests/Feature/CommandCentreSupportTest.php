@@ -158,7 +158,7 @@ class CommandCentreSupportTest extends TestCase
     {
         $owner = User::factory()->owner()->create();
 
-        $this->get('/')->assertSee('Certified Pre-Owned cars')->assertDontSee('in the GTA');
+        $this->get('/shop')->assertSee('Certified Pre-Owned cars')->assertDontSee('in the GTA');
 
         $this->actingAs($owner);
         Livewire::test('pages::admin-settings')
@@ -168,7 +168,7 @@ class CommandCentreSupportTest extends TestCase
             ->assertHasNoErrors();
         auth()->logout();
 
-        $this->get('/')->assertSee('Certified cars across BC')->assertSee('Closed Monday for Thanksgiving');
+        $this->get('/shop')->assertSee('Certified cars across BC')->assertSee('Closed Monday for Thanksgiving');
 
         $entry = AuditLog::where('action', 'settings.updated')->sole();
         $this->assertSame('Certified Pre-Owned cars', $entry->before['marketplace_headline']);
@@ -261,6 +261,31 @@ class CommandCentreSupportTest extends TestCase
         $this->actingAs($this->staff([Permission::DEALERS_VIEW]))
             ->get(route('admin.dealers.customers', $this->dealer))
             ->assertForbidden();
+    }
+
+    public function test_the_home_dashboard_shows_live_numbers_and_what_needs_attention(): void
+    {
+        $customer = User::factory()->create(['name' => 'Avery Buyer']);
+        $deal = $this->deal($customer);
+        $deal->forceFill(['created_at' => now()->subDays(2)])->save();
+        Dealer::create(['name' => 'Half Set Up Motors', 'city' => 'Toronto']);
+
+        $this->actingAs(User::factory()->owner()->create(['name' => 'Shingi Owner']));
+
+        $this->get(route('admin.home'))
+            ->assertOk()
+            ->assertSee('Shingi')
+            ->assertSee('Reservations')
+            ->assertSee('Deposits held')
+            ->assertSee('$150')
+            ->assertSee('1 reservation not contacted')
+            ->assertSee('1 draft dealer')
+            ->assertSee('Pat Lee')
+            ->assertSee('Top dealers');
+
+        // Support staff get only their panels.
+        $this->actingAs($this->staff(Permission::PRESETS['customer_support']['permissions']));
+        $this->get(route('admin.home'))->assertOk()->assertSee('Latest reservations')->assertDontSee('Top dealers')->assertDontSee('draft dealer');
     }
 
     private function staff(array $permissions, array $attributes = []): User

@@ -92,7 +92,7 @@ new class extends Component {
 
 <div>
     <header class="saved-head">
-        <a href="/" wire:navigate class="saved-back">
+        <a href="{{ route('shop') }}" wire:navigate class="saved-back">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
             Back to shopping
         </a>
@@ -113,7 +113,7 @@ new class extends Component {
             </span>
             <div class="saved-empty-title">No saved cars yet</div>
             <p class="saved-empty-text">Tap the heart on any car and it will be kept here for you — across visits, on any device you sign in from.</p>
-            <a href="/" wire:navigate class="saved-empty-cta">
+            <a href="{{ route('shop') }}" wire:navigate class="saved-empty-cta">
                 Browse certified cars
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
             </a>

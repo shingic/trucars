@@ -72,7 +72,7 @@ class DealerFoundationTest extends TestCase
         $vehicle = $this->vehicle($dealer, ['model' => 'Hidden Outlander']);
         $dealer->update(['status' => Dealer::STATUS_DRAFT]);
 
-        $this->get('/')->assertOk()->assertDontSee('Hidden Outlander');
+        $this->get('/shop')->assertOk()->assertDontSee('Hidden Outlander');
         $this->get('/cars/' . $vehicle->id)->assertNotFound();
     }
 

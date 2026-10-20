@@ -101,7 +101,7 @@
                         <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                             <tr>
                                 <td align="center" bgcolor="#F5631F" style="border-radius:10px;">
-                                    <a href="{{ url('/') }}" target="_blank" style="display:inline-block; padding:14px 30px; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:15px; font-weight:700; color:#FFFFFF; text-decoration:none; border-radius:10px;">
+                                    <a href="{{ route('shop') }}" target="_blank" style="display:inline-block; padding:14px 30px; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:15px; font-weight:700; color:#FFFFFF; text-decoration:none; border-radius:10px;">
                                         Browse certified cars →
                                     </a>
                                 </td>

@@ -53,7 +53,7 @@ class DealerInspectionChecklistTest extends TestCase
         $this->assertDatabaseHas('audit_logs', ['action' => 'inspection_checklist.created', 'target_id' => $this->dealer->id]);
 
         auth()->logout();
-        $this->get('/')->assertSee('Certified');
+        $this->get('/shop')->assertSee('Certified');
         $this->get('/cars/' . $car->id)->assertSee('4-point inspection')->assertSee('Road test');
     }
 

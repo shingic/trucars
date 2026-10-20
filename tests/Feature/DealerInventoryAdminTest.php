@@ -63,7 +63,7 @@ class DealerInventoryAdminTest extends TestCase
         $car = $this->vehicle(['model' => 'Fresh Eclipse Cross', 'is_published' => false]);
         $owner = User::factory()->owner()->create();
 
-        $this->get('/')->assertDontSee('Fresh Eclipse Cross');
+        $this->get('/shop')->assertDontSee('Fresh Eclipse Cross');
 
         $this->actingAs($owner);
         Livewire::test('pages::admin-dealer-inventory', ['dealer' => $this->dealer])
@@ -71,7 +71,7 @@ class DealerInventoryAdminTest extends TestCase
             ->assertSee('Published 1 vehicle.');
         auth()->logout();
 
-        $this->get('/')->assertSee('Fresh Eclipse Cross');
+        $this->get('/shop')->assertSee('Fresh Eclipse Cross');
 
         $entry = AuditLog::where('action', 'inventory.published')->sole();
         $this->assertSame($owner->id, $entry->actor_user_id);

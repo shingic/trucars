@@ -951,7 +951,7 @@ new #[Layout('layouts.checkout')] class extends Component {
      */
     public function exitUrl(): string
     {
-        return CampaignAttribution::campaignForDealer($this->vehicle->dealer_id)?->shopUrl() ?? '/';
+        return CampaignAttribution::campaignForDealer($this->vehicle->dealer_id)?->shopUrl() ?? route('shop');
     }
 
     /* ---------------------------------------------------------------------

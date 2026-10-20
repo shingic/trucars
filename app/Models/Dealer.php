@@ -194,6 +194,12 @@ class Dealer extends Model
     }
 
     /** Trackable links this dealership has created for its own ads and posts. */
+    /** All of this dealer's deals — DealerScope is lifted, the relation already fences them. */
+    public function deals(): HasMany
+    {
+        return $this->hasMany(Deal::class)->withoutGlobalScope(DealerScope::class);
+    }
+
     public function inspectionPrograms(): HasMany
     {
         return $this->hasMany(InspectionProgram::class);

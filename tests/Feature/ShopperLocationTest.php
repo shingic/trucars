@@ -35,7 +35,7 @@ class ShopperLocationTest extends TestCase
 
     public function test_browsing_works_with_no_location_and_shows_dealer_locations(): void
     {
-        $this->get('/')
+        $this->get('/shop')
             ->assertOk()
             ->assertSee('Toronto Corolla')
             ->assertSee('Chilliwack Outlander')
