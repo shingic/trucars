@@ -156,6 +156,11 @@ Route::domain($staffDomain)->group(function () {
         ->middleware(EnsureUserIsStaff::class)
         ->name('dealer.fees');
 
+    // Manufacturer offers to opt in to, and the dealer's own promotions.
+    Route::livewire('/offers', 'pages::dealer-offers')
+        ->middleware(EnsureUserIsStaff::class)
+        ->name('dealer.offers');
+
     Route::livewire('/campaigns', 'pages::campaigns')
         ->middleware(EnsureUserIsStaff::class)
         ->name('dealer.campaigns');
@@ -230,6 +235,20 @@ Route::domain($adminDomain)->group(function () {
         ->middleware([EnsureCommandCentreAccess::class, 'can:dealers.view'])
         ->name('admin.dealers.inspection');
 
+
+    // Offers & Incentives: manufacturer programs and dealer promotion approvals.
+    Route::livewire('/offers', 'pages::admin-offers')
+        ->middleware([EnsureCommandCentreAccess::class, 'can:offers.manage'])
+        ->name('admin.offers');
+
+    Route::livewire('/offers/new', 'pages::admin-offer')
+        ->middleware([EnsureCommandCentreAccess::class, 'can:offers.manage'])
+        ->name('admin.offers.create');
+
+    Route::livewire('/offers/{offer}', 'pages::admin-offer')
+        ->whereNumber('offer')
+        ->middleware([EnsureCommandCentreAccess::class, 'can:offers.manage'])
+        ->name('admin.offers.edit');
 
     Route::livewire('/customers', 'pages::admin-customers')
         ->middleware([EnsureCommandCentreAccess::class, 'can:customers.view'])

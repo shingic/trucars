@@ -33,6 +33,9 @@
     <a href="{{ $vehicleUrl }}" wire:navigate class="vcard-link" aria-label="View {{ $vehicle->model_year }} {{ $vehicle->make }} {{ $vehicle->model }}"></a>
     <div class="vcard-photo">
         <div class="vcard-tags">
+            @if ($featuredOffer = $vehicle->offers()->first())
+                <span class="vcard-offer">{{ $featuredOffer->headline() }}</span>
+            @endif
             @if ($badgeLabel)
                 <span class="vcard-badge">
                     <span class="dot"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>

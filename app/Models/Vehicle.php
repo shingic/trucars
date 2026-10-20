@@ -5,11 +5,13 @@ namespace App\Models;
 
 use App\Models\Scopes\DealerScope;
 use App\Support\VehicleCertification;
+use App\Support\VehicleOffers;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 
 class Vehicle extends Model
@@ -122,13 +124,22 @@ class Vehicle extends Model
      */
     protected function estimatedBiweekly(): Attribute
     {
-        return Attribute::get(function (): int {
-            $taxedPrice = ($this->price_in_cents / 100) * 1.13;
-            $biweeklyRate = 0.075 / 26;
-            $numberOfPayments = 72 / 12 * 26;
+        return Attribute::get(fn (): int => $this->biweeklyAt(7.5, 72));
+    }
 
-            return (int)round($taxedPrice * $biweeklyRate / (1 - (1 + $biweeklyRate) ** -$numberOfPayments));
-        });
+    /** Biweekly payment on the tax-in price at an annual rate over a term, $0 down. */
+    public function biweeklyAt(float $apr, int $termMonths): int
+    {
+        $taxedPrice = ($this->price_in_cents / 100) * 1.13;
+        $numberOfPayments = $termMonths / 12 * 26;
+
+        if ($apr <= 0) {
+            return (int) round($taxedPrice / $numberOfPayments);
+        }
+
+        $biweeklyRate = $apr / 100 / 26;
+
+        return (int) round($taxedPrice * $biweeklyRate / (1 - (1 + $biweeklyRate) ** -$numberOfPayments));
     }
 
     /**
@@ -149,6 +160,12 @@ class Vehicle extends Model
     public function deals(): HasMany
     {
         return $this->hasMany(Deal::class);
+    }
+
+    /** Offers this car qualifies for today — see VehicleOffers. */
+    public function offers(): Collection
+    {
+        return VehicleOffers::for($this);
     }
 
     /** The dealer's inspection checklist this car is shown with, if any. */

@@ -970,6 +970,8 @@ new #[Layout('layouts.checkout')] class extends Component {
                 'warranty_plan'         => $this->warrantyPlan,
                 'extras_interest'       => $this->coverageInterestKeys(),
                 'fees_snapshot'         => $this->dealerFees()->map->toSnapshotEntry()->values()->all(),
+                // Re-checked at the moment of reserving: only offers live and valid right now.
+                'offers_snapshot'       => $this->vehicle->offers()->map->toSnapshot()->values()->all(),
                 'deposit_in_cents'      => 15000,
                 'deposit_status'        => 'held',
                 'first_name'            => $this->firstName,

@@ -67,6 +67,8 @@ class AuditLog extends Model
         return match (true) {
             $target instanceof User   => $target->email,
             $target instanceof Dealer => $target->name,
+            $target instanceof Offer  => $target->make . ' · ' . $target->title,
+            $target instanceof InspectionProgram => $target->name,
             isset($target->email)     => $target->email,
             default                   => null,
         };

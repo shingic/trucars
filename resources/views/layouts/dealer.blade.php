@@ -112,6 +112,11 @@
 
                 <div class="sb-group">
                     <div class="sb-group-label">Marketing</div>
+                    <a href="{{ route('dealer.offers') }}"
+                       class="nav-item {{ request()->routeIs('dealer.offers') ? 'on' : '' }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>
+                        <span class="nav-label">Offers</span>
+                    </a>
                     <a href="{{ route('dealer.campaigns') }}"
                        class="nav-item {{ request()->routeIs('dealer.campaigns') ? 'on' : '' }}">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
@@ -140,6 +145,14 @@
                         <a href="{{ route('admin.dealers') }}" class="nav-item {{ request()->routeIs('admin.dealers*') || request()->routeIs('admin.customers*') ? 'on' : '' }}">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6"/></svg>
                             <span class="nav-label">Dealers</span>
+                        </a>
+                    @endcan
+                    @can('offers.manage')
+                        <a href="{{ route('admin.offers') }}" class="nav-item {{ request()->routeIs('admin.offers*') ? 'on' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>
+                            <span class="nav-label">Offers &amp; Incentives</span>
+                            @php $pendingOffers = \App\Models\Offer::where('status', 'pending')->count(); @endphp
+                            @if ($pendingOffers) <span class="nav-badge">{{ $pendingOffers }}</span> @endif
                         </a>
                     @endcan
                     @can('reservations.view')

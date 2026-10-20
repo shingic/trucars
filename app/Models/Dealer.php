@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * One selling dealership at one physical address. Every vehicle on the dealer
@@ -198,6 +199,12 @@ class Dealer extends Model
     public function deals(): HasMany
     {
         return $this->hasMany(Deal::class)->withoutGlobalScope(DealerScope::class);
+    }
+
+    /** Manufacturer offers this dealer has opted in to. */
+    public function offers(): BelongsToMany
+    {
+        return $this->belongsToMany(Offer::class)->withPivot('opted_in_by_user_id')->withTimestamps();
     }
 
     public function inspectionPrograms(): HasMany

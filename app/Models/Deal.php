@@ -39,7 +39,7 @@ class Deal extends Model
 
     protected $fillable = [
         'dealer_id', 'user_id', 'vehicle_id', 'campaign_id', 'attribution', 'stage',
-        'purchase_type', 'term_months', 'down_payment_in_cents', 'warranty_plan', 'extras_interest', 'fees_snapshot', 'dealer_snapshot',
+        'purchase_type', 'term_months', 'down_payment_in_cents', 'warranty_plan', 'extras_interest', 'fees_snapshot', 'offers_snapshot', 'dealer_snapshot',
         'deposit_in_cents', 'deposit_status',
         'first_name', 'last_name', 'email', 'phone',
         'street_address', 'city', 'province', 'postal_code',
@@ -60,6 +60,7 @@ class Deal extends Model
             'pickup_at'            => 'datetime',
             'extras_interest'      => 'array',
             'fees_snapshot'        => 'array',
+            'offers_snapshot'      => 'array',
             'dealer_snapshot'      => 'array',
         ];
     }

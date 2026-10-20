@@ -70,6 +70,27 @@ new class extends Component {
     protected ?VehicleCertification $resolvedCertification = null;
     protected bool $certificationResolved = false;
 
+    /** Offers this car qualifies for today, resolved once per request. */
+    protected ?\Illuminate\Support\Collection $resolvedOffers = null;
+
+    public function offers(): \Illuminate\Support\Collection
+    {
+        return $this->resolvedOffers ??= $this->vehicle->offers();
+    }
+
+    /**
+     * The payment line: the offer's promotional rate and term when a live
+     * financing offer applies to this car, otherwise the standard estimate.
+     */
+    public function paymentEstimate(): array
+    {
+        $offer = $this->offers()->firstWhere('type', \App\Models\Offer::TYPE_APR);
+
+        return $offer
+            ? ['biweekly' => $this->vehicle->biweeklyAt((float) $offer->apr, (int) $offer->term_months), 'apr' => (float) $offer->apr, 'term' => (int) $offer->term_months, 'offer' => $offer]
+            : ['biweekly' => $this->vehicle->estimated_biweekly, 'apr' => 7.5, 'term' => 72, 'offer' => null];
+    }
+
     public function certification(): ?VehicleCertification
     {
         if (! $this->certificationResolved) {
@@ -514,9 +535,10 @@ new class extends Component {
                         </div>
                         <div class="pd-note">All-in price — freight, PDI, admin &amp; OMVIC fee included. <b>Excludes HST &amp; licensing.</b></div>
                     </div>
+                    @php $payment = $this->paymentEstimate(); @endphp
                     <div class="buy-pay">
-                        <div class="big">${{ number_format($vehicle->estimated_biweekly) }}<span class="per"> /biweekly</span></div>
-                        <div class="sub">est. 72 mo · 7.5% APR · $0 down · before HST &amp; licensing</div>
+                        <div class="big">${{ number_format($payment['biweekly']) }}<span class="per"> /biweekly</span></div>
+                        <div class="sub">est. {{ $payment['term'] }} mo · {{ rtrim(rtrim(number_format($payment['apr'], 2), '0'), '.') }}% APR{{ $payment['offer'] ? ' (offer, on approved credit)' : '' }} · $0 down · before HST &amp; licensing</div>
                     </div>
                     @if ($cert = $this->certification())
                         <div class="buy-cert-mini">
@@ -525,6 +547,16 @@ new class extends Component {
                                 <div class="t">{{ $cert->badge }}</div>
                                 <div class="s">{{ $cert->pointCount }}-point inspection</div>
                             </div>
+                        </div>
+                    @endif
+                    @if ($this->offers()->isNotEmpty())
+                        <div class="buy-offers">
+                            @foreach ($this->offers() as $offer)
+                                @include('partials.offer-card', ['offer' => $offer])
+                            @endforeach
+                            @if ($this->offers()->count() > 1 && $this->offers()->contains(fn ($offer) => ! $offer->combinable))
+                                <div class="offer-stack-note">Offers can’t be combined unless stated — the dealership applies the one you choose.</div>
+                            @endif
                         </div>
                     @endif
                 </div>
@@ -752,6 +784,8 @@ new class extends Component {
         .buy-pay .big { font-size:20px; font-weight:800; letter-spacing:-.02em; }
         .buy-pay .big .per { font-size:13px; color:var(--ink-3); font-weight:500; }
         .buy-pay .sub { font-size:12px; color:var(--ink-2); margin-top:3px; }
+        .buy-offers { margin-top:14px; display:grid; gap:10px; }
+        .offer-stack-note { font-size:11.5px; color:var(--ink-3); }
         .buy-cert-mini { margin-top:14px; display:flex; align-items:center; gap:10px; background:var(--good-soft); border-radius:12px; padding:11px 13px; }
         .buy-cert-mini svg { color:var(--good); flex-shrink:0; }
         .buy-cert-mini .t { font-size:12.5px; font-weight:700; color:#0E5A43; }
