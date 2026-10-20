@@ -87,6 +87,18 @@ new #[Layout('layouts.dealer')] #[Title('Inspection checklist')] class extends C
         $this->statusMessage = '';
     }
 
+    /** The Live/Hidden switch takes effect straight away on a saved checklist. */
+    public function updatedIsActive(): void
+    {
+        Gate::authorize(Permission::DEALERS_MANAGE);
+
+        if ($program = $this->program()) {
+            $program->update(['is_active' => $this->isActive]);
+            AuditLog::record('inspection_checklist.updated', $this->dealer(), null, ['program' => $program->name, 'is_active' => $this->isActive]);
+            $this->statusMessage = $this->isActive ? 'Showing on listings.' : 'Hidden from listings.';
+        }
+    }
+
     public function startNew(): void
     {
         Gate::authorize(Permission::DEALERS_MANAGE);
@@ -274,7 +286,7 @@ new #[Layout('layouts.dealer')] #[Title('Inspection checklist')] class extends C
         .pitem .nm { font-size:13.5px; font-weight:700; line-height:1.25; }
         .pitem .sub { font-size:11.5px; color:var(--ink-3); }
         .pitem.off .nm { color:var(--ink-3); }
-        .padd { margin:4px 8px 8px; display:flex; align-items:center; justify-content:center; gap:7px; padding:9px; border-radius:10px; border:1.5px dashed var(--line-strong); font-size:13px; font-weight:700; color:var(--ink-2); }
+        .padd { margin:4px 8px 8px; width:calc(100% - 16px); display:flex; align-items:center; justify-content:center; gap:7px; padding:9px; border-radius:10px; border:1.5px dashed var(--line-strong); font-size:13px; font-weight:700; color:var(--ink-2); }
         .padd:hover { border-color:var(--primary); color:var(--primary-press); }
         .padd svg { width:15px; height:15px; }
         .pcopy { border-top:1px solid var(--line); padding:12px; display:flex; flex-direction:column; gap:8px; }
@@ -298,7 +310,15 @@ new #[Layout('layouts.dealer')] #[Title('Inspection checklist')] class extends C
         .seg { display:inline-flex; background:var(--bg); border:1px solid var(--line); border-radius:var(--radius-pill); padding:3px; gap:3px; flex-wrap:wrap; }
         .seg button { padding:7px 13px; border-radius:var(--radius-pill); font-size:12.5px; font-weight:700; color:var(--ink-2); }
         .seg button.on { background:var(--card); color:var(--ink); box-shadow:var(--shadow-sm); }
-        .toggle { display:flex; align-items:center; gap:8px; font-size:13.5px; font-weight:600; color:var(--ink-2); cursor:pointer; }
+        .switch { margin-left:auto; display:inline-flex; align-items:center; gap:9px; cursor:pointer; user-select:none; }
+        .switch input { position:absolute; opacity:0; pointer-events:none; }
+        .switch .track { width:40px; height:23px; border-radius:999px; background:var(--line-strong); position:relative; transition:background .15s ease; }
+        .switch .knob { position:absolute; top:3px; left:3px; width:17px; height:17px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.2); transition:transform .15s ease; }
+        .switch input:checked + .track { background:var(--good-ink); }
+        .switch input:checked + .track .knob { transform:translateX(17px); }
+        .switch input:focus-visible + .track { outline:2px solid var(--primary); outline-offset:2px; }
+        .switch-lbl { font-size:13px; font-weight:700; color:var(--ink-2); min-width:44px; }
+        .pempty { padding:16px 16px 6px; font-size:13px; color:var(--ink-3); line-height:1.5; }
         .ed-actions { display:flex; gap:8px; padding:14px 20px; border-bottom:1px solid var(--line); justify-content:flex-end; }
         .btn { display:inline-flex; align-items:center; gap:7px; font-size:13.5px; font-weight:700; border-radius:var(--radius-pill); padding:9px 17px; white-space:nowrap; }
         .btn svg { width:15px; height:15px; }
@@ -352,6 +372,9 @@ new #[Layout('layouts.dealer')] #[Title('Inspection checklist')] class extends C
     <div class="ip">
         {{-- Checklists --}}
         <div class="card">
+            @if ($programs->isEmpty())
+                <div class="pempty">No checklists for {{ $dealer->name }} yet. Its cars show no inspection until you add one.</div>
+            @endif
             <div class="plist">
                 @foreach ($programs as $item)
                     <button type="button" class="pitem {{ $programId === $item->id ? 'on' : '' }} {{ $item->is_active ? '' : 'off' }}" wire:click="select({{ $item->id }})" wire:key="p-{{ $item->id }}">
@@ -399,6 +422,11 @@ new #[Layout('layouts.dealer')] #[Title('Inspection checklist')] class extends C
                         @endif
                     </div>
                 </div>
+                <label class="switch" title="{{ $isActive ? 'Showing on listings' : 'Hidden from listings' }}">
+                    <input type="checkbox" wire:model.live="isActive" @disabled(! $canManage)>
+                    <span class="track"><span class="knob"></span></span>
+                    <span class="switch-lbl">{{ $isActive ? 'Live' : 'Hidden' }}</span>
+                </label>
             </div>
 
             <fieldset @disabled(! $canManage) style="border:none; margin:0; padding:0;">
@@ -417,16 +445,13 @@ new #[Layout('layouts.dealer')] #[Title('Inspection checklist')] class extends C
                             <label for="summary">Short description <span class="opt">(optional)</span></label>
                             <input id="summary" type="text" wire:model="summary" maxlength="600">
                         </div>
-                        <div class="field w4">
+                        <div class="field w6">
                             <label>Show on</label>
                             <div class="seg">
                                 @foreach (InspectionProgram::APPLIES_TO_LABELS as $value => $label)
                                     <button type="button" class="{{ $appliesTo === $value ? 'on' : '' }}" wire:click="$set('appliesTo', '{{ $value }}')">{{ $label }}</button>
                                 @endforeach
                             </div>
-                        </div>
-                        <div class="field w2" style="justify-content:flex-end">
-                            <label class="toggle"><input type="checkbox" wire:model="isActive"> Show on listings</label>
                         </div>
                     </div>
                     @if ($canManage)
