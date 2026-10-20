@@ -86,7 +86,12 @@ class CommandCentreTest extends TestCase
     {
         $this->actingAs($this->staff(Permission::PRESETS['customer_support']['permissions']));
 
-        $this->get(route('admin.home'))->assertOk()->assertSee('Customer support')->assertDontSee('TruCars staff</span>', false);
+        $this->get(route('admin.home'))->assertOk()
+            ->assertSee(route('admin.customers'))
+            ->assertSee(route('admin.reservations'))
+            ->assertDontSee(route('admin.dealers'))
+            ->assertDontSee(route('admin.staff'))
+            ->assertDontSee(route('admin.settings'));
         $this->get(route('admin.dealers'))->assertForbidden();
         $this->get(route('admin.dealers.edit', $this->dealer))->assertForbidden();
         $this->get(route('admin.staff'))->assertForbidden();

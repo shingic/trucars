@@ -419,8 +419,12 @@ new class extends Component {
      @keydown.escape.window="filtersOpen = false">
 
     <header class="srp-head">
-        <h1 class="srp-title">Certified Pre-Owned cars in the GTA</h1>
-        <p class="srp-sub">Every car is inspected, certified, and priced all-in — no as-is cars, ever. HST &amp; licensing extra.</p>
+        {{-- Copy is set in the Command Centre (Platform settings). --}}
+        @if (\App\Support\PlatformSettings::get('marketplace_notice') !== '')
+            <div class="srp-notice" role="status">{{ \App\Support\PlatformSettings::get('marketplace_notice') }}</div>
+        @endif
+        <h1 class="srp-title">{{ \App\Support\PlatformSettings::get('marketplace_headline') }}</h1>
+        <p class="srp-sub">{{ \App\Support\PlatformSettings::get('marketplace_subheadline') }}</p>
 
         <div class="loc-bar"
              x-data="{
@@ -749,6 +753,7 @@ new class extends Component {
         .srp-head { margin-bottom:22px; }
         .srp-title { font-size:30px; font-weight:800; letter-spacing:-.025em; margin:0; }
         .srp-sub { color:var(--ink-2); font-size:15px; margin:6px 0 0; }
+        .srp-notice { background:var(--primary-soft); border:1px solid var(--primary-line); color:var(--ink); border-radius:var(--radius-sm); padding:10px 14px; font-size:14px; font-weight:600; margin-bottom:16px; }
 
         .loc-bar { display:flex; align-items:center; flex-wrap:wrap; gap:8px 10px; margin-top:14px; font-size:13.5px; color:var(--ink-2); }
         .loc-pin { color:var(--primary); flex-shrink:0; }

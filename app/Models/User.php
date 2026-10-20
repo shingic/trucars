@@ -116,6 +116,29 @@ class User extends Authenticatable
     }
 
     /**
+     * Stamp a fresh 6-digit email verification code (valid 10 minutes), reset
+     * the attempt counter, and return the plain code for the email.
+     */
+    public function issueEmailVerificationCode(): string
+    {
+        $code = (string) random_int(100000, 999999);
+
+        $this->forceFill([
+            'email_verification_code'            => $code,
+            'email_verification_code_expires_at' => now()->addMinutes(10),
+            'email_verification_attempts'        => 0,
+        ])->save();
+
+        return $code;
+    }
+
+    /** Internal notes TruCars support keeps on this customer. */
+    public function supportNotes(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(CustomerSupportNote::class, 'customer_user_id')->latest();
+    }
+
+    /**
      * The dealer this user belongs to. Null for marketplace buyers; set for
      * dealer staff (F&I, GM) whose access is scoped by DealerScope.
      */

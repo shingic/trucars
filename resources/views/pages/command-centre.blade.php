@@ -25,7 +25,9 @@ new #[Layout('layouts.dealer')] #[Title('Command Centre')] class extends Compone
             $user->can(Permission::DEALERS_VIEW) ? ['title' => 'Dealers', 'detail' => 'Dealer profiles, addresses and status' . ($user->can(Permission::DEALER_USERS_MANAGE) ? ', and their portal users.' : '.'), 'url' => route('admin.dealers')] : null,
             $user->can(Permission::STAFF_MANAGE) ? ['title' => 'TruCars staff', 'detail' => 'Invite staff and set what each can do.', 'url' => route('admin.staff')] : null,
             $user->can(Permission::AUDIT_VIEW) ? ['title' => 'Audit log', 'detail' => 'Who changed what, and when.', 'url' => route('admin.audit')] : null,
-            $user->can(Permission::CUSTOMERS_VIEW) ? ['title' => 'Customer support', 'detail' => 'Customer look-up and support tools are coming next.', 'url' => null] : null,
+            $user->can(Permission::CUSTOMERS_VIEW) ? ['title' => 'Customers', 'detail' => 'Find a customer and help with their account.', 'url' => route('admin.customers')] : null,
+            $user->can(Permission::RESERVATIONS_VIEW) ? ['title' => 'Reservations', 'detail' => 'Every dealer’s reservations, read-only.', 'url' => route('admin.reservations')] : null,
+            $user->can(Permission::SETTINGS_MANAGE) ? ['title' => 'Platform settings', 'detail' => 'Marketplace headline and site notice.', 'url' => route('admin.settings')] : null,
         ]));
     }
 }; ?>

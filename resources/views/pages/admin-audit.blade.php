@@ -74,6 +74,8 @@ new #[Layout('layouts.dealer')] #[Title('Audit log')] class extends Component {
             <option value="dealer.">Dealers</option>
             <option value="dealer_user.">Dealer users</option>
             <option value="customer.">Customer data</option>
+            <option value="reservation.">Reservations</option>
+            <option value="settings.">Platform settings</option>
             <option value="command_centre.">Sign-ins</option>
         </select>
     </div>

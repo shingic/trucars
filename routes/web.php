@@ -203,6 +203,28 @@ Route::domain($adminDomain)->group(function () {
         ->middleware([EnsureCommandCentreAccess::class, 'can:dealers.view'])
         ->name('admin.dealers.edit');
 
+    Route::livewire('/customers', 'pages::admin-customers')
+        ->middleware([EnsureCommandCentreAccess::class, 'can:customers.view'])
+        ->name('admin.customers');
+
+    Route::livewire('/customers/{customer}', 'pages::admin-customer')
+        ->whereNumber('customer')
+        ->middleware([EnsureCommandCentreAccess::class, 'can:customers.view'])
+        ->name('admin.customers.show');
+
+    Route::livewire('/reservations', 'pages::admin-reservations')
+        ->middleware([EnsureCommandCentreAccess::class, 'can:reservations.view'])
+        ->name('admin.reservations');
+
+    Route::livewire('/reservations/{deal}', 'pages::admin-reservation')
+        ->whereNumber('deal')
+        ->middleware([EnsureCommandCentreAccess::class, 'can:reservations.view'])
+        ->name('admin.reservations.show');
+
+    Route::livewire('/settings', 'pages::admin-settings')
+        ->middleware([EnsureCommandCentreAccess::class, 'can:settings.manage'])
+        ->name('admin.settings');
+
     Route::livewire('/staff', 'pages::admin-staff')
         ->middleware([EnsureCommandCentreAccess::class, 'can:staff.manage'])
         ->name('admin.staff');
