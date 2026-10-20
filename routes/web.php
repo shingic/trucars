@@ -144,6 +144,11 @@ Route::domain($staffDomain)->group(function () {
         ->middleware(EnsureUserIsStaff::class)
         ->name('dealer.lead');
 
+    // The dealership's own inventory — fenced to the signed-in staff member's dealer.
+    Route::livewire('/inventory', 'pages::dealer-inventory')
+        ->middleware(EnsureUserIsStaff::class)
+        ->name('dealer.inventory');
+
     Route::livewire('/fees', 'pages::fees')
         ->middleware(EnsureUserIsStaff::class)
         ->name('dealer.fees');
@@ -202,6 +207,13 @@ Route::domain($adminDomain)->group(function () {
         ->whereNumber('dealer')
         ->middleware([EnsureCommandCentreAccess::class, 'can:dealers.view'])
         ->name('admin.dealers.edit');
+
+    // A dealer's inventory: view with dealers.view; import and publish need
+    // inventory.manage (checked per action in the component).
+    Route::livewire('/dealers/{dealer}/inventory', 'pages::admin-dealer-inventory')
+        ->whereNumber('dealer')
+        ->middleware([EnsureCommandCentreAccess::class, 'can:dealers.view'])
+        ->name('admin.dealers.inventory');
 
     Route::livewire('/customers', 'pages::admin-customers')
         ->middleware([EnsureCommandCentreAccess::class, 'can:customers.view'])

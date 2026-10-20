@@ -13,6 +13,15 @@ class DealerUserSeeder extends Seeder
 {
     public function run(): void
     {
+        // Demo data only: a dealer-staff login with a known password and fake
+        // reservations. Never on a real deployment — seeding production must not
+        // create an account anyone can sign in to with "password".
+        if (! app()->environment(['local', 'testing'])) {
+            $this->command?->warn('Skipping DealerUserSeeder: demo login and sample reservations are local-only.');
+
+            return;
+        }
+
         $dealerWithInventory = Dealer::query()
             ->withCount('vehicles')
             ->orderByDesc('vehicles_count')

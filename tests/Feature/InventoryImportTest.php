@@ -44,6 +44,55 @@ class InventoryImportTest extends TestCase
         $this->assertSame(2, $dealer->vehicles()->count());
     }
 
+    public function test_reimport_keeps_live_cars_live_and_new_cars_unpublished(): void
+    {
+        $this->import([$this->row('ROOF-A', 'VIN00000000000001')]);
+        Vehicle::where('vin', 'VIN00000000000001')->update(['is_published' => true]);
+
+        $this->import([$this->row('ROOF-A', 'VIN00000000000001', ['price' => '27999']), $this->row('ROOF-A', 'VIN00000000000002')])
+            ->expectsOutputToContain('(1 new, unpublished until reviewed)')
+            ->assertSuccessful();
+
+        $this->assertTrue(Vehicle::where('vin', 'VIN00000000000001')->sole()->is_published);
+        $this->assertSame(2799900, Vehicle::where('vin', 'VIN00000000000001')->sole()->price_in_cents);
+        $this->assertFalse(Vehicle::where('vin', 'VIN00000000000002')->sole()->is_published);
+    }
+
+    public function test_cars_no_longer_in_the_feed_are_unpublished_not_deleted(): void
+    {
+        $this->import([$this->row('ROOF-A', 'VIN00000000000001'), $this->row('ROOF-A', 'VIN00000000000002')]);
+        Vehicle::query()->update(['is_published' => true]);
+
+        $this->import([$this->row('ROOF-A', 'VIN00000000000001')])
+            ->expectsOutputToContain('Unpublished (no longer in the feed): 1')
+            ->assertSuccessful();
+
+        $this->assertTrue(Vehicle::where('vin', 'VIN00000000000001')->sole()->is_published);
+        $this->assertFalse(Vehicle::where('vin', 'VIN00000000000002')->sole()->is_published);
+        $this->assertSame(2, Vehicle::count());
+    }
+
+    public function test_keep_missing_leaves_absent_cars_alone(): void
+    {
+        $this->import([$this->row('ROOF-A', 'VIN00000000000001'), $this->row('ROOF-A', 'VIN00000000000002')]);
+        Vehicle::query()->update(['is_published' => true]);
+
+        $this->import([$this->row('ROOF-A', 'VIN00000000000001')], ['--keep-missing' => true])->assertSuccessful();
+
+        $this->assertTrue(Vehicle::where('vin', 'VIN00000000000002')->sole()->is_published);
+    }
+
+    public function test_a_car_in_the_feed_but_skipped_is_not_treated_as_sold(): void
+    {
+        $this->import([$this->row('ROOF-A', 'VIN00000000000001')]);
+        Vehicle::query()->update(['is_published' => true]);
+
+        // Price missing this time — skipped, but the dealer still has it.
+        $this->import([$this->row('ROOF-A', 'VIN00000000000001', ['price' => ''])])->assertSuccessful();
+
+        $this->assertTrue(Vehicle::where('vin', 'VIN00000000000001')->sole()->is_published);
+    }
+
     public function test_two_rooftops_with_the_same_name_stay_separate_dealers(): void
     {
         $this->import([$this->row('ROOF-A', 'VIN00000000000001', ['dealer_name' => 'DOWNTOWN HONDA'])]);

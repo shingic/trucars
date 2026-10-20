@@ -19,6 +19,7 @@ final class Permission
     public const DEALERS_VIEW = 'dealers.view';
     public const DEALERS_MANAGE = 'dealers.manage';
     public const DEALER_USERS_MANAGE = 'dealer_users.manage';
+    public const INVENTORY_MANAGE = 'inventory.manage';
     public const STAFF_MANAGE = 'staff.manage';
     public const SETTINGS_MANAGE = 'settings.manage';
     public const AUDIT_VIEW = 'audit.view';
@@ -31,6 +32,7 @@ final class Permission
         self::DEALERS_VIEW        => ['Dealers — view', 'See dealer profiles and addresses.'],
         self::DEALERS_MANAGE      => ['Dealers — manage', 'Create, edit, activate and suspend dealers.'],
         self::DEALER_USERS_MANAGE => ['Dealer users — manage', 'Invite, suspend and reinstate dealer staff.'],
+        self::INVENTORY_MANAGE    => ['Inventory — manage', 'Import dealer feeds and publish or unpublish vehicles.'],
         self::STAFF_MANAGE        => ['TruCars staff — manage', 'Invite internal staff and change their access.'],
         self::SETTINGS_MANAGE     => ['Platform settings', 'Change platform-wide settings.'],
         self::AUDIT_VIEW          => ['Audit log — view', 'Read the record of sensitive actions.'],
@@ -41,6 +43,7 @@ final class Permission
         self::CUSTOMERS_ASSIST => [self::CUSTOMERS_VIEW],
         self::DEALERS_MANAGE   => [self::DEALERS_VIEW],
         self::DEALER_USERS_MANAGE => [self::DEALERS_VIEW],
+        self::INVENTORY_MANAGE    => [self::DEALERS_VIEW],
     ];
 
     /**

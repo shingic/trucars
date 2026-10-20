@@ -14,7 +14,8 @@ class ImportDealerInventory extends Command
     protected $signature = 'vehicles:import
         {path : Path to the dealer inventory CSV}
         {--dealer= : Link the feed to this existing dealer id (e.g. one created before rooftop ids were stored)}
-        {--new-dealer : Create a new dealer even though one with the same name already exists}';
+        {--new-dealer : Create a new dealer even though one with the same name already exists}
+        {--keep-missing : Leave cars that are no longer in the feed as they are (default: unpublish them)}';
 
     protected $description = 'Import a dealer inventory CSV into the dealers and vehicles tables';
 
@@ -41,10 +42,14 @@ class ImportDealerInventory extends Command
         $dealer = null;
         $feedRooftopId = null;
         $importedCount = 0;
+        $newCount = 0;
         $skippedForNoPrice = 0;
         $skippedForNotACar = 0;
         $skippedForOtherRooftop = 0;
         $skippedForVinOnOtherDealer = 0;
+
+        /** @var array<string, true> every VIN this rooftop's rows mention, imported or not */
+        $vinsInFeed = [];
 
         while (($rowValues = fgetcsv($fileHandle)) !== false) {
             if (count($rowValues) !== count($headerColumns)) {
@@ -72,6 +77,8 @@ class ImportDealerInventory extends Command
                 continue;
             }
 
+            $vinsInFeed[strtoupper(trim($row['vin']))] = true;
+
             // A VIN already on another dealer's lot is left there — never moved
             // between rooftops by an import.
             if (Vehicle::where('vin', $row['vin'])->where('dealer_id', '!=', $dealer->id)->exists()) {
@@ -94,28 +101,36 @@ class ImportDealerInventory extends Command
             $modelYear = (int) $row['year'];
             $kilometres = (int) $row['mileage'];
 
-            $dealer->vehicles()->updateOrCreate(
-                ['vin' => $row['vin']],
-                [
-                    'stock_number'   => $row['stockNumber'] ?: null,
-                    'condition'      => $condition,
-                    'model_year'     => $modelYear,
-                    'make'           => $row['make'],
-                    'model'          => $row['model'],
-                    'trim'           => $row['trim'] ?: null,
-                    'body_type'      => $row['body_type'] ?: null,
-                    'colour'         => $row['exterior_color'] ?: null,
-                    'kilometres'     => $kilometres,
-                    'price_in_cents' => $priceInCents,
-                    'transmission'   => $row['transmission'] ?: null,
-                    'drivetrain'     => $row['drivetrain'] ?: null,
-                    'fuel_type'      => $row['fuel_type'] ?: null,
-                    'photos'         => $this->splitPhotoUrls($row['photos']),
-                    'is_certified'   => $this->looksCertifiable($condition, $modelYear, $kilometres),
-                    'is_manufacturer_certified' => $this->isFlaggedManufacturerCertified($row, $condition, $dealer),
-                    'is_published'   => false, // the doorman decides this later
-                ],
-            );
+            $vehicle = $dealer->vehicles()->firstOrNew(['vin' => $row['vin']]);
+
+            $vehicle->fill([
+                'stock_number'   => $row['stockNumber'] ?: null,
+                'condition'      => $condition,
+                'model_year'     => $modelYear,
+                'make'           => $row['make'],
+                'model'          => $row['model'],
+                'trim'           => $row['trim'] ?: null,
+                'body_type'      => $row['body_type'] ?: null,
+                'colour'         => $row['exterior_color'] ?: null,
+                'kilometres'     => $kilometres,
+                'price_in_cents' => $priceInCents,
+                'transmission'   => $row['transmission'] ?: null,
+                'drivetrain'     => $row['drivetrain'] ?: null,
+                'fuel_type'      => $row['fuel_type'] ?: null,
+                'photos'         => $this->splitPhotoUrls($row['photos']),
+                'is_certified'   => $this->looksCertifiable($condition, $modelYear, $kilometres),
+                'is_manufacturer_certified' => $this->isFlaggedManufacturerCertified($row, $condition, $dealer),
+            ]);
+
+            // New cars arrive unpublished for someone to review. A car that's
+            // already listed stays listed — re-importing a feed must never take a
+            // dealer's live inventory off the marketplace.
+            if (! $vehicle->exists) {
+                $vehicle->is_published = false;
+                $newCount++;
+            }
+
+            $vehicle->save();
 
             $importedCount++;
         }
@@ -134,7 +149,7 @@ class ImportDealerInventory extends Command
             $this->warn('Dealer address incomplete (missing: ' . implode(', ', $dealer->missingAddressFields()) . ') — its vehicles can’t be published until an admin completes it.');
         }
 
-        $this->info("Imported / updated: {$importedCount} vehicles");
+        $this->info("Imported / updated: {$importedCount} vehicles ({$newCount} new, unpublished until reviewed)");
         $this->line("Skipped (no price): {$skippedForNoPrice}");
         $this->line("Skipped (not a car): {$skippedForNotACar}");
         $this->line("Skipped (another rooftop in the file): {$skippedForOtherRooftop}");
@@ -146,7 +161,44 @@ class ImportDealerInventory extends Command
             $this->warn('No franchise brand confirmed for this dealer — none of its stock can qualify as manufacturer CPO.');
         }
 
+        $this->unpublishCarsMissingFromFeed($dealer, $vinsInFeed);
+
         return self::SUCCESS;
+    }
+
+    /**
+     * The feed is the dealer's current stock, so a published car that isn't in
+     * it any more has been sold or pulled — take it off the marketplace.
+     * Unpublished, never deleted: reservations and history stay intact, and
+     * it's back the moment it reappears in a feed and someone republishes it.
+     *
+     * A file with no rows for this rooftop is treated as broken, not as "the
+     * dealer sold everything", so nothing is touched.
+     *
+     * @param  array<string, true>  $vinsInFeed
+     */
+    private function unpublishCarsMissingFromFeed(Dealer $dealer, array $vinsInFeed): void
+    {
+        if ($this->option('keep-missing')) {
+            $this->line('Cars no longer in the feed: left as they are (--keep-missing).');
+
+            return;
+        }
+
+        if ($vinsInFeed === []) {
+            $this->warn('No rows for this rooftop in the file — not unpublishing anything.');
+
+            return;
+        }
+
+        $missing = $dealer->vehicles()
+            ->where('is_published', true)
+            ->get()
+            ->reject(fn (Vehicle $vehicle) => isset($vinsInFeed[strtoupper(trim($vehicle->vin))]));
+
+        $missing->each(fn (Vehicle $vehicle) => $vehicle->update(['is_published' => false]));
+
+        $this->info("Unpublished (no longer in the feed): {$missing->count()}");
     }
 
     /**

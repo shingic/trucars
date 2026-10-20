@@ -366,6 +366,9 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
 
 @push('styles')
     <style>
+        .tabs { display:flex; gap:6px; margin-bottom:18px; border-bottom:1px solid var(--line); }
+        .tabs a { padding:9px 14px; font-size:14px; font-weight:600; color:var(--ink-2); border-bottom:2px solid transparent; margin-bottom:-1px; }
+        .tabs a.on { color:var(--ink); border-bottom-color:var(--primary); }
         .dl-head { margin-bottom:22px; }
         .dl-head h1 { font-size:24px; font-weight:800; letter-spacing:-.02em; margin:0 0 6px; }
         .dl-head p { margin:0; font-size:14px; color:var(--ink-2); max-width:640px; }
@@ -427,6 +430,13 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
 @endpush
 
 <div>
+    @if ($dealerId !== null)
+        <nav class="tabs">
+            <a href="{{ route('admin.dealers.edit', $dealerId) }}" wire:navigate class="on">Profile &amp; users</a>
+            <a href="{{ route('admin.dealers.inventory', $dealerId) }}" wire:navigate>Inventory</a>
+        </nav>
+    @endif
+
     <div class="dl-head">
         <h1>{{ $dealerId === null ? 'New dealer' : $name }}</h1>
         <p>One selling rooftop at one physical address. Every vehicle on this dealer is shown at this address.</p>

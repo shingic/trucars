@@ -60,14 +60,14 @@ new #[Layout('layouts.dealer')] #[Title('Dealers')] class extends Component {
         .ad-alert label { margin-left:auto; display:flex; align-items:center; gap:7px; cursor:pointer; white-space:nowrap; }
 
         .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-sm); overflow:hidden; }
-        .ad-row { display:grid; grid-template-columns:minmax(0, 1.5fr) minmax(0, 1.4fr) 150px 110px 80px; gap:16px; align-items:center; padding:14px 20px; border-bottom:1px solid var(--line); }
+        .ad-row { display:grid; grid-template-columns:minmax(0, 1.5fr) minmax(0, 1.4fr) 150px 110px 90px; gap:16px; align-items:center; padding:14px 20px; border-bottom:1px solid var(--line); }
         .ad-row:last-child { border-bottom:none; }
         .ad-row.head { font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-3); padding-top:11px; padding-bottom:11px; }
         .ad-row .nm { font-size:14px; font-weight:700; }
         .ad-row .meta { font-size:12px; color:var(--ink-3); margin-top:2px; }
         .ad-row .miss { font-size:12px; color:var(--amber); font-weight:600; margin-top:3px; }
         .ad-row .num { font-family:var(--mono); font-size:13.5px; }
-        .ad-row .edit { font-size:13px; font-weight:700; color:var(--primary); text-align:right; }
+        .ad-row .edit { font-size:13px; font-weight:700; color:var(--primary); text-align:right; line-height:1.7; }
         .pill { display:inline-block; font-size:10.5px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; padding:3px 9px; border-radius:var(--radius-pill); }
         .pill-active { background:var(--good-soft); color:var(--good-ink); }
         .pill-draft { background:var(--bg); color:var(--ink-2); border:1px solid var(--line); }
@@ -124,7 +124,10 @@ new #[Layout('layouts.dealer')] #[Title('Dealers')] class extends Component {
                 </div>
                 <div class="meta" style="color:{{ $dealer->timezone ? 'var(--ink-2)' : 'var(--amber)' }}">{{ $dealer->timezone ?? 'Not set' }}</div>
                 <div><span class="pill pill-{{ $dealer->status }}">{{ \App\Models\Dealer::STATUS_LABELS[$dealer->status] ?? $dealer->status }}</span></div>
-                <a href="{{ route('admin.dealers.edit', $dealer) }}" wire:navigate class="edit">@can('dealers.manage') Edit → @else View → @endcan</a>
+                <span class="edit">
+                    <a href="{{ route('admin.dealers.inventory', $dealer) }}" wire:navigate>Inventory</a><br>
+                    <a href="{{ route('admin.dealers.edit', $dealer) }}" wire:navigate>@can('dealers.manage') Edit → @else View → @endcan</a>
+                </span>
             </div>
         @empty
             <div class="ad-empty">{{ $onlyNeedingAddress ? 'Every dealer has a complete address.' : 'No dealers yet.' }}</div>
