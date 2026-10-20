@@ -215,6 +215,12 @@ Route::domain($adminDomain)->group(function () {
         ->middleware([EnsureCommandCentreAccess::class, 'can:dealers.view'])
         ->name('admin.dealers.inventory');
 
+    // A dealer's inspection checklists: view with dealers.view, edit with dealers.manage.
+    Route::livewire('/dealers/{dealer}/inspection', 'pages::admin-dealer-inspection')
+        ->whereNumber('dealer')
+        ->middleware([EnsureCommandCentreAccess::class, 'can:dealers.view'])
+        ->name('admin.dealers.inspection');
+
     Route::livewire('/customers', 'pages::admin-customers')
         ->middleware([EnsureCommandCentreAccess::class, 'can:customers.view'])
         ->name('admin.customers');

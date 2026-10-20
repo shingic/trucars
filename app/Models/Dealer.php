@@ -194,6 +194,11 @@ class Dealer extends Model
     }
 
     /** Trackable links this dealership has created for its own ads and posts. */
+    public function inspectionPrograms(): HasMany
+    {
+        return $this->hasMany(InspectionProgram::class);
+    }
+
     public function campaigns(): HasMany
     {
         return $this->hasMany(Campaign::class);

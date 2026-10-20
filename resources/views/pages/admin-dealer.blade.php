@@ -434,6 +434,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         <nav class="tabs">
             <a href="{{ route('admin.dealers.edit', $dealerId) }}" wire:navigate class="on">Profile &amp; users</a>
             <a href="{{ route('admin.dealers.inventory', $dealerId) }}" wire:navigate>Inventory</a>
+        <a href="{{ route('admin.dealers.inspection', $dealerId) }}" wire:navigate>Inspection</a>
         </nav>
     @endif
 

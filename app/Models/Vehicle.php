@@ -4,6 +4,7 @@
 namespace App\Models;
 
 use App\Models\Scopes\DealerScope;
+use App\Support\VehicleCertification;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -150,6 +151,12 @@ class Vehicle extends Model
         return $this->hasMany(Deal::class);
     }
 
+    /** The dealer's inspection checklist this car is shown with, if any. */
+    public function certification(): ?VehicleCertification
+    {
+        return VehicleCertification::for($this);
+    }
+
     /**
      * The one rule for what a dealer campaign may show: this dealer's own cars
      * that are published, used, flagged manufacturer-certified, of the dealer's
@@ -157,8 +164,8 @@ class Vehicle extends Model
      *
      * A dealer with no confirmed franchise brand has no eligible stock at all —
      * we'd rather show nothing than present generic used cars as factory CPO.
-     * is_certified and CertificationProgram are deliberately not consulted:
-     * both are age/kilometre guesses, not evidence of a manufacturer program.
+     * is_certified is deliberately not consulted: it's an age/kilometre guess,
+     * not evidence of a manufacturer program.
      */
     public function scopeEligibleForDealerCpo(Builder $query, Dealer $dealer): void
     {

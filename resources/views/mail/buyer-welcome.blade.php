@@ -76,7 +76,7 @@
                             <tr>
                                 <td width="28" valign="top" style="font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:15px; font-weight:800; color:#F5631F; line-height:1.5;">1.</td>
                                 <td style="padding-bottom:12px; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:14px; line-height:1.55; color:#3A3F46;">
-                                    Browse certified cars — every listing is certified pre-owned with all-in pricing, so the number you see is the number you pay (before HST &amp; licensing).
+                                    Browse cars with all-in pricing — certified cars list every inspection point, and the number you see is the number you pay (before HST &amp; licensing).
                                 </td>
                             </tr>
                             <tr>

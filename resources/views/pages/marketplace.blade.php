@@ -2,6 +2,7 @@
 
 use App\Models\Dealer;
 use App\Models\Vehicle;
+use App\Support\VehicleCertification;
 use App\Support\ShopperLocation;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -220,7 +221,7 @@ new class extends Component {
     public function publishedVehicles(): Collection
     {
         return Vehicle::query()
-            ->with('dealer')
+            ->with(VehicleCertification::EAGER)
             ->listed()
             ->when($this->search !== '', function (Builder $query) {
                 $keyword = '%' . $this->search . '%';
@@ -524,8 +525,8 @@ new class extends Component {
                 <div class="cert-promise">
                     <span class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg></span>
                     <div>
-                        <div class="t">Every car is certified</div>
-                        <div class="s">Inspected, warrantied &amp; CARFAX-backed.</div>
+                        <div class="t">See what was inspected</div>
+                        <div class="s">Certified cars list every inspection point.</div>
                     </div>
                 </div>
 

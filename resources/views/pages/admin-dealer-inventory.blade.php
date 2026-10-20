@@ -75,6 +75,7 @@ new #[Layout('layouts.dealer')] #[Title('Inventory')] class extends Component {
     <nav class="tabs">
         <a href="{{ route('admin.dealers.edit', $inventoryDealer) }}" wire:navigate>Profile &amp; users</a>
         <a href="{{ route('admin.dealers.inventory', $inventoryDealer) }}" wire:navigate class="on">Inventory</a>
+        <a href="{{ route('admin.dealers.inspection', $inventoryDealer) }}" wire:navigate>Inspection</a>
     </nav>
 
     <div class="iv-head"><h1>{{ $inventoryDealer->name }} — inventory</h1></div>

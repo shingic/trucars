@@ -4,6 +4,7 @@ use App\Models\Campaign;
 use App\Models\Dealer;
 use App\Models\Scopes\DealerScope;
 use App\Models\Vehicle;
+use App\Support\VehicleCertification;
 use App\Support\CampaignAttribution;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -80,7 +81,7 @@ new class extends Component {
     public function vehicles(): Collection
     {
         return Vehicle::query()
-            ->with('dealer')
+            ->with(VehicleCertification::EAGER)
             ->eligibleForDealerCpo($this->dealer)
             ->when(trim($this->search) !== '', function (Builder $query) {
                 $keyword = '%' . trim($this->search) . '%';
@@ -205,7 +206,7 @@ new class extends Component {
                 @include('partials.vehicle-card', [
                     'vehicle' => $vehicle,
                     'vehicleUrl' => route('campaign.vehicle', ['token' => $this->campaign->token, 'vehicle' => $vehicle->id]),
-                    'badgeLabel' => 'Manufacturer CPO',
+                    'badgeLabel' => $vehicle->certification()?->badge ?? 'Manufacturer CPO',
                     'savedVehicleIds' => $savedVehicleIds,
                     'favouritesAreVisible' => $favouritesAreVisible,
                 ])

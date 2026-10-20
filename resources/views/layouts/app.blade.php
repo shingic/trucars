@@ -343,7 +343,7 @@
             <a href="#">How it works</a>
             <a href="#">Contact</a>
         </nav>
-        <span class="site-foot-legal">© {{ date('Y') }} TruCars — every vehicle certified, every price all-in per OMVIC. Ontario.</span>
+        <span class="site-foot-legal">© {{ date('Y') }} TruCars — every price all-in per OMVIC. Ontario.</span>
     </div>
 </footer>
 

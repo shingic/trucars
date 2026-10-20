@@ -14,7 +14,8 @@
     Optional overrides, used by a dealer campaign storefront:
 
       $vehicleUrl           where the card links (defaults to the open-floor /cars/{id})
-      $badgeLabel           the badge text (defaults to "Certified" when is_certified)
+      $badgeLabel           the badge text (defaults to the dealer's inspection program badge
+                            when one applies — see VehicleCertification)
       $distanceKm           straight-line km from the shopper, when their location is known
 
     The car's location is always its dealer's address — vehicles carry none of their own.
@@ -25,7 +26,7 @@
 --}}
 @php
     $vehicleUrl ??= '/cars/' . $vehicle->id;
-    $badgeLabel ??= $vehicle->is_certified ? 'Certified' : null;
+    $badgeLabel ??= $vehicle->certification()?->badge;
     $distanceKm ??= null;
 @endphp
 <article class="vcard" wire:key="vehicle-{{ $vehicle->id }}">

@@ -5,7 +5,7 @@ namespace Tests\Feature;
 use App\Models\Dealer;
 use App\Models\User;
 use App\Models\Vehicle;
-use App\Support\CertificationProgram;
+use App\Models\InspectionProgram;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Livewire\Livewire;
@@ -40,39 +40,64 @@ class VehiclePageTest extends TestCase
         $this->get('/cars/' . $vehicle->id)->assertOk()->assertSee('Outlander');
     }
 
-    public function test_recent_low_km_car_is_not_labelled_manufacturer_certified_without_the_flag(): void
-    {
-        $vehicle = $this->vehicle(['is_certified' => true, 'is_manufacturer_certified' => false]);
-
-        $this->assertSame('Certified Pre-Owned', CertificationProgram::resolveFor($vehicle)?->name);
-
-        $this->get('/cars/' . $vehicle->id)
-            ->assertOk()
-            ->assertDontSee('Manufacturer Certified Pre-Owned')
-            ->assertDontSee('Manufacturer CPO');
-    }
-
-    public function test_manufacturer_flag_shows_the_manufacturer_program(): void
+    public function test_no_checklist_means_no_certification_claim(): void
     {
         $vehicle = $this->vehicle(['is_certified' => true, 'is_manufacturer_certified' => true]);
 
-        $this->assertSame('Manufacturer Certified Pre-Owned', CertificationProgram::resolveFor($vehicle)?->name);
-
-        $this->get('/cars/' . $vehicle->id)->assertOk()->assertSee('Manufacturer Certified Pre-Owned');
+        $this->assertNull($vehicle->certification());
+        $this->get('/cars/' . $vehicle->id)
+            ->assertOk()
+            ->assertDontSee('point inspection')
+            ->assertDontSee('172-point')
+            ->assertDontSee('86-point');
     }
 
-    public function test_uncertified_car_gets_no_program(): void
+    public function test_the_dealers_checklist_shows_its_point_count_and_points(): void
     {
-        $vehicle = $this->vehicle(['is_certified' => false, 'is_manufacturer_certified' => false]);
+        $this->checklist(['name' => 'Chilliwack Certified', 'summary' => 'Checked by our own technicians.'], [
+            ['Brakes', 'Front pad thickness'], ['Brakes', 'Rear rotors'], ['Tires', 'Tread depth'],
+        ]);
+        $vehicle = $this->vehicle();
 
-        $this->assertNull(CertificationProgram::resolveFor($vehicle));
+        $this->assertSame(3, $vehicle->certification()->pointCount);
+        $this->get('/cars/' . $vehicle->id)
+            ->assertOk()
+            ->assertSee('Chilliwack Certified')
+            ->assertSee('3-point inspection')
+            ->assertSee('Checked by our own technicians.')
+            ->assertSee('Front pad thickness')
+            ->assertSee('Tread depth');
     }
 
-    public function test_dealer_certified_program_still_respects_its_age_and_kilometre_limits(): void
+    public function test_a_feed_certified_checklist_only_shows_on_cars_the_feed_marks_certified(): void
     {
-        $vehicle = $this->vehicle(['is_certified' => true, 'kilometres' => 200000]);
+        $this->checklist(['name' => 'Diamond Certified', 'applies_to' => InspectionProgram::APPLIES_TO_FEED_CERTIFIED], [['Engine', 'Oil leaks']]);
 
-        $this->assertNull(CertificationProgram::resolveFor($vehicle));
+        $this->assertSame('Diamond Certified', $this->vehicle(['is_manufacturer_certified' => true])->certification()?->name);
+        $this->assertNull($this->vehicle(['is_manufacturer_certified' => false])->certification());
+    }
+
+    public function test_hidden_or_empty_checklists_and_new_cars_show_nothing(): void
+    {
+        $this->checklist(['name' => 'Hidden', 'is_active' => false], [['Engine', 'Oil leaks']]);
+        $this->checklist(['name' => 'Empty'], []);
+
+        $this->assertNull($this->vehicle()->certification());
+
+        $this->checklist(['name' => 'Live'], [['Engine', 'Oil leaks']]);
+        $this->assertNull($this->vehicle(['condition' => 'NEW'])->certification());
+        $this->assertSame('Live', $this->vehicle()->certification()?->name);
+    }
+
+    private function checklist(array $attributes, array $points): InspectionProgram
+    {
+        $program = $this->dealer->inspectionPrograms()->create($attributes);
+
+        foreach ($points as $position => [$section, $label]) {
+            $program->points()->create(['position' => $position + 1, 'section' => $section, 'label' => $label]);
+        }
+
+        return $program;
     }
 
     public function test_saved_cars_hides_vehicles_that_were_unpublished(): void

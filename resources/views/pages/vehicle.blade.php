@@ -3,7 +3,7 @@
 use App\Models\Campaign;
 use App\Models\Vehicle;
 use App\Support\CampaignAttribution;
-use App\Support\CertificationProgram;
+use App\Support\VehicleCertification;
 use Illuminate\Support\Facades\View;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -60,66 +60,25 @@ new class extends Component {
     }
 
     /**
-     * The resolved certification program for this vehicle, or null when the
-     * vehicle isn't certified.
+     * The dealer's inspection checklist this car is shown with, or null — then
+     * the page makes no certification claim. See VehicleCertification.
      *
      * Resolved once per request and cached on the component so the template can
-     * read it freely without re-running resolveFor() on every reference. This
-     * is a plain method (not a #[Computed]) on purpose — computed memoisation
-     * has bitten us before with one-step-behind rendering.
+     * read it freely. This is a plain method (not a #[Computed]) on purpose —
+     * computed memoisation has bitten us before with one-step-behind rendering.
      */
-    protected ?CertificationProgram $resolvedCertification = null;
+    protected ?VehicleCertification $resolvedCertification = null;
     protected bool $certificationResolved = false;
 
-    public function certification(): ?CertificationProgram
+    public function certification(): ?VehicleCertification
     {
         if (! $this->certificationResolved) {
-            $this->resolvedCertification = CertificationProgram::resolveFor($this->vehicle);
+            $this->vehicle->loadMissing(VehicleCertification::EAGER);
+            $this->resolvedCertification = $this->vehicle->certification();
             $this->certificationResolved = true;
         }
 
         return $this->resolvedCertification;
-    }
-
-    /**
-     * The certification benefits minus the powertrain warranty.
-     *
-     * The warranty is promoted to its own hero strip at the top of the card, so
-     * we drop it here to avoid showing it twice. Removing one tile also makes
-     * the remaining benefit count even, which keeps the two-column grid full and
-     * kills the orphaned empty cell the old layout left behind.
-     *
-     * Maintenance-type perks (oil changes and the like) are nudged to the end so
-     * trust signals such as the CARFAX history read ahead of them — a buyer
-     * weighs accident history above free oil changes. The durable home for this
-     * order is the benefits array in CertificationProgram itself; this is a
-     * display-side guard so the card reads right regardless of source order.
-     */
-    public function supportingBenefits(): array
-    {
-        $certification = $this->certification();
-
-        if (! $certification) {
-            return [];
-        }
-
-        $maintenanceKeywords = ['oil', 'maintenance'];
-
-        return collect($certification->benefits)
-            ->reject(fn ($benefit) => str_contains(strtolower($benefit['title']), 'warranty'))
-            ->sortBy(function ($benefit) use ($maintenanceKeywords) {
-                $title = strtolower($benefit['title']);
-
-                foreach ($maintenanceKeywords as $keyword) {
-                    if (str_contains($title, $keyword)) {
-                        return 1;
-                    }
-                }
-
-                return 0;
-            })
-            ->values()
-            ->all();
     }
 
     /**
@@ -159,8 +118,8 @@ new class extends Component {
     }
 
     /**
-     * Condition markers, sourced from the signed TruCert inspection for this
-     * exact VIN. None are wired yet, so the hero renders clean. The shape, for
+     * Condition markers pinned to positions on the gallery photos. None are
+     * wired yet, so the hero renders clean. The shape, for
      * when the inspection layer supplies them:
      *
      *   ['photoIndex' => 0, 'x' => 62, 'y' => 37, 'title' => 'Wheel scuff']
@@ -308,7 +267,7 @@ new class extends Component {
                     @if ($this->certification())
                         <span class="gallery-badge">
                             <span class="dot"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>
-                            {{ $this->certification()->shortName }}
+                            {{ $this->certification()->badge }}
                         </span>
                     @endif
 
@@ -473,54 +432,37 @@ new class extends Component {
                 </div>
             </div>
 
-            @if ($this->certification())
+            @if ($cert = $this->certification())
                 <div class="vdp-section" style="border-top:none; padding-top:4px;">
                     <div class="cert-block" x-data="{ certDetails: false }" :class="{ 'is-expanded': certDetails }">
                         <div class="cert-head">
                             <div class="cert-shield"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M12 3 4 6v6c0 5 8 9 8 9s8-4 8-9V6Z"/><path d="m9 12 2 2 4-4"/></svg></div>
                             <div class="cert-headtext">
-                                <h3>{{ $this->certification()->name }}</h3>
-                                <div class="cert-by">Certified by {{ ucwords(strtolower($vehicle->dealer->name)) }}</div>
-                                <p>{{ $this->certification()->tagline }} Inspected and certified by {{ ucwords(strtolower($vehicle->dealer->name)) }}'s factory-trained technicians.</p>
+                                <h3>{{ $cert->name }}</h3>
+                                <div class="cert-by">{{ $cert->pointCount }}-point inspection · {{ ucwords(strtolower($vehicle->dealer->name)) }}</div>
+                                @if ($cert->summary) <p>{{ $cert->summary }}</p> @endif
                             </div>
                         </div>
 
-                        <div class="cert-warranty">
-                            <span class="cw-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 4 6v6c0 5 8 9 8 9s8-4 8-9V6Z"/><path d="m9 12 2 2 4-4"/></svg></span>
-                            <div class="cw-body">
-                                <div class="cw-value">{{ $this->certification()->warrantyMonths }} months <span>/</span> {{ number_format($this->certification()->warrantyKilometres) }} km</div>
-                                <div class="cw-label">Manufacturer-backed powertrain warranty, from the in-service date</div>
-                                <div class="cw-stat">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M20 6 9 17l-5-5"/></svg>
-                                    {{ $this->certification()->inspectionPoints }}-point inspection
-                                </div>
-                            </div>
-                        </div>
-
+                        {{-- Every point on the dealer's checklist, by section. --}}
                         <div class="cert-benefits">
-                            @foreach ($this->supportingBenefits() as $benefit)
+                            @foreach ($cert->sections as $section => $points)
                                 <div class="cben">
-                                    <span class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="{{ $benefit['iconPath'] }}"/></svg></span>
+                                    <span class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg></span>
                                     <div>
-                                        <div class="t">{{ $benefit['title'] }}</div>
-                                        <div class="s">{{ $benefit['detail'] }}</div>
+                                        <div class="t">{{ $section }} <span class="cben-count">{{ count($points) }}</span></div>
+                                        <ul class="s cben-points">
+                                            @foreach ($points as $point)<li>{{ $point }}</li>@endforeach
+                                        </ul>
                                     </div>
                                 </div>
                             @endforeach
                         </div>
 
                         <button type="button" class="cert-more" x-on:click="certDetails = ! certDetails">
-                            <span x-text="certDetails ? 'Hide details' : 'What\'s covered'">What's covered</span>
+                            <span x-text="certDetails ? 'Hide points' : 'See all {{ $cert->pointCount }} points'">See all {{ $cert->pointCount }} points</span>
                             <svg class="cert-more-chev" :class="{ 'is-up': certDetails }" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 9 6 6 6-6"/></svg>
                         </button>
-
-                        <div class="cert-foot">
-                            <div class="cert-links">
-                                <span class="cert-link"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1Z"/></svg> {{ $this->certification()->inspectionPoints }}-point inspection report</span>
-                                <span class="cert-link"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9 9 0 0 0-6.4 2.6L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg> CARFAX history report</span>
-                            </div>
-                            <span class="cert-note">Signed inspection &amp; CARFAX are attached to this exact VIN.</span>
-                        </div>
                     </div>
                 </div>
             @endif
@@ -576,12 +518,12 @@ new class extends Component {
                         <div class="big">${{ number_format($vehicle->estimated_biweekly) }}<span class="per"> /biweekly</span></div>
                         <div class="sub">est. 72 mo · 7.5% APR · $0 down · before HST &amp; licensing</div>
                     </div>
-                    @if ($this->certification())
+                    @if ($cert = $this->certification())
                         <div class="buy-cert-mini">
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 4 6v6c0 5 8 9 8 9s8-4 8-9V6Z"/></svg>
                             <div>
-                                <div class="t">{{ $this->certification()->shortName }}</div>
-                                <div class="s">{{ $this->certification()->inspectionPoints }}-pt inspection · {{ $this->certification()->warrantyMonths }}-mo warranty</div>
+                                <div class="t">{{ $cert->badge }}</div>
+                                <div class="s">{{ $cert->pointCount }}-point inspection</div>
                             </div>
                         </div>
                     @endif
@@ -765,6 +707,9 @@ new class extends Component {
 
         /* Supporting benefits — quieter than the hero. Neutral icon tiles keep
            the green load down; this is no longer a grid of green boxes. */
+        .cben-count { font-family:var(--mono); font-size:11px; font-weight:700; color:var(--ink-3); background:var(--bg); border-radius:999px; padding:1px 7px; margin-left:4px; }
+        .cben-points { margin:4px 0 0; padding-left:16px; line-height:1.55; }
+        .cert-block:not(.is-expanded) .cben-points li:nth-child(n+4) { display:none; }
         .cert-benefits { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--line); border-top:1px solid var(--line); }
         .cben { background:var(--card); padding:15px 24px; display:flex; gap:12px; align-items:flex-start; }
         .cben .ic { width:30px; height:30px; border-radius:9px; background:var(--bg-2); color:var(--ink-2); display:grid; place-items:center; flex-shrink:0; }
@@ -777,7 +722,7 @@ new class extends Component {
         .cert-link svg { color:var(--good); }
         .cert-note { font-size:11.5px; color:var(--ink-3); text-align:center; }
 
-        .cert-more { display:none; align-items:center; justify-content:center; gap:7px; width:100%; padding:13px; background:var(--card); border-top:1px solid var(--line); font-size:13.5px; font-weight:700; color:var(--good); }
+        .cert-more { display:flex; align-items:center; justify-content:center; gap:7px; width:100%; padding:13px; background:var(--card); border-top:1px solid var(--line); font-size:13.5px; font-weight:700; color:var(--good); }
         .cert-more-chev { transition:transform .2s ease; }
         .cert-more-chev.is-up { transform:rotate(180deg); }
 

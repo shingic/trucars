@@ -66,7 +66,7 @@ new class extends Component {
 
         // A saved car that's no longer listed (sold, pulled, dealer back in draft)
         // has no page to open, so it drops off rather than linking to a 404.
-        return $user->favouriteVehicles()->listed()->with('dealer')->get();
+        return $user->favouriteVehicles()->listed()->with(\App\Support\VehicleCertification::EAGER)->get();
     }
 
     /**

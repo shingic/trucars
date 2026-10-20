@@ -161,6 +161,10 @@ new #[Layout('layouts.dealer')] #[Title('Dealers')] class extends Component {
                             Inventory
                             <span class="count">{{ $dealer->vehicles_count }}</span>
                         </a>
+                        <a role="menuitem" href="{{ route('admin.dealers.inspection', $dealer) }}" wire:navigate>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1Z"/><path d="m9 14 2 2 4-4"/></svg>
+                            Inspection checklist
+                        </a>
                         <a role="menuitem" href="{{ route('admin.dealers.edit', $dealer) }}#users">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                             Dealer users
