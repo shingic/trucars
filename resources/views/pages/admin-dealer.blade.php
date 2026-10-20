@@ -610,7 +610,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
     </form>
 
     @if ($dealerId !== null && $this->canManageUsers())
-        <div class="card dl-users">
+        <div class="card dl-users" id="users">
             <div class="card-head">
                 <div class="ttl">Dealer users</div>
                 <div class="sub">Staff who can sign in to this dealer's portal. They see this dealer's data only. New staff join by invitation and set their own password.</div>

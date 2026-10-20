@@ -59,15 +59,30 @@ new #[Layout('layouts.dealer')] #[Title('Dealers')] class extends Component {
         .ad-alert { display:flex; align-items:center; gap:10px; background:var(--amber-soft); color:#7A4E0A; border:1px solid rgba(216,150,40,.3); border-radius:var(--radius-sm); padding:11px 15px; font-size:13.5px; font-weight:600; margin-bottom:20px; }
         .ad-alert label { margin-left:auto; display:flex; align-items:center; gap:7px; cursor:pointer; white-space:nowrap; }
 
-        .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-sm); overflow:hidden; }
-        .ad-row { display:grid; grid-template-columns:minmax(0, 1.5fr) minmax(0, 1.4fr) 150px 110px 90px; gap:16px; align-items:center; padding:14px 20px; border-bottom:1px solid var(--line); }
+        .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-sm); }
+        .ad-row { display:grid; grid-template-columns:minmax(0, 1.5fr) minmax(0, 1.4fr) 150px 110px 44px; gap:16px; align-items:center; padding:14px 20px; border-bottom:1px solid var(--line); }
         .ad-row:last-child { border-bottom:none; }
         .ad-row.head { font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-3); padding-top:11px; padding-bottom:11px; }
         .ad-row .nm { font-size:14px; font-weight:700; }
         .ad-row .meta { font-size:12px; color:var(--ink-3); margin-top:2px; }
         .ad-row .miss { font-size:12px; color:var(--amber); font-weight:600; margin-top:3px; }
         .ad-row .num { font-family:var(--mono); font-size:13.5px; }
-        .ad-row .edit { font-size:13px; font-weight:700; color:var(--primary); text-align:right; line-height:1.7; }
+        .ad-row { transition:background .12s ease; }
+        .ad-row:not(.head):hover { background:var(--bg); }
+        .ad-row:last-child { border-radius:0 0 var(--radius) var(--radius); }
+        .ad-row .nm a:hover { color:var(--primary-press); }
+
+        .kebab { position:relative; justify-self:end; }
+        .kebab > button { width:34px; height:34px; display:grid; place-items:center; border:1px solid transparent; border-radius:10px; background:none; color:var(--ink-2); cursor:pointer; transition:all .12s ease; }
+        .kebab > button:hover, .kebab.open > button { background:var(--card); border-color:var(--line); color:var(--ink); box-shadow:var(--shadow-sm); }
+        .kebab svg { width:18px; height:18px; flex-shrink:0; }
+        .kebab-menu { position:absolute; right:0; top:calc(100% + 6px); z-index:30; min-width:220px; background:var(--card); border:1px solid var(--line); border-radius:12px; box-shadow:0 14px 34px rgba(22,24,29,.14); padding:6px; }
+        .kebab-menu a { display:flex; align-items:center; gap:11px; padding:9px 10px; border-radius:8px; font-size:13.5px; font-weight:600; color:var(--ink); }
+        .kebab-menu a svg { width:16px; height:16px; color:var(--ink-3); }
+        .kebab-menu a:hover { background:var(--primary-soft); color:var(--primary-press); }
+        .kebab-menu a:hover svg { color:var(--primary); }
+        .kebab-menu .count { margin-left:auto; font-family:var(--mono); font-size:11.5px; font-weight:700; color:var(--ink-3); background:var(--bg); border-radius:var(--radius-pill); padding:1px 8px; }
+        .kebab-menu hr { border:none; border-top:1px solid var(--line); margin:5px 4px; }
         .pill { display:inline-block; font-size:10.5px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; padding:3px 9px; border-radius:var(--radius-pill); }
         .pill-active { background:var(--good-soft); color:var(--good-ink); }
         .pill-draft { background:var(--bg); color:var(--ink-2); border:1px solid var(--line); }
@@ -79,6 +94,9 @@ new #[Layout('layouts.dealer')] #[Title('Dealers')] class extends Component {
             .ad-row { grid-template-columns:1fr 1fr; }
             .ad-row.head { display:none; }
             .ad-row > :first-child, .ad-row > :nth-child(2) { grid-column:1 / -1; }
+            .ad-row { position:relative; }
+            .ad-row .nm { padding-right:40px; }
+            .kebab { position:absolute; top:10px; right:14px; }
         }
     </style>
 @endpush
@@ -110,7 +128,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealers')] class extends Component {
         @forelse ($this->dealers as $dealer)
             <div class="ad-row" wire:key="dealer-{{ $dealer->id }}">
                 <div>
-                    <div class="nm">{{ $dealer->name }}</div>
+                    <div class="nm"><a href="{{ route('admin.dealers.edit', $dealer) }}" wire:navigate>{{ $dealer->name }}</a></div>
                     <div class="meta">
                         #{{ $dealer->id }} · {{ $dealer->published_vehicles_count }} published / {{ $dealer->vehicles_count }} vehicles
                         @if ($dealer->franchise_make) · {{ $dealer->franchise_make }} @endif
@@ -124,10 +142,38 @@ new #[Layout('layouts.dealer')] #[Title('Dealers')] class extends Component {
                 </div>
                 <div class="meta" style="color:{{ $dealer->timezone ? 'var(--ink-2)' : 'var(--amber)' }}">{{ $dealer->timezone ?? 'Not set' }}</div>
                 <div><span class="pill pill-{{ $dealer->status }}">{{ \App\Models\Dealer::STATUS_LABELS[$dealer->status] ?? $dealer->status }}</span></div>
-                <span class="edit">
-                    <a href="{{ route('admin.dealers.inventory', $dealer) }}" wire:navigate>Inventory</a><br>
-                    <a href="{{ route('admin.dealers.edit', $dealer) }}" wire:navigate>@can('dealers.manage') Edit → @else View → @endcan</a>
-                </span>
+                <div class="kebab" x-data="{ open: false }" :class="{ open }" @click.outside="open = false" @keydown.escape.window="open = false">
+                    <button type="button" @click="open = ! open" :aria-expanded="open" aria-haspopup="menu" aria-label="Actions for {{ $dealer->name }}">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
+                    </button>
+                    <div class="kebab-menu" role="menu" x-show="open" x-transition.origin.top.right x-cloak>
+                        <a role="menuitem" href="{{ route('admin.dealers.edit', $dealer) }}" wire:navigate>
+                            @can('dealers.manage')
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                                Edit profile
+                            @else
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
+                                View profile
+                            @endcan
+                        </a>
+                        <a role="menuitem" href="{{ route('admin.dealers.inventory', $dealer) }}" wire:navigate>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 17h14M6 17l1.5-6h9L18 17M7 21v-2M17 21v-2"/><circle cx="8" cy="14" r="1"/><circle cx="16" cy="14" r="1"/></svg>
+                            Inventory
+                            <span class="count">{{ $dealer->vehicles_count }}</span>
+                        </a>
+                        <a role="menuitem" href="{{ route('admin.dealers.edit', $dealer) }}#users">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            Dealer users
+                        </a>
+                        @if ($dealer->website)
+                            <hr>
+                            <a role="menuitem" href="{{ str_starts_with($dealer->website, 'http') ? $dealer->website : 'https://'.$dealer->website }}" target="_blank" rel="noopener">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></svg>
+                                Dealer website
+                            </a>
+                        @endif
+                    </div>
+                </div>
             </div>
         @empty
             <div class="ad-empty">{{ $onlyNeedingAddress ? 'Every dealer has a complete address.' : 'No dealers yet.' }}</div>

@@ -11,6 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
     <style>
+        [x-cloak] { display:none !important; }
         :root {
             --bg:#F6F7F7; --card:#FFFFFF;
             --ink:#16181D; --ink-2:#585E66; --ink-3:#969CA3;
