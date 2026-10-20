@@ -143,11 +143,20 @@ class DealerInspectionChecklistTest extends TestCase
         $this->assertSame('Willowdale Certified', $car->certification()?->name);
     }
 
+    public function test_brand_checklists_live_in_platform_settings(): void
+    {
+        $this->actingAs(User::factory()->create(['role' => User::ROLE_INTERNAL_STAFF, 'permissions' => [Permission::DEALERS_MANAGE]]));
+        $this->get('http://admin.trucars.test/settings/brand-checklists')->assertForbidden();
+
+        $this->actingAs(User::factory()->owner()->create());
+        $this->get('http://admin.trucars.test/settings')->assertOk()->assertSee('Brand checklists');
+    }
+
     public function test_brand_checklists_are_managed_on_their_own_screen(): void
     {
         $this->actingAs(User::factory()->owner()->create());
 
-        $this->get('http://admin.trucars.test/brand-checklists')->assertOk()->assertSee('Nissan Certified Pre-Owned');
+        $this->get('http://admin.trucars.test/settings/brand-checklists')->assertOk()->assertSee('Nissan Certified Pre-Owned');
 
         Livewire::test('pages::admin-dealer-inspection')
             ->call('startNew')

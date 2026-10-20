@@ -67,6 +67,9 @@ new #[Layout('layouts.dealer')] #[Title('Platform settings')] class extends Comp
 
 @push('styles')
     <style>
+        .tabs { display:flex; gap:6px; margin-bottom:18px; border-bottom:1px solid var(--line); }
+        .tabs a { padding:9px 14px; font-size:14px; font-weight:600; color:var(--ink-2); border-bottom:2px solid transparent; margin-bottom:-1px; }
+        .tabs a.on { color:var(--ink); border-bottom-color:var(--primary); }
         .ps-head h1 { font-size:24px; font-weight:800; letter-spacing:-.02em; margin:0 0 6px; }
         .ps-head p { margin:0 0 20px; font-size:14px; color:var(--ink-2); }
         .ps-status { background:var(--good-soft); color:var(--good-ink); border:1px solid rgba(18,184,134,.25); border-radius:var(--radius-sm); padding:11px 15px; font-size:13.5px; font-weight:600; margin-bottom:18px; max-width:760px; }
@@ -83,6 +86,11 @@ new #[Layout('layouts.dealer')] #[Title('Platform settings')] class extends Comp
 @endpush
 
 <div>
+    <nav class="tabs">
+        <a href="{{ route('admin.settings') }}" wire:navigate class="on">General</a>
+        <a href="{{ route('admin.settings.brand-checklists') }}" wire:navigate>Brand checklists</a>
+    </nav>
+
     <div class="ps-head">
         <h1>Platform settings</h1>
         <p>Changes apply across the marketplace straight away and are recorded in the audit log.</p>

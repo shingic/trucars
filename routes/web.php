@@ -221,10 +221,6 @@ Route::domain($adminDomain)->group(function () {
         ->middleware([EnsureCommandCentreAccess::class, 'can:dealers.view'])
         ->name('admin.dealers.inspection');
 
-    // Brand checklists: same screen, no dealer — applied to franchised dealers automatically.
-    Route::livewire('/brand-checklists', 'pages::admin-dealer-inspection')
-        ->middleware([EnsureCommandCentreAccess::class, 'can:dealers.view'])
-        ->name('admin.brand-checklists');
 
     Route::livewire('/customers', 'pages::admin-customers')
         ->middleware([EnsureCommandCentreAccess::class, 'can:customers.view'])
@@ -247,6 +243,12 @@ Route::domain($adminDomain)->group(function () {
     Route::livewire('/settings', 'pages::admin-settings')
         ->middleware([EnsureCommandCentreAccess::class, 'can:settings.manage'])
         ->name('admin.settings');
+
+    // Brand checklists: a platform setting. Same screen as a dealer's checklists,
+    // with no dealer — applied to franchised dealers automatically.
+    Route::livewire('/settings/brand-checklists', 'pages::admin-dealer-inspection')
+        ->middleware([EnsureCommandCentreAccess::class, 'can:settings.manage'])
+        ->name('admin.settings.brand-checklists');
 
     Route::livewire('/staff', 'pages::admin-staff')
         ->middleware([EnsureCommandCentreAccess::class, 'can:staff.manage'])

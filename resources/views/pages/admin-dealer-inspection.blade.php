@@ -20,10 +20,12 @@ use Livewire\Component;
 |
 | Two modes, one screen:
 |   - a dealer's own checklists  (/dealers/{dealer}/inspection)
-|   - brand checklists           (/brand-checklists), which apply on their own
-|     to every dealer franchised for that make, unless the dealer has its own.
+|   - brand checklists           (/settings/brand-checklists), which apply on
+|     their own to every dealer franchised for that make, unless the dealer
+|     has its own.
 |
-| Viewing needs dealers.view, changes need dealers.manage.
+| Dealer checklists: viewing needs dealers.view, changes need dealers.manage.
+| Brand checklists are a platform setting: settings.manage for both.
 */
 new #[Layout('layouts.dealer')] #[Title('Inspection checklist')] class extends Component {
     /** Null in brand mode. */
@@ -50,12 +52,23 @@ new #[Layout('layouts.dealer')] #[Title('Inspection checklist')] class extends C
 
     public function mount(?Dealer $dealer = null): void
     {
-        Gate::authorize(Permission::DEALERS_VIEW);
         $this->dealerId = $dealer?->id;
+        Gate::authorize($this->viewPermission());
 
         if ($first = $this->programs()->first()) {
             $this->select($first->id);
         }
+    }
+
+    /** Dealer checklists sit with the dealer; brand checklists are a platform setting. */
+    private function viewPermission(): string
+    {
+        return $this->dealerId ? Permission::DEALERS_VIEW : Permission::SETTINGS_MANAGE;
+    }
+
+    private function managePermission(): string
+    {
+        return $this->dealerId ? Permission::DEALERS_MANAGE : Permission::SETTINGS_MANAGE;
     }
 
     public function isBrandMode(): bool
@@ -129,7 +142,7 @@ new #[Layout('layouts.dealer')] #[Title('Inspection checklist')] class extends C
     /** The Live/Hidden switch takes effect straight away on a saved checklist. */
     public function updatedIsActive(): void
     {
-        Gate::authorize(Permission::DEALERS_MANAGE);
+        Gate::authorize($this->managePermission());
 
         if ($program = $this->program()) {
             $program->update(['is_active' => $this->isActive]);
@@ -140,7 +153,7 @@ new #[Layout('layouts.dealer')] #[Title('Inspection checklist')] class extends C
 
     public function startNew(): void
     {
-        Gate::authorize(Permission::DEALERS_MANAGE);
+        Gate::authorize($this->managePermission());
         $this->reset(['programId', 'name', 'make', 'badgeLabel', 'summary', 'appliesTo', 'isActive', 'statusMessage']);
 
         // A brand CPO checklist is normally only for the cars the feed marks certified.
@@ -151,7 +164,7 @@ new #[Layout('layouts.dealer')] #[Title('Inspection checklist')] class extends C
 
     public function save(): void
     {
-        Gate::authorize(Permission::DEALERS_MANAGE);
+        Gate::authorize($this->managePermission());
 
         $this->validate([
             'name'       => ['required', 'string', 'max:120'],
@@ -184,7 +197,7 @@ new #[Layout('layouts.dealer')] #[Title('Inspection checklist')] class extends C
 
     public function copyFrom(): void
     {
-        Gate::authorize(Permission::DEALERS_MANAGE);
+        Gate::authorize($this->managePermission());
         $source = $this->copySources()->firstWhere('id', (int) $this->copyFromId) ?? abort(404);
         $source->load('points');
 
@@ -207,7 +220,7 @@ new #[Layout('layouts.dealer')] #[Title('Inspection checklist')] class extends C
 
     public function deleteProgram(): void
     {
-        Gate::authorize(Permission::DEALERS_MANAGE);
+        Gate::authorize($this->managePermission());
         $program = $this->program() ?? abort(404);
 
         AuditLog::record('inspection_checklist.deleted', $this->auditTarget($program), ['program' => $program->name, 'points' => $program->points->count()]);
@@ -223,7 +236,7 @@ new #[Layout('layouts.dealer')] #[Title('Inspection checklist')] class extends C
 
     private function editableProgram(): InspectionProgram
     {
-        Gate::authorize(Permission::DEALERS_MANAGE);
+        Gate::authorize($this->managePermission());
 
         return $this->program() ?? abort(422, 'Save the checklist first.');
     }
@@ -301,7 +314,7 @@ new #[Layout('layouts.dealer')] #[Title('Inspection checklist')] class extends C
             'programs'  => $this->programs(),
             'program'   => $program,
             'sections'  => $program?->points->groupBy(fn ($point) => $point->section ?: 'General') ?? collect(),
-            'canManage' => Gate::allows(Permission::DEALERS_MANAGE),
+            'canManage' => Gate::allows($this->managePermission()),
         ];
     }
 }; ?>
@@ -314,7 +327,7 @@ new #[Layout('layouts.dealer')] #[Title('Inspection checklist')] class extends C
         <span>›</span>
         <span class="cur">Inspection</span>
     @else
-        <span>Command Centre</span>
+        <a href="{{ route('admin.settings') }}" wire:navigate>Platform settings</a>
         <span>›</span>
         <span class="cur">Brand checklists</span>
     @endif
@@ -431,16 +444,31 @@ new #[Layout('layouts.dealer')] #[Title('Inspection checklist')] class extends C
         </div>
 
         @foreach ($this->inheritedBrandPrograms() as $brand)
-            <a class="inherit" href="{{ route('admin.brand-checklists') }}" wire:navigate>
-                <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 8 9 8 9s8-4 8-9V6Z"/><path d="m9 12 2 2 4-4"/></svg></span>
-                <span>
-                    <b>{{ $brand->name }} applies automatically</b>
-                    {{ $brand->points_count }} points on {{ $dealer->name }}’s used {{ $brand->make }}s{{ $brand->applies_to === 'feed_certified' ? ' that the feed marks certified' : '' }}{{ $brand->is_active ? '' : ' — currently hidden' }}, because it’s a {{ $brand->make }} franchise.{{ $programs->isNotEmpty() ? ' A checklist below takes its place where both apply.' : '' }}
-                </span>
-                <svg class="go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg>
-            </a>
+            @can('settings.manage')
+                <a class="inherit" href="{{ route('admin.settings.brand-checklists') }}" wire:navigate>
+                    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 8 9 8 9s8-4 8-9V6Z"/><path d="m9 12 2 2 4-4"/></svg></span>
+                    <span>
+                        <b>{{ $brand->name }} applies automatically</b>
+                        {{ $brand->points_count }} points on {{ $dealer->name }}’s used {{ $brand->make }}s{{ $brand->applies_to === 'feed_certified' ? ' that the feed marks certified' : '' }}{{ $brand->is_active ? '' : ' — currently hidden' }}, because it’s a {{ $brand->make }} franchise.{{ $programs->isNotEmpty() ? ' A checklist below takes its place where both apply.' : '' }}
+                    </span>
+                    <svg class="go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg>
+                </a>
+            @else
+                <div class="inherit">
+                    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 8 9 8 9s8-4 8-9V6Z"/><path d="m9 12 2 2 4-4"/></svg></span>
+                    <span>
+                        <b>{{ $brand->name }} applies automatically</b>
+                        {{ $brand->points_count }} points on {{ $dealer->name }}’s used {{ $brand->make }}s{{ $brand->applies_to === 'feed_certified' ? ' that the feed marks certified' : '' }}{{ $brand->is_active ? '' : ' — currently hidden' }}, because it’s a {{ $brand->make }} franchise.{{ $programs->isNotEmpty() ? ' A checklist below takes its place where both apply.' : '' }}
+                    </span>
+                </div>
+            @endcan
         @endforeach
     @else
+        <nav class="tabs">
+            <a href="{{ route('admin.settings') }}" wire:navigate>General</a>
+            <a href="{{ route('admin.settings.brand-checklists') }}" wire:navigate class="on">Brand checklists</a>
+        </nav>
+
         <div class="ip-head">
             <h1>Brand checklists</h1>
             <p>Set up once per brand. Every dealer franchised for that make gets it on its used cars of that make automatically — no setup per dealer. A dealer’s own checklist takes its place.</p>
