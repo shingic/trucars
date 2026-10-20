@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Models\Scopes\DealerScope;
+use App\Models\Concerns\CarriesCampaignAttribution;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Lead extends Model
 {
-    protected $fillable = ['vehicle_id', 'dealer_id', 'name', 'email', 'phone', 'message', 'status'];
+    use CarriesCampaignAttribution;
+
+    protected $fillable = ['vehicle_id', 'dealer_id', 'campaign_id', 'attribution', 'name', 'email', 'phone', 'message', 'status'];
 
     protected $attributes = [
         'status' => 'new',

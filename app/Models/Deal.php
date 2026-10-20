@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Concerns\CarriesCampaignAttribution;
 use App\Models\Scopes\DealerScope;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
 use Illuminate\Database\Eloquent\Model;
@@ -14,6 +15,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 #[ScopedBy(DealerScope::class)]
 class Deal extends Model
 {
+    use CarriesCampaignAttribution;
+
     public const STAGE_LABELS = [
         'reserved'           => 'New reservation',
         'contacted'          => 'Contacted',
@@ -35,7 +38,7 @@ class Deal extends Model
     ];
 
     protected $fillable = [
-        'dealer_id', 'user_id', 'vehicle_id', 'stage',
+        'dealer_id', 'user_id', 'vehicle_id', 'campaign_id', 'attribution', 'stage',
         'purchase_type', 'term_months', 'down_payment_in_cents', 'warranty_plan', 'extras_interest', 'fees_snapshot',
         'deposit_in_cents', 'deposit_status',
         'first_name', 'last_name', 'email', 'phone',

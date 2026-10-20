@@ -11,18 +11,27 @@
       $favouritesAreVisible whether to render the heart at all (buyers and guests
                             see it; dealer staff never do)
 
+    Optional overrides, used by a dealer campaign storefront:
+
+      $vehicleUrl           where the card links (defaults to the open-floor /cars/{id})
+      $badgeLabel           the badge text (defaults to "Certified" when is_certified)
+
     The heart calls $wire->toggleFavourite($vehicle->id) — both host components
     (marketplace and saved) expose that action with the same signature, so the
     card behaves identically wherever it is rendered.
 --}}
+@php
+    $vehicleUrl ??= '/cars/' . $vehicle->id;
+    $badgeLabel ??= $vehicle->is_certified ? 'Certified' : null;
+@endphp
 <article class="vcard" wire:key="vehicle-{{ $vehicle->id }}">
-    <a href="/cars/{{ $vehicle->id }}" wire:navigate class="vcard-link" aria-label="View {{ $vehicle->model_year }} {{ $vehicle->make }} {{ $vehicle->model }}"></a>
+    <a href="{{ $vehicleUrl }}" wire:navigate class="vcard-link" aria-label="View {{ $vehicle->model_year }} {{ $vehicle->make }} {{ $vehicle->model }}"></a>
     <div class="vcard-photo">
         <div class="vcard-tags">
-            @if ($vehicle->is_certified)
+            @if ($badgeLabel)
                 <span class="vcard-badge">
                     <span class="dot"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>
-                    Certified
+                    {{ $badgeLabel }}
                 </span>
             @endif
         </div>

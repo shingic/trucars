@@ -68,6 +68,19 @@ Route::domain($publicDomain)->group(function () {
     Route::livewire('/garage', 'pages::garage')
         ->middleware(EnsureBuyerEmailIsVerified::class)
         ->name('garage');
+
+    // Dealer campaign links. The token is the whole contract: each page resolves
+    // it server-side to an active campaign and takes the dealer and destination
+    // from that row — never from a query parameter or the referrer. Everything
+    // under /shop/{token} is fenced to that dealer's eligible manufacturer-CPO
+    // stock. The open marketplace at / is untouched and stays cross-dealer.
+    Route::livewire('/shop/{token}', 'pages::campaign')
+        ->where('token', '[a-z0-9]{12}')
+        ->name('campaign.shop');
+
+    Route::livewire('/shop/{token}/cars/{vehicle}', 'pages::vehicle')
+        ->where('token', '[a-z0-9]{12}')
+        ->name('campaign.vehicle');
 });
 
 /*
@@ -124,4 +137,8 @@ Route::domain($staffDomain)->group(function () {
     Route::livewire('/fees', 'pages::fees')
         ->middleware(EnsureUserIsStaff::class)
         ->name('dealer.fees');
+
+    Route::livewire('/campaigns', 'pages::campaigns')
+        ->middleware(EnsureUserIsStaff::class)
+        ->name('dealer.campaigns');
 });

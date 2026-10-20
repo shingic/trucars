@@ -84,6 +84,7 @@ class ImportDealerInventory extends Command
                     'fuel_type'      => $row['fuel_type'] ?: null,
                     'photos'         => $this->splitPhotoUrls($row['photos']),
                     'is_certified'   => $this->looksCertifiable($condition, $modelYear, $kilometres),
+                    'is_manufacturer_certified' => $this->isFlaggedManufacturerCertified($row, $condition, $dealer),
                     'is_published'   => false, // the doorman decides this later
                 ],
             );
@@ -98,6 +99,11 @@ class ImportDealerInventory extends Command
         $this->line("Skipped (no price): {$skippedForNoPrice}");
         $this->line("Skipped (not a car): {$skippedForNotACar}");
         $this->info('Marked certified (dev stand-in): ' . $dealer->vehicles()->where('is_certified', true)->count());
+        $this->info('Manufacturer CPO (feed-flagged, franchise brand): ' . $dealer->vehicles()->where('is_manufacturer_certified', true)->count());
+
+        if (blank($dealer->franchise_make)) {
+            $this->warn('No franchise brand confirmed for this dealer — none of its stock can qualify as manufacturer CPO.');
+        }
 
         return self::SUCCESS;
     }
@@ -119,6 +125,24 @@ class ImportDealerInventory extends Command
     private function splitPhotoUrls(string $photos): array
     {
         return array_values(array_filter(array_map('trim', explode('|', $photos))));
+    }
+
+    /**
+     * Manufacturer CPO only when the feed itself flags the unit certified, it's
+     * used, and it's the dealer's confirmed franchise brand — a Mitsubishi
+     * store's certified Tiguan can't be Volkswagen CPO. Without a confirmed
+     * franchise brand nothing qualifies.
+     *
+     * @param  array<string, string>  $row
+     */
+    private function isFlaggedManufacturerCertified(array $row, string $condition, Dealer $dealer): bool
+    {
+        $feedSaysCertified = in_array(strtoupper(trim($row['certified'] ?? '')), ['TRUE', '1', 'YES'], true);
+
+        return $feedSaysCertified
+            && $condition === 'USED'
+            && filled($dealer->franchise_make)
+            && strcasecmp(trim($row['make']), trim($dealer->franchise_make)) === 0;
     }
 
     /**

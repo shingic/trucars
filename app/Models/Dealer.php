@@ -13,6 +13,7 @@ class Dealer extends Model
         'name',
         'city',
         'omvic_number',
+        'franchise_make',
     ];
 
     /**
@@ -21,6 +22,12 @@ class Dealer extends Model
     public function vehicles(): HasMany
     {
         return $this->hasMany(Vehicle::class);
+    }
+
+    /** Trackable links this dealership has created for its own ads and posts. */
+    public function campaigns(): HasMany
+    {
+        return $this->hasMany(Campaign::class);
     }
 
     /**

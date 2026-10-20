@@ -1,11 +1,59 @@
 <?php
 
+use App\Models\Campaign;
 use App\Models\Vehicle;
+use App\Support\CampaignAttribution;
 use App\Support\CertificationProgram;
+use Illuminate\Support\Facades\View;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 new class extends Component {
     public Vehicle $vehicle;
+
+    /**
+     * Set when the car is reached through a dealer campaign link
+     * (/shop/{token}/cars/{vehicle}) rather than the open floor. Navigation
+     * then leads back to that dealer's storefront, never the marketplace.
+     */
+    #[Locked]
+    public ?string $campaignToken = null;
+
+    public function mount(Vehicle $vehicle, ?string $token = null): void
+    {
+        $this->vehicle = $vehicle;
+
+        if ($token === null) {
+            return;
+        }
+
+        $campaign = Campaign::findActiveByToken($token);
+
+        // Unknown or inactive link, or an id swapped for another dealer's car:
+        // nothing to show. The campaign never reaches beyond its own dealer.
+        abort_if($campaign === null, 404);
+        abort_unless($vehicle->dealer_id === $campaign->dealer_id, 404);
+
+        if (! $vehicle->isEligibleForDealerCpo($campaign->dealer)) {
+            session()->flash('campaign_unavailable_vehicle', "{$vehicle->model_year} {$vehicle->make} {$vehicle->model}");
+            $this->redirectRoute('campaign.shop', ['token' => $token]);
+
+            return;
+        }
+
+        CampaignAttribution::capture($campaign, request());
+
+        $this->campaignToken = $token;
+        View::share('referredCampaign', $campaign);
+    }
+
+    /** Where "back" goes — the campaign storefront when referred, else the floor. */
+    public function backUrl(): string
+    {
+        return $this->campaignToken !== null
+            ? route('campaign.shop', ['token' => $this->campaignToken])
+            : '/';
+    }
 
     /**
      * The resolved certification program for this vehicle, or null when the
@@ -160,7 +208,9 @@ new class extends Component {
         }
 
         if ($user === null) {
-            session()->put('url.intended', url('/cars/' . $this->vehicle->id));
+            session()->put('url.intended', $this->campaignToken !== null
+                ? route('campaign.vehicle', ['token' => $this->campaignToken, 'vehicle' => $this->vehicle->id])
+                : url('/cars/' . $this->vehicle->id));
             $this->redirect(route('buyer.login'));
 
             return;
@@ -202,9 +252,9 @@ new class extends Component {
 ?>
 
 <div class="vdp">
-    <a href="/" wire:navigate class="vdp-back">
+    <a href="{{ $this->backUrl() }}" wire:navigate class="vdp-back">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
-        Back to results
+        {{ $campaignToken !== null ? 'More certified cars from ' . ucwords(strtolower($vehicle->dealer->name)) : 'Back to results' }}
     </a>
 
     <div class="vdp-grid">

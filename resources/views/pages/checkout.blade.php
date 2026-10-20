@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Vehicle;
 use App\Services\Valuation\Data\TradeInput;
 use App\Services\Valuation\TradeValuation;
+use App\Support\CampaignAttribution;
 use Livewire\Component;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -934,6 +935,15 @@ new #[Layout('layouts.checkout')] class extends Component {
             : $this->tradeInteriorCondition;
     }
 
+    /**
+     * Where the header logo leads. A shopper who came through this dealer's
+     * campaign link goes back to that dealer's storefront, not the open floor.
+     */
+    public function exitUrl(): string
+    {
+        return CampaignAttribution::campaignForDealer($this->vehicle->dealer_id)?->shopUrl() ?? '/';
+    }
+
     /* ---------------------------------------------------------------------
        Create the reservation
        --------------------------------------------------------------------- */
@@ -1001,6 +1011,11 @@ new #[Layout('layouts.checkout')] class extends Component {
 
             // The opening activity trail the dealer sees the moment this lands.
             $deal->recordActivity('system', 'Reservation created through TruCars checkout.');
+
+            // Campaign attribution is stamped on by the Deal model as it's created.
+            if ($deal->campaign_id !== null) {
+                $deal->recordActivity('system', 'Customer arrived through your campaign link “' . $deal->campaign->name . '” (' . $deal->campaign->source_label . ').');
+            }
             $deal->recordActivity('system', '$150 refundable deposit held — credited to the purchase price.');
             $deal->recordActivity('system', 'Identity verified.');
             $deal->recordActivity('system', 'Handover scheduled — ' . $this->handoverSummaryLabel() . '. The dealership confirms the exact time with the customer.');
@@ -1285,7 +1300,7 @@ new #[Layout('layouts.checkout')] class extends Component {
 <div id="checkout-app" x-data @checkout-step-changed.window="window.scrollTo({ top: 0, behavior: 'smooth' })">
     <header class="top">
         <div class="top-inner">
-            <a href="/" class="brand"><span class="glyph">T</span> TruCars</a>
+            <a href="{{ $this->exitUrl() }}" class="brand"><span class="glyph">T</span> TruCars</a>
             <div class="veh-chip">
                 <span class="thumb" @if ($this->heroPhoto) style="background-image:url('{{ $this->heroPhoto }}');" @endif></span>
                 <span><span class="vt">{{ $vehicle->model_year }} {{ $vehicle->make }} {{ $vehicle->model }}</span> &nbsp;<span class="vp">{{ $this->asMoney($this->priceDollars) }}</span></span>

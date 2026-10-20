@@ -3,8 +3,11 @@
 
 namespace App\Models;
 
+use App\Models\Scopes\DealerScope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Vehicle extends Model
@@ -24,6 +27,7 @@ class Vehicle extends Model
         'stock_number',
         'condition',
         'is_certified',
+        'is_manufacturer_certified',
         'transmission',
         'drivetrain',
         'fuel_type',
@@ -38,6 +42,7 @@ class Vehicle extends Model
             'price_in_cents' => 'integer',
             'is_published' => 'boolean',
             'is_certified' => 'boolean',
+            'is_manufacturer_certified' => 'boolean',
             'photos' => 'array',
         ];
     }
@@ -91,5 +96,45 @@ class Vehicle extends Model
     public function leads(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Lead::class);
+    }
+
+    public function deals(): HasMany
+    {
+        return $this->hasMany(Deal::class);
+    }
+
+    /**
+     * The one rule for what a dealer campaign may show: this dealer's own cars
+     * that are published, used, flagged manufacturer-certified, of the dealer's
+     * confirmed franchise brand, and not already held or sold through a deal.
+     *
+     * A dealer with no confirmed franchise brand has no eligible stock at all —
+     * we'd rather show nothing than present generic used cars as factory CPO.
+     * is_certified and CertificationProgram are deliberately not consulted:
+     * both are age/kilometre guesses, not evidence of a manufacturer program.
+     */
+    public function scopeEligibleForDealerCpo(Builder $query, Dealer $dealer): void
+    {
+        if (blank($dealer->franchise_make)) {
+            $query->whereRaw('1 = 0');
+
+            return;
+        }
+
+        $query->where('vehicles.dealer_id', $dealer->id)
+            ->where('is_published', true)
+            ->where('condition', 'USED')
+            ->where('is_manufacturer_certified', true)
+            ->whereRaw('lower(make) = ?', [mb_strtolower(trim($dealer->franchise_make))])
+            // Any live deal (reserved through delivered) takes the car off the
+            // shelf. The scope is lifted so a staff preview sees the same truth.
+            ->whereDoesntHave('deals', fn (Builder $deals) => $deals
+                ->withoutGlobalScope(DealerScope::class)
+                ->where('stage', '!=', 'cancelled'));
+    }
+
+    public function isEligibleForDealerCpo(Dealer $dealer): bool
+    {
+        return self::query()->whereKey($this->id)->eligibleForDealerCpo($dealer)->exists();
     }
 }

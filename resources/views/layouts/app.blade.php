@@ -127,18 +127,29 @@
     </style>
 </head>
 <body>
+@php
+    // Shared by a dealer campaign page (storefront or car) for this render. The
+    // referred experience keeps every "shop" link on that dealer's storefront
+    // so it never leads into competing dealers' stock on the open floor.
+    $referredCampaign ??= null;
+    $shopHomeUrl = $referredCampaign?->shopUrl() ?? '/';
+@endphp
 <nav class="nav"
      x-data="{ menuOpen: false }"
      x-effect="document.body.style.overflow = menuOpen ? 'hidden' : ''"
      @keydown.escape.window="menuOpen = false">
     <div class="nav-inner">
-        <a href="/" class="brand"><span class="glyph">T</span> TruCars</a>
+        <a href="{{ $shopHomeUrl }}" class="brand"><span class="glyph">T</span> TruCars</a>
 
         <div class="nav-links">
-            <a href="/" class="active">Shop</a>
-            <a href="#">Sell / Trade</a>
-            <a href="#">Financing</a>
-            <a href="#">How it works</a>
+            @if ($referredCampaign)
+                <a href="{{ $shopHomeUrl }}" class="active">{{ ucwords(strtolower($referredCampaign->dealer->name)) }} · Certified inventory</a>
+            @else
+                <a href="/" class="active">Shop</a>
+                <a href="#">Sell / Trade</a>
+                <a href="#">Financing</a>
+                <a href="#">How it works</a>
+            @endif
         </div>
 
         <div class="nav-right">
@@ -215,7 +226,7 @@
 
     <aside class="nav-drawer" :class="{ 'is-open': menuOpen }" x-cloak>
         <div class="drawer-top">
-            <a href="/" class="brand" @click="menuOpen = false"><span class="glyph">T</span> TruCars</a>
+            <a href="{{ $shopHomeUrl }}" class="brand" @click="menuOpen = false"><span class="glyph">T</span> TruCars</a>
             <button type="button" class="drawer-close" @click="menuOpen = false" aria-label="Close menu">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg>
             </button>
@@ -246,10 +257,10 @@
         </div>
 
         <nav class="drawer-rows">
-            <a href="/" wire:navigate class="drawer-row active" @click="menuOpen = false">
+            <a href="{{ $shopHomeUrl }}" wire:navigate class="drawer-row active" @click="menuOpen = false">
                 <span class="dr-main">
                     <span class="dr-title">Shop cars</span>
-                    <span class="dr-sub">Hundreds of certified cars</span>
+                    <span class="dr-sub">{{ $referredCampaign ? ucwords(strtolower($referredCampaign->dealer->name)) . ' certified inventory' : 'Hundreds of certified cars' }}</span>
                 </span>
                 <svg class="dr-chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
             </a>
