@@ -242,8 +242,67 @@ class DealerFoundationTest extends TestCase
 
         Livewire::test('pages::admin-dealer')
             ->set('brandId', $this->brandId('Toyota'))
-            ->assertSee('Follows Toyota settings')
+            ->assertSee('Will follow Toyota settings')
             ->assertSee('1-point CPO checklist');
+    }
+
+    public function test_saving_the_profile_never_changes_the_brand(): void
+    {
+        $dealer = $this->makeDealer();
+        $this->actingAs($this->admin());
+
+        Livewire::test('pages::admin-dealer', ['dealer' => $dealer])
+            ->set('tab', 'info')
+            ->assertDontSee('Choose a brand…')
+            ->set('tab', 'cpo')
+            ->assertSee('Change brand…')
+            ->set('brandId', $this->brandId('Nissan'))
+            ->set('phone', '604-555-0100')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $this->assertSame('Mitsubishi', $dealer->fresh()->brand->name);
+    }
+
+    public function test_changing_a_brand_needs_a_reason_and_the_typed_dealer_name(): void
+    {
+        $dealer = $this->makeDealer();
+        $this->actingAs($this->admin());
+
+        $page = Livewire::test('pages::admin-dealer', ['dealer' => $dealer])
+            ->call('startBrandChange')
+            ->set('newBrandId', $this->brandId('Nissan'))
+            ->assertSee('169 points')
+            ->call('confirmBrandChange')
+            ->assertHasErrors(['brandChangeReason', 'brandChangeConfirm']);
+
+        $page->set('brandChangeReason', 'Re-franchised to Nissan')
+            ->set('brandChangeConfirm', 'Chilliwack Mitsu')
+            ->call('confirmBrandChange')
+            ->assertHasErrors('brandChangeConfirm');
+
+        $this->assertSame('Mitsubishi', $dealer->fresh()->brand->name);
+
+        $page->set('brandChangeConfirm', 'chilliwack mitsubishi')
+            ->call('confirmBrandChange')
+            ->assertHasNoErrors()
+            ->assertSee('is now a Nissan dealer');
+
+        $this->assertSame('Nissan', $dealer->fresh()->franchise_make);
+        $entry = \App\Models\AuditLog::where('action', 'dealer.brand_changed')->sole();
+        $this->assertSame(['brand' => 'Mitsubishi'], $entry->before);
+        $this->assertSame('Re-franchised to Nissan', $entry->after['reason']);
+    }
+
+    public function test_only_dealer_managers_can_change_a_brand(): void
+    {
+        $dealer = $this->makeDealer();
+        $this->actingAs(User::factory()->create(['role' => User::ROLE_INTERNAL_STAFF, 'permissions' => [\App\Support\Permission::DEALERS_VIEW]]));
+
+        Livewire::test('pages::admin-dealer', ['dealer' => $dealer])
+            ->assertDontSee('Change brand…')
+            ->call('startBrandChange')
+            ->assertForbidden();
     }
 
     public function test_admin_can_correct_a_timezone_for_an_exception_area(): void
@@ -312,6 +371,53 @@ class DealerFoundationTest extends TestCase
 
 
     /* ---- helpers ----------------------------------------------------- */
+
+    public function test_the_profile_shows_every_tab_with_real_numbers(): void
+    {
+        $dealer = $this->makeDealer(['phone' => '604-555-0100', 'registration_number' => '30215']);
+        $this->vehicle($dealer);
+        $this->actingAs($this->admin());
+
+        $page = Livewire::test('pages::admin-dealer', ['dealer' => $dealer])
+            ->assertSee('Chilliwack Mitsubishi')
+            ->assertSee('Live vehicles')
+            ->assertSee('Reservations (30 days)')
+            ->assertSee('Setup checklist')
+            ->assertSee('3 of 5 completed')
+            ->assertDontSee('Page views');
+
+        foreach (['info' => 'Public dealership name', 'location' => 'Street address', 'team' => 'Send invitation', 'cpo' => 'Inspection checklist', 'offers' => 'No current or upcoming offers', 'integrations' => 'Inventory feed'] as $tab => $text) {
+            $page->set('tab', $tab)->assertSee($text);
+        }
+    }
+
+    public function test_status_changes_are_their_own_audited_action(): void
+    {
+        $dealer = $this->makeDealer();
+        $this->actingAs($this->admin());
+
+        Livewire::test('pages::admin-dealer', ['dealer' => $dealer])
+            ->call('changeStatus', Dealer::STATUS_DRAFT)
+            ->assertSee('back to draft');
+
+        $this->assertSame(Dealer::STATUS_DRAFT, $dealer->fresh()->status);
+        $this->assertDatabaseHas('audit_logs', ['action' => 'dealer.status_changed', 'target_id' => $dealer->id]);
+    }
+
+    public function test_a_storefront_photo_can_be_added_and_is_served(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('local');
+        $dealer = $this->makeDealer();
+        $this->actingAs($this->admin());
+
+        Livewire::test('pages::admin-dealer', ['dealer' => $dealer])
+            ->set('coverUpload', \Illuminate\Http\UploadedFile::fake()->image('store.jpg', 1600, 600))
+            ->assertSee('Storefront photo updated.');
+
+        $dealer->refresh();
+        \Illuminate\Support\Facades\Storage::disk('local')->assertExists($dealer->cover_photo_path);
+        $this->get($dealer->coverPhotoUrl())->assertOk();
+    }
 
     private function admin(): User
     {

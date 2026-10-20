@@ -181,8 +181,7 @@ class OwnerAccessTest extends TestCase
 
         $this->actingAs(User::factory()->owner()->create());
         Livewire::test('pages::admin-dealer', ['dealer' => $this->dealer])
-            ->set('status', Dealer::STATUS_SUSPENDED)
-            ->call('save')
+            ->call('changeStatus', Dealer::STATUS_SUSPENDED)
             ->assertHasNoErrors();
 
         $this->assertTrue($this->dealer->fresh()->isSuspended());
@@ -205,9 +204,14 @@ class OwnerAccessTest extends TestCase
         $this->actingAs(User::factory()->owner()->create());
 
         Livewire::test('pages::admin-dealer', ['dealer' => $legacy])
+            ->call('changeStatus', Dealer::STATUS_ACTIVE)
+            ->assertHasErrors('status')
+            ->assertSee('Complete the address and timezone');
+
+        // Saving the profile can't change the status either.
+        Livewire::test('pages::admin-dealer', ['dealer' => $legacy])
             ->set('status', Dealer::STATUS_ACTIVE)
-            ->call('save')
-            ->assertHasErrors(['streetAddress', 'postalCode']);
+            ->call('save');
 
         $this->assertTrue($legacy->fresh()->isSuspended());
     }

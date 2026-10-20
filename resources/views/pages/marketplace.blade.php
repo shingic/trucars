@@ -46,6 +46,7 @@ new class extends Component {
     /** @var array<int, string> */
     public array $selectedColours = [];
     /** @var array<int, int> */
+    #[Url(as: 'dealer', except: [])]
     public array $selectedDealers = [];
 
     public ?int $priceMin = null;

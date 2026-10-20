@@ -43,6 +43,13 @@ Route::domain($publicDomain)->middleware(TreatNonCustomersAsGuests::class)->grou
     Route::livewire('/shop', 'pages::marketplace')->name('shop');
     Route::livewire('/how-it-works', 'pages::how-it-works')->name('how-it-works');
 
+    // A dealer's storefront photo (public — it's the dealer's own branding).
+    Route::get('/media/dealers/{dealer}/cover', function (\App\Models\Dealer $dealer) {
+        abort_unless($dealer->cover_photo_path && \Illuminate\Support\Facades\Storage::disk('local')->exists($dealer->cover_photo_path), 404);
+
+        return \Illuminate\Support\Facades\Storage::disk('local')->response($dealer->cover_photo_path, null, ['Cache-Control' => 'public, max-age=604800']);
+    })->whereNumber('dealer')->name('dealer.cover');
+
     Route::livewire('/cars/{vehicle}', 'pages::vehicle');
 
     Route::livewire('/cars/{vehicle}/reserve', 'pages::checkout')

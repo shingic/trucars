@@ -47,6 +47,7 @@ class Dealer extends Model
         'phone',
         'email',
         'website',
+        'cover_photo_path',
         'status',
     ];
 
@@ -219,6 +220,12 @@ class Dealer extends Model
     public function deals(): HasMany
     {
         return $this->hasMany(Deal::class)->withoutGlobalScope(DealerScope::class);
+    }
+
+    /** The storefront photo, served by the dealer.cover route; null when none is set. */
+    public function coverPhotoUrl(): ?string
+    {
+        return $this->cover_photo_path ? route('dealer.cover', ['dealer' => $this->id, 'v' => substr(md5($this->cover_photo_path), 0, 8)]) : null;
     }
 
     /** The franchise brand whose settings apply to this dealer. */

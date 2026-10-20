@@ -111,12 +111,13 @@ class CommandCentreTest extends TestCase
         $this->get(route('admin.dealers.edit', $this->dealer))
             ->assertOk()
             ->assertDontSee('Save changes')
-            ->assertDontSee('Dealer users');
+            ->assertDontSee('Manage users')
+            ->assertDontSee('Change brand…');
         $this->get(route('admin.dealers.create'))->assertForbidden();
 
         // Each forbidden action on a fresh component (a 403 ends the test component).
         Livewire::test('pages::admin-dealer', ['dealer' => $this->dealer])
-            ->set('status', Dealer::STATUS_SUSPENDED)->call('save')->assertForbidden();
+            ->call('changeStatus', Dealer::STATUS_SUSPENDED)->assertForbidden();
         Livewire::test('pages::admin-dealer', ['dealer' => $this->dealer])
             ->set('inviteName', 'X')->set('inviteEmail', 'x@dealer.ca')->call('inviteStaff')->assertForbidden();
 
@@ -312,10 +313,8 @@ class CommandCentreTest extends TestCase
         $this->actingAs($owner);
 
         Livewire::test('pages::admin-dealer', ['dealer' => $this->dealer])
-            ->set('status', Dealer::STATUS_SUSPENDED)
-            ->call('save')
-            ->set('status', Dealer::STATUS_ACTIVE)
-            ->call('save')
+            ->call('changeStatus', Dealer::STATUS_SUSPENDED)
+            ->call('changeStatus', Dealer::STATUS_ACTIVE)
             ->call('suspendStaff', $dealerUser->id)
             ->set('inviteName', 'Dana')
             ->set('inviteEmail', 'dana@dealer.ca')

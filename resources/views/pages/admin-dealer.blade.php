@@ -16,7 +16,10 @@ use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Title;
+use Livewire\Attributes\Url;
 use Livewire\Component;
+use Livewire\WithFileUploads;
+use Illuminate\Support\Facades\Storage;
 
 /*
 | TruCars admin — create or edit one dealer: one selling rooftop at one address.
@@ -34,8 +37,26 @@ use Livewire\Component;
 | change lands in the audit log.
 */
 new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
+    use WithFileUploads;
+
+    public const TABS = [
+        'overview'     => 'Overview',
+        'info'         => 'Dealer info',
+        'location'     => 'Location',
+        'team'         => 'Team & access',
+        'cpo'          => 'CPO program',
+        'offers'       => 'Offers & incentives',
+        'integrations' => 'Integrations',
+    ];
+
     #[Locked]
     public ?int $dealerId = null;
+
+    #[Url(except: 'overview')]
+    public string $tab = 'overview';
+
+    /** A new storefront photo, stored as soon as it's picked. */
+    public $coverUpload = null;
 
     #[Locked]
     public ?string $feedRooftopId = null;
@@ -49,8 +70,21 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
 
     public string $name = '';
     public string $registrationNumber = '';
-    /** The franchise brand — its CPO checklist and offers follow automatically. */
+    /**
+     * The franchise brand — its CPO checklist and offers follow automatically.
+     * Chosen when the dealer is created. After that save() never touches it:
+     * changing it is its own confirmed, audited step (confirmBrandChange).
+     */
     public ?string $brandId = null;
+
+    #[Locked]
+    public ?int $savedBrandId = null;
+
+    // The "change brand" step
+    public bool $changingBrand = false;
+    public ?string $newBrandId = null;
+    public string $brandChangeReason = '';
+    public string $brandChangeConfirm = '';
 
     public string $streetAddress = '';
     public string $unit = '';
@@ -84,11 +118,16 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
 
         $this->dealerId = $dealer->id;
         $this->feedRooftopId = $dealer->feed_rooftop_id;
+
+        if (! array_key_exists($this->tab, self::TABS)) {
+            $this->tab = 'overview';
+        }
         $this->savedStatus = $dealer->status;
 
         $this->name = $dealer->name;
         $this->registrationNumber = (string) $dealer->registration_number;
         $this->brandId = $dealer->brand_id ? (string) $dealer->brand_id : null;
+        $this->savedBrandId = $dealer->brand_id;
         $this->streetAddress = (string) $dealer->street_address;
         $this->unit = (string) $dealer->unit;
         $this->city = (string) $dealer->city;
@@ -128,24 +167,95 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         return Brand::orderBy('name')->get(['id', 'name']);
     }
 
-    /** What the chosen brand brings: its live checklist and current offers. */
-    public function brandSettings(): ?array
+    /** What a brand brings: its live checklist and current offers. */
+    public function brandSettings(?int $brandId = null): ?array
     {
-        $brand = $this->brandId ? Brand::find((int) $this->brandId) : null;
+        $brandId ??= $this->dealerId ? $this->savedBrandId : ($this->brandId ? (int) $this->brandId : null);
+        $brand = $brandId ? Brand::find($brandId) : null;
 
         if ($brand === null) {
             return null;
         }
 
         $checklist = $brand->checklists()->where('is_active', true)->withCount('points')->get()->sortByDesc('points_count')->first();
-        $today = now()->toDateString();
 
         return [
             'brand'     => $brand,
             'checklist' => $checklist,
-            'offers'    => $brand->offers()->where('status', 'published')->whereDate('ends_on', '>=', $today)->count(),
+            'offers'    => $brand->offers()->where('status', 'published')->whereDate('ends_on', '>=', now()->toDateString())->count(),
             'dealers'   => $brand->dealers()->when($this->dealerId, fn ($dealers) => $dealers->whereKeyNot($this->dealerId))->count(),
         ];
+    }
+
+    /* ---- changing an existing dealer's brand ---------------------------- */
+
+    public function startBrandChange(): void
+    {
+        Gate::authorize(Permission::DEALERS_MANAGE);
+        abort_if($this->dealerId === null, 422);
+
+        $this->resetValidation();
+        $this->reset(['newBrandId', 'brandChangeReason', 'brandChangeConfirm']);
+        $this->changingBrand = true;
+    }
+
+    public function cancelBrandChange(): void
+    {
+        $this->changingBrand = false;
+    }
+
+    /** What changes for this dealer if it moves to the chosen brand. */
+    public function brandChangeImpact(): ?array
+    {
+        $new = $this->newBrandId ? $this->brandSettings((int) $this->newBrandId) : null;
+
+        if ($new === null) {
+            return null;
+        }
+
+        $dealer = Dealer::findOrFail($this->dealerId);
+        $live = $dealer->vehicles()->where('is_published', true);
+
+        return [
+            'old'           => $this->brandSettings($this->savedBrandId),
+            'new'           => $new,
+            'oldBrandCars'  => $dealer->franchise_make ? (clone $live)->whereRaw('lower(make) = ?', [mb_strtolower($dealer->franchise_make)])->count() : 0,
+            'newBrandCars'  => (clone $live)->whereRaw('lower(make) = ?', [mb_strtolower($new['brand']->name)])->count(),
+            'liveCampaigns' => $dealer->campaigns()->where('status', 'active')->count(),
+        ];
+    }
+
+    public function confirmBrandChange(): void
+    {
+        Gate::authorize(Permission::DEALERS_MANAGE);
+        $dealer = Dealer::findOrFail($this->dealerId);
+
+        $this->validate([
+            'newBrandId'         => ['required', 'integer', Rule::exists('brands', 'id'), Rule::notIn(array_filter([$dealer->brand_id]))],
+            'brandChangeReason'  => ['required', 'string', 'min:5', 'max:255'],
+            'brandChangeConfirm' => ['required', function ($attribute, $value, $fail) use ($dealer) {
+                if (mb_strtolower(trim($value)) !== mb_strtolower(trim($dealer->name))) {
+                    $fail('Type the dealership’s name exactly to confirm.');
+                }
+            }],
+        ], [
+            'newBrandId.not_in'        => 'That’s already this dealer’s brand.',
+            'brandChangeReason.required' => 'Say why the brand is changing — it’s kept in the audit log.',
+        ], [
+            'newBrandId' => 'new brand', 'brandChangeReason' => 'reason', 'brandChangeConfirm' => 'confirmation',
+        ]);
+
+        $before = $dealer->brand?->name;
+        $dealer->update(['brand_id' => (int) $this->newBrandId]);
+        $dealer->refresh();
+
+        AuditLog::record('dealer.brand_changed', $dealer, ['brand' => $before], ['brand' => $dealer->brand->name, 'reason' => trim($this->brandChangeReason)]);
+
+        $this->savedBrandId = $dealer->brand_id;
+        $this->brandId = (string) $dealer->brand_id;
+        $this->changingBrand = false;
+        $this->statusMessage = "{$dealer->name} is now a {$dealer->brand->name} dealer and follows {$dealer->brand->name} settings."
+            . ($before ? " It no longer follows {$before}’s." : '');
     }
 
     public function canManage(): bool
@@ -172,6 +282,11 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
             $this->website = 'https://' . $this->website;
         }
 
+        // An existing dealer's status changes only through changeStatus().
+        if ($this->dealerId !== null) {
+            $this->status = $this->savedStatus;
+        }
+
         // Going live needs the whole address and a timezone. Staying live
         // doesn't re-demand them, so a legacy dealer awaiting backfill can still
         // have its phone number fixed.
@@ -181,7 +296,9 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         $this->validate([
             'name'               => ['required', 'string', 'max:120'],
             'registrationNumber' => ['nullable', 'string', 'max:40'],
-            'brandId'            => ['required', 'integer', Rule::exists('brands', 'id')],
+            // Chosen once, at creation. An existing dealer's brand changes only
+            // through confirmBrandChange(), never through this form.
+            'brandId'            => [$this->dealerId === null ? 'required' : 'nullable', 'integer', Rule::exists('brands', 'id')],
             'streetAddress'      => [$addressRule, 'string', 'max:160'],
             'unit'               => ['nullable', 'string', 'max:30'],
             'city'               => ['required', 'string', 'max:80'],
@@ -217,14 +334,13 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
             return;
         }
 
-        $dealer = $this->dealerId === null ? new Dealer : Dealer::findOrFail($this->dealerId);
+        $dealer = $this->dealerId === null ? new Dealer(['brand_id' => (int) $this->brandId]) : Dealer::findOrFail($this->dealerId);
         $wasNew = ! $dealer->exists;
         $previousStatus = $dealer->status;
 
         $dealer->fill([
             'name'                => trim($this->name),
             'registration_number' => trim($this->registrationNumber) ?: null,
-            'brand_id'            => (int) $this->brandId,
             'street_address'      => trim($this->streetAddress) ?: null,
             'unit'                => trim($this->unit) ?: null,
             'city'                => trim($this->city),
@@ -256,6 +372,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
 
         $this->dealerId = $dealer->id;
         $this->savedStatus = $dealer->status;
+        $this->savedBrandId = $dealer->brand_id;
         $this->statusMessage = match (true) {
             $dealer->isSuspended()           => "Saved {$dealer->name}. It's suspended: its cars are unlisted and its staff can't sign in.",
             ! $dealer->hasCompleteAddress() => "Saved {$dealer->name}. Its vehicles can’t be published until the address is complete.",
@@ -374,6 +491,123 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         return true;
     }
 
+    /* ---- status: its own confirmed action --------------------------------- */
+
+    public function changeStatus(string $status): void
+    {
+        Gate::authorize(Permission::DEALERS_MANAGE);
+        abort_unless(array_key_exists($status, Dealer::STATUS_LABELS), 422);
+        $dealer = $this->dealerOrFail();
+
+        if ($status === $dealer->status) {
+            return;
+        }
+
+        if ($status === Dealer::STATUS_ACTIVE && (! $dealer->hasCompleteAddress() || blank($dealer->timezone))) {
+            $this->statusMessage = '';
+            $this->addError('status', 'Complete the address and timezone (Location tab) before going live.');
+
+            return;
+        }
+
+        $before = $dealer->status;
+        $dealer->update(['status' => $status]);
+        AuditLog::record('dealer.status_changed', $dealer, ['status' => $before], ['status' => $status]);
+
+        $this->status = $this->savedStatus = $status;
+        $this->resetErrorBag('status');
+        $this->statusMessage = match ($status) {
+            Dealer::STATUS_ACTIVE    => "{$dealer->name} is live. Its published cars appear on TruCars.",
+            Dealer::STATUS_SUSPENDED => "{$dealer->name} is suspended. Its cars are unlisted and its staff can't sign in.",
+            default                  => "{$dealer->name} is back to draft. None of its cars are listed.",
+        };
+    }
+
+    /* ---- storefront photo ------------------------------------------------- */
+
+    public function updatedCoverUpload(): void
+    {
+        Gate::authorize(Permission::DEALERS_MANAGE);
+        $dealer = $this->dealerOrFail();
+        $this->validate(['coverUpload' => ['image', 'max:8192']], attributes: ['coverUpload' => 'photo']);
+
+        $old = $dealer->cover_photo_path;
+        $dealer->update(['cover_photo_path' => $this->coverUpload->store('dealer-covers', 'local')]);
+        if ($old) {
+            Storage::disk('local')->delete($old);
+        }
+
+        AuditLog::record('dealer.cover_changed', $dealer);
+        $this->coverUpload = null;
+        $this->statusMessage = 'Storefront photo updated.';
+    }
+
+    public function removeCover(): void
+    {
+        Gate::authorize(Permission::DEALERS_MANAGE);
+        $dealer = $this->dealerOrFail();
+
+        if ($dealer->cover_photo_path) {
+            Storage::disk('local')->delete($dealer->cover_photo_path);
+            $dealer->update(['cover_photo_path' => null]);
+            AuditLog::record('dealer.cover_changed', $dealer, null, ['removed' => true]);
+        }
+    }
+
+    /* ---- the profile's read-only summaries --------------------------------- */
+
+    /** Headline numbers for the stat cards. */
+    public function stats(): array
+    {
+        $dealer = $this->dealerOrFail();
+        $deals = fn () => \App\Models\Deal::withoutGlobalScope(\App\Models\Scopes\DealerScope::class)->where('dealer_id', $dealer->id);
+        $from = now()->subDays(30);
+        $current = $deals()->where('created_at', '>=', $from)->count();
+        $prior = $deals()->whereBetween('created_at', [$from->copy()->subDays(30), $from])->count();
+
+        return [
+            'live'         => $dealer->vehicles()->where('is_published', true)->count(),
+            'vehicles'     => $dealer->vehicles()->count(),
+            'users'        => $dealer->staff()->whereNull('suspended_at')->count(),
+            'invited'      => $dealer->invitations()->open()->count(),
+            'reservations' => $current,
+            'delta'        => $prior === 0 ? ($current > 0 ? 'new' : null) : (($current >= $prior ? '+' : '') . round(($current - $prior) / $prior * 100) . '%'),
+            'deltaUp'      => $current >= $prior,
+            'customers'    => $deals()->whereNotNull('user_id')->distinct()->count('user_id'),
+        ];
+    }
+
+    /** The setup steps a dealer needs before it's fully running. */
+    public function setupSteps(): array
+    {
+        $dealer = $this->dealerOrFail();
+
+        return [
+            ['label' => 'Dealer information', 'done' => filled($dealer->name) && filled($dealer->registration_number) && filled($dealer->phone), 'tab' => 'info'],
+            ['label' => 'Location details',   'done' => $dealer->hasCompleteAddress() && filled($dealer->timezone), 'tab' => 'location'],
+            ['label' => 'Franchise brand',    'done' => $dealer->brand_id !== null, 'tab' => 'cpo'],
+            ['label' => 'Team access',        'done' => $dealer->staff()->whereNull('suspended_at')->exists(), 'tab' => 'team'],
+            ['label' => 'Inventory feed connected', 'done' => filled($dealer->feed_rooftop_id), 'tab' => 'integrations'],
+        ];
+    }
+
+    /** The brand's current and upcoming offers, as this dealer's cars get them. */
+    public function brandOffers(): Collection
+    {
+        $dealer = $this->dealerOrFail();
+
+        return $dealer->brand_id
+            ? \App\Models\Offer::where('brand_id', $dealer->brand_id)->where('status', 'published')
+                ->whereDate('ends_on', '>=', now()->toDateString())->orderBy('starts_on')->get()
+                ->filter(fn ($offer) => ! $offer->provinces || in_array($dealer->province, $offer->provinces, true))->values()
+            : collect();
+    }
+
+    public function lastImport(): ?AuditLog
+    {
+        return AuditLog::where('action', 'inventory.imported')->where('target_type', 'Dealer')->where('target_id', $this->dealerId)->latest('id')->first();
+    }
+
     public function timezoneOptions(): array
     {
         return CanadianAddress::timezones();
@@ -413,19 +647,34 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         .card-head { padding:16px 20px 14px; border-bottom:1px solid var(--line); }
         .card-head .ttl { font-size:15px; font-weight:700; }
         .card-head .sub { font-size:12.5px; color:var(--ink-3); margin-top:2px; }
-        .brand-card { grid-column:1 / -1; border-color:var(--primary-line); box-shadow:0 0 0 4px var(--primary-soft); }
-        .brand-pick { display:flex; align-items:center; gap:16px; padding:20px; }
-        .brand-logo { width:58px; height:58px; border-radius:17px; background:#14161B; color:#fff; display:grid; place-items:center; font-size:20px; font-weight:800; flex-shrink:0; }
-        .brand-main { flex:1; display:flex; flex-direction:column; gap:6px; min-width:0; }
-        .brand-main label { font-size:12px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--primary-press); }
-        .brand-main select { font-size:20px; font-weight:800; letter-spacing:-.02em; border:1.5px solid var(--line-strong); border-radius:14px; padding:11px 14px; background:var(--card); font-family:inherit; color:var(--ink); max-width:460px; }
-        .brand-main select:focus { outline:none; border-color:var(--primary); }
-        .brand-follows { display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:12px 20px 16px; border-top:1px solid var(--line); background:var(--bg); }
-        .bf-label { font-size:12.5px; font-weight:700; color:var(--ink-2); margin-right:4px; }
-        .bf { display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:700; padding:5px 11px; border-radius:var(--radius-pill); background:var(--card); border:1px solid var(--line); color:var(--ink-3); }
-        .bf svg { width:13px; height:13px; }
-        .bf.on { background:var(--good-soft); border-color:transparent; color:var(--good-ink); }
-        .bf-link { margin-left:auto; font-size:13px; font-weight:700; color:var(--primary-press); }
+        .brand-fixed { display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:9px 10px 9px 12px; border:1px solid var(--line); border-radius:var(--radius-sm); background:var(--bg); }
+        .brand-chip { font-size:13.5px; font-weight:800; padding:4px 11px; border-radius:var(--radius-pill); background:#14161B; color:#fff; }
+        .brand-chip.missing { background:var(--amber-soft); color:var(--amber); }
+        .brand-follows-text { font-size:12.5px; color:var(--ink-3); flex:1; min-width:200px; }
+        .brand-follows-text a { color:var(--primary-press); font-weight:700; }
+        .brand-change { font-size:12.5px; font-weight:700; color:var(--ink-2); padding:6px 12px; border-radius:var(--radius-pill); border:1px solid var(--line-strong); background:var(--card); }
+        .brand-change:hover { border-color:var(--ink-3); color:var(--ink); }
+        .bc-scrim { position:fixed; inset:0; background:rgba(22,24,29,.45); backdrop-filter:blur(2px); z-index:80; display:grid; place-items:center; padding:20px; }
+        .bc { width:min(560px, 100%); max-height:calc(100vh - 40px); overflow:auto; background:var(--card); border-radius:22px; box-shadow:0 30px 80px rgba(22,24,29,.3); }
+        .bc-head { padding:22px 24px 6px; }
+        .bc-head .warn { display:inline-flex; align-items:center; gap:7px; font-size:11.5px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--primary-press); }
+        .bc-head h2 { font-size:21px; font-weight:800; letter-spacing:-.02em; margin:8px 0 4px; }
+        .bc-head p { margin:0; font-size:13.5px; color:var(--ink-2); }
+        .bc-body { padding:14px 24px 6px; display:grid; gap:14px; }
+        .bc-body label { font-size:12.5px; font-weight:700; color:var(--ink-2); display:block; margin-bottom:6px; }
+        .bc-body select, .bc-body input, .bc-body textarea { width:100%; border:1px solid var(--line-strong); border-radius:var(--radius-sm); padding:10px 12px; font-size:14px; font-family:inherit; background:var(--card); }
+        .bc-body select:focus, .bc-body input:focus, .bc-body textarea:focus { outline:none; border-color:var(--primary); }
+        .impact { border-radius:14px; border:1px solid var(--line); overflow:hidden; }
+        .impact-row { display:grid; grid-template-columns:110px minmax(0, 1fr) 18px minmax(0, 1fr); gap:10px; align-items:center; padding:10px 14px; border-bottom:1px solid var(--line); font-size:13px; }
+        .impact-row:last-child { border-bottom:none; }
+        .impact-row .k { font-size:11.5px; font-weight:800; color:var(--ink-3); text-transform:uppercase; letter-spacing:.04em; }
+        .impact-row .from { color:var(--ink-3); text-decoration:line-through; }
+        .impact-row .to { font-weight:700; }
+        .impact-note { font-size:12.5px; color:var(--amber); font-weight:600; background:var(--amber-soft); border-radius:12px; padding:10px 12px; }
+        .bc-foot { display:flex; justify-content:flex-end; gap:8px; padding:16px 24px 22px; }
+        .bc-foot .btn-danger { background:var(--primary-press); color:#fff; border-radius:var(--radius-pill); padding:10px 18px; font-size:14px; font-weight:700; }
+        .bc-foot .btn-danger:disabled { opacity:.4; cursor:not-allowed; }
+        .bc-foot .btn-cancel { border:1px solid var(--line-strong); border-radius:var(--radius-pill); padding:10px 18px; font-size:14px; font-weight:700; color:var(--ink); background:var(--card); }
         .fields { padding:20px; display:grid; grid-template-columns:repeat(6, minmax(0, 1fr)); gap:16px; }
         .field { display:flex; flex-direction:column; gap:6px; grid-column:span 3; }
         .field.w2 { grid-column:span 2; }
@@ -461,6 +710,137 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         @media (max-width:760px){ .u-invite { grid-template-columns:1fr; } .u-row { flex-wrap:wrap; } }
         .dl-actions { display:flex; justify-content:flex-end; gap:10px; max-width:880px; margin-top:20px; }
 
+
+        /* ---- profile ---- */
+        .hero { position:relative; border-radius:24px; overflow:hidden; min-height:200px; background:linear-gradient(120deg, #F6F7F7 0%, #FFF4EC 100%); border:1px solid var(--line); margin-bottom:18px; }
+        .hero-photo { position:absolute; inset:0 0 0 38%; background:var(--hero-grad) center/cover; opacity:.9; }
+        .hero:not(.has-photo) .hero-photo { background:radial-gradient(500px 260px at 80% 30%, rgba(245,99,31,.35), transparent 70%), repeating-linear-gradient(135deg, rgba(245,99,31,.06) 0 14px, transparent 14px 28px); opacity:1; }
+        .hero-fade { position:absolute; inset:0; background:linear-gradient(90deg, #FAFAFA 0%, #FAFAFA 34%, rgba(250,250,250,.85) 46%, rgba(250,250,250,0) 66%); }
+        .hero-body { position:relative; display:flex; align-items:center; gap:26px; padding:28px 30px; min-height:200px; }
+        .hero-brand { display:flex; flex-direction:column; align-items:center; gap:6px; flex-shrink:0; width:96px; }
+        .mark { width:72px; height:72px; border-radius:20px; background:#14161B; color:#fff; display:grid; place-items:center; font-size:24px; font-weight:800; letter-spacing:-.02em; box-shadow:0 10px 26px rgba(22,24,29,.18); }
+        .mark.big { width:58px; height:58px; font-size:19px; border-radius:17px; box-shadow:none; }
+        .mark-name { font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-2); text-align:center; }
+        .hero-main { flex:1; min-width:0; }
+        .hero-title { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+        .hero-title h1 { font-size:30px; font-weight:800; letter-spacing:-.03em; margin:0; }
+        .st { display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:700; padding:5px 11px; border-radius:var(--radius-pill); background:var(--bg); color:var(--ink-2); }
+        .st i, .st-dot { width:8px; height:8px; border-radius:50%; background:var(--ink-3); display:inline-block; }
+        .st-active, .st.st-active { background:var(--good-soft); color:var(--good-ink); }
+        .st.st-active i, .st-dot.st-active { background:var(--good); }
+        .st.st-suspended { background:var(--primary-soft); color:var(--primary-press); }
+        .st.st-suspended i, .st-dot.st-suspended { background:var(--primary); }
+        .st-dot.st-draft { background:var(--amber); }
+        .hero-line { display:flex; align-items:center; gap:7px; margin-top:10px; font-size:14px; color:var(--ink-2); }
+        .hero-line svg, .hero-contacts svg { color:var(--ink-3); }
+        .hero-contacts { display:flex; flex-wrap:wrap; gap:8px 22px; margin-top:14px; font-size:13.5px; color:var(--ink-2); }
+        .hero-contacts > * { display:inline-flex; align-items:center; gap:7px; }
+        .hero-contacts a:hover { color:var(--primary-press); }
+        .hero-actions { align-self:flex-start; }
+        .hbtn { display:inline-flex; align-items:center; gap:7px; font-size:13px; font-weight:700; padding:9px 14px; border-radius:var(--radius-pill); background:rgba(255,255,255,.92); border:1px solid var(--line); box-shadow:var(--shadow-sm); }
+        .hbtn:hover { border-color:var(--primary-line); color:var(--primary-press); }
+        .photo-btn { position:absolute; right:16px; bottom:16px; display:inline-flex; align-items:center; gap:7px; font-size:12.5px; font-weight:700; color:#fff; padding:8px 13px; border-radius:var(--radius-pill); background:rgba(22,24,29,.62); backdrop-filter:blur(6px); cursor:pointer; }
+        .photo-btn:hover { background:rgba(22,24,29,.8); }
+
+        .pf { display:grid; grid-template-columns:minmax(0, 1fr) 290px; gap:18px; align-items:start; }
+        .pf-main { min-width:0; }
+        .stats { display:grid; grid-template-columns:repeat(auto-fit, minmax(170px, 1fr)); gap:12px; margin-bottom:16px; }
+        .stat { position:relative; display:flex; align-items:center; gap:14px; padding:16px; background:var(--card); border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow-sm); text-align:left; transition:border-color .15s ease, transform .15s ease; }
+        a.stat:hover, button.stat:hover { border-color:var(--primary-line); transform:translateY(-1px); }
+        .stat .ic { width:44px; height:44px; border-radius:13px; background:var(--primary-soft); color:var(--primary-press); display:grid; place-items:center; flex-shrink:0; }
+        .stat b { display:block; font-size:24px; font-weight:800; letter-spacing:-.02em; line-height:1.1; font-variant-numeric:tabular-nums; }
+        .stat small { font-size:12.5px; color:var(--ink-2); }
+        .stat .go { position:absolute; right:12px; top:14px; color:var(--ink-3); }
+        .delta { position:absolute; right:12px; top:12px; font-size:11px; font-weight:800; padding:2px 7px; border-radius:var(--radius-pill); }
+        .delta.up { background:var(--good-soft); color:var(--good-ink); }
+        .delta.down { background:var(--primary-soft); color:var(--primary-press); }
+
+        .ptabs { display:flex; gap:4px; border-bottom:1px solid var(--line); margin-bottom:16px; overflow-x:auto; }
+        .ptabs button { padding:10px 14px; font-size:14px; font-weight:600; color:var(--ink-2); border-bottom:2px solid transparent; margin-bottom:-1px; white-space:nowrap; }
+        .ptabs button.on { color:var(--primary-press); border-bottom-color:var(--primary); font-weight:700; }
+
+        .ov { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:16px; }
+        .pcard { background:var(--card); border:1px solid var(--line); border-radius:20px; box-shadow:var(--shadow-sm); overflow:hidden; display:block; }
+        .pcard-head { display:flex; align-items:center; gap:14px; padding:18px 22px; border-bottom:1px solid var(--line); }
+        .pcard-head .t { font-size:16px; font-weight:800; letter-spacing:-.01em; }
+        .pcard-head .s { font-size:12.5px; color:var(--ink-3); margin-top:2px; }
+        .pcard-head > div { flex:1; min-width:0; }
+        .pic { width:42px; height:42px; border-radius:12px; background:var(--primary-soft); color:var(--primary-press); display:grid; place-items:center; flex-shrink:0; }
+        .ebtn { display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:700; padding:8px 13px; border-radius:11px; border:1px solid var(--line-strong); background:var(--card); color:var(--ink); white-space:nowrap; }
+        .ebtn:hover { border-color:var(--ink-3); }
+        .kv { padding:16px 22px 20px; }
+        .kv.two { display:grid; grid-template-columns:1fr 1fr; gap:14px 24px; }
+        .kv span { display:block; font-size:12px; color:var(--ink-3); font-weight:600; }
+        .kv b, .kv a { display:block; font-size:14.5px; font-weight:600; color:var(--ink); margin-top:3px; word-break:break-word; }
+        .kv a { color:var(--primary-press); }
+        .kv .row { display:grid; grid-template-columns:150px minmax(0, 1fr); gap:12px; padding:9px 0; border-bottom:1px solid var(--line); align-items:baseline; }
+        .kv .row:last-child { border-bottom:none; }
+        .kv .row span { font-size:13.5px; color:var(--ink-2); }
+        .kv .row b { margin-top:0; }
+        .kv b.ok { color:var(--good-ink); } .kv b.warn { color:var(--amber); }
+        .mono { font-family:var(--mono); }
+        .people { padding:6px 22px 14px; }
+        .person { display:flex; align-items:center; gap:12px; padding:9px 0; border-bottom:1px solid var(--line); }
+        .person .av { width:34px; height:34px; border-radius:50%; background:#5B6470; color:#fff; display:grid; place-items:center; font-size:12px; font-weight:800; flex-shrink:0; }
+        .person .av.muted { background:var(--bg); color:var(--ink-3); border:1px solid var(--line); }
+        .person b { display:block; font-size:13.5px; } .person small { font-size:12px; color:var(--ink-3); }
+        .grow { flex:1; min-width:0; }
+        .dot-st { display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:700; }
+        .dot-st::before { content:""; width:8px; height:8px; border-radius:50%; background:var(--ink-3); }
+        .dot-st.on { color:var(--good-ink); } .dot-st.on::before { background:var(--good); }
+        .dot-st.off { color:var(--primary-press); } .dot-st.off::before { background:var(--primary); }
+        .dot-st.wait { color:var(--ink-3); }
+        .add-line { margin-top:10px; font-size:13.5px; font-weight:700; color:var(--ink); }
+        .add-line:hover { color:var(--primary-press); }
+        .empty-line { font-size:13.5px; color:var(--ink-3); padding:8px 0; }
+        .form-end { display:flex; justify-content:flex-end; padding:0 22px 20px; }
+        .brand-panel { display:flex; align-items:center; gap:14px; padding:18px 22px; border-bottom:1px solid var(--line); background:var(--bg); }
+        .bp-name { font-size:18px; font-weight:800; }
+        .bp-sub { font-size:12.5px; color:var(--ink-3); }
+        .offer-line { display:flex; align-items:center; gap:16px; padding:14px 22px; border-bottom:1px solid var(--line); }
+        .offer-line:last-child { border-bottom:none; }
+        .o-big { font-size:19px; font-weight:800; color:var(--primary-press); min-width:110px; }
+        .offer-line b { display:block; font-size:14px; } .offer-line small { font-size:12px; color:var(--ink-3); }
+        .o-st { font-size:10.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; padding:3px 9px; border-radius:var(--radius-pill); background:var(--bg); color:var(--ink-2); }
+        .o-st.live { background:var(--good-soft); color:var(--good-ink); }
+        .dl-users { max-width:none; margin-top:0; border-radius:20px; }
+
+        .pf-side { display:grid; gap:14px; position:sticky; top:84px; }
+        .side-card { background:var(--card); border:1px solid var(--line); border-radius:20px; box-shadow:var(--shadow-sm); padding:16px 18px; }
+        .side-t { font-size:15px; font-weight:800; margin-bottom:10px; }
+        .side-note { font-size:12.5px; color:var(--ink-3); margin-top:8px; }
+        .status-pick { position:relative; }
+        .sp-current { display:flex; align-items:center; gap:9px; width:100%; padding:10px 12px; border-radius:12px; border:1px solid var(--line-strong); font-size:14px; font-weight:700; background:var(--card); text-align:left; }
+        .sp-current.static { cursor:default; }
+        .sp-chev { margin-left:auto; color:var(--ink-3); }
+        .sp-menu { position:absolute; left:0; right:0; top:calc(100% + 6px); background:var(--card); border:1px solid var(--line); border-radius:14px; box-shadow:0 14px 34px rgba(22,24,29,.14); padding:6px; z-index:20; }
+        .sp-menu button { display:flex; align-items:flex-start; gap:10px; width:100%; padding:9px 10px; border-radius:9px; text-align:left; }
+        .sp-menu button:hover { background:var(--bg); }
+        .sp-menu .st-dot { margin-top:5px; }
+        .sp-menu b { display:block; font-size:13.5px; } .sp-menu small { font-size:12px; color:var(--ink-3); }
+        .map { width:100%; height:170px; border:0; border-radius:14px; display:block; }
+        .map.empty { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; text-align:center; background:var(--bg); color:var(--ink-3); font-size:12.5px; padding:16px; }
+        .side-link { display:inline-flex; align-items:center; gap:5px; margin-top:8px; font-size:12.5px; font-weight:700; color:var(--primary-press); }
+        .ring-row { display:flex; align-items:center; gap:14px; margin-bottom:10px; }
+        .ring { --p:0; width:58px; height:58px; border-radius:50%; background:conic-gradient(var(--good) calc(var(--p) * 1%), var(--bg) 0); display:grid; place-items:center; flex-shrink:0; }
+        .ring b { width:46px; height:46px; border-radius:50%; background:var(--card); display:grid; place-items:center; font-size:13px; font-weight:800; }
+        .ring-row > span:last-child b { display:block; font-size:13.5px; } .ring-row small { font-size:12px; color:var(--ink-3); }
+        .step { display:flex; align-items:center; gap:10px; width:100%; padding:7px 2px; font-size:13.5px; color:var(--ink-2); text-align:left; }
+        .step:hover { color:var(--ink); }
+        .step svg { color:var(--ink-3); }
+        .step .tick { width:20px; height:20px; border-radius:50%; border:1.5px solid var(--line-strong); display:grid; place-items:center; flex-shrink:0; }
+        .step.done .tick { background:var(--good); border-color:var(--good); color:#fff; }
+        .step.done .tick svg { color:#fff; }
+        .qa { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:11px; margin-top:8px; border-radius:12px; font-size:13.5px; font-weight:700; border:1px solid var(--line-strong); background:var(--card); color:var(--ink); }
+        .qa:first-of-type { margin-top:0; }
+        .qa:hover { border-color:var(--ink-3); }
+        .qa.primary { background:var(--primary); border-color:var(--primary); color:#fff; box-shadow:0 8px 20px rgba(245,99,31,.22); }
+        .qa.primary:hover { background:var(--primary-press); }
+        .err { font-size:12px; color:var(--primary-press); font-weight:600; }
+
+        @media (max-width:1200px) { .pf { grid-template-columns:minmax(0, 1fr); } .pf-side { position:static; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); } }
+        @media (max-width:900px) { .ov { grid-template-columns:minmax(0, 1fr); } .hero-photo { inset:0; opacity:.25; } .hero-fade { display:none; } .hero-body { flex-wrap:wrap; } .kv.two { grid-template-columns:1fr; } }
+
         @media (max-width:760px){
             .fields { grid-template-columns:1fr; }
             .field, .field.w2, .field.w4 { grid-column:1 / -1; }
@@ -470,15 +850,6 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
 @endpush
 
 <div>
-    @if ($dealerId !== null)
-        @include('partials.dealer-tabs', ['tabDealer' => $dealerId, 'activeTab' => 'profile'])
-    @endif
-
-    <div class="dl-head">
-        <h1>{{ $dealerId === null ? 'New dealer' : $name }}</h1>
-        <p>One selling rooftop at one physical address. Every vehicle on this dealer is shown at this address.</p>
-    </div>
-
     @if ($statusMessage !== '')
         <div class="dl-status">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
@@ -486,249 +857,372 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         </div>
     @endif
 
-    <form wire:submit="save">
-        {{-- Read-only for staff who can view dealers but not manage them. save() enforces it regardless. --}}
-        <fieldset class="dl-grid" @disabled(! $this->canManage())>
-            @php $settings = $this->brandSettings(); @endphp
-            <div class="card brand-card">
-                <div class="brand-pick">
-                    <span class="brand-logo">{{ $settings ? $settings['brand']->initials() : '?' }}</span>
-                    <div class="brand-main">
-                        <label for="brandId">Franchise brand</label>
-                        <select id="brandId" wire:model.live="brandId">
-                            <option value="">Choose the brand this dealer is franchised for…</option>
-                            @foreach ($this->brands() as $brandOption)
-                                <option value="{{ $brandOption->id }}">{{ $brandOption->name }}</option>
-                            @endforeach
-                        </select>
-                        @error('brandId') <span class="err">{{ $message }}</span> @enderror
+    @if ($dealerId === null)
+        {{-- ================= New dealer ================= --}}
+        <div class="dl-head">
+            <h1>New dealer</h1>
+            <p>One franchise rooftop at one physical address. Every vehicle on this dealer is shown at this address.</p>
+        </div>
+        <form wire:submit="save">
+            <fieldset class="dl-grid">
+                <div class="card">
+                    <div class="card-head"><div class="ttl">Dealership</div><div class="sub">What shoppers see, and how the dealer is registered.</div></div>
+                    <div class="fields">@include('partials.dealer.info-fields')</div>
+                </div>
+                <div class="card">
+                    <div class="card-head"><div class="ttl">Rooftop address</div><div class="sub">Where this dealer's cars physically are. Required before any vehicle can be published.</div></div>
+                    <div class="fields">@include('partials.dealer.location-fields')</div>
+                </div>
+                <div class="card">
+                    <div class="card-head"><div class="ttl">Start as</div></div>
+                    <div class="fields">
+                        <div class="field w6">
+                            <div class="status-toggle">
+                                <button type="button" class="status-opt {{ $status === 'draft' ? 'on' : '' }}" wire:click="$set('status', 'draft')"><div class="k">Draft</div><div class="d">Being set up — none of its cars are listed</div></button>
+                                <button type="button" class="status-opt {{ $status === 'active' ? 'on' : '' }}" wire:click="$set('status', 'active')"><div class="k">Active</div><div class="d">Live — its published cars appear on TruCars</div></button>
+                            </div>
+                            @error('status') <span class="err">{{ $message }}</span> @enderror
+                        </div>
                     </div>
                 </div>
-                @if ($settings)
-                    <div class="brand-follows">
-                        <span class="bf-label">Follows {{ $settings['brand']->name }} settings</span>
-                        <span class="bf {{ $settings['checklist'] ? 'on' : '' }}">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-                            {{ $settings['checklist'] ? $settings['checklist']->points_count . '-point CPO checklist' : 'No CPO checklist yet' }}
-                        </span>
-                        <span class="bf {{ $settings['offers'] ? 'on' : '' }}">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z"/></svg>
-                            {{ $settings['offers'] }} current {{ $settings['offers'] === 1 ? 'offer' : 'offers' }}
-                        </span>
-                        <span class="bf">Same rules as {{ $settings['dealers'] }} other {{ $settings['brand']->name }} {{ $settings['dealers'] === 1 ? 'dealer' : 'dealers' }}</span>
-                        @can('settings.manage')
-                            <a class="bf-link" href="{{ route('admin.brands.show', $settings['brand']) }}" wire:navigate>{{ $settings['brand']->name }} settings →</a>
-                        @endcan
+            </fieldset>
+            <div class="dl-actions">
+                <a href="{{ route('admin.dealers') }}" wire:navigate class="btn btn-ghost">Cancel</a>
+                <button type="submit" class="btn btn-primary" wire:loading.attr="disabled" wire:target="save">Create dealer</button>
+            </div>
+        </form>
+    @else
+        {{-- ================= Dealer profile ================= --}}
+        @php
+            $dealer = $this->dealerOrFail();
+            $settings = $this->brandSettings();
+            $stats = $this->stats();
+            $steps = $this->setupSteps();
+            $done = collect($steps)->where('done', true)->count();
+            $percent = (int) round($done / count($steps) * 100);
+            $publicUrl = route('shop', ['dealer' => [$dealer->id]]);
+            $displayName = ucwords(strtolower($dealer->name));
+            $canManage = $this->canManage();
+            $icon = fn (string $path, int $size = 18) => '<svg width="'.$size.'" height="'.$size.'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'.$path.'</svg>';
+            $paths = [
+                'pin'   => '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
+                'phone' => '<path d="M5 4h4l2 5-3 2a11 11 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2Z"/>',
+                'mail'  => '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>',
+                'globe' => '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
+                'car'   => '<path d="M5 17h14M6 17l1.5-6h9L18 17M7 21v-2M17 21v-2"/><circle cx="8" cy="14" r="1"/><circle cx="16" cy="14" r="1"/>',
+                'user'  => '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+                'users' => '<circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M17 11a3 3 0 1 0 0-6M22 21a6 6 0 0 0-4-5.6"/>',
+                'inbox' => '<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
+                'build' => '<path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6"/>',
+                'shield'=> '<path d="M12 3 4 6v6c0 5 8 9 8 9s8-4 8-9V6Z"/><path d="m9 12 2 2 4-4"/>',
+                'edit'  => '<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+                'ext'   => '<path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>',
+                'camera'=> '<path d="M4 7h3l2-3h6l2 3h3a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1Z"/><circle cx="12" cy="13" r="4"/>',
+                'tag'   => '<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z"/><circle cx="7.5" cy="7.5" r="1.5"/>',
+                'plug'  => '<path d="M9 2v6M15 2v6M6 8h12v4a6 6 0 0 1-12 0Z"/><path d="M12 18v4"/>',
+                'send'  => '<path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>',
+                'chev'  => '<path d="m9 6 6 6-6 6"/>',
+            ];
+        @endphp
+
+        {{-- Hero --}}
+        <section class="hero {{ $dealer->cover_photo_path ? 'has-photo' : '' }}">
+            <div class="hero-photo" @if ($dealer->cover_photo_path) style="background-image:url('{{ $dealer->coverPhotoUrl() }}')" @endif></div>
+            <div class="hero-fade"></div>
+            <div class="hero-body">
+                <div class="hero-brand">
+                    <span class="mark">{{ $settings ? $settings['brand']->initials() : '—' }}</span>
+                    <span class="mark-name">{{ $settings ? $settings['brand']->name : 'No brand' }}</span>
+                </div>
+                <div class="hero-main">
+                    <div class="hero-title">
+                        <h1>{{ $displayName }}</h1>
+                        <span class="st st-{{ $dealer->status }}"><i></i>{{ \App\Models\Dealer::STATUS_LABELS[$dealer->status] ?? $dealer->status }}</span>
                     </div>
-                @else
-                    <div class="brand-follows"><span class="bf-label">TruCars works only with franchise dealers. The brand’s CPO checklist and offers apply to this dealer automatically.</span></div>
+                    <div class="hero-line">{!! $icon($paths['pin'], 15) !!} {{ implode(', ', array_filter([$dealer->street_address, $dealer->city, trim(($dealer->province ?? '') . ' ' . ($dealer->postal_code ?? ''))])) ?: 'No address yet' }}</div>
+                    <div class="hero-contacts">
+                        @if ($dealer->phone) <span>{!! $icon($paths['phone'], 15) !!} {{ $dealer->phone }}</span> @endif
+                        @if ($dealer->email) <span>{!! $icon($paths['mail'], 15) !!} {{ $dealer->email }}</span> @endif
+                        @if ($dealer->website) <a href="{{ $dealer->website }}" target="_blank" rel="noopener">{!! $icon($paths['globe'], 15) !!} {{ preg_replace('#^https?://(www\.)?#', '', rtrim($dealer->website, '/')) }}</a> @endif
+                    </div>
+                </div>
+                <div class="hero-actions">
+                    <a class="hbtn" href="{{ $publicUrl }}" target="_blank" rel="noopener">View public page {!! $icon($paths['ext'], 14) !!}</a>
+                </div>
+            </div>
+            @if ($canManage)
+                <label class="photo-btn">
+                    {!! $icon($paths['camera'], 15) !!}
+                    <span wire:loading.remove wire:target="coverUpload">{{ $dealer->cover_photo_path ? 'Change photo' : 'Add storefront photo' }}</span>
+                    <span wire:loading wire:target="coverUpload">Uploading…</span>
+                    <input type="file" accept="image/*" wire:model="coverUpload" hidden>
+                </label>
+            @endif
+        </section>
+        @error('coverUpload') <div class="err" style="margin:-8px 0 12px">{{ $message }}</div> @enderror
+
+        <div class="pf">
+            <div class="pf-main">
+                {{-- Stats --}}
+                <div class="stats">
+                    <a class="stat" href="{{ route('admin.dealers.inventory', $dealer) }}" wire:navigate>
+                        <span class="ic">{!! $icon($paths['car'], 20) !!}</span>
+                        <span><b>{{ number_format($stats['live']) }}</b><small>Live vehicles</small></span>
+                        <span class="go">{!! $icon($paths['chev'], 16) !!}</span>
+                    </a>
+                    <button type="button" class="stat" wire:click="$set('tab', 'team')">
+                        <span class="ic">{!! $icon($paths['user'], 20) !!}</span>
+                        <span><b>{{ $stats['users'] }}</b><small>Dealer users{{ $stats['invited'] ? ' · ' . $stats['invited'] . ' invited' : '' }}</small></span>
+                        <span class="go">{!! $icon($paths['chev'], 16) !!}</span>
+                    </button>
+                    <div class="stat">
+                        <span class="ic">{!! $icon($paths['inbox'], 20) !!}</span>
+                        <span><b>{{ $stats['reservations'] }}</b><small>Reservations (30 days)</small></span>
+                        @if ($stats['delta']) <span class="delta {{ $stats['deltaUp'] ? 'up' : 'down' }}">{{ $stats['deltaUp'] ? '↑' : '↓' }} {{ ltrim($stats['delta'], '+-') }}</span> @endif
+                    </div>
+                    @can('customers.view')
+                        <a class="stat" href="{{ route('admin.dealers.customers', $dealer) }}" wire:navigate>
+                            <span class="ic">{!! $icon($paths['users'], 20) !!}</span>
+                            <span><b>{{ $stats['customers'] }}</b><small>Customers</small></span>
+                            <span class="go">{!! $icon($paths['chev'], 16) !!}</span>
+                        </a>
+                    @endcan
+                </div>
+
+                {{-- Tabs --}}
+                <nav class="ptabs">
+                    @foreach ($this::TABS as $key => $label)
+                        <button type="button" class="{{ $tab === $key ? 'on' : '' }}" wire:click="$set('tab', '{{ $key }}')">{{ $label }}</button>
+                    @endforeach
+                </nav>
+
+                @if ($tab === 'overview')
+                    <div class="ov">
+                        <div class="pcard">
+                            <div class="pcard-head">
+                                <span class="pic">{!! $icon($paths['build'], 20) !!}</span>
+                                <div><div class="t">Dealer information</div><div class="s">Name, franchise brand, registration and contact details.</div></div>
+                                @if ($canManage) <button type="button" class="ebtn" wire:click="$set('tab', 'info')">{!! $icon($paths['edit'], 14) !!} Edit</button> @endif
+                            </div>
+                            <div class="kv two">
+                                <div><span>Public name</span><b>{{ $displayName }}</b></div>
+                                <div><span>Public phone</span><b>{{ $dealer->phone ?: '—' }}</b></div>
+                                <div><span>Franchise brand</span><b>{{ $settings['brand']->name ?? 'Not set' }}</b></div>
+                                <div><span>Public email</span><b>{{ $dealer->email ?: '—' }}</b></div>
+                                <div><span>Dealer registration #</span><b>{{ $dealer->registration_number ? trim(($dealer->regulator ?? '') . ' ' . $dealer->registration_number) : '—' }}</b></div>
+                                <div><span>Website</span>@if ($dealer->website)<a href="{{ $dealer->website }}" target="_blank" rel="noopener">{{ preg_replace('#^https?://(www\.)?#', '', rtrim($dealer->website, '/')) }}</a>@else<b>—</b>@endif</div>
+                            </div>
+                        </div>
+
+                        <div class="pcard">
+                            <div class="pcard-head">
+                                <span class="pic">{!! $icon($paths['pin'], 20) !!}</span>
+                                <div><div class="t">Location</div><div class="s">Physical address, timezone and map location.</div></div>
+                                @if ($canManage) <button type="button" class="ebtn" wire:click="$set('tab', 'location')">{!! $icon($paths['edit'], 14) !!} Edit</button> @endif
+                            </div>
+                            <div class="kv two">
+                                <div><span>Address</span><b>{{ trim($dealer->street_address . ($dealer->unit ? ', Unit ' . $dealer->unit : '')) ?: '—' }}</b></div>
+                                <div><span>Country</span><b>{{ $dealer->country === 'CA' ? 'Canada' : ($dealer->country ?: '—') }}</b></div>
+                                <div><span>City</span><b>{{ $dealer->city ?: '—' }}</b></div>
+                                <div><span>Timezone</span><b>{{ $dealer->timezone ?: '—' }}</b></div>
+                                <div><span>Province</span><b>{{ \App\Support\CanadianAddress::PROVINCES[$dealer->province] ?? ($dealer->province ?: '—') }}</b></div>
+                                <div><span>Coordinates</span><b>{{ $dealer->hasCoordinates() ? number_format($dealer->latitude, 6) . ', ' . number_format($dealer->longitude, 6) : '—' }}</b></div>
+                                <div><span>Postal code</span><b>{{ $dealer->postal_code ?: '—' }}</b></div>
+                            </div>
+                        </div>
+
+                        <div class="pcard">
+                            <div class="pcard-head">
+                                <span class="pic">{!! $icon($paths['users'], 20) !!}</span>
+                                <div><div class="t">Team &amp; access</div><div class="s">Dealership staff and invitations.</div></div>
+                                @if ($this->canManageUsers()) <button type="button" class="ebtn" wire:click="$set('tab', 'team')">{!! $icon($paths['users'], 14) !!} Manage users</button> @endif
+                            </div>
+                            <div class="people">
+                                @forelse ($this->staffMembers()->take(4) as $member)
+                                    <div class="person">
+                                        <span class="av">{{ $member->initials }}</span>
+                                        <span class="grow"><b>{{ $member->name }}</b><small>{{ $member->email }}</small></span>
+                                        <span class="dot-st {{ $member->isSuspended() ? 'off' : 'on' }}">{{ $member->isSuspended() ? 'Suspended' : 'Active' }}</span>
+                                    </div>
+                                @empty
+                                @endforelse
+                                @foreach ($this->openInvitations()->take(max(0, 4 - $this->staffMembers()->count())) as $invitation)
+                                    <div class="person">
+                                        <span class="av muted">{{ collect(explode(' ', $invitation->name))->take(2)->map(fn ($part) => mb_strtoupper(mb_substr($part, 0, 1)))->implode('') }}</span>
+                                        <span class="grow"><b>{{ $invitation->name }}</b><small>{{ $invitation->email }}</small></span>
+                                        <span class="dot-st wait">Invited</span>
+                                    </div>
+                                @endforeach
+                                @if ($this->staffMembers()->isEmpty() && $this->openInvitations()->isEmpty())
+                                    <div class="empty-line">No one has portal access yet.</div>
+                                @endif
+                                @if ($this->canManageUsers())
+                                    <button type="button" class="add-line" wire:click="$set('tab', 'team')">+ Invite new user</button>
+                                @endif
+                            </div>
+                        </div>
+
+                        <div class="pcard">
+                            <div class="pcard-head">
+                                <span class="pic">{!! $icon($paths['shield'], 20) !!}</span>
+                                <div><div class="t">CPO program</div><div class="s">Follows the brand’s inspection checklist and offers.</div></div>
+                                <button type="button" class="ebtn" wire:click="$set('tab', 'cpo')">View</button>
+                            </div>
+                            <div class="kv">
+                                <div class="row"><span>Franchise brand</span><b>{{ $settings['brand']->name ?? 'Not set' }}</b></div>
+                                <div class="row"><span>Inspection checklist</span><b>{{ ($settings['checklist'] ?? null) ? $settings['checklist']->name . ' (' . $settings['checklist']->points_count . ' points)' : 'None yet' }}</b></div>
+                                <div class="row"><span>Shows on</span><b>{{ ($settings['checklist'] ?? null) ? \App\Models\InspectionProgram::APPLIES_TO_LABELS[$settings['checklist']->applies_to] : '—' }}</b></div>
+                                <div class="row"><span>Active offers</span><b>{{ $settings ? $settings['offers'] . ' ' . ($settings['offers'] === 1 ? 'offer' : 'offers') : '—' }}</b></div>
+                            </div>
+                        </div>
+                    </div>
+
+                @elseif ($tab === 'info')
+                    <form wire:submit="save" class="pcard">
+                        <div class="pcard-head">
+                            <span class="pic">{!! $icon($paths['build'], 20) !!}</span>
+                            <div><div class="t">Dealer information</div><div class="s">What shoppers see, and how the dealer is registered.</div></div>
+                        </div>
+                        <fieldset class="fields" @disabled(! $canManage) style="border:none; margin:0;">@include('partials.dealer.info-fields')</fieldset>
+                        @if ($canManage) <div class="form-end"><button type="submit" class="btn btn-primary">Save changes</button></div> @endif
+                    </form>
+
+                @elseif ($tab === 'location')
+                    <form wire:submit="save" class="pcard">
+                        <div class="pcard-head">
+                            <span class="pic">{!! $icon($paths['pin'], 20) !!}</span>
+                            <div><div class="t">Location</div><div class="s">Where this dealer’s cars physically are. Required before any vehicle can be published.</div></div>
+                        </div>
+                        <fieldset class="fields" @disabled(! $canManage) style="border:none; margin:0;">@include('partials.dealer.location-fields')</fieldset>
+                        @if ($canManage) <div class="form-end"><button type="submit" class="btn btn-primary">Save changes</button></div> @endif
+                    </form>
+
+                @elseif ($tab === 'team')
+                    @if ($this->canManageUsers())
+                        @include('partials.dealer.users')
+                    @else
+                        <div class="pcard"><div class="empty-line" style="padding:20px">You can’t manage this dealer’s users.</div></div>
+                    @endif
+
+                @elseif ($tab === 'cpo')
+                    <div class="pcard">
+                        <div class="pcard-head">
+                            <span class="pic">{!! $icon($paths['shield'], 20) !!}</span>
+                            <div><div class="t">CPO program</div><div class="s">Set by the brand — every {{ $settings['brand']->name ?? '' }} dealer follows the same checklist and offers.</div></div>
+                            @can('settings.manage') @if ($settings) <a class="ebtn" href="{{ route('admin.brands.show', $settings['brand']) }}" wire:navigate>{{ $settings['brand']->name }} settings {!! $icon($paths['chev'], 14) !!}</a> @endif @endcan
+                        </div>
+                        <div class="brand-panel">
+                            <span class="mark big">{{ $settings ? $settings['brand']->initials() : '—' }}</span>
+                            <div class="grow">
+                                <div class="bp-name">{{ $settings['brand']->name ?? 'No brand set' }}</div>
+                                <div class="bp-sub">{{ $settings ? 'Same rules as ' . $settings['dealers'] . ' other ' . $settings['brand']->name . ' ' . ($settings['dealers'] === 1 ? 'dealer' : 'dealers') : 'This dealer follows no brand settings until a brand is set.' }}</div>
+                            </div>
+                            @if ($canManage) <button type="button" class="brand-change" wire:click="startBrandChange">{{ $settings ? 'Change brand…' : 'Set brand…' }}</button> @endif
+                        </div>
+                        <div class="kv">
+                            <div class="row"><span>Inspection checklist</span><b>{{ ($settings['checklist'] ?? null) ? $settings['checklist']->name : 'None yet' }}</b></div>
+                            <div class="row"><span>Points</span><b>{{ ($settings['checklist'] ?? null) ? $settings['checklist']->points_count : '—' }}</b></div>
+                            <div class="row"><span>Shows on</span><b>{{ ($settings['checklist'] ?? null) ? \App\Models\InspectionProgram::APPLIES_TO_LABELS[$settings['checklist']->applies_to] : '—' }}</b></div>
+                            <div class="row"><span>Current offers</span><b>{{ $settings['offers'] ?? 0 }}</b></div>
+                        </div>
+                    </div>
+
+                @elseif ($tab === 'offers')
+                    <div class="pcard">
+                        <div class="pcard-head">
+                            <span class="pic">{!! $icon($paths['tag'], 20) !!}</span>
+                            <div><div class="t">Offers &amp; incentives</div><div class="s">{{ $settings ? $settings['brand']->name . ' offers this dealer’s eligible cars get, within their dates.' : 'No brand set.' }}</div></div>
+                            @can('settings.manage') @if ($settings) <a class="ebtn" href="{{ route('admin.brands.offers', $settings['brand']) }}" wire:navigate>Manage {!! $icon($paths['chev'], 14) !!}</a> @endif @endcan
+                        </div>
+                        @forelse ($this->brandOffers() as $offer)
+                            <div class="offer-line">
+                                <span class="o-big">{{ $offer->headline() }}</span>
+                                <span class="grow"><b>{{ $offer->title }}</b><small>{{ $offer->models ? implode(', ', $offer->models) : 'All models' }} · {{ $offer->starts_on->format('M j') }} – {{ $offer->ends_on->format('M j, Y') }}</small></span>
+                                <span class="o-st {{ $offer->state() }}">{{ $offer->state() }}</span>
+                            </div>
+                        @empty
+                            <div class="empty-line" style="padding:6px 22px 22px">No current or upcoming offers.</div>
+                        @endforelse
+                    </div>
+
+                @elseif ($tab === 'integrations')
+                    @php $import = $this->lastImport(); @endphp
+                    <div class="pcard">
+                        <div class="pcard-head">
+                            <span class="pic">{!! $icon($paths['plug'], 20) !!}</span>
+                            <div><div class="t">Inventory feed</div><div class="s">The dealer’s CSV export, matched to this dealer by its rooftop id.</div></div>
+                            <a class="ebtn" href="{{ route('admin.dealers.inventory', $dealer) }}" wire:navigate>Open inventory {!! $icon($paths['chev'], 14) !!}</a>
+                        </div>
+                        <div class="kv">
+                            <div class="row"><span>Status</span><b class="{{ $dealer->feed_rooftop_id ? 'ok' : 'warn' }}">{{ $dealer->feed_rooftop_id ? 'Connected' : 'Not connected yet' }}</b></div>
+                            <div class="row"><span>Rooftop id</span><b class="mono">{{ $dealer->feed_rooftop_id ?? 'Set by the first import' }}</b></div>
+                            <div class="row"><span>Last import</span><b>{{ $import ? $import->created_at->diffForHumans() . ' by ' . ($import->actor_email ?? 'console') : 'Never' }}</b></div>
+                            <div class="row"><span>Vehicles</span><b>{{ $stats['live'] }} live of {{ $stats['vehicles'] }}</b></div>
+                        </div>
+                    </div>
                 @endif
             </div>
 
-            <div class="card">
-                <div class="card-head">
-                    <div class="ttl">Dealership</div>
-                    <div class="sub">What shoppers see, and how the dealer is registered.</div>
-                </div>
-                <div class="fields">
-                    <div class="field w6">
-                        <label for="name">Public dealership name</label>
-                        <input id="name" type="text" wire:model="name" maxlength="120">
-                        @error('name') <span class="err">{{ $message }}</span> @enderror
-                    </div>
-                    <div class="field">
-                        <label for="registrationNumber">Dealer registration number <span class="opt">(OMVIC, VSA, AMVIC…)</span></label>
-                        <input id="registrationNumber" type="text" wire:model="registrationNumber" maxlength="40">
-                        @error('registrationNumber') <span class="err">{{ $message }}</span> @enderror
-                    </div>
-                    <div class="field">
-                        <label for="feedRooftopId">Inventory feed rooftop id</label>
-                        <input id="feedRooftopId" type="text" value="{{ $feedRooftopId ?? 'Set by the first inventory import' }}" readonly>
-                    </div>
-                    <div class="field w2">
-                        <label for="phone">Public phone <span class="opt">(optional)</span></label>
-                        <input id="phone" type="tel" wire:model="phone" maxlength="30">
-                        @error('phone') <span class="err">{{ $message }}</span> @enderror
-                    </div>
-                    <div class="field w2">
-                        <label for="email">Public email <span class="opt">(optional)</span></label>
-                        <input id="email" type="email" wire:model="email" maxlength="160">
-                        @error('email') <span class="err">{{ $message }}</span> @enderror
-                    </div>
-                    <div class="field w2">
-                        <label for="website">Website <span class="opt">(optional)</span></label>
-                        <input id="website" type="text" wire:model="website" placeholder="example.ca" maxlength="255">
-                        @error('website') <span class="err">{{ $message }}</span> @enderror
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-head">
-                    <div class="ttl">Rooftop address</div>
-                    <div class="sub">Where this dealer's cars physically are. Required before any vehicle can be published.</div>
-                </div>
-                <div class="fields">
-                    <div class="field w4">
-                        <label for="streetAddress">Street address</label>
-                        <input id="streetAddress" type="text" wire:model="streetAddress" placeholder="45510 Yale Rd" maxlength="160">
-                        @error('streetAddress') <span class="err">{{ $message }}</span> @enderror
-                    </div>
-                    <div class="field w2">
-                        <label for="unit">Unit <span class="opt">(optional)</span></label>
-                        <input id="unit" type="text" wire:model="unit" maxlength="30">
-                        @error('unit') <span class="err">{{ $message }}</span> @enderror
-                    </div>
-                    <div class="field w2">
-                        <label for="city">City</label>
-                        <input id="city" type="text" wire:model="city" maxlength="80">
-                        @error('city') <span class="err">{{ $message }}</span> @enderror
-                    </div>
-                    <div class="field w2">
-                        <label for="province">Province / territory</label>
-                        <select id="province" wire:model.live="province">
-                            <option value="">Choose…</option>
-                            @foreach (\App\Support\CanadianAddress::PROVINCES as $code => $provinceName)
-                                <option value="{{ $code }}">{{ $provinceName }}</option>
-                            @endforeach
-                        </select>
-                        @error('province') <span class="err">{{ $message }}</span> @enderror
-                    </div>
-                    <div class="field w2">
-                        <label for="postalCode">Postal code</label>
-                        <input id="postalCode" type="text" wire:model="postalCode" placeholder="V2P 2M9" maxlength="7">
-                        @error('postalCode') <span class="err">{{ $message }}</span> @enderror
-                    </div>
-                    <div class="field w2">
-                        <label for="country">Country</label>
-                        <select id="country" wire:model="country">
-                            <option value="">Choose…</option>
-                            <option value="CA">Canada</option>
-                        </select>
-                        @error('country') <span class="err">{{ $message }}</span> @enderror
-                    </div>
-                    <div class="field w2">
-                        <label for="latitude">Latitude <span class="opt">(optional)</span></label>
-                        <input id="latitude" type="text" inputmode="decimal" wire:model="latitude" placeholder="49.151131">
-                        @error('latitude') <span class="err">{{ $message }}</span> @enderror
-                    </div>
-                    <div class="field w2">
-                        <label for="longitude">Longitude <span class="opt">(optional)</span></label>
-                        <input id="longitude" type="text" inputmode="decimal" wire:model="longitude" placeholder="-121.963743">
-                        @error('longitude') <span class="err">{{ $message }}</span> @enderror
-                    </div>
-                    <div class="field w6">
-                        <span class="hint">Coordinates power distance sorting for shoppers. There's no automatic geocoding yet — they come from the inventory feed or can be entered here.</span>
-                    </div>
-                    <div class="field w4">
-                        <label for="timezone">Timezone</label>
-                        <select id="timezone" wire:model="timezone">
-                            <option value="">Choose…</option>
-                            @foreach ($this->timezoneOptions() as $zone)
-                                <option value="{{ $zone }}">{{ $zone }}</option>
-                            @endforeach
-                        </select>
-                        @if ($this->suggestedTimezone() && $timezone !== '' && $timezone !== $this->suggestedTimezone())
-                            <span class="hint">Most of {{ \App\Support\CanadianAddress::PROVINCES[$province] ?? $province }} uses {{ $this->suggestedTimezone() }} — keep this only if the rooftop is in an exception area.</span>
-                        @elseif ($province === 'NU')
-                            <span class="hint">Nunavut spans three zones — choose the one this rooftop observes.</span>
-                        @else
-                            <span class="hint">Used for handover windows and dealer-local times. Filled from the province; correct it for exception areas.</span>
-                        @endif
-                        @error('timezone') <span class="err">{{ $message }}</span> @enderror
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="card-head">
-                    <div class="ttl">Status</div>
-                </div>
-                <div class="fields">
-                    <div class="field w6">
-                        <div class="status-toggle">
-                            <button type="button" class="status-opt {{ $status === 'draft' ? 'on' : '' }}" wire:click="$set('status', 'draft')">
-                                <div class="k">Draft</div>
-                                <div class="d">Being set up — none of its cars are listed</div>
-                            </button>
-                            <button type="button" class="status-opt {{ $status === 'active' ? 'on' : '' }}" wire:click="$set('status', 'active')">
-                                <div class="k">Active</div>
-                                <div class="d">Live — its published cars appear on TruCars</div>
-                            </button>
-                            <button type="button" class="status-opt {{ $status === 'suspended' ? 'on' : '' }}" wire:click="$set('status', 'suspended')">
-                                <div class="k">Suspended</div>
-                                <div class="d">Cars unlisted and staff locked out — records kept</div>
-                            </button>
+            {{-- Right column --}}
+            <aside class="pf-side">
+                <div class="side-card">
+                    <div class="side-t">Dealership status</div>
+                    @if ($canManage)
+                        <div class="status-pick" x-data="{ open: false }" @click.outside="open = false">
+                            <button type="button" class="sp-current" @click="open = ! open"><i class="st-dot st-{{ $dealer->status }}"></i>{{ \App\Models\Dealer::STATUS_LABELS[$dealer->status] }} <span class="sp-chev">{!! $icon('<path d="m6 9 6 6 6-6"/>', 15) !!}</span></button>
+                            <div class="sp-menu" x-show="open" x-cloak x-transition>
+                                @foreach (['active' => 'Live — published cars appear on TruCars', 'draft' => 'Being set up — no cars listed', 'suspended' => 'Cars unlisted, staff locked out'] as $value => $detail)
+                                    @continue($value === $dealer->status)
+                                    <button type="button" wire:click="changeStatus('{{ $value }}')" wire:confirm="Change {{ $displayName }} to {{ \App\Models\Dealer::STATUS_LABELS[$value] }}? {{ $detail }}." @click="open = false">
+                                        <i class="st-dot st-{{ $value }}"></i><span><b>{{ \App\Models\Dealer::STATUS_LABELS[$value] }}</b><small>{{ $detail }}</small></span>
+                                    </button>
+                                @endforeach
+                            </div>
                         </div>
-                        @error('status') <span class="err">{{ $message }}</span> @enderror
-                    </div>
-                </div>
-            </div>
-        </fieldset>
-
-        <div class="dl-actions">
-            <a href="{{ route('admin.dealers') }}" wire:navigate class="btn btn-ghost">Back to dealers</a>
-            @if ($this->canManage())
-                <button type="submit" class="btn btn-primary" wire:loading.attr="disabled" wire:target="save">
-                    <span wire:loading.remove wire:target="save">{{ $dealerId === null ? 'Create dealer' : 'Save changes' }}</span>
-                    <span wire:loading wire:target="save">Saving…</span>
-                </button>
-            @endif
-        </div>
-    </form>
-
-    @if ($dealerId !== null && $this->canManageUsers())
-        <div class="card dl-users" id="users">
-            <div class="card-head">
-                <div class="ttl">Dealer users</div>
-                <div class="sub">Staff who can sign in to this dealer's portal. They see this dealer's data only. New staff join by invitation and set their own password.</div>
-            </div>
-
-            @forelse ($this->staffMembers() as $member)
-                <div class="u-row" wire:key="staff-{{ $member->id }}">
-                    <div>
-                        <div class="u-name">{{ $member->name }}</div>
-                        <div class="u-meta">{{ $member->email }}</div>
-                    </div>
-                    @if ($member->isSuspended())
-                        <span class="u-pill u-off">Suspended</span>
-                        <button type="button" class="btn btn-ghost btn-sm" wire:click="reinstateStaff({{ $member->id }})">Reinstate</button>
                     @else
-                        <span class="u-pill">Active</span>
-                        <button type="button" class="btn btn-ghost btn-sm" wire:click="suspendStaff({{ $member->id }})" wire:confirm="Suspend {{ $member->email }}? They won't be able to sign in.">Suspend</button>
+                        <div class="sp-current static"><i class="st-dot st-{{ $dealer->status }}"></i>{{ \App\Models\Dealer::STATUS_LABELS[$dealer->status] }}</div>
+                    @endif
+                    @error('status') <div class="err" style="margin-top:8px">{{ $message }}</div> @enderror
+                    <div class="side-note">{{ ['active' => 'Live — published cars appear on TruCars.', 'draft' => 'Draft — none of its cars are listed yet.', 'suspended' => 'Suspended — cars unlisted, staff can’t sign in.'][$dealer->status] ?? '' }}</div>
+                </div>
+
+                <div class="side-card">
+                    <div class="side-t">Location map</div>
+                    @if ($dealer->hasCoordinates())
+                        @php $lat = $dealer->latitude; $lng = $dealer->longitude; @endphp
+                        <iframe class="map" loading="lazy" title="Map of {{ $displayName }}" src="https://www.openstreetmap.org/export/embed.html?bbox={{ $lng - 0.02 }}%2C{{ $lat - 0.012 }}%2C{{ $lng + 0.02 }}%2C{{ $lat + 0.012 }}&amp;layer=mapnik&amp;marker={{ $lat }}%2C{{ $lng }}"></iframe>
+                        <a class="side-link" href="https://www.openstreetmap.org/?mlat={{ $lat }}&mlon={{ $lng }}#map=15/{{ $lat }}/{{ $lng }}" target="_blank" rel="noopener">Open larger map {!! $icon($paths['ext'], 13) !!}</a>
+                    @else
+                        <div class="map empty">{!! $icon($paths['pin'], 22) !!}<span>Add coordinates on the Location tab to show the map and distance to shoppers.</span></div>
                     @endif
                 </div>
-            @empty
-                <div class="u-empty">No staff yet.</div>
-            @endforelse
 
-            @foreach ($this->openInvitations() as $invitation)
-                <div class="u-row" wire:key="invite-{{ $invitation->id }}">
-                    <div>
-                        <div class="u-name">{{ $invitation->name }}</div>
-                        <div class="u-meta">{{ $invitation->email }} · invited, expires {{ $invitation->expires_at->diffForHumans() }}</div>
+                <div class="side-card">
+                    <div class="side-t">Setup checklist</div>
+                    <div class="ring-row">
+                        <span class="ring" style="--p:{{ $percent }}"><b>{{ $percent }}%</b></span>
+                        <span><b>{{ $done }} of {{ count($steps) }} completed</b><small>{{ $done === count($steps) ? 'All set.' : ($percent >= 60 ? 'Almost ready!' : 'Keep going.') }}</small></span>
                     </div>
-                    <span class="u-pill u-wait">Invited</span>
-                    <span class="u-acts">
-                        <button type="button" class="btn btn-ghost btn-sm" wire:click="resendInvitation({{ $invitation->id }})">Resend</button>
-                        <button type="button" class="btn btn-ghost btn-sm" wire:click="revokeInvitation({{ $invitation->id }})">Revoke</button>
-                    </span>
+                    @foreach ($steps as $step)
+                        <button type="button" class="step {{ $step['done'] ? 'done' : '' }}" wire:click="$set('tab', '{{ $step['tab'] }}')">
+                            <span class="tick">@if ($step['done']){!! $icon('<path d="M20 6 9 17l-5-5"/>', 12) !!}@endif</span>
+                            <span class="grow">{{ $step['label'] }}</span>
+                            {!! $icon($paths['chev'], 14) !!}
+                        </button>
+                    @endforeach
                 </div>
-            @endforeach
 
-            <form class="u-invite" wire:submit="inviteStaff">
-                <div class="field">
-                    <label for="inviteName">Name</label>
-                    <input id="inviteName" type="text" wire:model="inviteName" maxlength="120">
-                    @error('inviteName') <span class="err">{{ $message }}</span> @enderror
+                <div class="side-card">
+                    <div class="side-t">Quick actions</div>
+                    <a class="qa primary" href="{{ $publicUrl }}" target="_blank" rel="noopener">{!! $icon($paths['car'], 16) !!} View public page {!! $icon($paths['ext'], 13) !!}</a>
+                    <a class="qa" href="{{ route('admin.dealers.inventory', $dealer) }}" wire:navigate>{!! $icon($paths['inbox'], 16) !!} Manage inventory</a>
+                    @if ($this->canManageUsers())
+                        <button type="button" class="qa" wire:click="$set('tab', 'team')">{!! $icon($paths['send'], 16) !!} Send login invite</button>
+                    @endif
                 </div>
-                <div class="field">
-                    <label for="inviteEmail">Work email</label>
-                    <input id="inviteEmail" type="email" wire:model="inviteEmail" maxlength="160">
-                    @error('inviteEmail') <span class="err">{{ $message }}</span> @enderror
-                </div>
-                <button type="submit" class="btn btn-primary" wire:loading.attr="disabled" wire:target="inviteStaff">Send invitation</button>
-            </form>
+            </aside>
         </div>
+
+        @include('partials.dealer.brand-dialog')
     @endif
 </div>
