@@ -1,7 +1,7 @@
 <?php
 
 use App\Models\AuditLog;
-use App\Models\Dealer;
+use App\Models\Brand;
 use App\Models\InspectionPoint;
 use App\Models\InspectionProgram;
 use App\Support\Permission;
@@ -15,31 +15,23 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 
 /*
-| Command Centre — inspection checklists. TruCars types the points in here;
-| they show on cars as "N-point inspection" with every point listed.
-|
-| Two modes, one screen:
-|   - a dealer's own checklists  (/dealers/{dealer}/inspection)
-|   - brand checklists           (/settings/brand-checklists), which apply on
-|     their own to every dealer franchised for that make, unless the dealer
-|     has its own.
-|
-| Dealer checklists: viewing needs dealers.view, changes need dealers.manage.
-| Brand checklists are a platform setting: settings.manage for both.
+| Settings › Brands › CPO checklist (settings.manage). TruCars types the
+| brand's inspection points in here; they show on every dealer of the brand's
+| cars as "N-point inspection", with every point listed. A brand normally has
+| one checklist; a second can cover a different set of cars (e.g. all used
+| cars vs. only those the feed marks certified).
 */
-new #[Layout('layouts.dealer')] #[Title('Inspection checklist')] class extends Component {
-    /** Null in brand mode. */
+new #[Layout('layouts.dealer')] #[Title('CPO checklist')] class extends Component {
     #[Locked]
-    public ?int $dealerId = null;
+    public int $brandId;
 
     #[Locked]
     public ?int $programId = null;
 
     public string $name = '';
-    public string $make = '';
     public string $badgeLabel = '';
     public string $summary = '';
-    public string $appliesTo = InspectionProgram::APPLIES_TO_ALL_USED;
+    public string $appliesTo = InspectionProgram::APPLIES_TO_FEED_CERTIFIED;
     public bool $isActive = true;
 
     public string $newSection = '';
@@ -50,48 +42,35 @@ new #[Layout('layouts.dealer')] #[Title('Inspection checklist')] class extends C
 
     public string $statusMessage = '';
 
-    public function mount(?Dealer $dealer = null): void
+    public function mount(Brand $brand): void
     {
-        $this->dealerId = $dealer?->id;
-        Gate::authorize($this->viewPermission());
+        Gate::authorize(Permission::SETTINGS_MANAGE);
+        $this->brandId = $brand->id;
 
         if ($first = $this->programs()->first()) {
             $this->select($first->id);
         }
     }
 
-    /** Dealer checklists sit with the dealer; brand checklists are a platform setting. */
-    private function viewPermission(): string
-    {
-        return $this->dealerId ? Permission::DEALERS_VIEW : Permission::SETTINGS_MANAGE;
-    }
-
     private function managePermission(): string
     {
-        return $this->dealerId ? Permission::DEALERS_MANAGE : Permission::SETTINGS_MANAGE;
+        return Permission::SETTINGS_MANAGE;
     }
 
-    public function isBrandMode(): bool
+    public function brand(): Brand
     {
-        return $this->dealerId === null;
+        return Brand::findOrFail($this->brandId);
     }
 
-    public function dealer(): ?Dealer
-    {
-        return $this->dealerId ? Dealer::findOrFail($this->dealerId) : null;
-    }
-
-    /** Checklists on this screen: the dealer's own, or the brand ones. */
+    /** This brand's checklists (brand checklists are keyed by make). */
     private function scoped()
     {
-        return $this->dealerId
-            ? InspectionProgram::where('dealer_id', $this->dealerId)
-            : InspectionProgram::whereNull('dealer_id');
+        return $this->brand()->checklists();
     }
 
     public function programs(): Collection
     {
-        return $this->scoped()->withCount('points')->orderBy('make')->orderBy('id')->get();
+        return $this->scoped()->withCount('points')->orderByDesc('is_active')->orderBy('id')->get();
     }
 
     public function program(): ?InspectionProgram
@@ -99,29 +78,16 @@ new #[Layout('layouts.dealer')] #[Title('Inspection checklist')] class extends C
         return $this->programId ? $this->scoped()->with('points')->find($this->programId) : null;
     }
 
-    /** Checklists from elsewhere, to start from instead of typing from scratch. */
+    /** Other brands' checklists, to start from instead of typing from scratch. */
     public function copySources(): Collection
     {
-        return InspectionProgram::query()
-            ->when($this->dealerId, fn ($query) => $query->where(fn ($other) => $other->whereNull('dealer_id')->orWhere('dealer_id', '!=', $this->dealerId)))
-            ->when(! $this->dealerId, fn ($query) => $query->whereNotNull('dealer_id'))
-            ->with('dealer')->withCount('points')->orderBy('name')->get();
+        return InspectionProgram::whereNull('dealer_id')->whereRaw('lower(make) != ?', [mb_strtolower($this->brand()->name)])
+            ->withCount('points')->orderBy('make')->get();
     }
 
-    /** Brand checklists that reach this dealer's cars automatically. */
-    public function inheritedBrandPrograms(): Collection
+    private function auditTarget(InspectionProgram $program): InspectionProgram
     {
-        $make = trim((string) $this->dealer()?->franchise_make);
-
-        return $make === ''
-            ? collect()
-            : InspectionProgram::whereNull('dealer_id')->whereRaw('lower(make) = ?', [mb_strtolower($make)])->withCount('points')->get();
-    }
-
-    /** Audit against the dealer, or the checklist itself for a brand one. */
-    private function auditTarget(InspectionProgram $program): \Illuminate\Database\Eloquent\Model
-    {
-        return $this->dealer() ?? $program;
+        return $program;
     }
 
     public function select(int $programId): void
@@ -130,7 +96,6 @@ new #[Layout('layouts.dealer')] #[Title('Inspection checklist')] class extends C
 
         $this->programId = $program->id;
         $this->name = $program->name;
-        $this->make = (string) $program->make;
         $this->badgeLabel = (string) $program->badge_label;
         $this->summary = (string) $program->summary;
         $this->appliesTo = $program->applies_to;
@@ -154,12 +119,7 @@ new #[Layout('layouts.dealer')] #[Title('Inspection checklist')] class extends C
     public function startNew(): void
     {
         Gate::authorize($this->managePermission());
-        $this->reset(['programId', 'name', 'make', 'badgeLabel', 'summary', 'appliesTo', 'isActive', 'statusMessage']);
-
-        // A brand CPO checklist is normally only for the cars the feed marks certified.
-        if ($this->isBrandMode()) {
-            $this->appliesTo = InspectionProgram::APPLIES_TO_FEED_CERTIFIED;
-        }
+        $this->reset(['programId', 'name', 'badgeLabel', 'summary', 'appliesTo', 'isActive', 'statusMessage']);
     }
 
     public function save(): void
@@ -168,7 +128,6 @@ new #[Layout('layouts.dealer')] #[Title('Inspection checklist')] class extends C
 
         $this->validate([
             'name'       => ['required', 'string', 'max:120'],
-            'make'       => [$this->isBrandMode() ? 'required' : 'nullable', 'string', 'max:40'],
             'badgeLabel' => ['nullable', 'string', 'max:60'],
             'summary'    => ['nullable', 'string', 'max:600'],
             'appliesTo'  => ['required', Rule::in(array_keys(InspectionProgram::APPLIES_TO_LABELS))],
@@ -176,7 +135,7 @@ new #[Layout('layouts.dealer')] #[Title('Inspection checklist')] class extends C
 
         $attributes = [
             'name'        => trim($this->name),
-            'make'        => $this->isBrandMode() ? trim($this->make) : null,
+            'make'        => $this->brand()->name,
             'badge_label' => trim($this->badgeLabel) ?: null,
             'summary'     => trim($this->summary) ?: null,
             'applies_to'  => $this->appliesTo,
@@ -187,7 +146,7 @@ new #[Layout('layouts.dealer')] #[Title('Inspection checklist')] class extends C
             $program->update($attributes);
             AuditLog::record('inspection_checklist.updated', $this->auditTarget($program), null, ['program' => $program->name]);
         } else {
-            $program = InspectionProgram::create($attributes + ['dealer_id' => $this->dealerId]);
+            $program = InspectionProgram::create($attributes + ['dealer_id' => null]);
             $this->programId = $program->id;
             AuditLog::record('inspection_checklist.created', $this->auditTarget($program), null, ['program' => $program->name]);
         }
@@ -203,8 +162,8 @@ new #[Layout('layouts.dealer')] #[Title('Inspection checklist')] class extends C
 
         DB::transaction(function () use ($source) {
             $copy = InspectionProgram::create($source->only(['name', 'badge_label', 'summary', 'applies_to']) + [
-                'dealer_id' => $this->dealerId,
-                'make'      => $this->isBrandMode() ? ($source->make ?? $source->dealer?->franchise_make) : null,
+                'dealer_id' => null,
+                'make'      => $this->brand()->name,
             ]);
 
             foreach ($source->points as $point) {
@@ -214,7 +173,7 @@ new #[Layout('layouts.dealer')] #[Title('Inspection checklist')] class extends C
             AuditLog::record('inspection_checklist.created', $this->auditTarget($copy), null, ['program' => $copy->name, 'copied_from' => $source->id]);
             $this->copyFromId = null;
             $this->select($copy->id);
-            $this->statusMessage = "Copied {$source->points->count()} points from " . ($source->dealer?->name ?? "the {$source->make} brand checklist") . '.';
+            $this->statusMessage = "Copied {$source->points->count()} points from the {$source->make} checklist — rename it and adjust the points for {$this->brand()->name}.";
         });
     }
 
@@ -310,7 +269,7 @@ new #[Layout('layouts.dealer')] #[Title('Inspection checklist')] class extends C
         $program = $this->program();
 
         return [
-            'dealer'    => $this->dealer(),
+            'brand'     => $this->brand(),
             'programs'  => $this->programs(),
             'program'   => $program,
             'sections'  => $program?->points->groupBy(fn ($point) => $point->section ?: 'General') ?? collect(),
@@ -320,17 +279,13 @@ new #[Layout('layouts.dealer')] #[Title('Inspection checklist')] class extends C
 }; ?>
 
 @push('crumb')
-    @if ($dealer)
-        <a href="{{ route('admin.dealers') }}" wire:navigate>Dealers</a>
-        <span>›</span>
-        <a href="{{ route('admin.dealers.edit', $dealerId) }}" wire:navigate>{{ $dealer->name }}</a>
-        <span>›</span>
-        <span class="cur">Inspection</span>
-    @else
-        <a href="{{ route('admin.settings') }}" wire:navigate>Platform settings</a>
-        <span>›</span>
-        <span class="cur">Brand checklists</span>
-    @endif
+    <a href="{{ route('admin.settings') }}" wire:navigate>Platform settings</a>
+    <span>›</span>
+    <a href="{{ route('admin.brands') }}" wire:navigate>Brands</a>
+    <span>›</span>
+    <a href="{{ route('admin.brands.show', $brandId) }}" wire:navigate>{{ $brand->name }}</a>
+    <span>›</span>
+    <span class="cur">CPO checklist</span>
 @endpush
 
 @push('styles')
@@ -431,45 +386,7 @@ new #[Layout('layouts.dealer')] #[Title('Inspection checklist')] class extends C
 @endpush
 
 <div>
-    @if ($dealer)
-        @include('partials.dealer-tabs', ['tabDealer' => $dealer, 'activeTab' => 'inspection'])
-
-        <div class="ip-head">
-            <h1>Inspection checklist</h1>
-            <p>Checklists just for {{ $dealer->name }}. They show on its cars as “N-point inspection”, with every point listed, and take the place of any brand checklist.</p>
-        </div>
-
-        @foreach ($this->inheritedBrandPrograms() as $brand)
-            @can('settings.manage')
-                <a class="inherit" href="{{ route('admin.settings.brand-checklists') }}" wire:navigate>
-                    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 8 9 8 9s8-4 8-9V6Z"/><path d="m9 12 2 2 4-4"/></svg></span>
-                    <span>
-                        <b>{{ $brand->name }} applies automatically</b>
-                        {{ $brand->points_count }} points on {{ $dealer->name }}’s used {{ $brand->make }}s{{ $brand->applies_to === 'feed_certified' ? ' that the feed marks certified' : '' }}{{ $brand->is_active ? '' : ' — currently hidden' }}, because it’s a {{ $brand->make }} franchise.{{ $programs->isNotEmpty() ? ' A checklist below takes its place where both apply.' : '' }}
-                    </span>
-                    <svg class="go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m9 6 6 6-6 6"/></svg>
-                </a>
-            @else
-                <div class="inherit">
-                    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 8 9 8 9s8-4 8-9V6Z"/><path d="m9 12 2 2 4-4"/></svg></span>
-                    <span>
-                        <b>{{ $brand->name }} applies automatically</b>
-                        {{ $brand->points_count }} points on {{ $dealer->name }}’s used {{ $brand->make }}s{{ $brand->applies_to === 'feed_certified' ? ' that the feed marks certified' : '' }}{{ $brand->is_active ? '' : ' — currently hidden' }}, because it’s a {{ $brand->make }} franchise.{{ $programs->isNotEmpty() ? ' A checklist below takes its place where both apply.' : '' }}
-                    </span>
-                </div>
-            @endcan
-        @endforeach
-    @else
-        <nav class="tabs">
-            <a href="{{ route('admin.settings') }}" wire:navigate>General</a>
-            <a href="{{ route('admin.settings.brand-checklists') }}" wire:navigate class="on">Brand checklists</a>
-        </nav>
-
-        <div class="ip-head">
-            <h1>Brand checklists</h1>
-            <p>Set up once per brand. Every dealer franchised for that make gets it on its used cars of that make automatically — no setup per dealer. A dealer’s own checklist takes its place.</p>
-        </div>
-    @endif
+    @include('partials.brand-header', ['brand' => $brand, 'activeTab' => 'checklist'])
 
     @if ($statusMessage !== '') <div class="msg">{{ $statusMessage }}</div> @endif
 
@@ -477,13 +394,7 @@ new #[Layout('layouts.dealer')] #[Title('Inspection checklist')] class extends C
         {{-- Checklists --}}
         <div class="card">
             @if ($programs->isEmpty())
-                <div class="pempty">
-                    @if ($dealer)
-                        No checklists just for {{ $dealer->name }}.{{ $this->inheritedBrandPrograms()->isEmpty() ? ' Its cars show no inspection until you add one.' : '' }}
-                    @else
-                        No brand checklists yet.
-                    @endif
-                </div>
+                <div class="pempty">No checklist yet. {{ $brand->name }} cars show no inspection until you add one — type the points in, paste a list, or copy another brand’s to start.</div>
             @endif
             <div class="plist">
                 @foreach ($programs as $item)
@@ -491,7 +402,7 @@ new #[Layout('layouts.dealer')] #[Title('Inspection checklist')] class extends C
                         <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 8 9 8 9s8-4 8-9V6Z"/><path d="m9 12 2 2 4-4"/></svg></span>
                         <span>
                             <span class="nm">{{ $item->name }}</span><br>
-                            <span class="sub">{{ $item->make ? $item->make . ' · ' : '' }}{{ $item->points_count }} points{{ $item->is_active ? '' : ' · hidden' }}</span>
+                            <span class="sub">{{ $item->points_count }} points{{ $item->is_active ? '' : ' · hidden' }}</span>
                         </span>
                     </button>
                 @endforeach
@@ -505,13 +416,13 @@ new #[Layout('layouts.dealer')] #[Title('Inspection checklist')] class extends C
                     <div class="pcopy">
                         <label for="copyFrom">Or copy one</label>
                         <select id="copyFrom" wire:model.live="copyFromId">
-                            <option value="">{{ $dealer ? 'A brand or another dealer’s checklist…' : 'A dealer’s checklist…' }}</option>
+                            <option value="">Another brand’s checklist…</option>
                             @foreach ($this->copySources() as $source)
-                                <option value="{{ $source->id }}">{{ $source->name }} · {{ $source->dealer?->name ?? $source->make . ' brand' }} ({{ $source->points_count }})</option>
+                                <option value="{{ $source->id }}">{{ $source->make }} · {{ $source->name }} ({{ $source->points_count }})</option>
                             @endforeach
                         </select>
                         @if ($copyFromId)
-                            <button type="button" class="btn btn-ghost" style="justify-content:center" wire:click="copyFrom">{{ $dealer ? 'Copy to ' . $dealer->name : 'Copy as a brand checklist' }}</button>
+                            <button type="button" class="btn btn-ghost" style="justify-content:center" wire:click="copyFrom">Copy to {{ $brand->name }}</button>
                         @endif
                     </div>
                 @endif
@@ -542,15 +453,8 @@ new #[Layout('layouts.dealer')] #[Title('Inspection checklist')] class extends C
             <fieldset @disabled(! $canManage) style="border:none; margin:0; padding:0;">
                 <form wire:submit="save">
                     <div class="fields">
-                        @if (! $dealer)
-                            <div class="field w2">
-                                <label for="make">Brand</label>
-                                <input id="make" type="text" wire:model="make" maxlength="40" placeholder="e.g. Nissan">
-                                @error('make') <span class="err">{{ $message }}</span> @enderror
-                            </div>
-                        @endif
-                        <div class="field {{ $dealer ? 'w4' : 'w2' }}">
-                            <label for="name">Name</label>
+                        <div class="field w4">
+                            <label for="name">Checklist name</label>
                             <input id="name" type="text" wire:model="name" maxlength="120" placeholder="e.g. Mitsubishi Diamond Certified">
                             @error('name') <span class="err">{{ $message }}</span> @enderror
                         </div>

@@ -85,13 +85,14 @@ class VehiclePageTest extends TestCase
         $this->assertNull($this->vehicle()->certification());
 
         $this->checklist(['name' => 'Live'], [['Engine', 'Oil leaks']]);
+        \Illuminate\Support\Once::flush(); // brand checklists are loaded once per request
         $this->assertNull($this->vehicle(['condition' => 'NEW'])->certification());
         $this->assertSame('Live', $this->vehicle()->certification()?->name);
     }
 
     private function checklist(array $attributes, array $points): InspectionProgram
     {
-        $program = $this->dealer->inspectionPrograms()->create($attributes);
+        $program = InspectionProgram::create($attributes + ['make' => 'Mitsubishi']);
 
         foreach ($points as $position => [$section, $label]) {
             $program->points()->create(['position' => $position + 1, 'section' => $section, 'label' => $label]);

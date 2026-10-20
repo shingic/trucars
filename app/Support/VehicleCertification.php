@@ -9,18 +9,16 @@ use App\Models\Vehicle;
 use Illuminate\Support\Collection;
 
 /**
- * The inspection checklist a car is shown with: an active checklist that
- * applies to it and has points entered — the dealer's own, or a brand
- * checklist for the car's make when the dealer is franchised for it.
- *
- * When several apply: a feed-certified-only checklist (e.g. CPO) beats an
- * all-used-cars one, and the dealer's own beats the brand's. No checklist,
- * no badge — there's no default point count.
+ * The inspection checklist a car is shown with: its brand's active checklist
+ * that applies to it and has points entered. Every dealer of a brand follows
+ * the same checklist. When a brand has more than one, a feed-certified-only
+ * checklist (e.g. CPO) beats an all-used-cars one. No checklist, no badge —
+ * there's no default point count.
  */
 final class VehicleCertification
 {
     /** Relations to eager-load before calling for() on a list of cars. */
-    public const EAGER = ['dealer.inspectionPrograms.points'];
+    public const EAGER = ['dealer'];
 
     /** @param  array<string, array<int, string>>  $sections  section → point labels */
     private function __construct(
@@ -33,14 +31,9 @@ final class VehicleCertification
 
     public static function for(Vehicle $vehicle): ?self
     {
-        $program = ($vehicle->dealer?->inspectionPrograms ?? collect())
-            ->concat(self::brandPrograms())
+        $program = self::brandPrograms()
             ->filter(fn (InspectionProgram $program) => $program->appliesTo($vehicle) && $program->points->isNotEmpty())
-            ->sortBy(fn (InspectionProgram $program) => [
-                $program->applies_to === InspectionProgram::APPLIES_TO_FEED_CERTIFIED ? 0 : 1,
-                $program->isBrand() ? 1 : 0,
-                $program->id,
-            ])
+            ->sortBy(fn (InspectionProgram $program) => [$program->applies_to === InspectionProgram::APPLIES_TO_FEED_CERTIFIED ? 0 : 1, $program->id])
             ->first();
 
         if ($program === null) {

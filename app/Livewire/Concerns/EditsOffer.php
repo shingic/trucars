@@ -9,9 +9,9 @@ use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
 
 /**
- * The offer form shared by the Command Centre (manufacturer offers) and the
- * dealer portal (dealer promotions): its fields, validation, and the preview
- * model rendered with partials.offer-card.
+ * The offer form (Settings › Brands › Offers): its fields, validation, and the
+ * preview model rendered with partials.offer-card. The brand isn't a field —
+ * it's the brand being edited; $make only carries its name for display.
  */
 trait EditsOffer
 {
@@ -32,14 +32,12 @@ trait EditsOffer
     public string $conditions = '';
     public ?string $startsOn = null;
     public ?string $endsOn = null;
-    public bool $requiresOptIn = true;
     public bool $combinable = false;
 
     protected function fillOfferForm(Offer $offer): void
     {
         $this->type = $offer->type;
         $this->title = $offer->title;
-        $this->make = $offer->make;
         $this->models = implode(', ', $offer->models ?? []);
         $this->yearMin = $offer->year_min ? (string) $offer->year_min : null;
         $this->yearMax = $offer->year_max ? (string) $offer->year_max : null;
@@ -53,7 +51,6 @@ trait EditsOffer
         $this->conditions = $offer->conditions;
         $this->startsOn = $offer->starts_on->toDateString();
         $this->endsOn = $offer->ends_on->toDateString();
-        $this->requiresOptIn = $offer->requires_opt_in;
         $this->combinable = $offer->combinable;
     }
 
@@ -81,7 +78,6 @@ trait EditsOffer
         $this->validate([
             'type'       => ['required', Rule::in(array_keys(Offer::TYPE_LABELS))],
             'title'      => ['required', 'string', 'max:120'],
-            'make'       => ['required', 'string', 'max:40'],
             'models'     => ['nullable', 'string', 'max:500'],
             'yearMin'    => ['nullable', 'integer', 'between:1990,2100'],
             'yearMax'    => ['nullable', 'integer', 'between:1990,2100', 'gte:yearMin'],
@@ -107,7 +103,6 @@ trait EditsOffer
         return [
             'type'                 => $this->type,
             'title'                => trim($this->title),
-            'make'                 => trim($this->make),
             'models'               => $models ?: null,
             'year_min'             => $this->yearMin ? (int) $this->yearMin : null,
             'year_max'             => $this->yearMax ? (int) $this->yearMax : null,

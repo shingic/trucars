@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * One selling dealership at one physical address. Every vehicle on the dealer
@@ -43,6 +43,7 @@ class Dealer extends Model
         'timezone',
         'registration_number',
         'franchise_make',
+        'brand_id',
         'phone',
         'email',
         'website',
@@ -52,6 +53,25 @@ class Dealer extends Model
     protected $attributes = [
         'status' => self::STATUS_DRAFT,
     ];
+
+    /**
+     * brand_id is the source of truth; franchise_make always carries the brand's
+     * name so everything matching on make keeps working. Setting just the make
+     * (the importer, older code) links the dealer to that brand.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (Dealer $dealer) {
+            if ($dealer->isDirty('brand_id') && $dealer->brand_id) {
+                $dealer->franchise_make = Brand::whereKey($dealer->brand_id)->value('name');
+            } elseif ($dealer->isDirty('franchise_make')) {
+                $make = trim((string) $dealer->franchise_make);
+                $brand = $make === '' ? null : (Brand::whereRaw('lower(name) = ?', [mb_strtolower($make)])->first() ?? Brand::create(['name' => $make]));
+                $dealer->brand_id = $brand?->id;
+                $dealer->franchise_make = $brand?->name;
+            }
+        });
+    }
 
     protected function casts(): array
     {
@@ -201,10 +221,10 @@ class Dealer extends Model
         return $this->hasMany(Deal::class)->withoutGlobalScope(DealerScope::class);
     }
 
-    /** Manufacturer offers this dealer has opted in to. */
-    public function offers(): BelongsToMany
+    /** The franchise brand whose settings apply to this dealer. */
+    public function brand(): BelongsTo
     {
-        return $this->belongsToMany(Offer::class)->withPivot('opted_in_by_user_id')->withTimestamps();
+        return $this->belongsTo(Brand::class);
     }
 
     public function inspectionPrograms(): HasMany

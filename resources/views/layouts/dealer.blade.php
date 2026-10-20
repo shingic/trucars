@@ -147,14 +147,6 @@
                             <span class="nav-label">Dealers</span>
                         </a>
                     @endcan
-                    @can('offers.manage')
-                        <a href="{{ route('admin.offers') }}" class="nav-item {{ request()->routeIs('admin.offers*') ? 'on' : '' }}">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>
-                            <span class="nav-label">Offers &amp; Incentives</span>
-                            @php $pendingOffers = \App\Models\Offer::where('status', 'pending')->count(); @endphp
-                            @if ($pendingOffers) <span class="nav-badge">{{ $pendingOffers }}</span> @endif
-                        </a>
-                    @endcan
                     @can('reservations.view')
                         <a href="{{ route('admin.reservations') }}" class="nav-item {{ request()->routeIs('admin.reservations*') ? 'on' : '' }}">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>

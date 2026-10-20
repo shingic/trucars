@@ -229,26 +229,8 @@ Route::domain($adminDomain)->group(function () {
         ->middleware([EnsureCommandCentreAccess::class, 'can:customers.view'])
         ->name('admin.dealers.customers');
 
-    // A dealer's inspection checklists: view with dealers.view, edit with dealers.manage.
-    Route::livewire('/dealers/{dealer}/inspection', 'pages::admin-dealer-inspection')
-        ->whereNumber('dealer')
-        ->middleware([EnsureCommandCentreAccess::class, 'can:dealers.view'])
-        ->name('admin.dealers.inspection');
 
 
-    // Offers & Incentives: manufacturer programs and dealer promotion approvals.
-    Route::livewire('/offers', 'pages::admin-offers')
-        ->middleware([EnsureCommandCentreAccess::class, 'can:offers.manage'])
-        ->name('admin.offers');
-
-    Route::livewire('/offers/new', 'pages::admin-offer')
-        ->middleware([EnsureCommandCentreAccess::class, 'can:offers.manage'])
-        ->name('admin.offers.create');
-
-    Route::livewire('/offers/{offer}', 'pages::admin-offer')
-        ->whereNumber('offer')
-        ->middleware([EnsureCommandCentreAccess::class, 'can:offers.manage'])
-        ->name('admin.offers.edit');
 
     Route::livewire('/customers', 'pages::admin-customers')
         ->middleware([EnsureCommandCentreAccess::class, 'can:customers.view'])
@@ -272,11 +254,18 @@ Route::domain($adminDomain)->group(function () {
         ->middleware([EnsureCommandCentreAccess::class, 'can:settings.manage'])
         ->name('admin.settings');
 
-    // Brand checklists: a platform setting. Same screen as a dealer's checklists,
-    // with no dealer — applied to franchised dealers automatically.
-    Route::livewire('/settings/brand-checklists', 'pages::admin-dealer-inspection')
-        ->middleware([EnsureCommandCentreAccess::class, 'can:settings.manage'])
-        ->name('admin.settings.brand-checklists');
+    // Brands: every dealer belongs to one; each brand's CPO checklist and
+    // offers apply to all of its dealers (settings.manage).
+    Route::middleware([EnsureCommandCentreAccess::class, 'can:settings.manage'])->group(function () {
+        Route::livewire('/settings/brands', 'pages::admin-brands')->name('admin.brands');
+        Route::livewire('/settings/brands/{brand}', 'pages::admin-brand')->whereNumber('brand')->name('admin.brands.show');
+        Route::livewire('/settings/brands/{brand}/checklist', 'pages::admin-brand-checklist')->whereNumber('brand')->name('admin.brands.checklist');
+        Route::livewire('/settings/brands/{brand}/offers', 'pages::admin-brand-offers')->whereNumber('brand')->name('admin.brands.offers');
+        Route::livewire('/settings/brands/{brand}/offers/new', 'pages::admin-offer')->whereNumber('brand')->name('admin.brands.offers.create');
+        Route::livewire('/settings/brands/{brand}/offers/{offer}', 'pages::admin-offer')->whereNumber(['brand', 'offer'])->name('admin.brands.offers.edit');
+    });
+    Route::redirect('/settings/brand-checklists', '/settings/brands');
+
 
     Route::livewire('/staff', 'pages::admin-staff')
         ->middleware([EnsureCommandCentreAccess::class, 'can:staff.manage'])

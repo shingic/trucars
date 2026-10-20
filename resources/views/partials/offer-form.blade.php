@@ -1,11 +1,8 @@
 {{--
     The offer form fields, for components using App\Livewire\Concerns\EditsOffer.
-    $lockMake (bool) shows the make as fixed; $showOptIn (bool) shows the
-    "dealers must opt in" switch (manufacturer offers only); $readOnly disables all.
+    The brand is fixed (the brand being edited); $readOnly disables everything.
 --}}
 @php
-    $lockMake ??= false;
-    $showOptIn ??= false;
     $readOnly ??= false;
     $typeIcons = [
         'apr'      => '<path d="M19 5 5 19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>',
@@ -71,8 +68,7 @@
     <div class="of-sec">
         <div class="of-sec-t">Which cars</div>
         <div class="grid">
-            <div class="f w2"><label for="make">Make</label><input id="make" type="text" wire:model.live.debounce.300ms="make" maxlength="40" placeholder="e.g. BMW" @readonly($lockMake)>@error('make')<span class="err">{{ $message }}</span>@enderror</div>
-            <div class="f w4"><label for="models">Models <span class="opt">(comma-separated — empty means all)</span></label><input id="models" type="text" wire:model="models" maxlength="500" placeholder="e.g. 330i, X3, X5"></div>
+            <div class="f w6"><label for="models">{{ $make }} models <span class="opt">(comma-separated — empty means all)</span></label><input id="models" type="text" wire:model="models" maxlength="500" placeholder="e.g. 330i, X3, X5"></div>
             <div class="f w1"><label for="yearMin">From year</label><input id="yearMin" type="number" wire:model="yearMin" placeholder="Any">@error('yearMin')<span class="err">{{ $message }}</span>@enderror</div>
             <div class="f w1"><label for="yearMax">To year</label><input id="yearMax" type="number" wire:model="yearMax" placeholder="Any">@error('yearMax')<span class="err">{{ $message }}</span>@enderror</div>
             <div class="f w4">
@@ -85,9 +81,6 @@
             </div>
             <div class="f w6 checks">
                 <label class="check"><input type="checkbox" wire:model="certifiedOnly"> Certified cars only <span class="opt">— cars showing an inspection checklist</span></label>
-                @if ($showOptIn)
-                    <label class="check"><input type="checkbox" wire:model="requiresOptIn"> Dealers must opt in <span class="opt">— otherwise it shows at every {{ $make ?: 'brand' }} franchise</span></label>
-                @endif
                 <label class="check"><input type="checkbox" wire:model="combinable"> Can be combined with other offers</label>
             </div>
         </div>

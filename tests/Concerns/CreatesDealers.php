@@ -6,11 +6,12 @@ use App\Models\Dealer;
 
 trait CreatesDealers
 {
-    /** A live dealer with a complete rooftop address, ready to publish cars. */
+    /** A live franchise dealer with a complete rooftop address, ready to publish cars. */
     protected function makeDealer(array $overrides = []): Dealer
     {
         return Dealer::create($overrides + [
             'name'           => 'CHILLIWACK MITSUBISHI',
+            'franchise_make' => 'Mitsubishi',
             'street_address' => '45510 Yale Rd',
             'city'           => 'Chilliwack',
             'province'       => 'BC',
@@ -21,5 +22,11 @@ trait CreatesDealers
             'timezone'       => 'America/Vancouver',
             'status'         => Dealer::STATUS_ACTIVE,
         ]);
+    }
+
+    /** A brand's id, as the dealer form's brand picker posts it. */
+    protected function brandId(string $name = 'Mitsubishi'): string
+    {
+        return (string) \App\Models\Brand::where('name', $name)->value('id');
     }
 }

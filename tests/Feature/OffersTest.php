@@ -2,14 +2,17 @@
 
 namespace Tests\Feature;
 
+use App\Models\Brand;
 use App\Models\Deal;
 use App\Models\Dealer;
+use App\Models\InspectionProgram;
 use App\Models\Offer;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Support\Permission;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Once;
 use Illuminate\Support\Str;
 use Livewire\Livewire;
 use Tests\Concerns\CreatesDealers;
@@ -20,6 +23,7 @@ class OffersTest extends TestCase
     use CreatesDealers;
     use RefreshDatabase;
 
+    private Brand $bmw;
     private Dealer $dealer;
 
     protected function setUp(): void
@@ -27,15 +31,14 @@ class OffersTest extends TestCase
         parent::setUp();
 
         $this->travelTo(now()->setDate(2026, 11, 15)->setTime(12, 0));
+        $this->bmw = Brand::where('name', 'BMW')->sole();
         $this->dealer = $this->makeDealer(['name' => 'Valley BMW', 'franchise_make' => 'BMW']);
     }
-
-    /* ---- dates --------------------------------------------------------- */
 
     public function test_offers_switch_on_and_off_by_their_dates(): void
     {
         $car = $this->car();
-        $this->offer(['starts_on' => '2026-12-01', 'ends_on' => '2026-12-31', 'requires_opt_in' => false]);
+        $this->offer(['starts_on' => '2026-12-01', 'ends_on' => '2026-12-31']);
 
         $this->assertTrue($this->fresh($car)->offers()->isEmpty(), 'scheduled offers stay hidden');
 
@@ -47,28 +50,21 @@ class OffersTest extends TestCase
         $this->assertSame(1, Offer::count(), 'and stay on record');
     }
 
-    /* ---- eligibility ---------------------------------------------------- */
-
-    public function test_manufacturer_offers_wait_for_the_dealer_to_opt_in(): void
+    public function test_a_brand_offer_reaches_every_dealer_of_the_brand_with_no_opt_in(): void
     {
-        $car = $this->car();
-        $offer = $this->offer();
+        $this->offer();
+        $other = $this->makeDealer(['name' => 'Surrey BMW', 'franchise_make' => 'BMW']);
 
-        $this->assertTrue($this->fresh($car)->offers()->isEmpty());
+        $this->assertCount(1, $this->car()->offers());
+        $this->assertCount(1, $this->car([], $other)->offers());
 
-        $this->actingAs(User::factory()->staffOf($this->dealer)->create());
-        Livewire::test('pages::dealer-offers')
-            ->assertSee('3.99% APR')
-            ->call('toggleParticipation', $offer->id)
-            ->assertSee('You’re in.');
-
-        $this->assertSame([$offer->id], $this->fresh($car)->offers()->pluck('id')->all());
-        $this->assertDatabaseHas('audit_logs', ['action' => 'offer.opted_in', 'target_id' => $offer->id]);
+        // A BMW sitting at a Mitsubishi dealer isn't covered by BMW's offer.
+        $this->assertCount(0, $this->car([], $this->makeDealer())->offers());
     }
 
     public function test_offers_only_reach_cars_that_match_every_condition(): void
     {
-        $this->offer(['requires_opt_in' => false, 'models' => ['330i', 'X3'], 'year_min' => 2021, 'year_max' => 2024, 'provinces' => ['BC']]);
+        $this->offer(['models' => ['330i', 'X3'], 'year_min' => 2021, 'year_max' => 2024, 'provinces' => ['BC']]);
 
         $this->assertCount(1, $this->car(['model' => '330i', 'model_year' => 2023])->offers());
         $this->assertCount(0, $this->car(['model' => 'X5', 'model_year' => 2023])->offers(), 'model');
@@ -80,117 +76,82 @@ class OffersTest extends TestCase
         $this->assertCount(0, $this->car(['model' => 'X3'], $ontario)->offers(), 'province');
     }
 
-    public function test_certified_only_offers_need_an_inspection_checklist(): void
+    public function test_certified_only_offers_need_the_brand_checklist(): void
     {
         $car = $this->car();
-        $this->offer(['requires_opt_in' => false, 'certified_only' => true]);
+        $this->offer(['certified_only' => true]);
 
         $this->assertCount(0, $this->fresh($car)->offers());
 
-        $program = $this->dealer->inspectionPrograms()->create(['name' => 'BMW Certified']);
+        $program = InspectionProgram::create(['make' => 'BMW', 'name' => 'BMW Certified', 'applies_to' => 'all_used']);
         $program->points()->create(['position' => 1, 'label' => 'Brakes']);
 
         $this->assertCount(1, $this->fresh($car)->offers());
     }
 
-    /* ---- dealer promotions ---------------------------------------------- */
-
-    public function test_dealer_promotions_show_only_after_approval_and_only_on_that_dealers_cars(): void
-    {
-        $ours = $this->car();
-        $theirs = $this->car([], $this->makeDealer(['name' => 'Other BMW', 'franchise_make' => 'BMW']));
-
-        $this->actingAs(User::factory()->staffOf($this->dealer)->create());
-        Livewire::test('pages::dealer-offers')
-            ->call('newPromotion')
-            ->set('cashAmount', '1500')
-            ->set('conditions', 'Valid on in-stock certified BMWs only.')
-            ->set('startsOn', '2026-11-01')
-            ->set('endsOn', '2026-11-30')
-            ->call('submitPromotion')
-            ->assertSee('Sent to TruCars for approval');
-
-        $promotion = Offer::where('source', 'dealer')->sole();
-        $this->assertSame('pending', $promotion->status);
-        $this->assertCount(0, $this->fresh($ours)->offers(), 'pending promotions stay hidden');
-
-        $this->actingAs(User::factory()->owner()->create());
-        Livewire::test('pages::admin-offer', ['offer' => $promotion])->call('approve')->assertSee('Approved');
-
-        $this->assertSame('$1,500 off', $this->fresh($ours)->offers()->sole()->headline());
-        $this->assertCount(0, $this->fresh($theirs)->offers());
-    }
-
-    public function test_sending_a_promotion_back_needs_a_note_the_dealer_sees(): void
-    {
-        $promotion = $this->offer(['source' => 'dealer', 'dealer_id' => $this->dealer->id, 'status' => 'pending', 'type' => 'cash', 'apr' => null, 'term_months' => null, 'cash_amount_in_cents' => 100000]);
-        $this->actingAs(User::factory()->owner()->create());
-
-        Livewire::test('pages::admin-offer', ['offer' => $promotion])
-            ->call('reject')->assertHasErrors('reviewNote')
-            ->set('reviewNote', 'Add the stock numbers it applies to.')
-            ->call('reject');
-
-        $this->assertSame('rejected', $promotion->fresh()->status);
-
-        $this->actingAs(User::factory()->staffOf($this->dealer)->create());
-        Livewire::test('pages::dealer-offers')->assertSee('Add the stock numbers it applies to.');
-    }
-
-    /* ---- Command Centre -------------------------------------------------- */
-
-    public function test_owner_creates_and_publishes_a_manufacturer_offer(): void
+    public function test_owner_creates_and_publishes_a_brand_offer(): void
     {
         $this->actingAs(User::factory()->owner()->create());
 
-        Livewire::test('pages::admin-offer')
-            ->set('make', 'BMW')
+        Livewire::test('pages::admin-offer', ['brand' => $this->bmw])
             ->set('apr', '3.99')
             ->set('termMonths', '48')
             ->call('publish')
             ->assertHasErrors('conditions')
-            ->set('conditions', 'On approved credit. Eligible BMW Certified vehicles only. Participating dealers.')
+            ->set('conditions', 'On approved credit. Eligible BMW Certified vehicles only.')
             ->call('publish')
             ->assertHasNoErrors();
 
         $offer = Offer::sole();
-        $this->assertSame('manufacturer', $offer->source);
+        $this->assertSame($this->bmw->id, $offer->brand_id);
         $this->assertSame('published', $offer->status);
         $this->assertSame('scheduled', $offer->state(), 'defaults to next month');
         $this->assertDatabaseHas('audit_logs', ['action' => 'offer.created', 'target_id' => $offer->id]);
     }
 
-    public function test_copying_for_next_month_keeps_participants_as_a_draft(): void
+    public function test_copying_for_next_month_makes_a_draft(): void
     {
         $offer = $this->offer(['starts_on' => '2026-11-01', 'ends_on' => '2026-11-30']);
-        $offer->participants()->attach($this->dealer->id);
         $this->actingAs(User::factory()->owner()->create());
 
-        Livewire::test('pages::admin-offer', ['offer' => $offer])->call('duplicateForNextMonth');
+        Livewire::test('pages::admin-offer', ['brand' => $this->bmw, 'offer' => $offer])->call('duplicateForNextMonth');
 
         $copy = Offer::latest('id')->first();
         $this->assertNotSame($offer->id, $copy->id);
         $this->assertSame('draft', $copy->status);
         $this->assertSame('2026-12-01', $copy->starts_on->toDateString());
         $this->assertSame('2026-12-30', $copy->ends_on->toDateString());
-        $this->assertSame([$this->dealer->id], $copy->participants()->pluck('dealers.id')->all());
     }
 
-    public function test_offers_need_offers_manage(): void
+    public function test_an_offer_is_only_editable_under_its_own_brand(): void
+    {
+        $offer = $this->offer();
+        $this->actingAs(User::factory()->owner()->create());
+
+        $this->get(route('admin.brands.offers.edit', [Brand::where('name', 'Audi')->value('id'), $offer->id]))->assertNotFound();
+    }
+
+    public function test_brand_offers_need_settings_manage(): void
     {
         $this->actingAs(User::factory()->create(['role' => User::ROLE_INTERNAL_STAFF, 'permissions' => [Permission::DEALERS_MANAGE]]))
-            ->get('http://admin.trucars.test/offers')->assertForbidden();
+            ->get(route('admin.brands.offers', $this->bmw))->assertForbidden();
 
         $this->actingAs(User::factory()->owner()->create())
-            ->get('http://admin.trucars.test/offers')->assertOk()->assertSee('Offers &amp; Incentives', false);
+            ->get(route('admin.brands.offers', $this->bmw))->assertOk()->assertSee('New BMW offer');
     }
 
-    /* ---- customers --------------------------------------------------------- */
+    public function test_dealers_see_their_brands_offers_read_only(): void
+    {
+        $this->offer();
+        $this->actingAs(User::factory()->staffOf($this->dealer)->create());
+
+        $this->get('http://dealer.trucars.test/offers')->assertOk()->assertSee('BMW offers')->assertSee('3.99% APR')->assertDontSee('Participating');
+    }
 
     public function test_the_car_page_shows_the_offer_and_uses_its_rate_for_the_payment(): void
     {
         $car = $this->car(['price_in_cents' => 3999500]);
-        $this->offer(['requires_opt_in' => false]);
+        $this->offer();
 
         $this->get('/cars/' . $car->id)
             ->assertOk()
@@ -206,7 +167,7 @@ class OffersTest extends TestCase
     {
         Mail::fake();
         $car = $this->car();
-        $offer = $this->offer(['requires_opt_in' => false]);
+        $offer = $this->offer();
         $this->actingAs(User::factory()->create());
 
         Livewire::test('pages::checkout', ['vehicle' => $car])
@@ -217,21 +178,19 @@ class OffersTest extends TestCase
 
         $snapshot = Deal::sole()->offers_snapshot;
         $this->assertSame('3.99% APR', $snapshot[0]['headline']);
-        $this->assertSame($offer->id, $snapshot[0]['offer_id']);
+        $this->assertSame('BMW', $snapshot[0]['brand']);
         $this->assertStringContainsString('On approved credit', $snapshot[0]['conditions']);
     }
-
-    /* ---- helpers ----------------------------------------------------------- */
 
     private function offer(array $overrides = []): Offer
     {
         $offer = new Offer($overrides + [
-            'source' => 'manufacturer', 'type' => 'apr', 'title' => 'Special CPO financing', 'make' => 'BMW',
+            'brand_id' => $this->bmw->id, 'type' => 'apr', 'title' => 'Special CPO financing',
             'apr' => 3.99, 'term_months' => 48, 'certified_only' => false,
             'conditions' => 'On approved credit. Eligible BMW Certified vehicles only.',
             'starts_on' => '2026-11-01', 'ends_on' => '2026-11-30',
         ]);
-        $offer->status = $overrides['status'] ?? 'published';
+        $offer->status = 'published';
         $offer->save();
 
         return $offer;
@@ -245,10 +204,10 @@ class OffersTest extends TestCase
         ]);
     }
 
-    /** A fresh copy, with the once-per-request offer cache cleared. */
+    /** A fresh copy, with the once-per-request caches cleared. */
     private function fresh(Vehicle $vehicle): Vehicle
     {
-        \Illuminate\Support\Once::flush();
+        Once::flush();
 
         return $vehicle->fresh();
     }

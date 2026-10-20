@@ -2,6 +2,7 @@
 
 use App\Mail\DealerInvitationMail;
 use App\Models\AuditLog;
+use App\Models\Brand;
 use App\Models\Dealer;
 use App\Models\DealerInvitation;
 use App\Models\User;
@@ -48,7 +49,8 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
 
     public string $name = '';
     public string $registrationNumber = '';
-    public string $franchiseMake = '';
+    /** The franchise brand — its CPO checklist and offers follow automatically. */
+    public ?string $brandId = null;
 
     public string $streetAddress = '';
     public string $unit = '';
@@ -86,7 +88,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
 
         $this->name = $dealer->name;
         $this->registrationNumber = (string) $dealer->registration_number;
-        $this->franchiseMake = (string) $dealer->franchise_make;
+        $this->brandId = $dealer->brand_id ? (string) $dealer->brand_id : null;
         $this->streetAddress = (string) $dealer->street_address;
         $this->unit = (string) $dealer->unit;
         $this->city = (string) $dealer->city;
@@ -119,6 +121,31 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         }
 
         $this->provinceAtLastSuggestion = $value;
+    }
+
+    public function brands()
+    {
+        return Brand::orderBy('name')->get(['id', 'name']);
+    }
+
+    /** What the chosen brand brings: its live checklist and current offers. */
+    public function brandSettings(): ?array
+    {
+        $brand = $this->brandId ? Brand::find((int) $this->brandId) : null;
+
+        if ($brand === null) {
+            return null;
+        }
+
+        $checklist = $brand->checklists()->where('is_active', true)->withCount('points')->get()->sortByDesc('points_count')->first();
+        $today = now()->toDateString();
+
+        return [
+            'brand'     => $brand,
+            'checklist' => $checklist,
+            'offers'    => $brand->offers()->where('status', 'published')->whereDate('ends_on', '>=', $today)->count(),
+            'dealers'   => $brand->dealers()->when($this->dealerId, fn ($dealers) => $dealers->whereKeyNot($this->dealerId))->count(),
+        ];
     }
 
     public function canManage(): bool
@@ -154,7 +181,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         $this->validate([
             'name'               => ['required', 'string', 'max:120'],
             'registrationNumber' => ['nullable', 'string', 'max:40'],
-            'franchiseMake'      => ['nullable', 'string', 'max:40'],
+            'brandId'            => ['required', 'integer', Rule::exists('brands', 'id')],
             'streetAddress'      => [$addressRule, 'string', 'max:160'],
             'unit'               => ['nullable', 'string', 'max:30'],
             'city'               => ['required', 'string', 'max:80'],
@@ -176,7 +203,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
             'timezone.required'      => 'Choose the dealer’s timezone before it goes live.',
         ], [
             'registrationNumber' => 'registration number',
-            'franchiseMake'      => 'franchise make',
+            'brandId'            => 'brand',
             'streetAddress'      => 'street address',
             'postalCode'         => 'postal code',
         ]);
@@ -197,7 +224,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         $dealer->fill([
             'name'                => trim($this->name),
             'registration_number' => trim($this->registrationNumber) ?: null,
-            'franchise_make'      => trim($this->franchiseMake) ?: null,
+            'brand_id'            => (int) $this->brandId,
             'street_address'      => trim($this->streetAddress) ?: null,
             'unit'                => trim($this->unit) ?: null,
             'city'                => trim($this->city),
@@ -386,6 +413,19 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         .card-head { padding:16px 20px 14px; border-bottom:1px solid var(--line); }
         .card-head .ttl { font-size:15px; font-weight:700; }
         .card-head .sub { font-size:12.5px; color:var(--ink-3); margin-top:2px; }
+        .brand-card { grid-column:1 / -1; border-color:var(--primary-line); box-shadow:0 0 0 4px var(--primary-soft); }
+        .brand-pick { display:flex; align-items:center; gap:16px; padding:20px; }
+        .brand-logo { width:58px; height:58px; border-radius:17px; background:#14161B; color:#fff; display:grid; place-items:center; font-size:20px; font-weight:800; flex-shrink:0; }
+        .brand-main { flex:1; display:flex; flex-direction:column; gap:6px; min-width:0; }
+        .brand-main label { font-size:12px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--primary-press); }
+        .brand-main select { font-size:20px; font-weight:800; letter-spacing:-.02em; border:1.5px solid var(--line-strong); border-radius:14px; padding:11px 14px; background:var(--card); font-family:inherit; color:var(--ink); max-width:460px; }
+        .brand-main select:focus { outline:none; border-color:var(--primary); }
+        .brand-follows { display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:12px 20px 16px; border-top:1px solid var(--line); background:var(--bg); }
+        .bf-label { font-size:12.5px; font-weight:700; color:var(--ink-2); margin-right:4px; }
+        .bf { display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:700; padding:5px 11px; border-radius:var(--radius-pill); background:var(--card); border:1px solid var(--line); color:var(--ink-3); }
+        .bf svg { width:13px; height:13px; }
+        .bf.on { background:var(--good-soft); border-color:transparent; color:var(--good-ink); }
+        .bf-link { margin-left:auto; font-size:13px; font-weight:700; color:var(--primary-press); }
         .fields { padding:20px; display:grid; grid-template-columns:repeat(6, minmax(0, 1fr)); gap:16px; }
         .field { display:flex; flex-direction:column; gap:6px; grid-column:span 3; }
         .field.w2 { grid-column:span 2; }
@@ -449,21 +489,52 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
     <form wire:submit="save">
         {{-- Read-only for staff who can view dealers but not manage them. save() enforces it regardless. --}}
         <fieldset class="dl-grid" @disabled(! $this->canManage())>
+            @php $settings = $this->brandSettings(); @endphp
+            <div class="card brand-card">
+                <div class="brand-pick">
+                    <span class="brand-logo">{{ $settings ? $settings['brand']->initials() : '?' }}</span>
+                    <div class="brand-main">
+                        <label for="brandId">Franchise brand</label>
+                        <select id="brandId" wire:model.live="brandId">
+                            <option value="">Choose the brand this dealer is franchised for…</option>
+                            @foreach ($this->brands() as $brandOption)
+                                <option value="{{ $brandOption->id }}">{{ $brandOption->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('brandId') <span class="err">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+                @if ($settings)
+                    <div class="brand-follows">
+                        <span class="bf-label">Follows {{ $settings['brand']->name }} settings</span>
+                        <span class="bf {{ $settings['checklist'] ? 'on' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                            {{ $settings['checklist'] ? $settings['checklist']->points_count . '-point CPO checklist' : 'No CPO checklist yet' }}
+                        </span>
+                        <span class="bf {{ $settings['offers'] ? 'on' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z"/></svg>
+                            {{ $settings['offers'] }} current {{ $settings['offers'] === 1 ? 'offer' : 'offers' }}
+                        </span>
+                        <span class="bf">Same rules as {{ $settings['dealers'] }} other {{ $settings['brand']->name }} {{ $settings['dealers'] === 1 ? 'dealer' : 'dealers' }}</span>
+                        @can('settings.manage')
+                            <a class="bf-link" href="{{ route('admin.brands.show', $settings['brand']) }}" wire:navigate>{{ $settings['brand']->name }} settings →</a>
+                        @endcan
+                    </div>
+                @else
+                    <div class="brand-follows"><span class="bf-label">TruCars works only with franchise dealers. The brand’s CPO checklist and offers apply to this dealer automatically.</span></div>
+                @endif
+            </div>
+
             <div class="card">
                 <div class="card-head">
                     <div class="ttl">Dealership</div>
                     <div class="sub">What shoppers see, and how the dealer is registered.</div>
                 </div>
                 <div class="fields">
-                    <div class="field w4">
+                    <div class="field w6">
                         <label for="name">Public dealership name</label>
                         <input id="name" type="text" wire:model="name" maxlength="120">
                         @error('name') <span class="err">{{ $message }}</span> @enderror
-                    </div>
-                    <div class="field w2">
-                        <label for="franchiseMake">Franchise make <span class="opt">(optional)</span></label>
-                        <input id="franchiseMake" type="text" wire:model="franchiseMake" placeholder="e.g. Mitsubishi" maxlength="40">
-                        @error('franchiseMake') <span class="err">{{ $message }}</span> @enderror
                     </div>
                     <div class="field">
                         <label for="registrationNumber">Dealer registration number <span class="opt">(OMVIC, VSA, AMVIC…)</span></label>

@@ -164,6 +164,7 @@ class DealerFoundationTest extends TestCase
         $this->actingAs($this->admin());
 
         Livewire::test('pages::admin-dealer')
+            ->set('brandId', $this->brandId('Toyota'))
             ->set('name', 'Bayview Toyota')
             ->set('city', 'Toronto')
             ->set('country', '')
@@ -197,7 +198,7 @@ class DealerFoundationTest extends TestCase
         Livewire::test('pages::admin-dealer')
             ->set('name', 'Bayview Toyota')
             ->set('registrationNumber', '4567890')
-            ->set('franchiseMake', 'Toyota')
+            ->set('brandId', $this->brandId('Toyota'))
             ->set('streetAddress', '1 Bayview Ave')
             ->set('unit', '2')
             ->set('city', 'Toronto')
@@ -215,7 +216,34 @@ class DealerFoundationTest extends TestCase
         $this->assertSame('America/Toronto', $dealer->timezone);
         $this->assertSame('https://bayviewtoyota.ca', $dealer->website);
         $this->assertSame('4567890', $dealer->registration_number);
+        $this->assertSame('Toyota', $dealer->brand->name);
+        $this->assertSame('Toyota', $dealer->franchise_make);
         $this->assertTrue($dealer->isActive());
+    }
+
+    public function test_a_dealer_must_have_a_brand(): void
+    {
+        $this->actingAs($this->admin());
+
+        Livewire::test('pages::admin-dealer')
+            ->set('name', 'Bayview Motors')
+            ->set('city', 'Toronto')
+            ->call('save')
+            ->assertHasErrors('brandId');
+
+        $this->assertSame(0, Dealer::count());
+    }
+
+    public function test_choosing_a_brand_shows_what_the_dealer_will_follow(): void
+    {
+        $program = \App\Models\InspectionProgram::create(['make' => 'Toyota', 'name' => 'Toyota Certified', 'applies_to' => 'feed_certified']);
+        $program->points()->create(['position' => 1, 'label' => 'Brakes']);
+        $this->actingAs($this->admin());
+
+        Livewire::test('pages::admin-dealer')
+            ->set('brandId', $this->brandId('Toyota'))
+            ->assertSee('Follows Toyota settings')
+            ->assertSee('1-point CPO checklist');
     }
 
     public function test_admin_can_correct_a_timezone_for_an_exception_area(): void
@@ -260,6 +288,7 @@ class DealerFoundationTest extends TestCase
 
         Livewire::test('pages::admin-dealer', ['dealer' => $legacy])
             ->assertSet('country', '')
+            ->set('brandId', $this->brandId('Nissan'))
             ->set('phone', '416-555-0100')
             ->call('save')
             ->assertHasNoErrors();

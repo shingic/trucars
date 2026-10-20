@@ -7,26 +7,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
- * A CPO offer or incentive.
- *
- *   source = manufacturer   An OEM program, created and controlled centrally by
- *                           TruCars. Shows at a dealer only once that dealer
- *                           opts in (unless requires_opt_in is off).
- *   source = dealer         A dealer-funded promotion for that dealer's own cars.
- *                           Goes live only after TruCars approves it.
+ * A CPO offer or incentive — a brand setting. It applies to the brand's
+ * eligible cars at every dealer of that brand, the same way for all of them.
  *
  * Offers switch on and off by date — starts_on and ends_on are inclusive — so
  * next month's programs can be entered ahead of time and nothing on a vehicle
- * ever needs editing. Ended offers stay on record.
+ * ever needs editing. Ended and archived offers stay on record.
  */
 class Offer extends Model
 {
-    public const SOURCE_MANUFACTURER = 'manufacturer';
-    public const SOURCE_DEALER = 'dealer';
-
     public const TYPE_APR = 'apr';
     public const TYPE_CASH = 'cash';
     public const TYPE_WARRANTY = 'warranty';
@@ -38,55 +29,39 @@ class Offer extends Model
     ];
 
     public const STATUS_DRAFT = 'draft';
-    public const STATUS_PENDING = 'pending';
     public const STATUS_PUBLISHED = 'published';
-    public const STATUS_REJECTED = 'rejected';
     public const STATUS_ARCHIVED = 'archived';
 
     public const PROVINCES = ['AB', 'BC', 'MB', 'NB', 'NL', 'NS', 'NT', 'NU', 'ON', 'PE', 'QC', 'SK', 'YT'];
 
     protected $attributes = [
-        'status'          => self::STATUS_DRAFT,
-        'certified_only'  => true,
-        'requires_opt_in' => true,
-        'combinable'      => false,
+        'status'         => self::STATUS_DRAFT,
+        'certified_only' => true,
+        'combinable'     => false,
     ];
 
     protected $fillable = [
-        'source', 'dealer_id', 'type', 'title', 'make', 'models', 'year_min', 'year_max', 'provinces',
+        'brand_id', 'type', 'title', 'models', 'year_min', 'year_max', 'provinces',
         'certified_only', 'apr', 'term_months', 'lender', 'cash_amount_in_cents', 'benefit', 'conditions',
-        'starts_on', 'ends_on', 'requires_opt_in', 'combinable', 'created_by_user_id',
+        'starts_on', 'ends_on', 'combinable', 'created_by_user_id',
     ];
 
     protected function casts(): array
     {
         return [
-            'models'          => 'array',
-            'provinces'       => 'array',
-            'certified_only'  => 'boolean',
-            'requires_opt_in' => 'boolean',
-            'combinable'      => 'boolean',
-            'apr'             => 'decimal:2',
-            'starts_on'       => 'date',
-            'ends_on'         => 'date',
-            'reviewed_at'     => 'datetime',
+            'models'         => 'array',
+            'provinces'      => 'array',
+            'certified_only' => 'boolean',
+            'combinable'     => 'boolean',
+            'apr'            => 'decimal:2',
+            'starts_on'      => 'date',
+            'ends_on'        => 'date',
         ];
     }
 
-    public function dealer(): BelongsTo
+    public function brand(): BelongsTo
     {
-        return $this->belongsTo(Dealer::class);
-    }
-
-    /** Dealers who opted in to this manufacturer offer. */
-    public function participants(): BelongsToMany
-    {
-        return $this->belongsToMany(Dealer::class)->withPivot('opted_in_by_user_id')->withTimestamps();
-    }
-
-    public function isManufacturer(): bool
-    {
-        return $this->source === self::SOURCE_MANUFACTURER;
+        return $this->belongsTo(Brand::class);
     }
 
     /** Published and inside its dates today. */
@@ -97,7 +72,7 @@ class Offer extends Model
         $query->where('status', self::STATUS_PUBLISHED)->whereDate('starts_on', '<=', $today)->whereDate('ends_on', '>=', $today);
     }
 
-    /** live | scheduled | ended | draft | pending | rejected | archived */
+    /** live | scheduled | ended | draft | archived */
     public function state(): string
     {
         if ($this->status !== self::STATUS_PUBLISHED) {
@@ -114,12 +89,17 @@ class Offer extends Model
     }
 
     /**
-     * Whether this car qualifies — make, model, years, province, certification,
-     * and the dealer's participation. Dates and status are the caller's (live()).
+     * Whether this car qualifies: a used car of the offer's brand, at a dealer
+     * of that brand, matching the models, years, province and certification.
+     * Dates and status are the caller's (live()).
      */
     public function appliesTo(Vehicle $vehicle): bool
     {
-        if (strtoupper((string) $vehicle->condition) !== 'USED' || mb_strtolower(trim((string) $vehicle->make)) !== mb_strtolower(trim($this->make))) {
+        $brand = mb_strtolower(trim((string) $this->brand?->name));
+
+        if ($brand === '' || $vehicle->dealer?->brand_id !== $this->brand_id
+            || strtoupper((string) $vehicle->condition) !== 'USED'
+            || mb_strtolower(trim((string) $vehicle->make)) !== $brand) {
             return false;
         }
 
@@ -135,15 +115,7 @@ class Offer extends Model
             return false;
         }
 
-        if ($this->certified_only && $vehicle->certification() === null) {
-            return false;
-        }
-
-        if (! $this->isManufacturer()) {
-            return $this->dealer_id === $vehicle->dealer_id;
-        }
-
-        return ! $this->requires_opt_in || $this->participants->contains('id', $vehicle->dealer_id);
+        return ! $this->certified_only || $vehicle->certification() !== null;
     }
 
     /** The big number: "3.99% APR", "$1,500 off", or the warranty benefit. */
@@ -170,7 +142,7 @@ class Offer extends Model
     {
         return [
             'offer_id'   => $this->id,
-            'source'     => $this->source,
+            'brand'      => $this->brand?->name,
             'type'       => $this->type,
             'title'      => $this->title,
             'headline'   => $this->headline(),

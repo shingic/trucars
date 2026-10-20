@@ -137,13 +137,6 @@ new #[Layout('layouts.dealer')] #[Title('Command Centre')] class extends Compone
             }
         }
 
-        if ($user->can(Permission::OFFERS_MANAGE)) {
-            $review = \App\Models\Offer::where('status', \App\Models\Offer::STATUS_PENDING)->count();
-            if ($review) {
-                $items[] = ['tone' => 'warn', 'title' => $review . ' dealer ' . ($review === 1 ? 'promotion' : 'promotions') . ' to review', 'detail' => 'They don’t show to customers until approved.', 'url' => route('admin.offers', ['tab' => 'review'])];
-            }
-        }
-
         if ($user->can(Permission::STAFF_MANAGE)) {
             $staffInvites = StaffInvitation::open()->count();
             if ($staffInvites) {
