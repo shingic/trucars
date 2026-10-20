@@ -11,7 +11,9 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 
 /*
-| Command Centre — find a customer to help (customers.view).
+| Command Centre — find any customer account to help (customers.view).
+| Customers are browsed per dealer (Dealers › Customers); this search is for
+| accounts that aren't tied to a dealer yet, e.g. no reservation.
 |
 | Search-first by design: nothing is listed until support searches for a
 | specific person, results are capped, and every search is audited. Only
@@ -61,9 +63,9 @@ new #[Layout('layouts.dealer')] #[Title('Customers')] class extends Component {
 }; ?>
 
 @push('crumb')
-    <span>Command Centre</span>
+    <a href="{{ route('admin.dealers') }}" wire:navigate>Dealers</a>
     <span>›</span>
-    <span class="cur">Customers</span>
+    <span class="cur">Find a customer</span>
 @endpush
 
 @push('styles')
@@ -91,7 +93,7 @@ new #[Layout('layouts.dealer')] #[Title('Customers')] class extends Component {
 
 <div>
     <div class="cu-head">
-        <h1>Customers</h1>
+        <h1>Find a customer</h1>
         <p>Search by name or email to find the customer you're helping. Searches and the records you open are logged.</p>
     </div>
 

@@ -19,7 +19,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealers')] class extends Component {
     {
         // Route middleware already requires dealers.view; checked again here so
         // the page never depends on how it was reached.
-        \Illuminate\Support\Facades\Gate::authorize(\App\Support\Permission::DEALERS_VIEW);
+        \Illuminate\Support\Facades\Gate::authorize('dealers.browse');
     }
 
     #[Computed]
@@ -128,7 +128,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealers')] class extends Component {
         @forelse ($this->dealers as $dealer)
             <div class="ad-row" wire:key="dealer-{{ $dealer->id }}">
                 <div>
-                    <div class="nm"><a href="{{ route('admin.dealers.edit', $dealer) }}" wire:navigate>{{ $dealer->name }}</a></div>
+                    <div class="nm"><a href="{{ auth()->user()->can('dealers.view') ? route('admin.dealers.edit', $dealer) : route('admin.dealers.customers', $dealer) }}" wire:navigate>{{ $dealer->name }}</a></div>
                     <div class="meta">
                         #{{ $dealer->id }} · {{ $dealer->published_vehicles_count }} published / {{ $dealer->vehicles_count }} vehicles
                         @if ($dealer->franchise_make) · {{ $dealer->franchise_make }} @endif
@@ -147,6 +147,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealers')] class extends Component {
                         <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
                     </button>
                     <div class="kebab-menu" role="menu" x-show="open" x-transition.origin.top.right x-cloak>
+                        @can('dealers.view')
                         <a role="menuitem" href="{{ route('admin.dealers.edit', $dealer) }}" wire:navigate>
                             @can('dealers.manage')
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
@@ -161,6 +162,14 @@ new #[Layout('layouts.dealer')] #[Title('Dealers')] class extends Component {
                             Inventory
                             <span class="count">{{ $dealer->vehicles_count }}</span>
                         </a>
+                        @endcan
+                        @can('customers.view')
+                            <a role="menuitem" href="{{ route('admin.dealers.customers', $dealer) }}" wire:navigate>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+                                Customers
+                            </a>
+                        @endcan
+                        @can('dealers.view')
                         <a role="menuitem" href="{{ route('admin.dealers.inspection', $dealer) }}" wire:navigate>
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1Z"/><path d="m9 14 2 2 4-4"/></svg>
                             Inspection checklist
@@ -169,6 +178,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealers')] class extends Component {
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                             Dealer users
                         </a>
+                        @endcan
                         @if ($dealer->website)
                             <hr>
                             <a role="menuitem" href="{{ str_starts_with($dealer->website, 'http') ? $dealer->website : 'https://'.$dealer->website }}" target="_blank" rel="noopener">

@@ -136,16 +136,10 @@
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
                         <span class="nav-label">Home</span>
                     </a>
-                    @can('dealers.view')
-                        <a href="{{ route('admin.dealers') }}" class="nav-item {{ request()->routeIs('admin.dealers*') ? 'on' : '' }}">
+                    @can('dealers.browse')
+                        <a href="{{ route('admin.dealers') }}" class="nav-item {{ request()->routeIs('admin.dealers*') || request()->routeIs('admin.customers*') ? 'on' : '' }}">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6"/></svg>
                             <span class="nav-label">Dealers</span>
-                        </a>
-                    @endcan
-                    @can('customers.view')
-                        <a href="{{ route('admin.customers') }}" class="nav-item {{ request()->routeIs('admin.customers*') ? 'on' : '' }}">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
-                            <span class="nav-label">Customers</span>
                         </a>
                     @endcan
                     @can('reservations.view')

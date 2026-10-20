@@ -86,14 +86,17 @@ class CommandCentreTest extends TestCase
     {
         $this->actingAs($this->staff(Permission::PRESETS['customer_support']['permissions']));
 
+        // Customers are reached through Dealers › Customers — the dealer list
+        // opens for support, but no dealer profile does.
         $this->get(route('admin.home'))->assertOk()
-            ->assertSee(route('admin.customers'))
+            ->assertSee(route('admin.dealers'))
             ->assertSee(route('admin.reservations'))
-            ->assertDontSee(route('admin.dealers'))
             ->assertDontSee(route('admin.staff'))
             ->assertDontSee(route('admin.settings'));
-        $this->get(route('admin.dealers'))->assertForbidden();
+        $this->get(route('admin.dealers'))->assertOk()->assertDontSee('Edit profile')->assertDontSee('View profile');
+        $this->get(route('admin.dealers.customers', $this->dealer))->assertOk()->assertDontSee('Profile &amp; users', false);
         $this->get(route('admin.dealers.edit', $this->dealer))->assertForbidden();
+        $this->get(route('admin.dealers.inventory', $this->dealer))->assertForbidden();
         $this->get(route('admin.staff'))->assertForbidden();
         $this->get(route('admin.audit'))->assertForbidden();
 

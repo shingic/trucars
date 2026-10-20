@@ -432,11 +432,7 @@ new #[Layout('layouts.dealer')] #[Title('Inspection checklist')] class extends C
 
 <div>
     @if ($dealer)
-        <nav class="tabs">
-            <a href="{{ route('admin.dealers.edit', $dealer) }}" wire:navigate>Profile &amp; users</a>
-            <a href="{{ route('admin.dealers.inventory', $dealer) }}" wire:navigate>Inventory</a>
-            <a href="{{ route('admin.dealers.inspection', $dealer) }}" wire:navigate class="on">Inspection</a>
-        </nav>
+        @include('partials.dealer-tabs', ['tabDealer' => $dealer, 'activeTab' => 'inspection'])
 
         <div class="ip-head">
             <h1>Inspection checklist</h1>

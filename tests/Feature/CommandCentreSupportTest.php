@@ -239,6 +239,30 @@ class CommandCentreSupportTest extends TestCase
         return $this->staff(Permission::PRESETS['customer_support']['permissions']);
     }
 
+    public function test_a_dealers_customers_tab_lists_only_that_dealers_buyers_and_is_audited(): void
+    {
+        $other = $this->makeDealer(['name' => 'Other Rooftop']);
+        $ours = User::factory()->create(['name' => 'Avery Ours']);
+        $theirs = User::factory()->create(['name' => 'Blake Theirs']);
+        $this->deal($ours);
+        $this->deal($ours);
+        $this->deal($theirs, $other);
+
+        $this->actingAs($this->staff(Permission::PRESETS['customer_support']['permissions']));
+
+        $this->get(route('admin.dealers.customers', $this->dealer))
+            ->assertOk()
+            ->assertSee('Avery Ours')
+            ->assertSee('2 reservations here')
+            ->assertDontSee('Blake Theirs');
+
+        $this->assertDatabaseHas('audit_logs', ['action' => 'dealer.customers_viewed', 'target_id' => $this->dealer->id]);
+
+        $this->actingAs($this->staff([Permission::DEALERS_VIEW]))
+            ->get(route('admin.dealers.customers', $this->dealer))
+            ->assertForbidden();
+    }
+
     private function staff(array $permissions, array $attributes = []): User
     {
         return User::factory()->create($attributes + [

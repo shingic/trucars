@@ -103,6 +103,8 @@ new #[Layout('layouts.dealer')] #[Title('Customer')] class extends Component {
 }; ?>
 
 @push('crumb')
+    <a href="{{ route('admin.dealers') }}" wire:navigate>Dealers</a>
+    <span>›</span>
     <a href="{{ route('admin.customers') }}" wire:navigate>Customers</a>
     <span>›</span>
     <span class="cur">{{ $this->customer()->name }}</span>

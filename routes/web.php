@@ -196,7 +196,7 @@ Route::domain($adminDomain)->group(function () {
         ->name('admin.invitation');
 
     Route::livewire('/dealers', 'pages::admin-dealers')
-        ->middleware([EnsureCommandCentreAccess::class, 'can:dealers.view'])
+        ->middleware([EnsureCommandCentreAccess::class, 'can:dealers.browse'])
         ->name('admin.dealers');
 
     Route::livewire('/dealers/new', 'pages::admin-dealer')
@@ -214,6 +214,12 @@ Route::domain($adminDomain)->group(function () {
         ->whereNumber('dealer')
         ->middleware([EnsureCommandCentreAccess::class, 'can:dealers.view'])
         ->name('admin.dealers.inventory');
+
+    // A dealer's customers: the buyers with reservations there.
+    Route::livewire('/dealers/{dealer}/customers', 'pages::admin-dealer-customers')
+        ->whereNumber('dealer')
+        ->middleware([EnsureCommandCentreAccess::class, 'can:customers.view'])
+        ->name('admin.dealers.customers');
 
     // A dealer's inspection checklists: view with dealers.view, edit with dealers.manage.
     Route::livewire('/dealers/{dealer}/inspection', 'pages::admin-dealer-inspection')

@@ -47,5 +47,10 @@ class AppServiceProvider extends ServiceProvider
         foreach (Permission::all() as $permission) {
             Gate::define($permission, fn (User $user) => $user->hasPermission($permission));
         }
+
+        // The Dealers list is the way in to dealers and to their customers, so
+        // customer support (customers.view) can open it too — but only the
+        // Customers tab of each dealer, never its profile or inventory.
+        Gate::define('dealers.browse', fn (User $user) => $user->hasPermission(Permission::DEALERS_VIEW) || $user->hasPermission(Permission::CUSTOMERS_VIEW));
     }
 }
