@@ -1,0 +1,169 @@
+VIN, Recalls & Maintenance: VIN matches other VINs on vehicle and paperwork, original with no alterations
+VIN, Recalls & Maintenance: Correct manufacturer door jamb and nameplate decals
+VIN, Recalls & Maintenance: All OEM service campaigns and recalls performed
+VIN, Recalls & Maintenance: Diagnostic trouble codes checked, documented, repaired and retested
+VIN, Recalls & Maintenance: Oil change / scheduled maintenance performed
+Diagnostics (CONSULT III Plus): All DTC sub-systems inspected
+Diagnostics (CONSULT III Plus): Applicable software updates performed
+Diagnostics (CONSULT III Plus): Idle Air Volume Learn (IAVL), if required
+Engine: Fluid leakages
+Engine: Oil in air cleaner (blow-by / PCV system)
+Engine: Water in oil
+Engine: Engine oil condition and level
+Engine: Timing chain noise
+Engine: Timing belt replaced per OEM maintenance schedule
+Engine: Cylinder power balance diagnostics
+Engine: Fluids condition and levels
+Engine: Vacuum hoses condition
+Engine: Engine mounts condition
+Cooling System: Cooling system and cap pressure test
+Cooling System: Hoses condition
+Cooling System: Coolant condition, level, leaks and freeze point
+Cooling System: Radiator condition and pressure test
+Cooling System: Cooling fan, fan clutch and fan motor operation
+Cooling System: Water pump noise and leaks
+Cooling System: Recovery tank condition and fluid level
+Cooling System: Belts condition and adjustment
+Fuel System: Fuel pump noise and leakage
+Fuel System: Fuel lines and hoses
+Fuel System: Fuel filter
+Fuel System: Air filter
+Fuel System: Injection pump timing (diesel)
+Fuel System: Boost pressure test (turbo diesel)
+Fuel System: Vacuum pump operation (diesel)
+Electrical System: Remote keyless entry fob operation and battery
+Electrical System: Wiring condition
+Electrical System: Starter operation
+Electrical System: Alternator charging output
+Electrical System: Ignition system operation
+Electrical System: Battery condition and load test
+Electrical System: Pre-glow system (diesel)
+Transmission & Drivetrain: Transmission system condition and operation
+Transmission & Drivetrain: Automatic transmission / transaxle fluids
+Transmission & Drivetrain: Manual transmission, drive axle and transfer case fluids
+Transmission & Drivetrain: Transmission mounts
+Transmission & Drivetrain: Transfer case operation
+Transmission & Drivetrain: Universal joints, CV joints and boots
+Transmission & Drivetrain: Differential and drive axles
+Transmission & Drivetrain: Clutch operation and fluid level
+Hybrid System: Inverter coolant level, condition and concentration
+Hybrid System: Hybrid battery charge level
+Hybrid System: 12-V auxiliary battery
+Hybrid System: High-voltage harness protective shields
+Hybrid System: Hybrid electronic control unit diagnostic
+Hybrid System: Multi-information display operation
+Hybrid System: Diagnostic scan for codes and software updates
+Suspension & Steering: Tires checked for uneven wear
+Suspension & Steering: Steering and suspension fluid
+Suspension & Steering: Steering gear and linkage
+Suspension & Steering: Power steering pump and hoses
+Suspension & Steering: Control arms, ball joints and bushings
+Suspension & Steering: Tie rods and idler arm
+Suspension & Steering: Sway bars, links and bushings
+Suspension & Steering: Springs and ride height
+Suspension & Steering: Struts and shocks
+Brakes & Exhaust: Brakes, calipers and lines operate properly
+Brakes & Exhaust: Brake fluid level and condition
+Brakes & Exhaust: Pads / shoes at least 50% remaining
+Brakes & Exhaust: Rotors and drums condition and wear
+Brakes & Exhaust: Brake lines, hydraulics, hoses and fittings
+Brakes & Exhaust: Parking brake operation and adjustment
+Brakes & Exhaust: Master cylinder and booster
+Brakes & Exhaust: Entire exhaust system
+Brakes & Exhaust: Catalytic converter and shielding
+Brakes & Exhaust: Emission control tests
+Body Frame: Unibody / frame inspected for repairs, damage, rust and flood damage
+Body Frame: Doors, hood, trunk and tailgate operation and alignment
+Road Test: Starting cold and hot
+Road Test: Engine idle quality
+Road Test: Engine performance and smooth acceleration
+Road Test: Engine noise at all speeds
+Road Test: Transmission / transaxle noise
+Road Test: Automatic transmission shift points and slippage
+Road Test: Shift interlock operation
+Road Test: Drive axle and transfer case bearing / gear noise
+Road Test: Manual transmission gear change
+Road Test: Clutch engagement, slippage and chatter
+Road Test: Steering performance and centre
+Road Test: Brakes and ABS effectiveness
+Road Test: Cruise control operation
+Road Test: Intelligent cruise control operation
+Road Test: Gauges, speedometer, tachometer and odometer
+Road Test: Body and suspension on rough road
+Road Test: Tire pressure monitoring system
+Heating & A/C: Air conditioning system
+Heating & A/C: Heating system
+Heating & A/C: Defogger / defroster
+Heating & A/C: Cabin air filter
+Windows & Locks: Door locks and controls
+Windows & Locks: Child safety locks
+Windows & Locks: Windows and controls
+Air Bags & Seat Belts: Seat belts condition and operation
+Air Bags & Seat Belts: Air bags intact, no codes, warning light operation
+Audio & Navigation: Audio system and speakers
+Audio & Navigation: Antenna
+Audio & Navigation: Alarm / theft deterrent system
+Audio & Navigation: Navigation system
+Interior Amenities: Clock
+Interior Amenities: Horn
+Interior Amenities: Power outlets
+Interior Amenities: Storage compartments
+Interior Amenities: Glove compartment, light and centre console
+Interior Amenities: Tilt / telescopic steering wheel
+Interior Amenities: Steering wheel lock
+Interior Amenities: Rear-view mirrors
+Interior Amenities: Instrument panel and warning lights
+Interior Amenities: Warning chimes
+Interior Amenities: Courtesy, dome and map lights
+Interior Amenities: Fuel filler door release
+Interior Amenities: Interior door handles
+Interior Amenities: First-aid kit (if equipped)
+Interior Amenities: Cargo area liner
+Interior Trim & Carpet: Carpet
+Interior Trim & Carpet: Floor mats
+Interior Trim & Carpet: Door trim, panels and dashboard
+Interior Trim & Carpet: Headliner
+Interior Trim & Carpet: Sun visors, vanity mirror and light
+Luggage Compartment: Mat, trim, carpet and cargo net
+Luggage Compartment: Luggage compartment light
+Luggage Compartment: Jack and tools
+Luggage Compartment: Emergency trunk release
+Seats: Seat upholstery
+Seats: Seat and headrest adjustments
+Seats: Heated / cooled seats
+Sunroof & Convertible Top: Sunroof / moonroof
+Sunroof & Convertible Top: Convertible top and rear window
+Body Exterior: Body panels for damage, dents, alignment and paint
+Body Exterior: Bumpers for damage, alignment and improper repairs
+Body Exterior: Grille, trim, moulding and roof rack
+Glass, Mirrors & Wipers: Windshield
+Glass, Mirrors & Wipers: Side and rear windows
+Glass, Mirrors & Wipers: Mirrors condition and operation
+Glass, Mirrors & Wipers: Wiper mechanism and blades
+Glass, Mirrors & Wipers: Wiper operation, speeds and delay
+Glass, Mirrors & Wipers: Washer fluid and spray pattern
+Exterior Lights: Headlights and high beams
+Exterior Lights: Taillights
+Exterior Lights: Brake lights and high-mount brake light
+Exterior Lights: Parking lights
+Exterior Lights: Hazard lights
+Exterior Lights: Reverse lights
+Exterior Lights: Turn signals and side markers
+Exterior Lights: Licence plate lights
+Exterior Lights: Fog, driving and daytime running lights
+Tires & Wheels: OEM size and speed rating, same brand per axle
+Tires & Wheels: Tread depth, minimum 4 mm
+Tires & Wheels: Sidewalls and abnormal wear
+Tires & Wheels: Tire pressure
+Tires & Wheels: Alignment
+Tires & Wheels: Spare tire
+Tires & Wheels: Wheels condition and curb damage
+Reconditioning & Detail: Owner's manuals and two keys or remotes
+Reconditioning & Detail: Exterior clean and free of swirl marks
+Reconditioning & Detail: Body free of dents
+Reconditioning & Detail: Bumpers and fascia free of gouges and mismatched paint
+Reconditioning & Detail: Wheels and tires clean and dressed
+Reconditioning & Detail: Engine compartment clean and dressed
+Reconditioning & Detail: Interior free of debris and odour
+Reconditioning & Detail: Seats, carpets, headliner and mats free of stains
+Reconditioning & Detail: Interior surfaces free of holes, tears and fading

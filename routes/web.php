@@ -221,6 +221,11 @@ Route::domain($adminDomain)->group(function () {
         ->middleware([EnsureCommandCentreAccess::class, 'can:dealers.view'])
         ->name('admin.dealers.inspection');
 
+    // Brand checklists: same screen, no dealer — applied to franchised dealers automatically.
+    Route::livewire('/brand-checklists', 'pages::admin-dealer-inspection')
+        ->middleware([EnsureCommandCentreAccess::class, 'can:dealers.view'])
+        ->name('admin.brand-checklists');
+
     Route::livewire('/customers', 'pages::admin-customers')
         ->middleware([EnsureCommandCentreAccess::class, 'can:customers.view'])
         ->name('admin.customers');

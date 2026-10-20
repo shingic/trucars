@@ -6,12 +6,16 @@ namespace App\Support;
 
 use App\Models\InspectionProgram;
 use App\Models\Vehicle;
+use Illuminate\Support\Collection;
 
 /**
- * The inspection checklist a car is shown with: its dealer's active program
- * that applies to it and has points entered. A feed-certified-only program
- * (e.g. manufacturer CPO) wins over an all-used-cars one. No program, no
- * badge — there's no default point count.
+ * The inspection checklist a car is shown with: an active checklist that
+ * applies to it and has points entered — the dealer's own, or a brand
+ * checklist for the car's make when the dealer is franchised for it.
+ *
+ * When several apply: a feed-certified-only checklist (e.g. CPO) beats an
+ * all-used-cars one, and the dealer's own beats the brand's. No checklist,
+ * no badge — there's no default point count.
  */
 final class VehicleCertification
 {
@@ -30,8 +34,13 @@ final class VehicleCertification
     public static function for(Vehicle $vehicle): ?self
     {
         $program = ($vehicle->dealer?->inspectionPrograms ?? collect())
+            ->concat(self::brandPrograms())
             ->filter(fn (InspectionProgram $program) => $program->appliesTo($vehicle) && $program->points->isNotEmpty())
-            ->sortBy(fn (InspectionProgram $program) => [$program->applies_to === InspectionProgram::APPLIES_TO_FEED_CERTIFIED ? 0 : 1, $program->id])
+            ->sortBy(fn (InspectionProgram $program) => [
+                $program->applies_to === InspectionProgram::APPLIES_TO_FEED_CERTIFIED ? 0 : 1,
+                $program->isBrand() ? 1 : 0,
+                $program->id,
+            ])
             ->first();
 
         if ($program === null) {
@@ -48,5 +57,11 @@ final class VehicleCertification
                 ->map(fn ($points) => $points->pluck('label')->all())
                 ->all(),
         );
+    }
+
+    /** Active brand checklists, loaded once per request. */
+    private static function brandPrograms(): Collection
+    {
+        return once(fn () => InspectionProgram::whereNull('dealer_id')->where('is_active', true)->with('points')->get());
     }
 }

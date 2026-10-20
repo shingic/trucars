@@ -142,6 +142,12 @@
                             <span class="nav-label">Dealers</span>
                         </a>
                     @endcan
+                    @can('dealers.view')
+                        <a href="{{ route('admin.brand-checklists') }}" class="nav-item {{ request()->routeIs('admin.brand-checklists') ? 'on' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1Z"/><path d="m9 14 2 2 4-4"/></svg>
+                            <span class="nav-label">Brand checklists</span>
+                        </a>
+                    @endcan
                     @can('customers.view')
                         <a href="{{ route('admin.customers') }}" class="nav-item {{ request()->routeIs('admin.customers*') ? 'on' : '' }}">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
