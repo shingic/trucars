@@ -105,12 +105,16 @@ class DealerInspectionChecklistTest extends TestCase
 
     /* ---- brand checklists -------------------------------------------- */
 
-    public function test_the_nissan_checklist_ships_with_169_points(): void
+    public function test_brand_checklists_ship_with_their_manufacturers_point_counts(): void
     {
-        $nissan = InspectionProgram::whereNull('dealer_id')->where('make', 'Nissan')->sole();
+        $brands = InspectionProgram::whereNull('dealer_id')->withCount('points')->get()->keyBy('make');
 
-        $this->assertSame(169, $nissan->points()->count());
-        $this->assertSame('feed_certified', $nissan->applies_to);
+        $this->assertSame(169, $brands['Nissan']->points_count);
+        $this->assertSame(152, $brands['Subaru']->points_count);
+        $this->assertSame(112, $brands['Volkswagen']->points_count);
+        $this->assertSame(169, $brands['Infiniti']->points_count);
+        $this->assertSame(336, $brands['Audi']->points_count);
+        $this->assertSame(['feed_certified'], $brands->pluck('applies_to')->unique()->values()->all());
     }
 
     public function test_a_brand_checklist_applies_automatically_to_franchised_dealers_only(): void

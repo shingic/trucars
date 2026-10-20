@@ -1,0 +1,336 @@
+Eligibility: CarFax vehicle history report passed
+Eligibility: In operation at least 4 months or 3,000 km
+Eligibility: Within model-year and mileage limits
+Eligibility: Free from after-market modifications, including ECU tuning check
+Eligibility: Charges on Level 1 and Level 2 (PHEV)
+Eligibility: No extensive or repeated repair history
+Eligibility: All VINs match labels and plates
+Pre-work: Paperwork matches VIN and vehicle
+Pre-work: Model year confirmed
+Pre-work: All major scheduled maintenance performed
+Pre-work: Owner's manual present
+Pre-work: High-voltage battery classification (if applicable)
+Pre-work: Full diagnostic scan with VAS tester
+Pre-work: 12V battery condition test
+Pre-work: Diagnostic log uploaded
+Pre-work: All safety recalls, service actions and vehicle updates closed
+Pre-work: Original factory warranty status confirmed
+Pre-work: Technician confirms vehicle qualifies for certification
+Road Test: Starter operation, hot and cold
+Road Test: Fuel pump noise
+Road Test: Engine idle, noise and vibration
+Road Test: Smooth acceleration and deceleration
+Road Test: Transmission shift points, paddles and Tiptronic
+Road Test: Transmission / transaxle noise
+Road Test: Shift interlock
+Road Test: Clutch operation
+Road Test: Exhaust noises and odours
+Road Test: Brakes
+Road Test: ABS function
+Road Test: Steering and lane assist
+Road Test: Suspension noise and performance
+Road Test: Overall drivability
+Road Test: Speedometer, odometer and trip meter
+Road Test: Navigation and media
+Road Test: Driver assist features
+Road Test: Regenerative braking
+Road Test: EV mode (PHEV)
+Front Interior: All keys present, two minimum
+Front Interior: Warning lights and messages
+Front Interior: Driver information system
+Front Interior: Hazard lights and dash / console switches
+Front Interior: Driver and passenger airbags
+Front Interior: Speakers
+Front Interior: Dash lights and dimmer
+Front Interior: Cup holders
+Front Interior: Steering wheel, lock, tilt and telescope
+Front Interior: Horn
+Front Interior: Exterior mirror controls, heater and folding
+Front Interior: Rear-view mirror, compass and auto-dimming
+Front Interior: Dome and courtesy lights
+Front Interior: Hood release
+Front Interior: Trunk / tailgate release and kick-open
+Front Interior: Fuel door release
+Front Interior: Power socket, lighter and ashtray
+Front Interior: Radio, satellite radio and media
+Front Interior: Clock
+Front Interior: Wiper controls and rain sensor
+Front Interior: Defogger / defroster
+Front Interior: HVAC, blower, climate controls and vents
+Front Interior: Gear shifter, indicator and shift interlock
+Front Interior: Parking brake and switch
+Front Interior: Foot pedals and covers
+Front Interior: Warning chimes, alarm and theft deterrent
+Front Interior: Bluetooth
+Front Interior: MMI functions and control buttons
+Left Front Interior: Door trim and handle
+Left Front Interior: Visor, vanity mirror and light
+Left Front Interior: Curtain airbag
+Left Front Interior: Seat airbag
+Left Front Interior: Power windows and door locks
+Left Front Interior: Seat controls, power and memory
+Left Front Interior: Seat heater and ventilation
+Left Front Interior: Massaging seat
+Left Front Interior: Controls and vents
+Left Front Interior: Carpet, floor mat and footwell
+Left Front Interior: Seat belt and height adjuster
+Left Front Interior: Seat cushion and cover
+Left Front Interior: Headrest and headliner
+Left Front Interior: Door light and reflector
+Left Front Interior: Assist handle
+Left Rear Interior: Door trim and handle
+Left Rear Interior: Power window and door lock
+Left Rear Interior: Seat heater and ventilation
+Left Rear Interior: Massaging seat
+Left Rear Interior: Carpet, floor mat and footwell
+Left Rear Interior: Seat belt
+Left Rear Interior: Seat cushion and cover
+Left Rear Interior: Rear seat folding
+Left Rear Interior: Headrest and headliner
+Left Rear Interior: Door lights and reflector
+Left Rear Interior: Window sunshade
+Left Rear Interior: Side airbag
+Left Rear Interior: Assist handle
+Left Rear Interior: Rear armrest and ski sack
+Left Rear Interior: Rear controls and vents
+Left Rear Interior: Rear cup holders and storage
+Left Rear Interior: Rear window sunshade
+Left Rear Interior: Rear seat entertainment
+Left Rear Interior: First aid kit
+Left Rear Interior: Centre headrest
+Left Rear Interior: Centre seat belt
+Left Rear Interior: Child seat tethers and LATCH
+Right Rear Interior: Door trim and handle
+Right Rear Interior: Power window and door lock
+Right Rear Interior: Seat heater and ventilation
+Right Rear Interior: Massaging seat
+Right Rear Interior: Carpet, floor mat and footwell
+Right Rear Interior: Seat belt
+Right Rear Interior: Seat cushion and cover
+Right Rear Interior: Headrest and headliner
+Right Rear Interior: Door lights and reflector
+Right Rear Interior: Window sunshade
+Right Rear Interior: Side airbag
+Right Rear Interior: Assist handle
+Right Front Interior: Door trim and handle
+Right Front Interior: Vanity mirror and light
+Right Front Interior: Power window and door lock
+Right Front Interior: Seat controls, power and memory
+Right Front Interior: Seat heater and ventilation
+Right Front Interior: Massaging seat
+Right Front Interior: Controls and vents
+Right Front Interior: Dash
+Right Front Interior: Seat airbag
+Right Front Interior: Curtain airbag
+Right Front Interior: Glove box, lock and light
+Right Front Interior: Carpet, floor mat and footwell
+Right Front Interior: Seat belt and height adjuster
+Right Front Interior: Seat cover and cushion
+Right Front Interior: Headrest and headliner
+Right Front Interior: Door light and reflector
+Right Front Interior: Assist handle
+Front Exterior: Front bumper
+Front Exterior: Licence plate bracket and filler panel
+Front Exterior: Charging port and access panel (PHEV)
+Front Exterior: Front park sensors
+Front Exterior: Headlight lenses
+Front Exterior: Headlamps, high and low beam
+Front Exterior: Marker lights, turn signals and daytime running lights
+Front Exterior: Parking and hazard lights
+Front Exterior: Fog / all-weather lights
+Front Exterior: Headlamp washer nozzles and covers
+Front Exterior: Audi emblem
+Front Exterior: Grille
+Front Exterior: Lower right fascia grille
+Front Exterior: Front tow eye cover
+Front Exterior: Lower centre grille
+Front Exterior: Lower left fascia grille
+Front Exterior: Hood and paint condition
+Front Exterior: Front-end panel gaps and alignment
+Front Exterior: Windshield glass
+Front Exterior: Windshield wipers
+Front Exterior: Windshield wiper arms
+Front Exterior: Windshield washer nozzles
+Front Exterior: Wet-arm wipers (if equipped)
+Front Exterior: Hood release latch
+Front Exterior: Hood struts
+Front Exterior: Audi advanced key, both fobs
+Front Exterior: Automatic headlamp sensor
+Front Exterior: Automatic rain sensor
+Front Exterior: Electric door handles
+Front Exterior: Manual emergency release for electric door handles
+Front Exterior: Soft-close door locks
+Left Front Exterior: Remote entry
+Left Front Exterior: Fender alignment and paint
+Left Front Exterior: Side turn indicator
+Left Front Exterior: A and B pillars
+Left Front Exterior: VIN plate
+Left Front Exterior: Mirror housing, glass and flasher
+Left Front Exterior: Door panel alignment and paint
+Left Front Exterior: Body mouldings
+Left Front Exterior: Window glass
+Left Front Exterior: Window trim and mouldings
+Left Front Exterior: Driver exterior door handle
+Left Front Exterior: Driver door lock cylinder
+Left Front Exterior: Door hinge and alignment
+Left Front Exterior: Door seals
+Left Front Exterior: Door sill plate
+Left Front Exterior: Side moulding
+Left Front Exterior: Rocker panel and trim
+Left Rear Exterior: Door panel alignment and paint
+Left Rear Exterior: Door side moulding
+Left Rear Exterior: Rocker panel and trim
+Left Rear Exterior: Window trim and mouldings
+Left Rear Exterior: Window glass
+Left Rear Exterior: Exterior door handle
+Left Rear Exterior: Child lock
+Left Rear Exterior: Door hinge and alignment
+Left Rear Exterior: Door seals
+Left Rear Exterior: Sill plate
+Left Rear Exterior: C-pillar
+Left Rear Exterior: Quarter window glass
+Left Rear Exterior: Body panel alignment and paint
+Rear Exterior: Rear end and tailgate paint
+Rear Exterior: Rear emblem and tailgate trim
+Rear Exterior: Rear window glass
+Rear Exterior: Rear window defrost element
+Rear Exterior: Rear camera
+Rear Exterior: Power tailgate, hinges, struts and alignment
+Rear Exterior: Trunk seal
+Rear Exterior: Trunk light
+Rear Exterior: Compartment covers and tie-downs
+Rear Exterior: Roadside kit, jack and tools
+Rear Exterior: Tire mobility system expiry date
+Rear Exterior: Removable cargo cover
+Rear Exterior: Rear park sensors
+Rear Exterior: Rear parking, reverse, fog, hazard and tail lights
+Rear Exterior: Rear marker lamps and turn signals
+Rear Exterior: Rear brake lights
+Rear Exterior: Rear bumper
+Rear Exterior: Exterior trunk release
+Rear Exterior: Licence plate bracket and light
+Rear Exterior: Rear window wiper
+Rear Exterior: High-mount third brake light
+Rear Exterior: Rear window wiper arm
+Rear Exterior: Rear window washer nozzle
+Rear Exterior: Boot cover (cabriolet / roadster)
+Rear Exterior: Retractable rear spoiler
+Right Rear Exterior: Quarter panel alignment and paint
+Right Rear Exterior: Trim pieces and mouldings
+Right Rear Exterior: Fuel door, rubber stops and fuel cap
+Right Rear Exterior: Quarter window glass
+Right Rear Exterior: C-pillar
+Right Rear Exterior: Rocker panel and trim
+Right Rear Exterior: Window trim and mouldings
+Right Rear Exterior: Window glass
+Right Rear Exterior: Door paint and gap alignment
+Right Rear Exterior: Exterior door handle
+Right Rear Exterior: Child lock
+Right Rear Exterior: Sill plate
+Right Rear Exterior: Door hinge and alignment
+Right Front Exterior: A and B pillars
+Right Front Exterior: Door panel paint and gap alignment
+Right Front Exterior: Exterior door handle
+Right Front Exterior: Door lock
+Right Front Exterior: Sill plate
+Right Front Exterior: Door hinge and alignment
+Right Front Exterior: Door seals
+Right Front Exterior: Rocker panel and trim
+Right Front Exterior: Window trim and mouldings
+Right Front Exterior: Mirror housing, glass and flasher
+Right Front Exterior: Side marker light
+Right Front Exterior: Trim pieces and mouldings
+Right Front Exterior: Fender alignment and paint
+Roof: Sunroof glass and seals, leak test
+Roof: Roof panel and luggage rack
+Roof: Roof antenna
+Roof: Convertible top
+Roof: Windscreen operation
+Engine: Under-hood insulation and cowl drains
+Engine: Engine compartment labels
+Engine: Tire pressure and fuel label
+Engine: Engine and cowl covers and emblems
+Engine: Windshield washer reservoir
+Engine: Hoses checked for air and fluid leaks
+Engine: Power steering and engine oil levels
+Engine: Water in oil
+Engine: Fuel injection system, filter and lines
+Engine: Throttle / electronic power control
+Engine: Air filter
+Engine: Accessory belt
+Engine: Power steering pump, hoses and fluid
+Engine: Oil level and condition
+Engine: Engine and transmission mounts, upper
+Engine: Engine and transmission seals and gaskets
+Engine: A/C compressor, lines and condenser
+Engine: Visual leak inspection
+Cooling System: Coolant reservoir cap
+Cooling System: Coolant level
+Cooling System: Cooling system pressure test
+Cooling System: Radiator and heater hoses
+Cooling System: Cooling fan and motor
+Cooling System: Radiator and thermostat
+Cooling System: Upper core support and radiator housing
+Cooling System: Water pump and belt
+Cooling System: High-voltage cooling labels
+Cooling System: High-voltage system coolant level (if applicable)
+Cooling System: Coolant protection temperature
+Transmission: Transmission system condition
+Transmission: Transmission fluid
+Electrical: 12V battery condition test
+Electrical: 12V wiring
+Electrical: High-voltage battery casing
+Electrical: High-voltage components and cables
+Electrical: Corrosion on terminals, connectors and wiring
+Electrical: Wiring harnesses
+Brakes: Brake fluid reservoir cap
+Brakes: Brake fluid level and condition
+Brakes: Master cylinder and booster
+Brakes: Parking brake
+Brakes: Parking brake cable tension
+Brakes: Calipers and hoses
+Brakes: Electro-mechanical brake
+Brakes: Brake pads at least 50% thickness
+Undercarriage: Bumper flanges and brackets
+Undercarriage: Frame spot welds and seams
+Undercarriage: Underbody sheet metal
+Undercarriage: Water / flood damage
+Undercarriage: Front sub-frames and side aprons
+Undercarriage: Centre support bearing
+Undercarriage: Brake lines
+Undercarriage: Bottom of front and rear bumpers
+Undercarriage: Lower splash shield
+Undercarriage: Lower engine mounts
+Undercarriage: Lower radiator hoses
+Undercarriage: Suspension arms and CV joints
+Undercarriage: Adaptive suspension systems
+Undercarriage: Sway bars, links and bushings
+Undercarriage: Struts, shocks and springs
+Undercarriage: Control arms and steering rack
+Undercarriage: High-voltage battery and cables
+Exhaust: Exhaust hangers and clamps
+Exhaust: Pipes, catalytic converter and heat shields
+Exhaust: Full exhaust leak check, factory original
+Drivetrain: Rear axle fluid level
+Drivetrain: Engine, transmission and differential seals and gaskets
+Drivetrain: Transmission lines
+Drivetrain: Axle housing and final drive
+Drivetrain: Transmission mounts and control linkages
+Drivetrain: Differential, Torsen and quattro
+Tires & Wheels: OEM Audi wheels, matching and undamaged
+Tires & Wheels: Four matching tires to OEM size, speed and load rating
+Tires & Wheels: Tread depth at least 3.9 mm and pressures
+Tires & Wheels: Speed and load rating
+Fuel System: Fuel tank and straps
+Fuel System: Fuel line
+Fuel System: Fuel filter
+Plug-in Hybrid Charging: Charging capsule and software
+Plug-in Hybrid Charging: 120V charging cable
+Plug-in Hybrid Charging: 240V charging cable
+Plug-in Hybrid Charging: Wall clip bracket
+Plug-in Hybrid Charging: Charges to 80%
+Plug-in Hybrid Charging: Maximum charge level reset
+Plug-in Hybrid Charging: Potential equalization cables
+Plug-in Hybrid Charging: High-voltage maintenance disconnect and labels
+Plug-in Hybrid Charging: High-voltage safety and emissions labels
+Plug-in Hybrid Charging: High-voltage HVAC operation

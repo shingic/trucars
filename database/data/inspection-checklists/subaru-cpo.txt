@@ -1,0 +1,152 @@
+Under Hood: Before road test, hood and trunk open
+Under Hood: Primary and secondary hood latch operation
+Under Hood: Radiator and cap
+Under Hood: Hoses and clamps
+Under Hood: Air filter
+Under Hood: Oil filter changed
+Under Hood: Drive belt tension and condition
+Fluids & Battery: Engine oil changed
+Fluids & Battery: Coolant
+Fluids & Battery: Power steering fluid
+Fluids & Battery: Brake fluid
+Fluids & Battery: Clutch fluid (where applicable)
+Fluids & Battery: Windshield washer fluid filled
+Fluids & Battery: Intercooler water bottle (where applicable)
+Fluids & Battery: Battery cleaned, mounting, cables and ground straps
+Fluids & Battery: Battery specific gravity
+Fluids & Battery: Battery electrolyte level
+Fluids & Battery: Battery load test
+Fluids & Battery: Spare tire pressure, tool kit, jack and handle
+Fluids & Battery: Front and rear wiper blades
+Interior Checks: Key in ignition and chime
+Interior Checks: Dash warning lights with key on
+Interior Checks: Rear defogger indicator
+Interior Checks: Front and rear wipers and washers
+Interior Checks: Headlights, high/low alignment
+Interior Checks: Dash illumination control and display
+Interior Checks: Headlight leveller operation (where applicable)
+Interior Checks: Intercooler water spray operation (where applicable)
+Interior Checks: Headlights to park position
+Interior Checks: Hazard flashers on
+Interior Checks: Reverse lock-out (where applicable)
+Interior Checks: Parking brake set and adjusted
+Interior Checks: Clutch / brake pedal free play
+Interior Checks: Seatbelts and warning lights
+Interior Checks: Front seat movement and operation
+Interior Checks: Cold weather package, heated seats, mirrors and windshield (where applicable)
+Interior Checks: Fuel filler release
+Interior Checks: Lighter and ashtray (where applicable)
+Interior Checks: Power outlet (where applicable)
+Interior Checks: Trunk release (where applicable)
+Interior Checks: Diagnostic trouble codes checked with select monitor
+Interior Checks: Steering column parking lamp switch
+Interior Checks: Horn
+Interior Checks: DCCD display and manual mode (where applicable)
+Exterior Lights: Fog lamps and aim (where applicable)
+Exterior Lights: Turn signals, front and rear
+Exterior Lights: Parking lamps
+Exterior Lights: Licence plate lamps
+Exterior Lights: Brake and high-mount stop lamps
+Exterior Lights: Tail lamps
+Exterior Lights: Reverse lamps
+Exterior Lights: All front lamps
+Exterior Lights: Fuel filler cap operation
+Exterior Lights: Hazard flashers and parking lamps off
+Ignition On Checks: Turn signals and indicator lamps
+Ignition On Checks: Brake lamps
+Ignition On Checks: Remote mirror operation, left and right
+Ignition On Checks: Passenger airbag on/off and seatbelt warning light
+Ignition On Checks: Clock set
+Ignition On Checks: Steering lock and tilt
+Ignition On Checks: All seat adjustments
+Ignition On Checks: Power windows
+Ignition On Checks: Sunroof (where applicable)
+Ignition On Checks: Door locks
+Ignition On Checks: Map and dome lights
+Ignition On Checks: Infotainment and navigation systems
+Exit Vehicle Checks: Rear defogger warm
+Exit Vehicle Checks: Door locks and door closing, key number recorded
+Exit Vehicle Checks: Rear seatbelts
+Exit Vehicle Checks: Security system (where applicable)
+Exit Vehicle Checks: Child safety door locks
+Exit Vehicle Checks: Door entry lights (where applicable)
+Undercarriage: Tire pressure, tread depth, orientation and condition
+Undercarriage: Tire set matches
+Undercarriage: Wheels, wheel covers and trim
+Undercarriage: Brakes, rotors and calipers to specification
+Undercarriage: Wheel cylinders (where applicable)
+Undercarriage: Axle seals
+Undercarriage: Lug nut torque
+Undercarriage: Fluid leaks
+Undercarriage: Complete exhaust system
+Undercarriage: Steering linkage
+Undercarriage: Struts
+Undercarriage: Axles
+Undercarriage: Bolts, bushings and fasteners
+Undercarriage: Rear differential fluid level
+Undercarriage: Other fluid leaks or damage
+Road Test: TPMS warning light off (where applicable)
+Road Test: Engine performance, cranking, idle and acceleration
+Road Test: Transmission performance and warning lights
+Road Test: Clutch operation (where applicable)
+Road Test: Clutch safety switch (where applicable)
+Road Test: Steering wheel alignment
+Road Test: Steering return, free-play and tracking
+Road Test: Unusual noises
+Road Test: Wheel balance, no vibration
+Road Test: Brake operation
+Road Test: Gauges, speedometer and odometer
+Road Test: Turn signal operation and cancellation
+Road Test: Cruise control
+Road Test: Vent, heater and A/C
+Road Test: Squeaks, rattles, vibrations and wind noise
+Road Test: Tachometer alarm (where applicable)
+Road Test: Hill Holder (where applicable)
+Road Test: VDC off switch (where applicable)
+Road Test: All keys start the engine
+Post Road Test: Parking brake operation
+Post Road Test: Emissions as required by local laws
+Post Road Test: Coolant, power steering and ATF levels re-checked
+Post Road Test: Diagnostic trouble codes re-checked
+Post Road Test: Leaks under vehicle
+Post Road Test: Electric cooling fans
+Front Interior: Steering wheel
+Front Interior: Dash pad and instrument panel
+Front Interior: Headliner
+Front Interior: Passenger sun visor
+Front Interior: Passenger door trim panel
+Front Interior: Passenger seat upholstery and trim
+Front Interior: Glove box
+Front Interior: Carpet
+Front Interior: Floor mats
+Front Interior: Centre console, cup holder and armrest
+Front Interior: Driver sun visor
+Front Interior: Driver door trim panel
+Front Interior: Driver seat upholstery and trim
+Rear Interior: Back of front seats
+Rear Interior: Package shelf (where applicable)
+Rear Interior: Rear carpet
+Rear Interior: Rear cup holder
+Rear Interior: Floor mats
+Rear Interior: Side door trim panels
+Rear Interior: Rear seat upholstery and trim
+Rear Interior: Trunk and cargo area trim
+Exterior: Front bumper
+Exterior: Hood
+Exterior: Driver side body panels
+Exterior: Passenger side body panels
+Exterior: Door sills and jambs
+Exterior: Roof
+Exterior: Trunk / tailgate
+Exterior: Rear bumper
+Exterior: Glass
+Exterior: Other plated or painted parts
+Exterior: Overall paint condition
+Appearance: Engine compartment clean
+Appearance: Trunk and cargo area clean
+Appearance: Interior clean
+Appearance: Exterior clean
+Appearance: Glass clean
+Appearance: Door sills and jambs clean
+Appearance: Decals removed
+Appearance: Licence plates and frames

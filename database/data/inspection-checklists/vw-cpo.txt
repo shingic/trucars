@@ -1,0 +1,112 @@
+Initial Qualification: Vehicle age
+Initial Qualification: Vehicle mileage
+Initial Qualification: Vehicle maintenance
+Initial Qualification: Owner's maintenance and warranty manuals
+Initial Qualification: Key set
+Initial Qualification: Vehicle integrity and history
+Initial Qualification: Structural damage
+Initial Qualification: Weather damage
+Initial Qualification: Odometer display
+Road Test: Engine performance
+Road Test: Automatic transmission
+Road Test: Shift lock
+Road Test: Manual transmission
+Road Test: Differential
+Road Test: Clutch
+Road Test: Steering performance
+Road Test: Steering wheel alignment
+Road Test: Suspension
+Road Test: Brake effectiveness
+Road Test: Parking brake
+Road Test: A/C system
+Road Test: Heater
+Road Test: Speedometer
+Road Test: Horn
+Road Test: Radio and antenna
+Road Test: Cassette and CD changer
+Road Test: Speakers
+Road Test: Wipers and washers
+Road Test: Wiper blades and arms
+Road Test: Cruise control
+Road Test: Excessive noise
+Road Test: Hot start and idle
+Road Test: Odometer reading
+After the Road Test: Cooling system
+After the Road Test: Battery charging
+After the Road Test: Battery cables
+After the Road Test: Ignition wires
+After the Road Test: Electrical system
+After the Road Test: V-belts
+After the Road Test: A/C compressor
+After the Road Test: Cooling fan
+After the Road Test: Washer reservoir
+After the Road Test: Engine oil
+After the Road Test: Power steering
+After the Road Test: Brake reservoir
+After the Road Test: Fuel system
+After the Road Test: Coolant
+Exterior: Dents, dings and scratches
+Exterior: Turn signals and markers
+Exterior: Emergency flashers
+Exterior: Antenna
+Exterior: Headlight lenses
+Exterior: Headlights
+Exterior: Fog lights
+Exterior: Tail lights
+Exterior: High-mount brake light
+Exterior: Trunk / rear hatch
+Exterior: Spare tire, jack and tools
+Exterior: Convertible top
+Interior: Key fob remote function
+Interior: Steering wheel
+Interior: Doors and handles
+Interior: Warning chimes
+Interior: Window operation
+Interior: Console
+Interior: Side and back windows
+Interior: Windshield
+Interior: Seats and headrests
+Interior: Seat heaters
+Interior: Seatbelts
+Interior: Airbags
+Interior: Mirrors
+Interior: Clock
+Interior: Glove box
+Interior: Instrument lights
+Interior: Sunroof
+Interior: Lighter and 12V outlets
+Interior: Dome, map and visor lights
+Interior: Door locks
+Interior: Alarm system
+Interior: Upholstery
+Interior: Carpet and floor mats
+Interior: Door panels
+Interior: Headliner
+Interior: Ignition switch
+Interior: Warning lights
+Interior: Onboard systems
+Interior: Readiness code
+Interior: ATF fluid
+Underbody: Wheels
+Underbody: Tires
+Underbody: Tread depth
+Underbody: Wheel covers
+Underbody: Transmission
+Underbody: CV joint boots
+Underbody: Axles and suspension
+Underbody: Control arms and bushings
+Underbody: Engine integrity
+Underbody: Shocks and struts
+Underbody: Brake system integrity
+Underbody: Brake pad lining
+Underbody: Brake rotors and calipers
+Underbody: Exhaust
+Underbody: Steering rack
+Underbody: Hoses
+Underbody: Hydraulic pump
+Underbody: Underbody
+Final Inspection: Aftermarket equipment
+Final Inspection: Maintenance record
+Final Inspection: CD changer
+Final Inspection: Paint touch-ups
+Final Inspection: Overall condition
