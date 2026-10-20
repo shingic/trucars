@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Validation\ValidationException;
 
 class Vehicle extends Model
 {
@@ -47,9 +48,55 @@ class Vehicle extends Model
         ];
     }
 
+    /**
+     * A car can't go live until its dealer has an address — every car is at its
+     * dealer's rooftop, so without one there's no honest answer to "where is it?".
+     * Checked on publish and on a move to another dealer. (Bulk query-builder
+     * updates skip model events; publish through the model.)
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (Vehicle $vehicle) {
+            if (! $vehicle->is_published || ! $vehicle->isDirty(['is_published', 'dealer_id'])) {
+                return;
+            }
+
+            $dealer = $vehicle->dealer()->first();
+
+            if ($dealer === null || ! $dealer->hasCompleteAddress()) {
+                throw ValidationException::withMessages([
+                    'is_published' => 'This vehicle can’t be published until its dealer has a complete address (missing: '
+                        . implode(', ', $dealer?->missingAddressFields() ?? ['dealer']) . ').',
+                ]);
+            }
+        });
+    }
+
     public function dealer(): BelongsTo
     {
         return $this->belongsTo(Dealer::class);
+    }
+
+    /**
+     * What shoppers may see on the open marketplace: published cars from active
+     * dealers. A dealer switched back to draft drops off without anyone having
+     * to unpublish each car.
+     */
+    public function scopeListed(Builder $query): void
+    {
+        $query->where('vehicles.is_published', true)
+            ->whereHas('dealer', fn (Builder $dealer) => $dealer->where('status', Dealer::STATUS_ACTIVE));
+    }
+
+    public function isListed(): bool
+    {
+        return $this->is_published && $this->dealer?->isActive();
+    }
+
+    /** Where the car is — always its dealer's address, e.g. "Chilliwack, BC". */
+    protected function displayLocation(): Attribute
+    {
+        return Attribute::get(fn (): ?string => $this->dealer?->display_location);
     }
 
     /**

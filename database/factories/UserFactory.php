@@ -33,6 +33,18 @@ class UserFactory extends Factory
         ];
     }
 
+    /** Dealer-portal staff for one dealer. */
+    public function staffOf(\App\Models\Dealer $dealer): static
+    {
+        return $this->state(fn () => ['role' => \App\Models\User::ROLE_DEALER_STAFF, 'dealer_id' => $dealer->id]);
+    }
+
+    /** A TruCars owner (admin host). */
+    public function owner(): static
+    {
+        return $this->state(fn () => ['role' => \App\Models\User::ROLE_OWNER]);
+    }
+
     /**
      * Indicate that the model's email address should be unverified.
      */

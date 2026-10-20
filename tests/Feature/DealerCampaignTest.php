@@ -13,10 +13,12 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Livewire\Livewire;
+use Tests\Concerns\CreatesDealers;
 use Tests\TestCase;
 
 class DealerCampaignTest extends TestCase
 {
+    use CreatesDealers;
     use RefreshDatabase;
 
     private Dealer $dealer;
@@ -28,8 +30,8 @@ class DealerCampaignTest extends TestCase
 
         Mail::fake();
 
-        $this->dealer = Dealer::create(['name' => 'CHILLIWACK MITSUBISHI', 'city' => 'Chilliwack, BC', 'franchise_make' => 'Mitsubishi']);
-        $this->rival = Dealer::create(['name' => 'RIVAL MITSUBISHI', 'city' => 'Abbotsford, BC', 'franchise_make' => 'Mitsubishi']);
+        $this->dealer = $this->makeDealer(['franchise_make' => 'Mitsubishi']);
+        $this->rival = $this->makeDealer(['name' => 'RIVAL MITSUBISHI', 'city' => 'Abbotsford', 'postal_code' => 'V2S 1A1', 'franchise_make' => 'Mitsubishi']);
     }
 
     /* ------------------------------------------------------------------ */
@@ -391,6 +393,6 @@ class DealerCampaignTest extends TestCase
 
     private function staff(Dealer $dealer): User
     {
-        return User::factory()->create(['dealer_id' => $dealer->id]);
+        return User::factory()->staffOf($dealer)->create();
     }
 }

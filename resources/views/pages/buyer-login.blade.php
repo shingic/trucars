@@ -32,7 +32,16 @@ new #[Layout('layouts.checkout')] class extends Component {
             return;
         }
 
-        if (! Auth::attempt($credentials, $this->remember)) {
+        $credentialsMatched = Auth::attempt($credentials, $this->remember);
+
+        // The marketplace signs in customers only. Staff and owner accounts use
+        // their own portals; here they fail exactly like a wrong password.
+        if ($credentialsMatched && (! Auth::user()->isCustomer() || Auth::user()->isSuspended())) {
+            Auth::logout();
+            $credentialsMatched = false;
+        }
+
+        if (! $credentialsMatched) {
             RateLimiter::hit($this->throttleKey());
             $this->addError('email', "Those details don't match an account.");
 

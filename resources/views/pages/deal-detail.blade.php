@@ -713,7 +713,7 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
                             <div class="row"><span class="k">Location</span><span class="v">{{ $deal->pickup_location }}</span></div>
                         @endif
                         @if ($deal->pickup_at)
-                            <div class="row"><span class="k">Requested</span><span class="v">{{ $deal->pickup_at->format('D M j · g:i a') }}</span></div>
+                            <div class="row"><span class="k">Requested</span><span class="v">{{ $deal->local_pickup_at->format('D M j · g:i a T') }}</span></div>
                         @endif
                     </div>
                     <p class="note">The dealership confirms the exact time with the buyer.</p>

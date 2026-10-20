@@ -153,9 +153,14 @@
         </div>
 
         <div class="nav-right">
-            <span class="nav-loc">
+            {{-- The shopper's own location (session only), set on the marketplace. --}}
+            <span class="nav-loc"
+                  x-data="{ label: @js(\App\Support\ShopperLocation::current()['label'] ?? null) }"
+                  x-show="label"
+                  @shopper-location-updated.window="label = $event.detail.label"
+                  x-cloak>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                Thornhill, ON
+                <span x-text="label === 'your location' ? 'Near you' : label"></span>
             </span>
             @auth
                 @if (auth()->user()->dealer_id === null)
@@ -318,7 +323,7 @@
             @endauth
             <span class="drawer-loc">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                Thornhill, ON
+                {{ (\App\Support\ShopperLocation::current()['label'] ?? null) === 'your location' ? 'Near you' : (\App\Support\ShopperLocation::current()['label'] ?? 'Anywhere in Canada') }}
             </span>
         </div>
     </aside>

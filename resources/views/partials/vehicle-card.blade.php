@@ -15,6 +15,9 @@
 
       $vehicleUrl           where the card links (defaults to the open-floor /cars/{id})
       $badgeLabel           the badge text (defaults to "Certified" when is_certified)
+      $distanceKm           straight-line km from the shopper, when their location is known
+
+    The car's location is always its dealer's address — vehicles carry none of their own.
 
     The heart calls $wire->toggleFavourite($vehicle->id) — both host components
     (marketplace and saved) expose that action with the same signature, so the
@@ -23,6 +26,7 @@
 @php
     $vehicleUrl ??= '/cars/' . $vehicle->id;
     $badgeLabel ??= $vehicle->is_certified ? 'Certified' : null;
+    $distanceKm ??= null;
 @endphp
 <article class="vcard" wire:key="vehicle-{{ $vehicle->id }}">
     <a href="{{ $vehicleUrl }}" wire:navigate class="vcard-link" aria-label="View {{ $vehicle->model_year }} {{ $vehicle->make }} {{ $vehicle->model }}"></a>
@@ -82,7 +86,9 @@
         <div class="vcard-foot">
             <div class="vcard-dealer">
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6"/></svg>
-                <span class="vcard-dealer-name">{{ ucwords(strtolower($vehicle->dealer->name)) }}</span>
+                <span class="vcard-dealer-name">
+                    {{ ucwords(strtolower($vehicle->dealer->name)) }}@if ($vehicle->display_location) · {{ $vehicle->display_location }}@endif @if ($distanceKm !== null) · {{ $distanceKm < 10 ? number_format($distanceKm, 1) : number_format($distanceKm) }} km @endif
+                </span>
                 @if ($vehicle->dealer->rating)
                     <span class="star">★{{ $vehicle->dealer->rating }}</span>
                 @endif

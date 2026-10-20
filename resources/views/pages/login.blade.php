@@ -2,10 +2,23 @@
 
 use Livewire\Component;
 use Livewire\Attributes\Layout;
+use App\Models\AuditLog;
+use App\Models\User;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Validate;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 
 new #[Layout('layouts.auth')] class extends Component {
+    /**
+     * Which portal this sign-in belongs to: 'dealer' (dealer host) or 'owner'
+     * (admin host). Fixed at mount and locked, so an action request can't
+     * switch it. Each portal admits exactly one role.
+     */
+    #[Locked]
+    public string $portal = 'dealer';
+
     #[Validate('required|email')]
     public string $email = '';
 
@@ -14,24 +27,82 @@ new #[Layout('layouts.auth')] class extends Component {
 
     public bool $rememberMe = false;
 
+    /** $portal comes from the route's defaults (admin.login sets 'owner'), never the client. */
+    public function mount(string $portal = 'dealer'): void
+    {
+        $this->portal = $portal === 'owner' ? 'owner' : 'dealer';
+    }
+
     public function signIn()
     {
         $this->validate();
+
+        if (RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
+            $this->addError('email', 'Too many attempts — try again in ' . RateLimiter::availableIn($this->throttleKey()) . ' seconds.');
+
+            return;
+        }
 
         $credentialsMatched = Auth::attempt(
             ['email' => $this->email, 'password' => $this->password],
             $this->rememberMe,
         );
 
+        // Right password, wrong portal (a buyer or owner here, staff on the admin
+        // host) is treated exactly like a wrong password — no session is kept
+        // and nothing says which accounts exist.
+        if ($credentialsMatched && ! $this->accountBelongsHere(Auth::user())) {
+            Auth::logout();
+            $credentialsMatched = false;
+        }
+
         if (! $credentialsMatched) {
-            $this->addError('email', 'Those credentials don’t match any dealer account.');
+            RateLimiter::hit($this->throttleKey());
+            $this->addError('email', $this->portal === 'owner'
+                ? 'Those credentials don’t match a TruCars staff account.'
+                : 'Those credentials don’t match any dealer account.');
 
             return;
         }
 
-        request()->session()->regenerate();
+        RateLimiter::clear($this->throttleKey());
+        session()->regenerate();
 
-        return redirect()->intended(route('dealer.reservations'));
+        if ($this->portal === 'owner') {
+            AuditLog::record('command_centre.signed_in', Auth::user());
+        }
+
+        return redirect()->to($this->landingUrl());
+    }
+
+    /**
+     * Back to the page that sent them here — but only if it's on this portal's
+     * own host. A "return to" URL left over from another TruCars site is ignored.
+     */
+    private function landingUrl(): string
+    {
+        $home = $this->portal === 'owner' ? route('admin.home') : route('dealer.reservations');
+        $intended = session()->pull('url.intended');
+
+        return is_string($intended) && parse_url($intended, PHP_URL_HOST) === parse_url($home, PHP_URL_HOST)
+            ? $intended
+            : $home;
+    }
+
+    private function accountBelongsHere(User $user): bool
+    {
+        if ($user->isSuspended()) {
+            return false;
+        }
+
+        return $this->portal === 'owner'
+            ? $user->canUseCommandCentre()
+            : $user->isDealerStaff() && ! $user->dealer?->isSuspended();
+    }
+
+    private function throttleKey(): string
+    {
+        return $this->portal . '|' . Str::lower($this->email) . '|' . request()->ip();
     }
 }; ?>
 
@@ -128,9 +199,9 @@ new #[Layout('layouts.auth')] class extends Component {
         <div class="auth-mobile-brand"><span class="auth-brand-glyph">T</span> TruCars</div>
 
         <div class="auth-form" x-data="{ showPassword: false }">
-            <span class="auth-kicker">Dealer desk</span>
+            <span class="auth-kicker">{{ $portal === 'owner' ? 'TruCars Command Centre' : 'Dealer desk' }}</span>
             <h2 class="auth-title">Welcome back</h2>
-            <p class="auth-lead">Sign in to manage your reservations and inquiries.</p>
+            <p class="auth-lead">{{ $portal === 'owner' ? 'Sign in with your TruCars staff account.' : 'Sign in to manage your reservations and inquiries.' }}</p>
 
             <form wire:submit="signIn" class="auth-fields">
                 <div class="auth-field">
@@ -168,6 +239,6 @@ new #[Layout('layouts.auth')] class extends Component {
             </form>
         </div>
 
-        <p class="auth-legal">TruCars · Dealer access only</p>
+        <p class="auth-legal">TruCars · {{ $portal === 'owner' ? 'TruCars staff only' : 'Dealer access only' }}</p>
     </main>
 </div>

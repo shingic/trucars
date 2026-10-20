@@ -514,7 +514,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                     <div class="g-cancelled-note">
                         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>
                         <div>
-                            This reservation was cancelled. Your $150 deposit is fully refundable — {{ ucwords(strtolower($this->featuredDeal->vehicle->dealer->name)) }} will confirm your refund. Reference <b>{{ $this->featuredDeal->reference }}</b>.
+                            This reservation was cancelled. Your $150 deposit is fully refundable — {{ ucwords(strtolower($this->featuredDeal->seller_name)) }} will confirm your refund. Reference <b>{{ $this->featuredDeal->reference }}</b>.
                         </div>
                     </div>
                 </section>
@@ -537,13 +537,13 @@ new #[Layout('layouts.checkout')] class extends Component {
                     @if ($this->financingConfirmed($this->featuredDeal))
                         <div class="g-fin-confirmed">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/></svg>
-                            {{ ucwords(strtolower($this->featuredDeal->vehicle->dealer->name)) }}'s finance office has confirmed your rate, term and payment — the final numbers are in your purchase agreement.
+                            {{ ucwords(strtolower($this->featuredDeal->seller_name)) }}'s finance office has confirmed your rate, term and payment — the final numbers are in your purchase agreement.
                         </div>
                     @else
                         <div class="g-fin-pending">
                             <div class="g-fin-spinner"></div>
                             <div>
-                                <div class="g-fin-title">Your deal is with <b>{{ ucwords(strtolower($this->featuredDeal->vehicle->dealer->name)) }}</b>'s finance office</div>
+                                <div class="g-fin-title">Your deal is with <b>{{ ucwords(strtolower($this->featuredDeal->seller_name)) }}</b>'s finance office</div>
                                 <div class="g-fin-sub">They'll confirm your rate, term and payment. The payment above is an estimate until then.</div>
                             </div>
                         </div>
@@ -633,7 +633,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                             <span class="g-other-thumb" @if ($this->heroPhotoFor($otherDeal)) style="background-image:url('{{ $this->heroPhotoFor($otherDeal) }}');" @endif></span>
                             <span>
                                 <span class="g-other-name">{{ $otherDeal->vehicle->model_year }} {{ $otherDeal->vehicle->make }} {{ $otherDeal->vehicle->model }}</span>
-                                <span class="g-other-sub" style="display:block;">{{ $otherDeal->reference }} · {{ ucwords(strtolower($otherDeal->vehicle->dealer->name)) }}</span>
+                                <span class="g-other-sub" style="display:block;">{{ $otherDeal->reference }} · {{ ucwords(strtolower($otherDeal->seller_name)) }}</span>
                             </span>
                             <span class="g-other-stage">{{ $this->consumerStageLabel($otherDeal) }}</span>
                         </button>

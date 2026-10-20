@@ -93,39 +93,70 @@
         </div>
 
         <nav class="sb-scroll">
-            <div class="sb-group">
-                <div class="sb-group-label">Desk</div>
-                <a href="{{ route('dealer.reservations') }}"
-                   class="nav-item {{ request()->routeIs('dealer.reservations') ? 'on' : '' }}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
-                    <span class="nav-label">Reservations</span>
-                </a>
-            </div>
+            {{-- Navigation only — every page enforces its own role on the server. --}}
+            @if (auth()->user()->isDealerStaff())
+                <div class="sb-group">
+                    <div class="sb-group-label">Desk</div>
+                    <a href="{{ route('dealer.reservations') }}"
+                       class="nav-item {{ request()->routeIs('dealer.reservations') ? 'on' : '' }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+                        <span class="nav-label">Reservations</span>
+                    </a>
+                </div>
 
-            <div class="sb-group">
-                <div class="sb-group-label">Marketing</div>
-                <a href="{{ route('dealer.campaigns') }}"
-                   class="nav-item {{ request()->routeIs('dealer.campaigns') ? 'on' : '' }}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                    <span class="nav-label">Campaigns</span>
-                </a>
-            </div>
+                <div class="sb-group">
+                    <div class="sb-group-label">Marketing</div>
+                    <a href="{{ route('dealer.campaigns') }}"
+                       class="nav-item {{ request()->routeIs('dealer.campaigns') ? 'on' : '' }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                        <span class="nav-label">Campaigns</span>
+                    </a>
+                </div>
 
-            <div class="sb-group">
-                <div class="sb-group-label">Settings</div>
-                <a href="{{ route('dealer.fees') }}"
-                   class="nav-item {{ request()->routeIs('dealer.fees') ? 'on' : '' }}">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
-                    <span class="nav-label">Fee schedule</span>
-                </a>
-            </div>
+                <div class="sb-group">
+                    <div class="sb-group-label">Settings</div>
+                    <a href="{{ route('dealer.fees') }}"
+                       class="nav-item {{ request()->routeIs('dealer.fees') ? 'on' : '' }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+                        <span class="nav-label">Fee schedule</span>
+                    </a>
+                </div>
+            @endif
+
+            @if (auth()->user()->canUseCommandCentre())
+                <div class="sb-group">
+                    <div class="sb-group-label">Command Centre</div>
+                    <a href="{{ route('admin.home') }}" class="nav-item {{ request()->routeIs('admin.home') ? 'on' : '' }}">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                        <span class="nav-label">Home</span>
+                    </a>
+                    @can('dealers.view')
+                        <a href="{{ route('admin.dealers') }}" class="nav-item {{ request()->routeIs('admin.dealers*') ? 'on' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6"/></svg>
+                            <span class="nav-label">Dealers</span>
+                        </a>
+                    @endcan
+                    @can('staff.manage')
+                        <a href="{{ route('admin.staff') }}" class="nav-item {{ request()->routeIs('admin.staff') ? 'on' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M17 11a3 3 0 1 0 0-6M22 21a6 6 0 0 0-4-5.6"/></svg>
+                            <span class="nav-label">TruCars staff</span>
+                        </a>
+                    @endcan
+                    @can('audit.view')
+                        <a href="{{ route('admin.audit') }}" class="nav-item {{ request()->routeIs('admin.audit') ? 'on' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><path d="M14 3v6h6M8 13h8M8 17h5"/></svg>
+                            <span class="nav-label">Audit log</span>
+                        </a>
+                    @endcan
+                </div>
+            @endif
         </nav>
 
         <div class="sb-foot">
             <span class="av">{{ collect(explode(' ', auth()->user()->name))->take(2)->map(fn ($namePart) => mb_strtoupper(mb_substr($namePart, 0, 1)))->implode('') }}</span>
             <div class="meta">
                 <div class="nm">{{ auth()->user()->name }}</div>
-                <div class="rl">{{ auth()->user()->dealer?->name }}</div>
+                <div class="rl">{{ auth()->user()->dealer?->name ?? (auth()->user()->isOwner() ? 'TruCars owner' : (auth()->user()->isInternalStaff() ? 'TruCars staff' : '')) }}</div>
             </div>
         </div>
     </aside>
@@ -134,7 +165,7 @@
         <header class="appbar">
             <div class="crumb">@stack('crumb')</div>
             <div class="appbar-right">
-                <form method="POST" action="{{ route('dealer.logout') }}">
+                <form method="POST" action="{{ auth()->user()->canUseCommandCentre() ? route('admin.logout') : route('dealer.logout') }}">
                     @csrf
                     <button type="submit" class="appbar-signout">Sign out</button>
                 </form>

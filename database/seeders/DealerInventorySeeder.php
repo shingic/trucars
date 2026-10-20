@@ -23,9 +23,18 @@ class DealerInventorySeeder extends Seeder
             'path' => $inventoryCsvPath,
         ], $this->command->getOutput());
 
-        // The importer leaves everything unpublished. For local dev, publish the
-        // certified cars so the certified-only marketplace actually has stock.
+        // The importer creates new dealers as drafts and leaves every car
+        // unpublished. For local dev, go live with each dealer whose address and
+        // timezone came through complete from the feed, then publish its
+        // certified cars. A dealer with gaps stays a draft with nothing published,
+        // exactly as the publish guard on Vehicle would insist.
+        $readyDealerIds = Dealer::all()
+            ->filter(fn (Dealer $dealer) => $dealer->hasCompleteAddress() && filled($dealer->timezone))
+            ->each(fn (Dealer $dealer) => $dealer->update(['status' => Dealer::STATUS_ACTIVE]))
+            ->pluck('id');
+
         $publishedCount = Vehicle::where('is_certified', true)
+            ->whereIn('dealer_id', $readyDealerIds)
             ->update(['is_published' => true]);
 
         $this->command->info("Published {$publishedCount} certified vehicles to the marketplace.");

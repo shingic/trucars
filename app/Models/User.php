@@ -26,7 +26,6 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'dealer_id',
     ];
 
     /**
@@ -49,7 +48,71 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'suspended_at' => 'datetime',
+            'permissions' => 'array',
         ];
+    }
+
+    public const ROLE_CUSTOMER = 'customer';
+    public const ROLE_DEALER_STAFF = 'dealer_staff';
+    public const ROLE_OWNER = 'owner';
+    public const ROLE_INTERNAL_STAFF = 'internal_staff';
+
+    // role, permissions and suspended_at are deliberately absent from
+    // $fillable: no registration form or other mass-assignment can grant access.
+
+    public function isCustomer(): bool
+    {
+        return ($this->role ?? self::ROLE_CUSTOMER) === self::ROLE_CUSTOMER;
+    }
+
+    /** Staff of a dealer — always with a dealer_id to be scoped to. */
+    public function isDealerStaff(): bool
+    {
+        return $this->role === self::ROLE_DEALER_STAFF && $this->dealer_id !== null;
+    }
+
+    /** The TruCars owner: every Command Centre permission, and controls staff access. */
+    public function isOwner(): bool
+    {
+        return $this->role === self::ROLE_OWNER;
+    }
+
+    /** TruCars' own employees (support, operations) — never a customer or dealer user. */
+    public function isInternalStaff(): bool
+    {
+        return $this->role === self::ROLE_INTERNAL_STAFF;
+    }
+
+    /** May sign in to the Command Centre (admin host) at all. */
+    public function canUseCommandCentre(): bool
+    {
+        return ($this->isOwner() || $this->isInternalStaff()) && ! $this->isSuspended();
+    }
+
+    /**
+     * Whether this account holds a Command Centre permission. Owners hold all;
+     * internal staff only what was granted; everyone else none. Suspension
+     * removes everything. Prefer the Gate (can('dealers.manage')) in app code.
+     */
+    public function hasPermission(string $permission): bool
+    {
+        if (! $this->canUseCommandCentre() || ! in_array($permission, \App\Support\Permission::all(), true)) {
+            return false;
+        }
+
+        return $this->isOwner() || in_array($permission, $this->permissions ?? [], true);
+    }
+
+    /** @return array<int, string> */
+    public function effectivePermissions(): array
+    {
+        return array_values(array_filter(\App\Support\Permission::all(), fn (string $permission) => $this->hasPermission($permission)));
+    }
+
+    public function isSuspended(): bool
+    {
+        return $this->suspended_at !== null;
     }
 
     /**

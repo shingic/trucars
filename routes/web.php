@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Middleware\EnsureBuyerEmailIsVerified;
+use App\Http\Middleware\EnsureCommandCentreAccess;
 use App\Http\Middleware\EnsureUserIsStaff;
+use App\Http\Middleware\TreatNonCustomersAsGuests;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -20,6 +22,7 @@ use Illuminate\Support\Facades\Route;
 */
 $publicDomain = parse_url((string) config('app.url'), PHP_URL_HOST);
 $staffDomain  = config('app.staff_domain');
+$adminDomain  = config('app.admin_domain');
 
 /*
 |--------------------------------------------------------------------------
@@ -34,7 +37,7 @@ $staffDomain  = config('app.staff_domain');
 | buyer.login from mount(). /garage is the one consumer surface that demands
 | a confirmed email, so it runs EnsureBuyerEmailIsVerified.
 */
-Route::domain($publicDomain)->group(function () {
+Route::domain($publicDomain)->middleware(TreatNonCustomersAsGuests::class)->group(function () {
     Route::livewire('/', 'pages::marketplace');
 
     Route::livewire('/cars/{vehicle}', 'pages::vehicle');
@@ -109,6 +112,13 @@ Route::domain($staffDomain)->group(function () {
         ->middleware('guest')
         ->name('dealer.login');
 
+    // Accepting an owner's invitation creates the staff account. Guests only:
+    // the token is the credential, and it works once.
+    Route::livewire('/invitation/{token}', 'pages::accept-invitation')
+        ->where('token', '[A-Za-z0-9]{64}')
+        ->middleware('guest')
+        ->name('dealer.invitation');
+
     Route::post('/logout', function () {
         Auth::logout();
         request()->session()->invalidate();
@@ -141,4 +151,63 @@ Route::domain($staffDomain)->group(function () {
     Route::livewire('/campaigns', 'pages::campaigns')
         ->middleware(EnsureUserIsStaff::class)
         ->name('dealer.campaigns');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Command Centre (admin host)
+|--------------------------------------------------------------------------
+| TruCars' own workspace: the owner and internal staff (support, operations).
+| Its own host (ADMIN_DOMAIN, default admin.<app host>) gives it a host-only
+| session apart from the marketplace and the dealer portal.
+|
+| The host is isolation, not authorisation. EnsureCommandCentreAccess admits
+| only owner/internal-staff accounts; each page then needs its permission
+| (`can:` middleware), and components re-check with Gate::authorize before
+| every write. Both run again on every Livewire action.
+*/
+Route::domain($adminDomain)->group(function () {
+    Route::livewire('/', 'pages::command-centre')
+        ->middleware(EnsureCommandCentreAccess::class)
+        ->name('admin.home');
+
+    Route::livewire('/login', 'pages::login')
+        ->defaults('portal', 'owner')
+        ->middleware('guest')
+        ->name('admin.login');
+
+    Route::post('/logout', function () {
+        Auth::logout();
+        request()->session()->invalidate();
+        request()->session()->regenerateToken();
+
+        return redirect()->route('admin.login');
+    })->middleware('auth')->name('admin.logout');
+
+    // Staff accept their invitation here; the token is the credential.
+    Route::livewire('/invitation/{token}', 'pages::accept-staff-invitation')
+        ->where('token', '[A-Za-z0-9]{64}')
+        ->middleware('guest')
+        ->name('admin.invitation');
+
+    Route::livewire('/dealers', 'pages::admin-dealers')
+        ->middleware([EnsureCommandCentreAccess::class, 'can:dealers.view'])
+        ->name('admin.dealers');
+
+    Route::livewire('/dealers/new', 'pages::admin-dealer')
+        ->middleware([EnsureCommandCentreAccess::class, 'can:dealers.manage'])
+        ->name('admin.dealers.create');
+
+    Route::livewire('/dealers/{dealer}', 'pages::admin-dealer')
+        ->whereNumber('dealer')
+        ->middleware([EnsureCommandCentreAccess::class, 'can:dealers.view'])
+        ->name('admin.dealers.edit');
+
+    Route::livewire('/staff', 'pages::admin-staff')
+        ->middleware([EnsureCommandCentreAccess::class, 'can:staff.manage'])
+        ->name('admin.staff');
+
+    Route::livewire('/audit', 'pages::admin-audit')
+        ->middleware([EnsureCommandCentreAccess::class, 'can:audit.view'])
+        ->name('admin.audit');
 });

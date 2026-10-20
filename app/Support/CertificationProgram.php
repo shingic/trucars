@@ -22,17 +22,34 @@ class CertificationProgram
     ) {}
 
     /**
-     * Pick the most thorough program the vehicle qualifies for, or null if none.
+     * The program this vehicle is actually flagged for, or null if none.
+     *
+     * Driven by the vehicle's certification flags, never by age or kilometres
+     * alone — a recent, low-km car is not manufacturer certified just because it
+     * would fit the program's limits:
+     *
+     *   - Manufacturer CPO only when is_manufacturer_certified is set (the feed
+     *     flags it certified and it's the dealer's franchise brand).
+     *   - Dealer Certified Pre-Owned only when is_certified is set and the car
+     *     is inside that program's age and kilometre limits.
      */
     public static function resolveFor(Vehicle $vehicle): ?self
     {
         $ageInYears = (int) date('Y') - $vehicle->model_year;
 
         foreach (self::definitions() as $definition) {
+            $isFlagged = $definition['requiresManufacturerFlag']
+                ? $vehicle->is_manufacturer_certified
+                : $vehicle->is_certified;
+
+            if (! $isFlagged) {
+                continue;
+            }
+
             $withinAge = $ageInYears <= $definition['maxAgeYears'];
             $withinKilometres = $vehicle->kilometres < $definition['maxKilometres'];
 
-            if ($withinAge && $withinKilometres) {
+            if ($definition['requiresManufacturerFlag'] || ($withinAge && $withinKilometres)) {
                 return new self(
                     name: $definition['name'],
                     shortName: $definition['shortName'],
@@ -67,6 +84,7 @@ class CertificationProgram
             [
                 'name' => 'Manufacturer Certified Pre-Owned',
                 'shortName' => 'Manufacturer CPO',
+                'requiresManufacturerFlag' => true,
                 'tagline' => "The manufacturer's own certified program — the most rigorous inspection and the longest factory-backed warranty.",
                 'maxAgeYears' => 6,
                 'maxKilometres' => 120000,
@@ -86,6 +104,7 @@ class CertificationProgram
             [
                 'name' => 'Certified Pre-Owned',
                 'shortName' => 'Certified Pre-Owned',
+                'requiresManufacturerFlag' => false,
                 'tagline' => 'Dealer-certified and fully inspected, with a powertrain warranty and complete history — ready to drive with confidence.',
                 'maxAgeYears' => 9,
                 'maxKilometres' => 170000,

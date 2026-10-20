@@ -24,6 +24,10 @@ new class extends Component {
         $this->vehicle = $vehicle;
 
         if ($token === null) {
+            // Open floor: only cars that are actually live (published, active
+            // dealer), same rule as checkout. Not browsable by guessing an id.
+            abort_unless($vehicle->isListed(), 404);
+
             return;
         }
 
@@ -543,10 +547,11 @@ new class extends Component {
                         <span class="dealer-logo">{{ strtoupper(substr($vehicle->dealer->name, 0, 1)) }}</span>
                         <div>
                             <div class="dealer-name">{{ ucwords(strtolower($vehicle->dealer->name)) }}</div>
+                            {{-- The car is at its dealer's rooftop — the address is the dealer's. --}}
                             <div class="dealer-sub">
-                                {{ $vehicle->dealer->city }}
-                                @if ($vehicle->dealer->omvic_number)
-                                    <span class="dot-sep"></span> OMVIC&nbsp;#{{ $vehicle->dealer->omvic_number }}
+                                {{ implode(' · ', $vehicle->dealer->address_lines) ?: $vehicle->dealer->display_location }}
+                                @if ($vehicle->dealer->registration_number)
+                                    <span class="dot-sep"></span> {{ $vehicle->dealer->regulator ?? 'Dealer reg.' }}&nbsp;#{{ $vehicle->dealer->registration_number }}
                                 @endif
                             </div>
                         </div>

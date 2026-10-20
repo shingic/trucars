@@ -20,17 +20,19 @@ class DealerUserSeeder extends Seeder
             ?? Dealer::create([
                 'name' => 'Willowdale Nissan',
                 'city' => 'Toronto',
-                'omvic_number' => '1234567',
+                'registration_number' => '1234567',
             ]);
 
-        User::updateOrCreate(
-            ['email' => 'shingi@trueleads.ca'],
-            [
-                'name' => 'Dealer Desk',
-                'password' => Hash::make('password'),
+        // Local dev only. role and dealer_id aren't mass-assignable, so they're
+        // set explicitly — the same way an accepted invitation sets them.
+        User::firstOrNew(['email' => 'shingi@trueleads.ca'])
+            ->forceFill([
+                'name'      => 'Dealer Desk',
+                'password'  => Hash::make('password'),
                 'dealer_id' => $dealerWithInventory->id,
-            ]
-        );
+                'role'      => User::ROLE_DEALER_STAFF,
+            ])
+            ->save();
 
         $this->seedSampleReservations($dealerWithInventory);
     }

@@ -125,4 +125,9 @@ return [
 
     'staff_domain' => env('STAFF_DOMAIN', 'dealer.' . parse_url((string) env('APP_URL'), PHP_URL_HOST)),
 
+    // TruCars owner administration. Its own host so its session cookie is never
+    // shared with the marketplace or the dealer portal (keep SESSION_DOMAIN
+    // unset — a shared ".trucars.ca" cookie would undo that isolation).
+    'admin_domain' => env('ADMIN_DOMAIN', 'admin.' . parse_url((string) env('APP_URL'), PHP_URL_HOST)),
+
 ];

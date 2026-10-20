@@ -227,7 +227,7 @@ new #[Layout('layouts.checkout')] class extends Component {
     public function mount(Vehicle $vehicle): void
     {
         // Consumers can only reserve a car that's actually live on the marketplace.
-        abort_unless($vehicle->is_published, 404);
+        abort_unless($vehicle->isListed(), 404);
 
         $this->vehicle = $vehicle;
 
@@ -860,13 +860,14 @@ new #[Layout('layouts.checkout')] class extends Component {
     /**
      * The next six collection/delivery days, generated from tomorrow so the
      * options never go stale. Each row carries the parts the date chip renders.
+     * "Tomorrow" is the dealer's tomorrow — the windows are their opening hours.
      */
     public function handoverDateOptions(): array
     {
         $options = [];
 
         for ($dayOffset = 1; $dayOffset <= 6; $dayOffset++) {
-            $day = now()->addDays($dayOffset);
+            $day = now($this->dealerTimezone())->addDays($dayOffset);
 
             $options[] = [
                 'date'    => $day->format('Y-m-d'),
@@ -896,14 +897,23 @@ new #[Layout('layouts.checkout')] class extends Component {
         return 'Home delivery' . ($cityProvince !== '' ? ' · ' . $cityProvince : '');
     }
 
-    /** The chosen day + window as one timestamp, stored on the deal as pickup_at. */
+    /** The dealer's IANA zone — handover windows are dealer-local times. */
+    public function dealerTimezone(): string
+    {
+        return $this->vehicle->dealer->localTimezone();
+    }
+
+    /**
+     * The chosen day + window on the dealer's wall clock. Converted to UTC when
+     * it's stored on the deal as pickup_at.
+     */
     public function handoverAt(): ?\Illuminate\Support\Carbon
     {
         if ($this->handoverDate === null) {
             return null;
         }
 
-        return \Illuminate\Support\Carbon::parse($this->handoverDate . ' ' . $this->handoverTimeSlot);
+        return \Illuminate\Support\Carbon::parse($this->handoverDate . ' ' . $this->handoverTimeSlot, $this->dealerTimezone());
     }
 
     /** A one-line summary for the review card and the dealer's activity trail. */
@@ -972,7 +982,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                 'postal_code'           => $this->postalCode,
                 'handover_mode'         => $this->handoverMode,
                 'pickup_location'       => $this->handoverLocationLabel(),
-                'pickup_at'             => $this->handoverAt(),
+                'pickup_at'             => $this->handoverAt()?->copy()->utc(),
                 'identity_verified_at'  => now(),
             ]);
 

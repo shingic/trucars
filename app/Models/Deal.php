@@ -39,7 +39,7 @@ class Deal extends Model
 
     protected $fillable = [
         'dealer_id', 'user_id', 'vehicle_id', 'campaign_id', 'attribution', 'stage',
-        'purchase_type', 'term_months', 'down_payment_in_cents', 'warranty_plan', 'extras_interest', 'fees_snapshot',
+        'purchase_type', 'term_months', 'down_payment_in_cents', 'warranty_plan', 'extras_interest', 'fees_snapshot', 'dealer_snapshot',
         'deposit_in_cents', 'deposit_status',
         'first_name', 'last_name', 'email', 'phone',
         'street_address', 'city', 'province', 'postal_code',
@@ -60,6 +60,7 @@ class Deal extends Model
             'pickup_at'            => 'datetime',
             'extras_interest'      => 'array',
             'fees_snapshot'        => 'array',
+            'dealer_snapshot'      => 'array',
         ];
     }
 
@@ -67,6 +68,10 @@ class Deal extends Model
     {
         static::creating(function (Deal $deal) {
             $deal->reference ??= self::freshReference();
+
+            // Freeze the seller as it is right now — name, address, registration,
+            // timezone — so later dealer-profile edits never rewrite this record.
+            $deal->dealer_snapshot ??= Dealer::find($deal->dealer_id)?->toSnapshot();
         });
 
         // Every new deal gets the canonical four documents up front so the
@@ -147,12 +152,35 @@ class Deal extends Model
         return self::STAGE_LABELS[$this->stage] ?? ucfirst($this->stage);
     }
 
+    /** The selling dealer's name as it was at reserve; live name for older deals. */
+    public function getSellerNameAttribute(): string
+    {
+        return $this->dealer_snapshot['name'] ?? $this->dealer?->name ?? 'The dealership';
+    }
+
+    /**
+     * The zone handover windows were offered in: the dealer's at reserve time,
+     * else the dealer's current one. pickup_at itself is stored in UTC.
+     */
+    public function dealerTimezone(): string
+    {
+        return ($this->dealer_snapshot['timezone'] ?? null)
+            ?: $this->dealer?->localTimezone()
+            ?: config('app.timezone');
+    }
+
+    /** pickup_at on the dealer's wall clock, for display. */
+    public function getLocalPickupAtAttribute(): ?\Illuminate\Support\Carbon
+    {
+        return $this->pickup_at?->copy()->setTimezone($this->dealerTimezone());
+    }
+
     /** One-line handover summary for the reservations inbox and deal view. */
     public function getHandoverSummaryAttribute(): string
     {
         $modeLabel = $this->handover_mode === 'delivery' ? 'Delivery' : 'Pickup';
         $where = $this->pickup_location ? ' · ' . $this->pickup_location : '';
-        $when = $this->pickup_at ? ' · ' . $this->pickup_at->format('D M j, g:i a') : '';
+        $when = $this->local_pickup_at ? ' · ' . $this->local_pickup_at->format('D M j, g:i a T') : '';
 
         return $modeLabel . $where . $when;
     }

@@ -2,6 +2,7 @@
 
 use App\Models\Dealer;
 use App\Models\Vehicle;
+use App\Support\ShopperLocation;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
@@ -48,6 +49,9 @@ new class extends Component {
 
     public string $sort = 'newest';
 
+    /** The typed fallback when browser location is denied or not wanted. */
+    public string $locationInput = '';
+
     public function clearFilters(): void
     {
         $this->reset([
@@ -76,7 +80,7 @@ new class extends Component {
     private function distinctWithCounts(string $column): Collection
     {
         return Vehicle::query()
-            ->where('is_published', true)
+            ->listed()
             ->whereNotNull($column)
             ->selectRaw("{$column} as value, count(*) as total")
             ->groupBy($column)
@@ -118,6 +122,7 @@ new class extends Component {
     public function availableDealers(): Collection
     {
         return Dealer::query()
+            ->where('status', Dealer::STATUS_ACTIVE)
             ->whereHas('vehicles', fn (Builder $query) => $query->where('is_published', true))
             ->withCount(['vehicles' => fn (Builder $query) => $query->where('is_published', true)])
             ->orderBy('name')
@@ -133,7 +138,7 @@ new class extends Component {
         $presentFamilies = [];
 
         $distinctColours = Vehicle::query()
-            ->where('is_published', true)
+            ->listed()
             ->whereNotNull('colour')
             ->distinct()
             ->pluck('colour');
@@ -168,7 +173,7 @@ new class extends Component {
     #[Computed]
     public function totalCount(): int
     {
-        return Vehicle::query()->where('is_published', true)->count();
+        return Vehicle::query()->listed()->count();
     }
 
     /**
@@ -216,7 +221,7 @@ new class extends Component {
     {
         return Vehicle::query()
             ->with('dealer')
-            ->where('is_published', true)
+            ->listed()
             ->when($this->search !== '', function (Builder $query) {
                 $keyword = '%' . $this->search . '%';
                 $query->where(function (Builder $keywordQuery) use ($keyword) {
@@ -249,8 +254,77 @@ new class extends Component {
             ->when($this->sort === 'price-high', fn (Builder $query) => $query->orderByDesc('price_in_cents'))
             ->when($this->sort === 'km-low', fn (Builder $query) => $query->orderBy('kilometres'))
             ->when($this->sort === 'year-new', fn (Builder $query) => $query->orderByDesc('model_year'))
-            ->when($this->sort === 'newest', fn (Builder $query) => $query->latest())
-            ->get();
+            ->when(in_array($this->sort, ['newest', 'nearest'], true), fn (Builder $query) => $query->latest())
+            ->get()
+            ->when($this->sort === 'nearest' && ShopperLocation::current() !== null, fn (Collection $vehicles) => $this->sortNearestFirst($vehicles));
+    }
+
+    /**
+     * Nearest first, never nearest only — everything stays in the list. With
+     * browser coordinates it's by distance (cars whose dealer has no coordinates
+     * yet go last); with a typed city or postal code it's same city, then same
+     * province, then the rest. Newest breaks ties, as the query already ordered.
+     */
+    private function sortNearestFirst(Collection $vehicles): Collection
+    {
+        $location = ShopperLocation::current();
+
+        return $vehicles
+            ->sortBy(fn (Vehicle $vehicle) => [
+                ShopperLocation::distanceKm($location, $vehicle->dealer) ?? PHP_INT_MAX,
+                ShopperLocation::proximityRank($location, $vehicle->dealer),
+            ])
+            ->values();
+    }
+
+    /* ---------------------------------------------------------------------
+       Shopper location (optional — browsing never waits on it)
+       --------------------------------------------------------------------- */
+    public function useBrowserLocation($latitude, $longitude): void
+    {
+        $isUsable = is_numeric($latitude) && is_numeric($longitude)
+            && abs((float) $latitude) <= 90 && abs((float) $longitude) <= 180;
+
+        if (! $isUsable) {
+            $this->addError('locationInput', "We couldn't read that location — enter a city or postal code instead.");
+
+            return;
+        }
+
+        ShopperLocation::setFromBrowser((float) $latitude, (float) $longitude);
+        $this->locationChanged();
+    }
+
+    public function setManualLocation(): void
+    {
+        $this->validate(['locationInput' => ['required', 'string', 'max:60']], attributes: ['locationInput' => 'city or postal code']);
+
+        if (! ShopperLocation::setManual($this->locationInput)) {
+            $this->addError('locationInput', 'Enter a city (e.g. Chilliwack) or a postal code (e.g. V2P 2M9).');
+
+            return;
+        }
+
+        $this->locationInput = '';
+        $this->locationChanged();
+    }
+
+    public function clearLocation(): void
+    {
+        ShopperLocation::clear();
+
+        if ($this->sort === 'nearest') {
+            $this->sort = 'newest';
+        }
+
+        $this->dispatch('shopper-location-updated', label: null);
+    }
+
+    private function locationChanged(): void
+    {
+        $this->resetErrorBag('locationInput');
+        $this->sort = 'nearest';
+        $this->dispatch('shopper-location-updated', label: ShopperLocation::current()['label'] ?? null);
     }
 
     /**
@@ -324,9 +398,17 @@ new class extends Component {
      */
     public function with(): array
     {
+        $shopperLocation = ShopperLocation::current();
+
         return [
             'savedVehicleIds' => $this->resolveSavedVehicleIds(),
             'favouritesAreVisible' => $this->favouritesAreVisible(),
+            'shopperLocation' => $shopperLocation,
+            // km per vehicle id, only where both ends have coordinates.
+            'distancesKm' => $this->publishedVehicles
+                ->mapWithKeys(fn (Vehicle $vehicle) => [$vehicle->id => ShopperLocation::distanceKm($shopperLocation, $vehicle->dealer)])
+                ->filter(fn (?float $km) => $km !== null)
+                ->all(),
         ];
     }
 };
@@ -339,6 +421,51 @@ new class extends Component {
     <header class="srp-head">
         <h1 class="srp-title">Certified Pre-Owned cars in the GTA</h1>
         <p class="srp-sub">Every car is inspected, certified, and priced all-in — no as-is cars, ever. HST &amp; licensing extra.</p>
+
+        <div class="loc-bar"
+             x-data="{
+                 locating: false,
+                 geoError: '',
+                 locate() {
+                     this.geoError = '';
+                     if (! ('geolocation' in navigator)) {
+                         this.geoError = 'Your browser can’t share a location — enter a city or postal code instead.';
+                         return;
+                     }
+                     this.locating = true;
+                     navigator.geolocation.getCurrentPosition(
+                         (position) => { this.locating = false; this.$wire.useBrowserLocation(position.coords.latitude, position.coords.longitude); },
+                         (error) => {
+                             this.locating = false;
+                             this.geoError = error.code === 1
+                                 ? 'Location access was declined — enter a city or postal code instead.'
+                                 : 'We couldn’t get your location — enter a city or postal code instead.';
+                         },
+                         { timeout: 10000, maximumAge: 600000 },
+                     );
+                 },
+             }">
+            <svg class="loc-pin" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+            @if ($shopperLocation)
+                <span class="loc-current">
+                    {{ isset($shopperLocation['latitude']) ? 'Showing distance from' : 'Nearest to' }}
+                    <b>{{ $shopperLocation['label'] }}</b>
+                </span>
+                <button type="button" class="loc-link" wire:click="clearLocation">Change</button>
+            @else
+                <button type="button" class="loc-use" @click="locate()" :disabled="locating">
+                    <span x-show="! locating">Use my location</span>
+                    <span x-show="locating" x-cloak>Locating…</span>
+                </button>
+                <span class="loc-or">or</span>
+                <form class="loc-form" wire:submit="setManualLocation">
+                    <input type="text" wire:model="locationInput" placeholder="City or postal code" maxlength="60" aria-label="City or postal code">
+                    <button type="submit">Set</button>
+                </form>
+            @endif
+            <span class="loc-note" x-show="geoError" x-text="geoError" x-cloak></span>
+            @error('locationInput') <span class="loc-note">{{ $message }}</span> @enderror
+        </div>
     </header>
 
     <!-- mobile-only: search + filters + sort toolbar (inventory leads, filters fold into a sheet) -->
@@ -363,6 +490,9 @@ new class extends Component {
                     <option value="price-high">Price: high to low</option>
                     <option value="km-low">Mileage: lowest</option>
                     <option value="year-new">Year: newest</option>
+                    @if ($shopperLocation)
+                        <option value="nearest">Nearest first</option>
+                    @endif
                 </select>
                 <svg class="mb-sort-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
             </label>
@@ -588,6 +718,9 @@ new class extends Component {
                         <option value="price-high">Price: high to low</option>
                         <option value="km-low">Mileage: lowest</option>
                         <option value="year-new">Year: newest</option>
+                        @if ($shopperLocation)
+                            <option value="nearest">Nearest first</option>
+                        @endif
                     </select>
                 </div>
             </div>
@@ -596,6 +729,7 @@ new class extends Component {
                 @forelse ($this->publishedVehicles as $vehicle)
                     @include('partials.vehicle-card', [
                         'vehicle' => $vehicle,
+                        'distanceKm' => $distancesKm[$vehicle->id] ?? null,
                         'savedVehicleIds' => $savedVehicleIds,
                         'favouritesAreVisible' => $favouritesAreVisible,
                     ])
@@ -615,6 +749,19 @@ new class extends Component {
         .srp-head { margin-bottom:22px; }
         .srp-title { font-size:30px; font-weight:800; letter-spacing:-.025em; margin:0; }
         .srp-sub { color:var(--ink-2); font-size:15px; margin:6px 0 0; }
+
+        .loc-bar { display:flex; align-items:center; flex-wrap:wrap; gap:8px 10px; margin-top:14px; font-size:13.5px; color:var(--ink-2); }
+        .loc-pin { color:var(--primary); flex-shrink:0; }
+        .loc-current b { color:var(--ink); }
+        .loc-link { font-size:13.5px; font-weight:700; color:var(--primary); padding:0; }
+        .loc-use { font-size:13.5px; font-weight:700; color:var(--ink); border:1.5px solid var(--line-strong); border-radius:var(--radius-pill); padding:6px 13px; background:var(--card); transition:border-color .15s ease; }
+        .loc-use:hover { border-color:var(--primary); }
+        .loc-or { color:var(--ink-3); }
+        .loc-form { display:flex; align-items:center; border:1.5px solid var(--line-strong); border-radius:var(--radius-pill); background:var(--card); overflow:hidden; }
+        .loc-form:focus-within { border-color:var(--primary); }
+        .loc-form input { border:none; outline:none; font-size:13.5px; padding:6px 4px 6px 13px; width:170px; background:none; color:var(--ink); }
+        .loc-form button { font-size:13px; font-weight:700; color:var(--primary); padding:6px 13px 6px 6px; }
+        .loc-note { flex-basis:100%; font-size:12.5px; color:var(--primary-press); font-weight:600; }
         .srp-body { display:grid; grid-template-columns:280px 1fr; gap:38px; align-items:start; }
 
         .sidebar { position:sticky; top:84px; max-height:calc(100vh - 100px); overflow-y:auto; padding-right:6px; scrollbar-width:thin; }

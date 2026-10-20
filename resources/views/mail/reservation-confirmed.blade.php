@@ -227,7 +227,7 @@
                             <tr>
                                 <td width="28" valign="top" style="font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:15px; font-weight:800; color:#F5631F; line-height:1.5;">1.</td>
                                 <td style="padding-bottom:12px; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:14px; line-height:1.55; color:#3A3F46;">
-                                    {{ $deal->vehicle->dealer?->name ?? 'The dealership' }}'s finance office reaches out shortly to confirm your real financing terms. Every payment figure you've seen is an estimate until they confirm it.
+                                    {{ $deal->seller_name }}'s finance office reaches out shortly to confirm your real financing terms. Every payment figure you've seen is an estimate until they confirm it.
                                 </td>
                             </tr>
                             <tr>
@@ -301,7 +301,7 @@
                             <tr>
                                 <td style="border-top:1px solid #ECECEA; padding-top:20px;">
                                     <p style="margin:0; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:12px; line-height:1.6; color:#9AA0A6;">
-                                        TruCars handles your reservation and checkout. {{ $deal->vehicle->dealer?->name ?? 'The dealership' }} owns the vehicle, the financing and the delivery, and confirms all final figures with you before anything is signed.
+                                        TruCars handles your reservation and checkout. {{ $deal->seller_name }} owns the vehicle, the financing and the delivery, and confirms all final figures with you before anything is signed.
                                     </p>
                                     <p style="margin:10px 0 0; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:12px; line-height:1.6; color:#C2C6CB;">
                                         Sent because you placed a reservation at TruCars.
