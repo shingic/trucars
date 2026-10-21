@@ -326,12 +326,20 @@ new class extends Component {
                         >
                     </template>
 
-                    @if ($this->certification())
-                        <span class="gallery-badge">
-                            <span class="dot"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>
-                            {{ $this->certification()->badge }}
-                        </span>
-                    @endif
+                    <div class="gallery-badges">
+                        @if ($reserved)
+                            <span class="gallery-badge reserved">
+                                <span class="dot"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span>
+                                Reserved
+                            </span>
+                        @endif
+                        @if ($this->certification())
+                            <span class="gallery-badge">
+                                <span class="dot"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>
+                                {{ $this->certification()->badge }}
+                            </span>
+                        @endif
+                    </div>
 
                     <button type="button" class="ghero-fs" x-on:click="openFullscreen()" aria-label="Open fullscreen gallery">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
@@ -689,7 +697,7 @@ new class extends Component {
         .btn-bell.on { border-color:transparent; background:#E7F8F1; color:#0B7355; }
         .btn-bell.on svg { animation:bell-ring .6s ease 1; transform-origin:50% 10%; }
         @keyframes bell-ring { 20% { transform:rotate(14deg); } 45% { transform:rotate(-12deg); } 70% { transform:rotate(7deg); } 100% { transform:rotate(0); } }
-        .reserved-note { display:flex; gap:10px; align-items:flex-start; background:#FFF4D6; color:#6B4500; border-radius:14px; padding:12px 14px; font-size:13.5px; line-height:1.45; margin-bottom:14px; }
+        .reserved-note { display:flex; gap:10px; align-items:flex-start; background:#FFF4D6; color:#6B4500; border-radius:14px; padding:12px 14px; font-size:13.5px; line-height:1.45; margin:0 22px 14px; }
 
         .vdp-back { display:inline-flex; align-items:center; gap:7px; font-size:13.5px; font-weight:600; color:var(--ink-2); margin-bottom:18px; text-decoration:none; }
         .vdp-back:hover { color:var(--primary); }
@@ -708,7 +716,10 @@ new class extends Component {
         .gallery-hero { height:440px; border-radius:var(--radius); background:var(--hero-grad); position:relative; overflow:hidden; cursor:grab; touch-action:pan-y; user-select:none; }
         .gallery-hero.grabbing { cursor:grabbing; }
         .gallery-img { width:100%; height:100%; object-fit:cover; display:block; -webkit-user-drag:none; }
-        .gallery-badge { position:absolute; top:18px; left:18px; z-index:2; display:inline-flex; align-items:center; gap:7px; background:rgba(255,255,255,.96); border-radius:var(--radius-pill); padding:8px 15px 8px 10px; font-size:13px; font-weight:700; color:#0E5A43; box-shadow:var(--shadow-md); }
+        .gallery-badges { position:absolute; top:18px; left:18px; z-index:2; display:flex; flex-direction:column; align-items:flex-start; gap:8px; pointer-events:none; }
+        .gallery-badge.reserved { background:#FFF4D6; color:#7A4E00; }
+        .gallery-badge.reserved .dot { background:#C98A00; }
+        .gallery-badge { display:inline-flex; align-items:center; gap:7px; background:rgba(255,255,255,.96); border-radius:var(--radius-pill); padding:8px 15px 8px 10px; font-size:13px; font-weight:700; color:#0E5A43; box-shadow:var(--shadow-md); }
         .gallery-badge .dot { width:18px; height:18px; border-radius:50%; background:var(--good); display:grid; place-items:center; }
 
         .ghero-fs { position:absolute; z-index:3; top:18px; right:18px; width:40px; height:40px; border:none; border-radius:11px; background:rgba(22,24,29,.55); backdrop-filter:blur(6px); color:#fff; display:grid; place-items:center; cursor:pointer; transition:background .15s ease; }
@@ -865,6 +876,7 @@ new class extends Component {
         .buy-cert-mini .t { font-size:12.5px; font-weight:700; color:#0E5A43; }
         .buy-cert-mini .s { font-size:11px; color:#12805F; }
         .buy-actions { padding:0 22px 22px; }
+        .buy-actions .btn-bell { margin-top:10px; }
         .btn { border-radius:var(--radius-pill); font-weight:700; font-size:15px; padding:15px 22px; display:inline-flex; align-items:center; justify-content:center; gap:9px; transition:all .16s ease; width:100%; cursor:pointer; text-decoration:none; }
         .btn-primary { background:var(--primary); color:#fff; box-shadow:var(--shadow-primary); border:none; }
         .btn-primary:hover { background:var(--primary-press); transform:translateY(-1px); }
@@ -908,7 +920,8 @@ new class extends Component {
         @media (max-width:860px) {
             .vdp-back { margin-bottom:14px; }
             .gallery-hero { height:290px; border-radius:var(--radius-sm); }
-            .gallery-badge { top:12px; left:12px; padding:6px 12px 6px 8px; font-size:12px; }
+            .gallery-badges { top:12px; left:12px; gap:6px; }
+            .gallery-badge { padding:6px 12px 6px 8px; font-size:12px; }
             .ghero-fs { top:12px; right:12px; }
             .ghero-arrow { display:none; }
             .ghero-spin { bottom:12px; left:12px; }
