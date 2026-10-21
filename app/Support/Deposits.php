@@ -281,12 +281,8 @@ class Deposits
     }
 
     /** Someone else's live reservation already holds this car. */
-    public static function vehicleIsTaken(Vehicle $vehicle, ?int $exceptDealId = null): bool
+    public static function vehicleIsTaken(Vehicle $vehicle): bool
     {
-        return Deal::withoutGlobalScopes()
-            ->where('vehicle_id', $vehicle->id)
-            ->where('stage', '!=', 'cancelled')
-            ->when($exceptDealId, fn ($query) => $query->whereKeyNot($exceptDealId))
-            ->exists();
+        return $vehicle->isReserved();
     }
 }

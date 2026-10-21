@@ -89,12 +89,38 @@ class Vehicle extends Model
     /**
      * What shoppers may see on the open marketplace: published cars from active
      * dealers. A dealer switched back to draft drops off without anyone having
-     * to unpublish each car.
+     * to unpublish each car. Reserved cars stay listed — shown as reserved,
+     * with a bell to hear if the deal falls through.
      */
     public function scopeListed(Builder $query): void
     {
         $query->where('vehicles.is_published', true)
             ->whereHas('dealer', fn (Builder $dealer) => $dealer->where('status', Dealer::STATUS_ACTIVE));
+    }
+
+    /** Adds is_reserved to each car, for the "Reserved" tag on cards. */
+    public function scopeWithReservedFlag(Builder $query): void
+    {
+        $query->withExists(['deals as is_reserved' => fn (Builder $deals) => $deals
+            ->withoutGlobalScope(DealerScope::class)
+            ->where('stage', '!=', 'cancelled')]);
+    }
+
+    /** Shoppers waiting to hear if this car comes free again. */
+    public function availabilityAlerts(): HasMany
+    {
+        return $this->hasMany(VehicleAlert::class);
+    }
+
+    /** A live reservation (anything but cancelled) holds this car. */
+    public function isReserved(): bool
+    {
+        return Deal::withoutGlobalScopes()->where('vehicle_id', $this->id)->where('stage', '!=', 'cancelled')->exists();
+    }
+
+    public function isReservedBy(?User $user): bool
+    {
+        return $user !== null && Deal::withoutGlobalScopes()->where('vehicle_id', $this->id)->where('stage', '!=', 'cancelled')->where('user_id', $user->id)->exists();
     }
 
     public function isListed(): bool

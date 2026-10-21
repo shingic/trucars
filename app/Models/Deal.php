@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\DB;
 
 #[ScopedBy(DealerScope::class)]
 class Deal extends Model
@@ -79,6 +80,14 @@ class Deal extends Model
         // buyer always sees the full checklist in My Garage. The driver's
         // licence arrives pre-cleared when identity was verified at reserve;
         // the rest start pending. Created (not creating) so the deal has an id.
+        // A cancelled reservation puts the car back on sale: ring the bell for
+        // everyone waiting on it — once the cancellation has committed.
+        static::updated(function (Deal $deal) {
+            if ($deal->wasChanged('stage') && $deal->stage === 'cancelled' && $deal->vehicle_id) {
+                DB::afterCommit(fn () => ($vehicle = Vehicle::find($deal->vehicle_id)) && VehicleAlert::notifyWaiting($vehicle));
+            }
+        });
+
         static::created(function (Deal $deal) {
             foreach (DealDocument::blueprintFor($deal) as $position => $document) {
                 $deal->documents()->create($document + ['sort_order' => $position]);

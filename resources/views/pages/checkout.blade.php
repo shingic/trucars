@@ -258,6 +258,11 @@ new #[Layout('layouts.checkout')] class extends Component {
             return;
         }
 
+        // Already reserved: no point starting the journey.
+        if ($this->leaveIfReserved()) {
+            return;
+        }
+
         // The buyer is already signed in by the time the journey starts — seed the
         // "About you" step from their account so they aren't retyping known details.
         $signedInBuyer = auth()->user();
@@ -335,8 +340,33 @@ new #[Layout('layouts.checkout')] class extends Component {
         };
     }
 
+    /**
+     * Someone else reserved this car while the buyer was still in checkout:
+     * tell them now, at the next step, not at the payment. Their own
+     * reservation sends them to My Garage instead.
+     */
+    private function leaveIfReserved(): bool
+    {
+        if (! $this->vehicle->isReserved()) {
+            return false;
+        }
+
+        if ($this->vehicle->isReservedBy(auth()->user())) {
+            $this->redirectRoute('garage');
+        } else {
+            session()->flash('vehicle_reserved', true);
+            $this->redirect('/cars/' . $this->vehicle->id);
+        }
+
+        return true;
+    }
+
     public function goNext(): void
     {
+        if ($this->stepKey() !== 'done' && $this->dealReference === null && $this->leaveIfReserved()) {
+            return;
+        }
+
         if ($this->stepKey() === 'trade' && ! $this->finishTradeStep()) {
             return; // moved within a trade sub-step instead
         }

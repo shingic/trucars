@@ -28,11 +28,15 @@
     $vehicleUrl ??= '/cars/' . $vehicle->id;
     $badgeLabel ??= $vehicle->certification()?->badge;
     $distanceKm ??= null;
+    $reserved = (bool) ($vehicle->getAttributes()['is_reserved'] ?? false);
 @endphp
 <article class="vcard" wire:key="vehicle-{{ $vehicle->id }}">
     <a href="{{ $vehicleUrl }}" wire:navigate class="vcard-link" aria-label="View {{ $vehicle->model_year }} {{ $vehicle->make }} {{ $vehicle->model }}"></a>
     <div class="vcard-photo">
         <div class="vcard-tags">
+            @if ($reserved)
+                <span class="vcard-reserved">Reserved</span>
+            @endif
             @if ($featuredOffer = $vehicle->offers()->first())
                 <span class="vcard-offer">{{ $featuredOffer->headline() }}</span>
             @endif

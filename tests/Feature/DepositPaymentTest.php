@@ -101,9 +101,7 @@ class DepositPaymentTest extends TestCase
         $this->reserveAs(User::factory()->create());
         $this->actingAs(User::factory()->create());
 
-        $this->checkout()->call('preparePayment')
-            ->assertSet('paymentClientSecret', null)
-            ->assertSet('paymentError', 'Sorry — this car was just reserved by someone else. You haven’t been charged.');
+        Livewire::test('pages::checkout', ['vehicle' => $this->car])->assertRedirect('/cars/' . $this->car->id);
 
         $this->assertSame(1, DepositPayment::count());
     }
@@ -265,6 +263,70 @@ class DepositPaymentTest extends TestCase
         Livewire::test('pages::admin-settings')->call('checkConnection')
             ->assertSee('Stripe rejected the secret key')
             ->assertSee('No events received yet');
+    }
+
+    public function test_a_reserved_car_stays_in_the_shop_marked_reserved(): void
+    {
+        $buyer = User::factory()->create();
+        $this->reserveAs($buyer);
+        auth()->logout();
+
+        $this->get('/shop')->assertSee('Outlander')->assertSee('vcard-reserved', false);
+        $this->get('/cars/' . $this->car->id)->assertOk()
+            ->assertSee('Someone has reserved this car')
+            ->assertSee('Notify me if it becomes available')
+            ->assertDontSee('Reserve my car now');
+
+        // Its buyer is pointed to their garage instead.
+        $this->actingAs($buyer)->get('/cars/' . $this->car->id)->assertSee('You reserved this car');
+    }
+
+    public function test_the_bell_emails_watchers_once_when_the_reservation_is_cancelled(): void
+    {
+        $deal = $this->reserveAs(User::factory()->create());
+
+        // A guest is asked to sign in first.
+        auth()->logout();
+        Livewire::test('pages::vehicle', ['vehicle' => $this->car])->call('toggleAvailabilityAlert')->assertRedirect(route('buyer.login'));
+
+        $this->actingAs($watcher = User::factory()->create());
+        Livewire::test('pages::vehicle', ['vehicle' => $this->car])
+            ->call('toggleAvailabilityAlert')
+            ->assertSee('We’ll email you if it’s available');
+        $this->assertDatabaseHas('vehicle_alerts', ['user_id' => $watcher->id, 'vehicle_id' => $this->car->id, 'notified_at' => null]);
+
+        // Nothing goes out while the deal is alive.
+        $deal->update(['stage' => 'contacted']);
+        Mail::assertNotSent(\App\Mail\VehicleAvailableAgain::class);
+
+        $deal->update(['stage' => 'cancelled']);
+        Mail::assertSent(\App\Mail\VehicleAvailableAgain::class, fn ($mail) => $mail->hasTo($watcher->email));
+
+        // Once only.
+        $deal->update(['stage' => 'reserved']);
+        $deal->update(['stage' => 'cancelled']);
+        Mail::assertSent(\App\Mail\VehicleAvailableAgain::class, 1);
+
+        // Tapping again turns it off.
+        $this->actingAs($other = User::factory()->create());
+        Livewire::test('pages::vehicle', ['vehicle' => $this->car])->call('toggleAvailabilityAlert')->call('toggleAvailabilityAlert');
+        $this->assertDatabaseMissing('vehicle_alerts', ['user_id' => $other->id]);
+    }
+
+    public function test_checkout_stops_at_the_start_or_next_step_not_at_payment(): void
+    {
+        $this->actingAs($late = User::factory()->create());
+        $checkout = $this->checkout(); // started before anyone reserved
+
+        $this->reserveAs(User::factory()->create());
+        $this->actingAs($late);
+
+        // Mid-journey: the very next step sends them back to the car.
+        $checkout->call('goNext')->assertRedirect('/cars/' . $this->car->id);
+
+        // Starting fresh: turned away straight away.
+        Livewire::test('pages::checkout', ['vehicle' => $this->car])->assertRedirect('/cars/' . $this->car->id);
+        $this->assertSame(1, DepositPayment::count(), 'nobody else got as far as paying');
     }
 
     private function checkout()

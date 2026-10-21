@@ -226,6 +226,45 @@ new class extends Component {
      * Whether the save control should render at all. Buyers and guests see it
      * (a guest tap routes to sign in); dealer staff never do.
      */
+    /**
+     * The bell on a reserved car: email me if the reservation falls through.
+     * Shoppers need an account (same as saving a car); a second tap turns it off.
+     */
+    public function toggleAvailabilityAlert(): void
+    {
+        $user = auth()->user();
+
+        if ($user !== null && $user->dealer_id !== null) {
+            return;
+        }
+
+        if ($user === null) {
+            session()->put('url.intended', $this->campaignToken !== null
+                ? route('campaign.vehicle', ['token' => $this->campaignToken, 'vehicle' => $this->vehicle->id])
+                : url('/cars/' . $this->vehicle->id));
+            $this->redirect(route('buyer.login'));
+
+            return;
+        }
+
+        $alert = \App\Models\VehicleAlert::firstWhere(['user_id' => $user->id, 'vehicle_id' => $this->vehicle->id]);
+
+        if ($alert && $alert->notified_at === null) {
+            $alert->delete();
+        } elseif ($alert) {
+            $alert->forceFill(['notified_at' => null])->save(); // watching again after an earlier email
+        } else {
+            \App\Models\VehicleAlert::create(['user_id' => $user->id, 'vehicle_id' => $this->vehicle->id]);
+        }
+    }
+
+    public function isWatching(): bool
+    {
+        $user = auth()->user();
+
+        return $user !== null && \App\Models\VehicleAlert::where(['user_id' => $user->id, 'vehicle_id' => $this->vehicle->id])->whereNull('notified_at')->exists();
+    }
+
     public function favouriteIsVisible(): bool
     {
         $user = auth()->user();
@@ -234,6 +273,8 @@ new class extends Component {
     }
 };
 ?>
+
+@php $reserved = $vehicle->isReserved(); @endphp
 
 <div class="vdp">
     <a href="{{ $this->backUrl() }}" wire:navigate class="vdp-back">
@@ -561,11 +602,31 @@ new class extends Component {
                     @endif
                 </div>
 
+                @if ($reserved && ! $vehicle->isReservedBy(auth()->user()))
+                    <div class="reserved-note" role="status">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex:none;margin-top:1px"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>
+                        <span>{{ session('vehicle_reserved') ? 'Sorry — someone reserved this car while you were checking out. You haven’t been charged.' : 'Someone has reserved this car.' }} Tap the bell and we’ll email you if their deal doesn’t go through.</span>
+                    </div>
+                @endif
                 <div class="buy-actions">
+                    @if ($reserved)
+                        @if ($vehicle->isReservedBy(auth()->user()))
+                            <a href="{{ route('garage') }}" wire:navigate class="btn btn-primary">You reserved this car — open My Garage</a>
+                        @else
+                            <span class="btn btn-reserved" aria-disabled="true">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                                Reserved
+                            </span>
+                            @if ($this->favouriteIsVisible())
+                                @include('partials.vehicle-bell')
+                            @endif
+                        @endif
+                    @else
                     <a href="{{ route('checkout', $vehicle) }}" wire:navigate class="btn btn-primary">
                         Reserve my car now
                         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
                     </a>
+                    @endif
                     @if ($this->favouriteIsVisible())
                         <button type="button"
                                 class="btn btn-save"
@@ -607,15 +668,28 @@ new class extends Component {
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.5-1.5 3-3.3 3-5.5A4.5 4.5 0 0 0 12 5 4.5 4.5 0 0 0 2 8.5c0 2.2 1.5 4 3 5.5l7 7Z"/></svg>
                 </button>
             @endif
+            @if ($reserved && ! $vehicle->isReservedBy(auth()->user()) && $this->favouriteIsVisible())
+                @include('partials.vehicle-bell', ['compact' => true])
+            @elseif ($reserved)
+                <span class="btn btn-reserved sb-cta" aria-disabled="true">Reserved</span>
+            @else
             <a href="{{ route('checkout', $vehicle) }}" wire:navigate class="btn btn-primary sb-cta">
                 Reserve my car now
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
             </a>
+            @endif
         </div>
     </div>
 
     <style>
         [x-cloak] { display:none !important; }
+        .btn-reserved { background:var(--bg, #f2f2f2); color:var(--ink-3, #777); border:1px solid var(--line, #e5e5e5); cursor:not-allowed; display:inline-flex; align-items:center; justify-content:center; gap:8px; }
+        .btn-bell { display:inline-flex; align-items:center; justify-content:center; gap:8px; border:1.5px solid var(--line-strong, #d5d5d5); background:var(--card, #fff); color:var(--ink, #16181d); font-weight:700; }
+        .btn-bell:hover { border-color:var(--primary); color:var(--primary-press, var(--primary)); }
+        .btn-bell.on { border-color:transparent; background:#E7F8F1; color:#0B7355; }
+        .btn-bell.on svg { animation:bell-ring .6s ease 1; transform-origin:50% 10%; }
+        @keyframes bell-ring { 20% { transform:rotate(14deg); } 45% { transform:rotate(-12deg); } 70% { transform:rotate(7deg); } 100% { transform:rotate(0); } }
+        .reserved-note { display:flex; gap:10px; align-items:flex-start; background:#FFF4D6; color:#6B4500; border-radius:14px; padding:12px 14px; font-size:13.5px; line-height:1.45; margin-bottom:14px; }
 
         .vdp-back { display:inline-flex; align-items:center; gap:7px; font-size:13.5px; font-weight:600; color:var(--ink-2); margin-bottom:18px; text-decoration:none; }
         .vdp-back:hover { color:var(--primary); }
