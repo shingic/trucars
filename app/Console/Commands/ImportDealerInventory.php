@@ -7,6 +7,7 @@ namespace App\Console\Commands;
 use App\Models\Dealer;
 use App\Models\Vehicle;
 use App\Support\CanadianAddress;
+use App\Support\FeedText;
 use Illuminate\Console\Command;
 
 class ImportDealerInventory extends Command
@@ -33,11 +34,10 @@ class ImportDealerInventory extends Command
             return self::FAILURE;
         }
 
-        $fileHandle = fopen($pathToCsv, 'r');
+        $fileHandle = $this->openAsUtf8($pathToCsv);
 
-        $headerColumns = fgetcsv($fileHandle);
-        // Some exports prepend a hidden UTF-8 marker to the first header — strip it.
-        $headerColumns[0] = preg_replace('/^\xEF\xBB\xBF/', '', $headerColumns[0]);
+        $delimiter = $this->detectDelimiter($fileHandle);
+        $headerColumns = array_map(fn ($column) => FeedText::clean($column), fgetcsv($fileHandle, separator: $delimiter, escape: "\\") ?: []);
 
         $dealer = null;
         $feedRooftopId = null;
@@ -51,12 +51,14 @@ class ImportDealerInventory extends Command
         /** @var array<string, true> every VIN this rooftop's rows mention, imported or not */
         $vinsInFeed = [];
 
-        while (($rowValues = fgetcsv($fileHandle)) !== false) {
+        while (($rowValues = fgetcsv($fileHandle, separator: $delimiter, escape: "\\")) !== false) {
             if (count($rowValues) !== count($headerColumns)) {
                 continue; // a malformed line — leave it out rather than guess
             }
 
-            $row = array_combine($headerColumns, $rowValues);
+            // Whatever encoding the dealer's system used, every value is plain
+            // UTF-8 before anything reads it ("4Ã—4" → "4×4").
+            $row = array_combine($headerColumns, array_map(fn ($value) => FeedText::clean($value), $rowValues));
 
             // Resolve the dealership once, from the dealer columns in the file.
             if ($dealer === null) {
@@ -313,6 +315,38 @@ class ImportDealerInventory extends Command
         $dealer->save();
 
         return $dealer;
+    }
+
+    /**
+     * Excel's "Unicode text" exports are UTF-16, which CSV parsing can't read
+     * as is — convert those to UTF-8 first. Everything else is cleaned value
+     * by value (FeedText::clean), BOMs included.
+     */
+    private function openAsUtf8(string $path)
+    {
+        $start = (string) file_get_contents($path, length: 2);
+
+        if ($start !== "\xFF\xFE" && $start !== "\xFE\xFF") {
+            return fopen($path, 'r');
+        }
+
+        $stream = fopen('php://temp', 'r+');
+        fwrite($stream, mb_convert_encoding((string) file_get_contents($path), 'UTF-8', 'UTF-16'));
+        rewind($stream);
+
+        return $stream;
+    }
+
+    /** Commas usually; tabs from Excel's text exports, semicolons from European-locale ones. */
+    private function detectDelimiter($fileHandle): string
+    {
+        $firstLine = (string) fgets($fileHandle);
+        rewind($fileHandle);
+
+        $counts = [',' => substr_count($firstLine, ','), "\t" => substr_count($firstLine, "\t"), ';' => substr_count($firstLine, ';')];
+        arsort($counts);
+
+        return reset($counts) > 0 ? array_key_first($counts) : ',';
     }
 
     private function priceToCents(string $price): ?int

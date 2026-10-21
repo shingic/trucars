@@ -152,6 +152,45 @@ class InventoryImportTest extends TestCase
         $this->assertSame(1, Vehicle::count());
     }
 
+    public function test_double_encoded_feed_text_is_repaired(): void
+    {
+        $this->import([$this->row('ROOF-A', 'VIN00000000000001', ['drivetrain' => '4Ã—4', 'exterior_color' => 'BlÃ©', 'trim' => 'SE &amp; Tech'])])->assertSuccessful();
+
+        $vehicle = Vehicle::sole();
+        $this->assertSame('4×4', $vehicle->drivetrain);
+        $this->assertSame('Blé', $vehicle->colour);
+        $this->assertSame('SE & Tech', $vehicle->trim);
+    }
+
+    public function test_a_windows_1252_feed_is_read_as_utf8(): void
+    {
+        $this->import([$this->row('ROOF-A', 'VIN00000000000001', ['drivetrain' => '4×4'])], encode: fn ($csv) => mb_convert_encoding($csv, 'Windows-1252', 'UTF-8'))->assertSuccessful();
+
+        $this->assertSame('4×4', Vehicle::sole()->drivetrain);
+    }
+
+    public function test_an_excel_unicode_text_export_is_read(): void
+    {
+        $this->import(
+            [$this->row('ROOF-A', 'VIN00000000000001', ['drivetrain' => '4×4'])],
+            encode: fn ($csv) => "\xFF\xFE" . mb_convert_encoding(str_replace(',', "\t", $csv), 'UTF-16LE', 'UTF-8'),
+        )->assertSuccessful();
+
+        $vehicle = Vehicle::sole();
+        $this->assertSame('VIN00000000000001', $vehicle->vin);
+        $this->assertSame('4×4', $vehicle->drivetrain);
+    }
+
+    public function test_text_saved_any_other_way_is_cleaned_too(): void
+    {
+        $vehicle = $this->makeDealer()->vehicles()->create([
+            'vin' => 'VIN00000000000009', 'model_year' => 2022, 'make' => 'Mitsubishi', 'model' => 'Outlander',
+            'kilometres' => 1000, 'price_in_cents' => 100000, 'condition' => 'USED', 'drivetrain' => '4Ã—4',
+        ]);
+
+        $this->assertSame('4×4', $vehicle->fresh()->drivetrain);
+    }
+
     private function row(string $rooftopId, string $vin, array $overrides = []): array
     {
         return $overrides + [
@@ -165,7 +204,8 @@ class InventoryImportTest extends TestCase
         ];
     }
 
-    private function import(array $rows, array $options = [])
+    /** @param  ?callable(string): string  $encode  re-encodes the file, like a dealer's export would */
+    private function import(array $rows, array $options = [], ?callable $encode = null)
     {
         $path = tempnam(sys_get_temp_dir(), 'feed') . '.csv';
         $handle = fopen($path, 'w');
@@ -176,6 +216,10 @@ class InventoryImportTest extends TestCase
         }
 
         fclose($handle);
+
+        if ($encode) {
+            file_put_contents($path, $encode(file_get_contents($path)));
+        }
 
         return $this->artisan('vehicles:import', ['path' => $path] + $options);
     }

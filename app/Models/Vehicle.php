@@ -3,6 +3,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\CleansText;
 use App\Models\Scopes\DealerScope;
 use App\Support\VehicleCertification;
 use App\Support\VehicleOffers;
@@ -16,6 +17,11 @@ use Illuminate\Validation\ValidationException;
 
 class Vehicle extends Model
 {
+    use CleansText;
+
+    /** Text columns kept as clean UTF-8 (see CleansText). */
+    public const CLEAN_TEXT = ['stock_number', 'make', 'model', 'trim', 'body_type', 'colour', 'transmission', 'drivetrain', 'fuel_type'];
+
     protected $fillable = [
         'dealer_id',
         'vin',

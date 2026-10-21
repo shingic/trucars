@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\CleansText;
 use App\Models\Scopes\DealerScope;
 use App\Support\CanadianAddress;
 use Illuminate\Database\Eloquent\Builder;
@@ -16,6 +17,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Dealer extends Model
 {
+    use CleansText;
+
+    /** Text columns kept as clean UTF-8 (see CleansText). */
+    public const CLEAN_TEXT = ['name', 'street_address', 'unit', 'city', 'franchise_make', 'phone', 'email', 'website'];
+
     public const STATUS_DRAFT = 'draft';
     public const STATUS_ACTIVE = 'active';
     public const STATUS_SUSPENDED = 'suspended';
