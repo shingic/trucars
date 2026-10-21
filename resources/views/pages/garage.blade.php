@@ -514,7 +514,11 @@ new #[Layout('layouts.checkout')] class extends Component {
                     <div class="g-cancelled-note">
                         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>
                         <div>
-                            This reservation was cancelled. Your $150 deposit is fully refundable — {{ ucwords(strtolower($this->featuredDeal->seller_name)) }} will confirm your refund. Reference <b>{{ $this->featuredDeal->reference }}</b>.
+                            @if ($this->featuredDeal->deposit_status === 'refunded')
+                                This reservation was cancelled and your $150 deposit has been refunded to your card — it can take 5–10 business days to show. Reference <b>{{ $this->featuredDeal->reference }}</b>.
+                            @else
+                                This reservation was cancelled. Your $150 deposit is fully refundable — {{ ucwords(strtolower($this->featuredDeal->seller_name)) }} will confirm your refund. Reference <b>{{ $this->featuredDeal->reference }}</b>.
+                            @endif
                         </div>
                     </div>
                 </section>

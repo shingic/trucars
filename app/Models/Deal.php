@@ -128,6 +128,12 @@ class Deal extends Model
         return $this->hasMany(DealDocument::class)->orderBy('sort_order');
     }
 
+    /** The $150 card deposit behind this reservation (none on older deals). */
+    public function depositPayment(): HasOne
+    {
+        return $this->hasOne(DepositPayment::class);
+    }
+
     public function activities(): HasMany
     {
         return $this->hasMany(DealActivity::class);

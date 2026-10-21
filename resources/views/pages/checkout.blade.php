@@ -3,14 +3,17 @@
 use App\Mail\ReservationConfirmed;
 use App\Mail\ReservationSubmitted;
 use App\Models\Deal;
+use App\Models\DepositPayment;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Services\Valuation\Data\TradeInput;
 use App\Services\Valuation\TradeValuation;
 use App\Support\CampaignAttribution;
+use App\Support\Deposits;
 use Livewire\Component;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -224,6 +227,18 @@ new #[Layout('layouts.checkout')] class extends Component {
     public bool $identityVerified = false;
     public ?string $dealReference = null;
 
+    // ----- The $150 deposit (Stripe) -----
+    // Set when the buyer reaches Reserve. The client secret only lets the
+    // browser confirm this one payment; whether it was paid is always asked of
+    // Stripe server-side (Deposits::confirm) before a reservation is made.
+    #[Locked]
+    public ?int $depositPaymentId = null;
+    #[Locked]
+    public ?string $paymentClientSecret = null;
+    #[Locked]
+    public bool $paymentDemo = false;
+    public string $paymentError = '';
+
     public function mount(Vehicle $vehicle): void
     {
         // Consumers can only reserve a car that's actually live on the marketplace.
@@ -338,6 +353,53 @@ new #[Layout('layouts.checkout')] class extends Component {
         if ($passed && $this->stepIndex < count($this->steps) - 1) {
             $this->stepIndex++;
             $this->dispatch('checkout-step-changed');
+
+            if ($this->stepKey() === 'reserve') {
+                $this->preparePayment();
+            }
+        }
+    }
+
+    /**
+     * Set up the $150 deposit for the card form on the Reserve step. Refused
+     * up front when the car has just been reserved by someone else, so no
+     * one pays for a car they can't have.
+     */
+    public function preparePayment(): void
+    {
+        $this->paymentError = '';
+        $deposits = app(Deposits::class);
+
+        if (Deposits::vehicleIsTaken($this->vehicle)) {
+            $this->paymentClientSecret = null;
+            $this->paymentError = 'Sorry — this car was just reserved by someone else. You haven’t been charged.';
+
+            return;
+        }
+
+        if (! $deposits->available()) {
+            $this->paymentClientSecret = null;
+            $this->paymentError = 'Card payments aren’t available right now. Please try again shortly — you haven’t been charged.';
+
+            return;
+        }
+
+        try {
+            ['payment' => $payment, 'client_secret' => $secret] = $deposits->prepare(auth()->user(), $this->vehicle);
+        } catch (\Throwable $e) {
+            Log::error('Deposit setup failed', ['vehicle_id' => $this->vehicle->id, 'user_id' => auth()->id(), 'error' => $e->getMessage()]);
+            $this->paymentClientSecret = null;
+            $this->paymentError = 'We couldn’t reach our payment processor. Please try again in a moment — you haven’t been charged.';
+
+            return;
+        }
+
+        $this->depositPaymentId = $payment->id;
+        $this->paymentClientSecret = $secret;
+        $this->paymentDemo = $payment->isDemo();
+
+        if (! $this->paymentDemo) {
+            $this->dispatch('deposit-ready', clientSecret: $secret);
         }
     }
 
@@ -957,9 +1019,64 @@ new #[Layout('layouts.checkout')] class extends Component {
     /* ---------------------------------------------------------------------
        Create the reservation
        --------------------------------------------------------------------- */
+    /**
+     * Called by the card form once Stripe has taken the payment. Stripe is
+     * asked directly whether this deposit was paid; only then is the car
+     * reserved. If someone else reserved it first, the deposit goes straight
+     * back.
+     */
     public function reserve(): void
     {
-        $newDeal = DB::transaction(function () {
+        $this->paymentError = '';
+        $deposits = app(Deposits::class);
+
+        $payment = $this->depositPaymentId === null ? null : DepositPayment::query()
+            ->where('user_id', auth()->id())
+            ->where('vehicle_id', $this->vehicle->id)
+            ->find($this->depositPaymentId);
+
+        if ($payment === null) {
+            $this->paymentError = 'Your payment form expired. Please enter your card again.';
+            $this->preparePayment();
+
+            return;
+        }
+
+        // Already reserved with this payment (a double click, a retry).
+        if ($payment->deal_id !== null) {
+            $this->showConfirmation($payment->deal);
+
+            return;
+        }
+
+        try {
+            $paid = $deposits->confirm($payment);
+        } catch (\Throwable $e) {
+            Log::error('Deposit confirmation failed', ['deposit_payment_id' => $payment->id, 'error' => $e->getMessage()]);
+            $this->paymentError = 'We couldn’t confirm your payment with our processor. Please try again in a moment. If you were charged and don’t end up reserved, it’s refunded automatically.';
+
+            return;
+        }
+
+        if (! $paid) {
+            $this->paymentError = 'Your payment hasn’t gone through. Please check your card details and try again.';
+
+            return;
+        }
+
+        $newDeal = DB::transaction(function () use ($payment) {
+            // One car, one reservation: lock the car while checking it's free.
+            Vehicle::whereKey($this->vehicle->id)->lockForUpdate()->first();
+            $payment = DepositPayment::lockForUpdate()->find($payment->id);
+
+            if ($payment->deal_id !== null) {
+                return $payment->deal;
+            }
+
+            if (Deposits::vehicleIsTaken($this->vehicle)) {
+                return null;
+            }
+
             $deal = Deal::create([
                 'dealer_id'             => $this->vehicle->dealer_id,
                 'vehicle_id'            => $this->vehicle->id,
@@ -972,7 +1089,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                 'fees_snapshot'         => $this->dealerFees()->map->toSnapshotEntry()->values()->all(),
                 // Re-checked at the moment of reserving: only offers live and valid right now.
                 'offers_snapshot'       => $this->vehicle->offers()->map->toSnapshot()->values()->all(),
-                'deposit_in_cents'      => 15000,
+                'deposit_in_cents'      => $payment->amount_in_cents,
                 'deposit_status'        => 'held',
                 'first_name'            => $this->firstName,
                 'last_name'             => $this->lastName,
@@ -1028,7 +1145,9 @@ new #[Layout('layouts.checkout')] class extends Component {
             if ($deal->campaign_id !== null) {
                 $deal->recordActivity('system', 'Customer arrived through your campaign link “' . $deal->campaign->name . '” (' . $deal->campaign->source_label . ').');
             }
-            $deal->recordActivity('system', '$150 refundable deposit held — credited to the purchase price.');
+            $deal->recordActivity('system', $payment->isDemo()
+                ? 'Demo mode — $150 deposit simulated. No card was charged.'
+                : '$150 refundable deposit held — credited to the purchase price.');
             $deal->recordActivity('system', 'Identity verified.');
             $deal->recordActivity('system', 'Handover scheduled — ' . $this->handoverSummaryLabel() . '. The dealership confirms the exact time with the customer.');
 
@@ -1058,8 +1177,22 @@ new #[Layout('layouts.checkout')] class extends Component {
                 'outbound',
             );
 
+            $payment->forceFill(['deal_id' => $deal->id])->save();
+
             return $deal;
         });
+
+        if ($newDeal === null) {
+            $this->refundBecauseTaken($payment);
+
+            return;
+        }
+
+        if (! $newDeal->wasRecentlyCreated) {
+            $this->showConfirmation($newDeal);
+
+            return;
+        }
 
         // The reservation is committed. Send the buyer their confirmation now —
         // kept outside the transaction above so a Postmark hiccup can never undo
@@ -1067,9 +1200,29 @@ new #[Layout('layouts.checkout')] class extends Component {
         $this->emailReservationConfirmation($newDeal);
         $this->emailDealerReservation($newDeal);
 
-        $this->dealReference = $newDeal->reference;
+        $this->showConfirmation($newDeal);
+    }
+
+    private function showConfirmation(Deal $deal): void
+    {
+        $this->dealReference = $deal->reference;
+        $this->paymentClientSecret = null;
         $this->stepIndex = count($this->steps) - 1;
         $this->dispatch('checkout-step-changed');
+    }
+
+    /** Paid, but someone else's reservation landed first — give the money back now. */
+    private function refundBecauseTaken(DepositPayment $payment): void
+    {
+        try {
+            app(Deposits::class)->refund($payment, 'the car was reserved by someone else first.');
+            $this->paymentError = 'Sorry — someone reserved this car moments before you. Your $150 has been refunded to your card; it can take 5–10 business days to show.';
+        } catch (\Throwable $e) {
+            Log::error('Deposit refund failed', ['deposit_payment_id' => $payment->id, 'error' => $e->getMessage()]);
+            $this->paymentError = 'Sorry — someone reserved this car moments before you. Your $150 will be refunded to your card automatically.';
+        }
+
+        $this->paymentClientSecret = null;
     }
 
     /**
@@ -1252,6 +1405,15 @@ new #[Layout('layouts.checkout')] class extends Component {
         .rev-label { font-size:12.5px; color:var(--ink-3); font-weight:600; text-transform:uppercase; letter-spacing:.05em; }
         .rev-value { font-weight:600; margin-top:3px; }
 
+        .pay-amount { display:flex; align-items:baseline; justify-content:space-between; gap:12px; padding-bottom:14px; margin-bottom:16px; border-bottom:1px solid var(--line); font-size:14px; color:var(--ink-2); }
+        .pay-amount b { font-size:20px; color:var(--ink); letter-spacing:-.01em; }
+        .deposit-element { min-height:150px; }
+        .deposit-loading { font-size:13px; color:var(--ink-3); padding:20px 0; }
+        .pay-error { margin:12px 0 0; }
+        .demo-flag { display:inline-block; margin-bottom:12px; padding:4px 10px; border-radius:999px; background:#FFF4D6; color:#8A5A00; font-size:11.5px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; }
+        .demo-pay input[readonly] { color:var(--ink-3); }
+        .pay-retry { margin-top:12px; }
+        .pay-secure { display:flex; align-items:center; justify-content:center; gap:6px; font-size:12px; margin:14px 0 0; }
         .pay-card { max-width:520px; padding:24px; border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-md); background:var(--card); }
         .reassure { max-width:520px; margin-top:18px; display:flex; flex-direction:column; gap:10px; }
         .reassure-line { display:flex; align-items:center; gap:10px; font-size:14px; color:var(--ink-2); }
@@ -1832,13 +1994,29 @@ new #[Layout('layouts.checkout')] class extends Component {
                 <p class="lede">A $150 refundable deposit locks this exact {{ $vehicle->make }} {{ $vehicle->model }} so no one else can grab it while you finish. It comes straight off your total.</p>
 
                 <div class="pay-card">
-                    <div class="field"><label class="field-label">Name on card</label><input type="text" class="field-input" value="{{ $firstName }} {{ $lastName }}" readonly></div>
-                    <div class="field"><label class="field-label">Card number</label><input type="text" class="field-input" placeholder="1234 5678 9012 3456" inputmode="numeric"></div>
-                    <div class="field-row">
-                        <div class="field"><label class="field-label">Expiry</label><input type="text" class="field-input" placeholder="MM / YY"></div>
-                        <div class="field"><label class="field-label">CVC</label><input type="text" class="field-input" placeholder="123"></div>
-                    </div>
-                    <p class="muted" style="font-size:12px;text-align:center;margin:4px 0 0;">Securely processed · refundable any time before delivery</p>
+                    <div class="pay-amount"><span>Refundable deposit today</span><b>$150.00 CAD</b></div>
+                    @if ($paymentClientSecret && $paymentDemo)
+                        {{-- Demo mode (Platform settings → Payments): looks like the real thing, charges nothing. --}}
+                        <div class="demo-pay">
+                            <div class="demo-flag">Demo mode · no real charge</div>
+                            <div class="field"><label class="field-label">Card number</label><input type="text" class="field-input" value="4242 4242 4242 4242" readonly></div>
+                            <div class="field-row">
+                                <div class="field"><label class="field-label">Expiry</label><input type="text" class="field-input" value="12 / 34" readonly></div>
+                                <div class="field"><label class="field-label">CVC</label><input type="text" class="field-input" value="123" readonly></div>
+                            </div>
+                        </div>
+                    @elseif ($paymentClientSecret)
+                        {{-- Stripe's own card form (an iframe): card details go straight to Stripe, never through TruCars. --}}
+                        <div id="deposit-element" class="deposit-element" wire:ignore><div class="deposit-loading">Loading secure card form…</div></div>
+                    @endif
+                    <p id="deposit-error" class="field-error pay-error" role="alert" @if ($paymentError === '') hidden @endif>{{ $paymentError }}</p>
+                    @if (! $paymentClientSecret && ! \App\Support\Deposits::vehicleIsTaken($vehicle))
+                        <button type="button" class="btn btn-ghost pay-retry" wire:click="preparePayment" wire:loading.attr="disabled" wire:target="preparePayment">Try again</button>
+                    @endif
+                    <p class="muted pay-secure">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+                        {{ $paymentDemo ? 'Demo payment — nothing is charged' : 'Secured by Stripe · refundable any time before delivery' }}
+                    </p>
                 </div>
 
                 <div class="reassure">
@@ -2017,9 +2195,13 @@ new #[Layout('layouts.checkout')] class extends Component {
 
             <div class="paybar-cta">
                 @if ($this->stepKey() === 'reserve')
-                    <button type="button" class="btn btn-primary btn-lg" wire:click="reserve" wire:loading.attr="disabled" wire:target="reserve">
-                        <span wire:loading.remove wire:target="reserve">Pay $150 &amp; reserve →</span>
-                        <span wire:loading wire:target="reserve">Reserving…</span>
+                    <button type="button" class="btn btn-primary btn-lg"
+                            x-data="{ busy: false }"
+                            x-on:click="busy = true; window.truDeposit.pay($wire).finally(() => busy = false)"
+                            x-bind:disabled="busy"
+                            @disabled(! $paymentClientSecret)>
+                        <span x-show="! busy">Pay $150 &amp; reserve →</span>
+                        <span x-show="busy" x-cloak>Processing payment…</span>
                     </button>
                 @elseif ($this->stepKey() === 'done')
                     <a href="{{ route('garage') }}" wire:navigate class="btn btn-primary btn-lg">Open My Garage →</a>
@@ -2029,4 +2211,83 @@ new #[Layout('layouts.checkout')] class extends Component {
             </div>
         </div>
     </div>
+    {{--
+        The deposit card form. Stripe.js is loaded only here, the Payment
+        Element mounts when the server has an intent ready (deposit-ready),
+        and the browser confirms the payment with Stripe — 3-D Secure opens in
+        a pop-up, so the buyer never leaves checkout. Only then is reserve()
+        called, and the server re-checks the payment with Stripe itself.
+    --}}
+    @script
+    <script>
+        const publishableKey = @js(app(\App\Support\Deposits::class)->publishableKey());
+        let stripe = null;
+        let elements = null;
+
+        const loadStripe = () => window.Stripe ? Promise.resolve() : new Promise((resolve, reject) => {
+            let tag = document.querySelector('script[data-stripe-js]');
+            if (! tag) {
+                tag = Object.assign(document.createElement('script'), { src: 'https://js.stripe.com/v3/' });
+                tag.dataset.stripeJs = '';
+                document.head.appendChild(tag);
+            }
+            tag.addEventListener('load', () => resolve(), { once: true });
+            tag.addEventListener('error', () => reject(new Error('Stripe.js failed to load')), { once: true });
+        });
+
+        const showError = (message) => {
+            const box = document.getElementById('deposit-error');
+            if (box) { box.textContent = message; box.hidden = ! message; }
+        };
+
+        const mount = async (clientSecret) => {
+            if (! publishableKey || ! clientSecret) return;
+            try { await loadStripe(); } catch { showError('The secure card form couldn’t load. Check your connection and refresh the page.'); return; }
+
+            stripe ??= window.Stripe(publishableKey);
+            await new Promise((resolve) => requestAnimationFrame(resolve));
+            const target = document.getElementById('deposit-element');
+            if (! target) return;
+
+            const root = getComputedStyle(document.documentElement);
+            elements = stripe.elements({
+                clientSecret,
+                appearance: {
+                    theme: 'stripe',
+                    variables: {
+                        colorPrimary: root.getPropertyValue('--primary').trim() || '#0a7cff',
+                        fontFamily: getComputedStyle(document.body).fontFamily,
+                        borderRadius: '10px',
+                    },
+                },
+            });
+            target.innerHTML = '';
+            elements.create('payment', {
+                layout: 'tabs',
+                defaultValues: { billingDetails: { name: `${$wire.firstName} ${$wire.lastName}`.trim(), email: $wire.email } },
+            }).mount(target);
+        };
+
+        window.truDeposit = {
+            async pay(wire) {
+                showError('');
+                if ($wire.paymentDemo) { await wire.reserve(); return; }
+                if (! stripe || ! elements) { showError('The card form is still loading — try again in a second.'); return; }
+
+                const { error } = await stripe.confirmPayment({
+                    elements,
+                    redirect: 'if_required',
+                    confirmParams: { return_url: window.location.href },
+                });
+
+                if (error) { showError(error.message || 'Your card couldn’t be charged. Please try another card.'); return; }
+
+                await wire.reserve();
+            },
+        };
+
+        $wire.on('deposit-ready', ({ clientSecret }) => mount(clientSecret));
+        if ($wire.paymentClientSecret) mount($wire.paymentClientSecret);
+    </script>
+    @endscript
 </div>

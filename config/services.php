@@ -14,6 +14,16 @@ return [
     |
     */
 
+    // The $150 reservation deposit (App\Support\Deposits). The publishable key
+    // goes to the browser; the secret and webhook signing secret never do.
+    'stripe' => [
+        'key'            => env('STRIPE_KEY'),
+        'secret'         => env('STRIPE_SECRET'),
+        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+        // Until Platform settings → Payments says otherwise. Demo takes no money.
+        'default_mode'   => env('PAYMENTS_DEFAULT_MODE', 'demo'),
+    ],
+
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),
     ],

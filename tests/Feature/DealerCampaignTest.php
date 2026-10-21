@@ -204,6 +204,7 @@ class DealerCampaignTest extends TestCase
             ->set('firstName', 'Sam')
             ->set('lastName', 'Rivera')
             ->set('phone', '6045550100')
+            ->call('preparePayment')
             ->call('reserve');
 
         $deal = Deal::withoutGlobalScope(DealerScope::class)->sole();

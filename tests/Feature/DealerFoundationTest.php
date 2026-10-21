@@ -117,6 +117,7 @@ class DealerFoundationTest extends TestCase
         $checkout->set('handoverTimeSlot', '10:00')
             ->set('firstName', 'Sam')
             ->set('phone', '6045550100')
+            ->call('preparePayment')
             ->call('reserve');
 
         $deal = Deal::withoutGlobalScope(DealerScope::class)->sole();

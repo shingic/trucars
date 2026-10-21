@@ -20,7 +20,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(\App\Support\Payments\DepositGateway::class, \App\Support\Payments\StripeDepositGateway::class);
     }
 
     /**

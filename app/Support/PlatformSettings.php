@@ -42,9 +42,21 @@ final class PlatformSettings
         ],
     ];
 
+    /**
+     * Payments: demo or live. Has its own control on the settings page, not
+     * the text form above; see Deposits::demo().
+     */
+    public const PAYMENTS_MODE = 'payments_mode';
+    public const PAYMENTS_DEMO = 'demo';
+    public const PAYMENTS_LIVE = 'live';
+
     public static function get(string $key): string
     {
-        $default = self::DEFINITIONS[$key][2] ?? '';
+        $default = match ($key) {
+            // Demo until someone deliberately switches to live payments.
+            self::PAYMENTS_MODE => (string) config('services.stripe.default_mode', self::PAYMENTS_DEMO),
+            default             => self::DEFINITIONS[$key][2] ?? '',
+        };
 
         return self::stored()[$key] ?? $default;
     }

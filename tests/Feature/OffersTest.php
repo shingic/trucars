@@ -172,6 +172,7 @@ class OffersTest extends TestCase
 
         Livewire::test('pages::checkout', ['vehicle' => $car])
             ->set('firstName', 'Sam')->set('lastName', 'Rivera')->set('phone', '6045550100')
+            ->call('preparePayment')
             ->call('reserve');
 
         $offer->update(['apr' => 5.99]);

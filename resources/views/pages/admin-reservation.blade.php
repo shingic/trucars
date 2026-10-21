@@ -3,6 +3,7 @@
 use App\Models\AuditLog;
 use App\Models\Deal;
 use App\Models\Scopes\DealerScope;
+use App\Support\Deposits;
 use App\Support\Permission;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
@@ -11,10 +12,11 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 
 /*
-| Command Centre — one reservation, read-only (reservations.view). Shows the
-| seller as frozen at reserve time and the handover in the dealer's own
-| timezone. Opening it is audited. Nothing here changes the deal: the dealer
-| owns the sale.
+| Command Centre — one reservation (reservations.view). Shows the seller as
+| frozen at reserve time and the handover in the dealer's own timezone.
+| Opening it is audited. The dealer owns the sale; the one thing TruCars does
+| here is cancel a reservation and refund the $150 deposit it holds
+| (reservations.refund) — the buyer's right any time before delivery.
 */
 new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component {
     #[Locked]
@@ -30,12 +32,45 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
         AuditLog::record('reservation.viewed', $record, null, ['reference' => $record->reference, 'customer_user_id' => $record->user_id]);
     }
 
+    public string $cancelReason = '';
+
+    public string $statusMessage = '';
+
+    public function cancelAndRefund(Deposits $deposits): void
+    {
+        Gate::authorize(Permission::RESERVATIONS_REFUND);
+        $this->validate(['cancelReason' => ['required', 'string', 'min:5', 'max:500']], ['cancelReason.required' => 'Say why — it goes on the deal’s record.']);
+
+        $deal = $this->deal();
+        abort_if(in_array($deal->stage, ['cancelled', 'delivered'], true), 422);
+
+        $payment = $deal->depositPayment;
+        if ($payment !== null && $payment->status === \App\Models\DepositPayment::STATUS_PAID) {
+            try {
+                $deposits->refund($payment, $this->cancelReason);
+            } catch (\Throwable $e) {
+                report($e);
+                $this->addError('cancelReason', 'Stripe didn’t accept the refund, so nothing was changed. Try again, or refund it in the Stripe dashboard. (' . $e->getMessage() . ')');
+
+                return;
+            }
+        }
+
+        $before = $deal->stage;
+        $deal->forceFill(['stage' => 'cancelled'])->save();
+        $deal->recordActivity('system', 'Reservation cancelled by TruCars — ' . $this->cancelReason, auth()->user()->name);
+        AuditLog::record('reservation.cancelled', $deal, ['stage' => $before], ['stage' => 'cancelled', 'reason' => $this->cancelReason, 'deposit_refunded' => $payment?->fresh()->status === \App\Models\DepositPayment::STATUS_REFUNDED]);
+
+        $this->cancelReason = '';
+        $this->statusMessage = $payment ? 'Cancelled. The $150 deposit is on its way back to the customer’s card.' : 'Cancelled. This reservation has no card deposit on file to refund.';
+    }
+
     public function deal(): Deal
     {
         Gate::authorize(Permission::RESERVATIONS_VIEW);
 
         return Deal::withoutGlobalScope(DealerScope::class)
-            ->with(['vehicle', 'dealer', 'user', 'activities' => fn ($query) => $query->latest()])
+            ->with(['vehicle', 'dealer', 'user', 'depositPayment', 'activities' => fn ($query) => $query->latest()])
             ->findOrFail($this->dealId);
     }
 }; ?>
@@ -60,6 +95,15 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
         .act:last-child { border-bottom:none; }
         .act .meta { font-size:11.5px; color:var(--ink-3); margin-top:2px; }
         .kv a { color:var(--primary); font-weight:700; }
+        .meta-line { font-size:12px; color:var(--ink-3); margin-top:3px; }
+        .mono { font-family:var(--mono); }
+        .rd-msg { background:var(--good-soft); color:var(--good-ink); border-radius:var(--radius-sm); padding:11px 15px; font-size:13.5px; font-weight:600; margin-bottom:16px; max-width:980px; }
+        .refund { padding:15px 20px; font-size:13.5px; color:var(--ink-2); }
+        .refund p { margin:0 0 10px; }
+        .refund textarea { width:100%; border:1px solid var(--line-strong); border-radius:var(--radius-sm); padding:9px 12px; font:inherit; font-size:13.5px; resize:vertical; background:var(--card); color:var(--ink); }
+        .refund .err { color:var(--bad, #c0392b); font-size:12.5px; font-weight:600; margin-top:6px; }
+        .btn-danger { margin-top:10px; border-radius:var(--radius-pill); padding:9px 16px; font-size:13.5px; font-weight:700; background:#C0392B; color:#fff; }
+        .btn-danger:disabled { opacity:.6; }
         @media (max-width:860px){ .rd-grid { grid-template-columns:1fr; } }
     </style>
 @endpush
@@ -70,8 +114,10 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
 <div>
     <div class="rd-head">
         <h1>{{ $deal->reference }}</h1>
-        <p>{{ $deal->stage_label }} · reserved {{ $deal->created_at->format('M j, Y') }} · read-only</p>
+        <p>{{ $deal->stage_label }} · reserved {{ $deal->created_at->format('M j, Y') }}</p>
     </div>
+
+    @if ($statusMessage !== '') <div class="rd-msg">{{ $statusMessage }}</div> @endif
 
     <div class="rd-grid">
         <div class="card">
@@ -103,7 +149,19 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
             <div class="card-head">Plan &amp; handover</div>
             <div class="kv">
                 <span class="k">Purchase</span><span>{{ ucfirst($deal->purchase_type) }}@if ($deal->term_months) · {{ $deal->term_months }} months @endif</span>
-                <span class="k">Deposit</span><span>${{ number_format($deal->deposit_in_cents / 100, 2) }} · {{ $deal->deposit_status }}</span>
+                <span class="k">Deposit</span>
+                <span>
+                    ${{ number_format($deal->deposit_in_cents / 100, 2) }} · {{ $deal->deposit_status }}
+                    @if ($deal->depositPayment)
+                        <div class="meta-line">
+                            @if ($deal->depositPayment->isDemo())
+                                Demo mode — no card was charged
+                            @else
+                                Card via Stripe · <span class="mono">{{ $deal->depositPayment->stripe_payment_intent_id }}</span>
+                            @endif
+                        </div>
+                    @endif
+                </span>
                 <span class="k">Handover</span><span>{{ $deal->handover_summary }}</span>
             </div>
         </div>
@@ -114,6 +172,23 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
                 <span class="k">Verified</span><span>{{ $deal->identity_verified_at ? $deal->identity_verified_at->format('M j, Y') : 'No' }}</span>
             </div>
         </div>
+
+        @can('reservations.refund')
+            @unless (in_array($deal->stage, ['cancelled', 'delivered'], true))
+                <div class="card wide">
+                    <div class="card-head">Cancel &amp; refund</div>
+                    <div class="refund">
+                        <p>The customer can cancel any time before delivery. This cancels the reservation, releases the car, and {{ $deal->depositPayment ? 'refunds the $' . number_format($deal->deposit_in_cents / 100) . ' deposit to their card' : 'records it — there’s no card deposit on file to refund' }}.</p>
+                        <textarea wire:model="cancelReason" rows="2" placeholder="Reason (goes on the deal’s record), e.g. Customer changed their mind"></textarea>
+                        @error('cancelReason') <div class="err">{{ $message }}</div> @enderror
+                        <button type="button" class="btn-danger" wire:click="cancelAndRefund" wire:loading.attr="disabled" wire:target="cancelAndRefund"
+                                wire:confirm="Cancel {{ $deal->reference }}{{ $deal->depositPayment ? ' and refund the deposit' : '' }}? This can’t be undone.">
+                            {{ $deal->depositPayment ? 'Cancel & refund $' . number_format($deal->deposit_in_cents / 100) : 'Cancel reservation' }}
+                        </button>
+                    </div>
+                </div>
+            @endunless
+        @endcan
 
         <div class="card wide">
             <div class="card-head">Activity</div>

@@ -11,6 +11,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Stripe signs its webhooks instead (StripeWebhookController).
+        $middleware->validateCsrfTokens(except: ['stripe/webhook']);
+
         // Each host has its own sign-in page — send a guest to the one for the
         // portal they were trying to reach.
         $middleware->redirectGuestsTo(fn (\Illuminate\Http\Request $request) => match ($request->getHost()) {

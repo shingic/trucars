@@ -16,6 +16,7 @@ final class Permission
     public const CUSTOMERS_VIEW = 'customers.view';
     public const CUSTOMERS_ASSIST = 'customers.assist';
     public const RESERVATIONS_VIEW = 'reservations.view';
+    public const RESERVATIONS_REFUND = 'reservations.refund';
     public const DEALERS_VIEW = 'dealers.view';
     public const DEALERS_MANAGE = 'dealers.manage';
     public const DEALER_USERS_MANAGE = 'dealer_users.manage';
@@ -29,6 +30,7 @@ final class Permission
         self::CUSTOMERS_VIEW      => ['Customers — view', 'Look up customer accounts and their contact details.'],
         self::CUSTOMERS_ASSIST    => ['Customers — assist', 'Limited support actions on a customer’s behalf.'],
         self::RESERVATIONS_VIEW   => ['Reservations — view', 'See reservations across dealers.'],
+        self::RESERVATIONS_REFUND => ['Reservations — cancel & refund', 'Cancel a reservation and refund the customer’s $150 deposit.'],
         self::DEALERS_VIEW        => ['Dealers — view', 'See dealer profiles and addresses.'],
         self::DEALERS_MANAGE      => ['Dealers — manage', 'Create, edit, activate and suspend dealers.'],
         self::DEALER_USERS_MANAGE => ['Dealer users — manage', 'Invite, suspend and reinstate dealer staff.'],
@@ -41,6 +43,7 @@ final class Permission
     /** Holding the key on the left implies holding those on the right. */
     private const IMPLIES = [
         self::CUSTOMERS_ASSIST => [self::CUSTOMERS_VIEW],
+        self::RESERVATIONS_REFUND => [self::RESERVATIONS_VIEW],
         self::DEALERS_MANAGE   => [self::DEALERS_VIEW],
         self::DEALER_USERS_MANAGE => [self::DEALERS_VIEW],
         self::INVENTORY_MANAGE    => [self::DEALERS_VIEW],

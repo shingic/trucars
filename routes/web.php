@@ -55,6 +55,11 @@ Route::domain($publicDomain)->middleware(TreatNonCustomersAsGuests::class)->grou
     Route::livewire('/cars/{vehicle}/reserve', 'pages::checkout')
         ->name('checkout');
 
+    // Stripe's events for the $150 deposit (signed; no session or CSRF).
+    Route::post('/stripe/webhook', \App\Http\Controllers\StripeWebhookController::class)
+        ->withoutMiddleware(TreatNonCustomersAsGuests::class)
+        ->name('stripe.webhook');
+
     Route::livewire('/login', 'pages::buyer-login')->name('buyer.login');
     Route::livewire('/register', 'pages::buyer-register')->name('buyer.register');
 
