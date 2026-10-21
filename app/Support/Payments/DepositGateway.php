@@ -27,6 +27,9 @@ interface DepositGateway
 
     public function cancelIntent(string $intentId): void;
 
+    /** Try the secret key against the processor: null when it works, else what went wrong. */
+    public function connectionError(): ?string;
+
     /** Refund the whole intent. Returns the refund id. */
     public function refund(string $intentId, string $idempotencyKey): string;
 }

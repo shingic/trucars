@@ -50,6 +50,13 @@ class FakeDepositGateway implements DepositGateway
         $this->intents[$intentId]['status'] = 'canceled';
     }
 
+    public ?string $connectionError = null;
+
+    public function connectionError(): ?string
+    {
+        return $this->connectionError;
+    }
+
     public function refund(string $intentId, string $idempotencyKey): string
     {
         $this->refunds[] = $intentId;

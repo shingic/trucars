@@ -235,6 +235,51 @@ class Deposits
         return $handled;
     }
 
+    /**
+     * Each piece of the Stripe setup, checked: key => [ok, message]. Calls
+     * Stripe once to prove the secret key works.
+     *
+     * @return array<string, array{0: bool, 1: string}>
+     */
+    public function connectionReport(): array
+    {
+        $publishable = (string) config('services.stripe.key');
+        $secret = (string) config('services.stripe.secret');
+        $webhookSecret = (string) config('services.stripe.webhook_secret');
+        $modeOf = fn (string $key) => str_contains($key, '_live_') ? 'live' : 'test';
+
+        $report = [];
+
+        $report['Publishable key'] = match (true) {
+            $publishable === ''                  => [false, 'Missing — add STRIPE_KEY (starts with pk_).'],
+            ! str_starts_with($publishable, 'pk_') => [false, 'This isn’t a publishable key — it should start with pk_.'],
+            default                              => [true, 'Set (' . $modeOf($publishable) . ' mode).'],
+        };
+
+        if ($secret === '') {
+            $report['Secret key'] = [false, 'Missing — add STRIPE_SECRET (your rk_ restricted key).'];
+        } elseif (! str_starts_with($secret, 'rk_') && ! str_starts_with($secret, 'sk_')) {
+            $report['Secret key'] = [false, 'This isn’t a secret key — it should start with rk_.'];
+        } else {
+            $error = $this->gateway->connectionError();
+            $report['Secret key'] = $error === null ? [true, 'Connected to Stripe (' . $modeOf($secret) . ' mode).'] : [false, $error];
+        }
+
+        if ($publishable !== '' && $secret !== '' && $modeOf($publishable) !== $modeOf($secret)) {
+            $report['Keys match'] = [false, 'One key is test and the other is live — both must be from the same mode.'];
+        }
+
+        $lastSeen = PlatformSettings::get(PlatformSettings::STRIPE_WEBHOOK_LAST_SEEN);
+        $report['Webhook'] = match (true) {
+            $webhookSecret === ''                      => [false, 'Missing — add STRIPE_WEBHOOK_SECRET (starts with whsec_).'],
+            ! str_starts_with($webhookSecret, 'whsec_') => [false, 'This isn’t a signing secret — it should start with whsec_.'],
+            $lastSeen === ''                           => [true, 'Signing secret set. No events received yet — they arrive after the first test payment.'],
+            default                                    => [true, 'Working — last event received ' . \Illuminate\Support\Carbon::parse($lastSeen)->diffForHumans() . '.'],
+        };
+
+        return $report;
+    }
+
     /** Someone else's live reservation already holds this car. */
     public static function vehicleIsTaken(Vehicle $vehicle, ?int $exceptDealId = null): bool
     {

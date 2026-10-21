@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DepositPayment;
 use App\Support\Deposits;
+use App\Support\PlatformSettings;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Stripe\Exception\SignatureVerificationException;
@@ -29,6 +30,9 @@ class StripeWebhookController extends Controller
         } catch (SignatureVerificationException|UnexpectedValueException) {
             return response('Invalid signature', 400);
         }
+
+        // Shown on Platform settings → Payments as proof the webhook works.
+        PlatformSettings::put(PlatformSettings::STRIPE_WEBHOOK_LAST_SEEN, now()->toIso8601String(), null);
 
         $object = $event->data->object;
         $intentId = match ($event->type) {

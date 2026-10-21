@@ -54,6 +54,15 @@ new #[Layout('layouts.dealer')] #[Title('Platform settings')] class extends Comp
             : 'Demo mode on — checkout works, but no card is charged.';
     }
 
+    /** @var array<string, array{0: bool, 1: string}> */
+    public array $connection = [];
+
+    public function checkConnection(Deposits $deposits): void
+    {
+        Gate::authorize(Permission::SETTINGS_MANAGE);
+        $this->connection = $deposits->connectionReport();
+    }
+
     public function save(): void
     {
         Gate::authorize(Permission::SETTINGS_MANAGE);
@@ -122,6 +131,16 @@ new #[Layout('layouts.dealer')] #[Title('Platform settings')] class extends Comp
         .mode.on { border-color:var(--primary); box-shadow:0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent); }
         .mode:disabled { opacity:.55; cursor:not-allowed; }
         .keys-note { font-size:12.5px; color:var(--ink-3); }
+        .conn { border-top:1px solid var(--line); padding-top:14px; display:grid; gap:8px; }
+        .conn-head { display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:14px; }
+        .btn-ghost { font-size:13px; font-weight:700; border:1px solid var(--line-strong); border-radius:var(--radius-pill); padding:7px 14px; background:var(--card); color:var(--ink); }
+        .conn-row { display:grid; grid-template-columns:22px 130px 1fr; gap:8px; align-items:start; font-size:13px; }
+        .conn-icon { width:20px; height:20px; border-radius:50%; display:grid; place-items:center; font-size:11px; font-weight:800; }
+        .conn-icon.ok { background:var(--good-soft); color:var(--good-ink); }
+        .conn-icon.bad { background:#FDE8E6; color:#B42318; }
+        .conn-part { font-weight:700; }
+        .conn-msg { color:var(--ink-2); }
+        @media (max-width:640px) { .conn-row { grid-template-columns:22px 1fr; } .conn-msg { grid-column:2; } }
         @media (max-width:640px) { .modes { grid-template-columns:1fr; } }
     </style>
 @endpush
@@ -165,6 +184,23 @@ new #[Layout('layouts.dealer')] #[Title('Platform settings')] class extends Comp
         @unless ($liveReady)
             <div class="keys-note">Live needs the Stripe keys (STRIPE_KEY, STRIPE_SECRET) in the server’s .env.</div>
         @endunless
+
+        <div class="conn">
+            <div class="conn-head">
+                <b>Stripe connection</b>
+                <button type="button" class="btn-ghost" wire:click="checkConnection" wire:loading.attr="disabled" wire:target="checkConnection">
+                    <span wire:loading.remove wire:target="checkConnection">{{ $connection ? 'Check again' : 'Check connection' }}</span>
+                    <span wire:loading wire:target="checkConnection">Checking…</span>
+                </button>
+            </div>
+            @foreach ($connection as $part => [$ok, $message])
+                <div class="conn-row">
+                    <span class="conn-icon {{ $ok ? 'ok' : 'bad' }}">{{ $ok ? '✓' : '✕' }}</span>
+                    <span class="conn-part">{{ $part }}</span>
+                    <span class="conn-msg">{{ $message }}</span>
+                </div>
+            @endforeach
+        </div>
     </div>
 
     <form class="card" wire:submit="save">

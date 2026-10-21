@@ -55,6 +55,22 @@ class StripeDepositGateway implements DepositGateway
         $this->client()->paymentIntents->cancel($intentId);
     }
 
+    public function connectionError(): ?string
+    {
+        try {
+            // The cheapest call the restricted key is allowed to make.
+            $this->client()->paymentIntents->all(['limit' => 1]);
+
+            return null;
+        } catch (\Stripe\Exception\AuthenticationException) {
+            return 'Stripe rejected the secret key — check STRIPE_SECRET was copied in full.';
+        } catch (\Stripe\Exception\PermissionException) {
+            return 'The restricted key is missing a permission — set PaymentIntents and Refunds to Write.';
+        } catch (\Throwable $e) {
+            return 'Couldn’t reach Stripe: ' . $e->getMessage();
+        }
+    }
+
     public function refund(string $intentId, string $idempotencyKey): string
     {
         return $this->client()->refunds->create(['payment_intent' => $intentId], ['idempotency_key' => $idempotencyKey])->id;

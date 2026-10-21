@@ -209,6 +209,7 @@ class DepositPaymentTest extends TestCase
 
         $this->assertSame('refunded', $deal->fresh()->deposit_status);
         $this->assertSame('re_dash', $deal->depositPayment->fresh()->stripe_refund_id);
+        $this->assertNotSame('', \App\Support\PlatformSettings::get('stripe_webhook_last_seen'), 'shown as proof the webhook works');
     }
 
     public function test_demo_mode_reserves_without_touching_stripe(): void
@@ -247,6 +248,23 @@ class DepositPaymentTest extends TestCase
 
         $this->actingAs(User::factory()->create(['role' => User::ROLE_INTERNAL_STAFF, 'permissions' => [Permission::RESERVATIONS_VIEW]]));
         Livewire::test('pages::admin-settings')->assertForbidden();
+    }
+
+    public function test_the_connection_check_reports_each_part(): void
+    {
+        config(['services.stripe.key' => 'pk_test_abc', 'services.stripe.secret' => 'rk_live_abc', 'services.stripe.webhook_secret' => '']);
+        $this->actingAs(User::factory()->owner()->create());
+
+        Livewire::test('pages::admin-settings')->call('checkConnection')
+            ->assertSee('Connected to Stripe (live mode).')
+            ->assertSee('One key is test and the other is live')
+            ->assertSee('Missing — add STRIPE_WEBHOOK_SECRET');
+
+        config(['services.stripe.secret' => 'rk_test_abc', 'services.stripe.webhook_secret' => 'whsec_abc']);
+        $this->stripe->connectionError = 'Stripe rejected the secret key — check STRIPE_SECRET was copied in full.';
+        Livewire::test('pages::admin-settings')->call('checkConnection')
+            ->assertSee('Stripe rejected the secret key')
+            ->assertSee('No events received yet');
     }
 
     private function checkout()

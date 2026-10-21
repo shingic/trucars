@@ -50,6 +50,9 @@ final class PlatformSettings
     public const PAYMENTS_DEMO = 'demo';
     public const PAYMENTS_LIVE = 'live';
 
+    /** When the last signed Stripe webhook arrived (set by StripeWebhookController). */
+    public const STRIPE_WEBHOOK_LAST_SEEN = 'stripe_webhook_last_seen';
+
     public static function get(string $key): string
     {
         $default = match ($key) {
