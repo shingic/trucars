@@ -24,19 +24,17 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
     {
         $listed = Vehicle::query()->listed();
 
-        // Only cars with a photo make the homepage; a few spare in case a feed sent an empty photo list.
-        $latest = (clone $listed)->whereNotNull('photos')->with('dealer')->withReservedFlag()->latest('vehicles.created_at')->limit(16)->get()
-            ->filter(fn (Vehicle $vehicle) => $vehicle->primary_photo_url !== null)->take(8)->values();
         $activeDealers = Dealer::where('status', Dealer::STATUS_ACTIVE)->whereHas('vehicles', fn ($vehicles) => $vehicles->where('is_published', true));
         $featured = $this->showcase($listed);
+        $closer = $this->showcase($listed, except: $featured);
 
         return [
             'carCount'    => (clone $listed)->count(),
             'dealerCount' => (clone $activeDealers)->count(),
             'cityCount'   => (clone $activeDealers)->distinct()->count('city'),
-            'latest'      => $latest,
+            'mix'         => $this->mix($listed, 8),
             'featured'    => $featured,
-            'closer'      => $this->showcase($listed, except: $featured),
+            'closer'      => $closer,
             'bodyTypes'   => $this->countsBy($listed, 'body_type', 4),
             'makes'       => $this->countsBy($listed, 'make', 10),
             'under'       => (clone $listed)->where('price_in_cents', '<', 2500000)->count(),
@@ -63,6 +61,33 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
         return (clone $withPhotos)->where('vehicles.dealer_id', $dealerId)->with('dealer')
             ->inRandomOrder()->limit(5)->get()
             ->first(fn (Vehicle $vehicle) => $vehicle->primary_photo_url !== null);
+    }
+
+    /**
+     * Random cars with photos for the "On the lot now" row, dealt out like
+     * cards: every dealer gets one before anyone gets a second, so a dealer
+     * whose whole feed just uploaded can't fill the row on their own.
+     */
+    private function mix($listed, int $count): Collection
+    {
+        $withPhotos = (clone $listed)->whereNotNull('photos');
+
+        $hands = (clone $withPhotos)->distinct()->pluck('vehicles.dealer_id')->shuffle()->take($count)
+            ->map(fn ($dealerId) => (clone $withPhotos)->where('vehicles.dealer_id', $dealerId)->with('dealer')->withReservedFlag()
+                ->inRandomOrder()->limit($count + 2)->get()
+                ->filter(fn (Vehicle $vehicle) => $vehicle->primary_photo_url !== null)->values());
+
+        $dealt = collect();
+        for ($round = 0; $dealt->count() < $count && $hands->contains(fn ($hand) => $hand->has($round)); $round++) {
+            foreach ($hands as $hand) {
+                if ($hand->has($round)) {
+                    $dealt->push($hand[$round]);
+                }
+            }
+        }
+
+        // Whole rows only, so the grid never ends on a half-empty line.
+        return $dealt->take($dealt->count() >= 4 ? intdiv(min($dealt->count(), $count), 4) * 4 : $dealt->count());
     }
 
     private function countsBy($listed, string $column, int $limit): Collection
@@ -307,16 +332,16 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
         <div class="fact"><span class="badge mint">{!! $icon('key') !!}</span><div><b>Hold it for $150</b><span>Refundable until you take delivery.</span></div></div>
     </div>
 
-    {{-- NEW CARS --}}
-    @if ($latest->isNotEmpty())
+    {{-- ON THE LOT NOW --}}
+    @if ($mix->isNotEmpty())
         <section>
             <div class="sec-head">
-                <div><h2>New on TruCars</h2><p>The latest cars dealers have listed.</p></div>
+                <div><h2>On the lot now</h2><p>A mix from our dealers. It changes every visit.</p></div>
                 <a href="{{ route('shop') }}" wire:navigate>See all {{ number_format($carCount) }} cars</a>
             </div>
             <div class="cars">
-                @foreach ($latest as $listing)
-                    <a class="car" href="/cars/{{ $listing->id }}" wire:navigate wire:key="latest-{{ $listing->id }}">
+                @foreach ($mix as $listing)
+                    <a class="car" href="/cars/{{ $listing->id }}" wire:navigate wire:key="mix-{{ $listing->id }}">
                         <div class="car-photo" style="background-image:url('{{ $listing->primary_photo_url }}')">
                             @if ($listing->is_reserved)<span class="reserved">Reserved</span>@endif
                         </div>
