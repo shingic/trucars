@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Dealer;
+use App\Models\InspectionProgram;
 use App\Models\Vehicle;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
@@ -76,6 +77,43 @@ class HomepageTest extends TestCase
             $this->assertCount(8, $mix);
             $this->assertSame(8, $mix->pluck('id')->unique()->count());
             $this->assertTrue($mix->contains('model', 'Rogue'));
+        }
+    }
+
+    public function test_certified_pre_owned_shows_a_real_checklist_for_a_brand_on_the_lot(): void
+    {
+        $this->car(['model' => 'Outlander', 'is_manufacturer_certified' => true, 'photos' => ['https://example.test/outlander.jpg']]);
+        $this->checklist('Mitsubishi', 'Mitsubishi Diamond Certified', ['Engine' => 3, 'Brakes' => 2]);
+        // A Honda trade-in at the Mitsubishi store isn't covered by Honda's checklist.
+        $this->car(['make' => 'Honda', 'model' => 'Civic', 'photos' => ['https://example.test/civic.jpg']]);
+        $this->checklist('Honda', 'Honda Certified', ['Engine' => 9]);
+
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('No haggling. No pressure.')
+            ->assertSee('Certified Pre-Owned, checked point by point')
+            ->assertSee('Mitsubishi Diamond Certified')
+            ->assertSee('5-point inspection')
+            ->assertDontSee('Honda Certified')
+            ->assertSeeInOrder(['>1<', 'manufacturer-certified car listed right now'], false);
+    }
+
+    public function test_no_checklist_is_shown_when_none_is_set_up(): void
+    {
+        $this->car(['model' => 'Outlander', 'photos' => ['https://example.test/outlander.jpg']]);
+
+        $this->get('/')->assertOk()->assertSee('Certified Pre-Owned, checked point by point')
+            ->assertDontSee('-point inspection')->assertDontSee('manufacturer-certified');
+    }
+
+    /** @param  array<string, int>  $sections  section → number of points */
+    private function checklist(string $make, string $name, array $sections): void
+    {
+        $program = InspectionProgram::create(['make' => $make, 'name' => $name]);
+        foreach ($sections as $section => $count) {
+            foreach (range(1, $count) as $i) {
+                $program->points()->create(['section' => $section, 'label' => "{$section} {$i}", 'position' => $i]);
+            }
         }
     }
 
