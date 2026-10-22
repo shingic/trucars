@@ -57,8 +57,15 @@ class FakeDepositGateway implements DepositGateway
         return $this->connectionError;
     }
 
+    /** Set to make the next refund fail the way a Stripe outage would. */
+    public bool $refundFails = false;
+
     public function refund(string $intentId, string $idempotencyKey): string
     {
+        if ($this->refundFails) {
+            throw new \RuntimeException('Stripe is unreachable.');
+        }
+
         $this->refunds[] = $intentId;
 
         return 're_fake_' . count($this->refunds);

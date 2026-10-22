@@ -2,8 +2,10 @@
 
 use App\Mail\DocumentReuploadRequested;
 use App\Mail\FinancingApproved;
+use App\Mail\MoreInfoRequested;
 use App\Models\Deal;
 use App\Models\DealDocument;
+use App\Support\Deposits;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -50,6 +52,28 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
     public string $financingFirstPaymentOn = '';
 
     public bool $editingFinancing = false;
+
+    /** Which extra item the "Ask for more" box is open for (a preset key or 'other'); null when closed. */
+    public ?string $asking = null;
+
+    public string $askName = '';
+
+    public string $askNote = '';
+
+    /** The decline box: an internal reason for the record, an optional note for the buyer. */
+    public bool $declining = false;
+
+    public string $declineReason = '';
+
+    public string $declineNote = '';
+
+    /** Common extras a lender comes back for, with the instructions the buyer sees. */
+    public const EXTRA_REQUESTS = [
+        'bank_statement'    => ['Bank statement', 'Your most recent month. The PDF from online banking works.'],
+        'proof_of_address'  => ['Proof of address', 'A bill or statement from the last 3 months showing your name and address.'],
+        'employment_letter' => ['Employment letter', 'On company letterhead, with your job title, start date and pay.'],
+        'pay_stub'          => ['Another pay stub', 'Your most recent one.'],
+    ];
 
     public function mount(Deal $deal): void
     {
@@ -132,6 +156,107 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
         $this->deal->emailBuyer(new FinancingApproved($this->deal, $updated), $updated ? 'Updated financing terms' : 'Financing approval');
 
         $this->editingFinancing = false;
+    }
+
+    /** Open the "Ask for more" box for a preset item, or 'other' to type one in. */
+    public function startAsking(string $kind): void
+    {
+        $this->asking = $kind === 'other' || isset(self::EXTRA_REQUESTS[$kind]) ? $kind : null;
+        $this->askName = self::EXTRA_REQUESTS[$kind][0] ?? '';
+        $this->askNote = '';
+        $this->resetValidation();
+    }
+
+    public function cancelAsking(): void
+    {
+        $this->asking = null;
+        $this->resetValidation();
+    }
+
+    /**
+     * Add an item to the buyer's checklist and email them for it. It behaves
+     * like any other document: an Upload button in My Garage, a reminder if
+     * it's still missing two days later, approve or send back once it's in.
+     */
+    public function requestMore(): void
+    {
+        if ($this->asking === null || in_array($this->deal->stage, ['cancelled', 'delivered'], true)) {
+            return;
+        }
+
+        $this->validate([
+            'askName' => ['required', 'string', 'max:80'],
+            'askNote' => ['nullable', 'string', 'max:200'],
+        ], attributes: ['askName' => 'what you need', 'askNote' => 'note']);
+
+        $note = trim($this->askNote);
+
+        $document = $this->deal->documents()->create([
+            'slug'         => 'extra_' . Str::lower(Str::random(8)),
+            'name'         => trim($this->askName),
+            'status'       => $note !== '' ? $note : (self::EXTRA_REQUESTS[$this->asking][1] ?? 'Requested by the dealership'),
+            'sort_order'   => (int) $this->deal->documents()->max('sort_order') + 1,
+            'requested_at' => now(),
+        ]);
+
+        $this->deal->recordActivity('document', 'Asked the buyer for ' . $document->name . '.', Auth::user()->name ?? 'Dealer', 'outbound');
+        $this->deal->emailBuyer(new MoreInfoRequested($this->deal, $document), 'Request for ' . $document->name);
+
+        $this->asking = null;
+    }
+
+    /** Take back an extra request the buyer hasn't answered yet (asked by mistake, or no longer needed). */
+    public function withdrawRequest(int $documentId): void
+    {
+        $document = $this->deal->documents()->whereKey($documentId)->whereNull('file_path')->first();
+
+        if ($document === null || ! str_starts_with($document->slug, 'extra_')) {
+            return;
+        }
+
+        $document->delete();
+        $this->deal->recordActivity('document', 'Withdrew the request for ' . $document->name . '.', Auth::user()->name ?? 'Dealer');
+    }
+
+    public function startDecline(): void
+    {
+        $this->declining = true;
+        $this->resetValidation();
+    }
+
+    public function cancelDecline(): void
+    {
+        $this->declining = false;
+        $this->resetValidation();
+    }
+
+    /**
+     * Decline the reservation and refund the $150 to the buyer's card. The
+     * refund goes first; if Stripe refuses it nothing changes, so the buyer is
+     * never left with a cancelled reservation and their money still held.
+     */
+    public function declineDeal(Deposits $deposits): void
+    {
+        $this->validate([
+            'declineReason' => ['required', 'string', 'min:5', 'max:500'],
+            'declineNote'   => ['nullable', 'string', 'max:500'],
+        ], ['declineReason.required' => 'Say why. It stays on the deal’s record and isn’t sent to the buyer.'], ['declineReason' => 'reason', 'declineNote' => 'note']);
+
+        if (in_array($this->deal->stage, ['cancelled', 'delivered'], true)) {
+            return;
+        }
+
+        try {
+            $deposits->cancelReservation($this->deal, trim($this->declineReason), byDealer: true, noteToBuyer: trim($this->declineNote) ?: null);
+        } catch (\Throwable $refundFailure) {
+            report($refundFailure);
+            $this->addError('declineReason', 'The refund didn’t go through, so nothing was changed. Try again in a minute, or contact TruCars.');
+
+            return;
+        }
+
+        $this->deal->refresh();
+        $this->declining = false;
     }
 
     private function fillFinancingForm(): void
@@ -358,6 +483,7 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
                 'status'        => $document->status,
                 'uploadedLabel' => $document->uploaded_at?->diffForHumans(),
                 'state'         => $this->documentState($document),
+                'withdrawable'  => str_starts_with($document->slug, 'extra_') && $document->file_path === null,
             ];
         });
     }
@@ -474,9 +600,6 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
         .doc-status { font-size:12px; color:var(--ink-3); margin-top:2px; }
         .doc-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; flex-shrink:0; }
 
-        .fin-block { margin-top:16px; padding-top:14px; border-top:1px solid var(--line); }
-        .fin-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; }
-        .fin-head h4 { margin:0; font-size:13.5px; font-weight:800; }
         .fin-form { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px; }
         .fin-form label { display:flex; flex-direction:column; gap:5px; font-size:12px; font-weight:600; color:var(--ink-2); min-width:0; }
         .fin-form label.wide, .fin-actions { grid-column:1 / -1; }
@@ -484,6 +607,24 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
         .fin-form input:focus, .fin-form select:focus { border-color:var(--primary); box-shadow:0 0 0 4px var(--primary-soft); }
         .fin-err { font-size:12px; color:var(--primary-press); font-weight:600; }
         .fin-actions { display:flex; gap:9px; justify-content:flex-end; }
+
+        .ask { margin-top:14px; padding-top:14px; border-top:1px dashed var(--line-strong); }
+        .ask-label { font-size:12.5px; font-weight:700; color:var(--ink-2); margin-bottom:9px; }
+        .ask-chips { display:flex; flex-wrap:wrap; gap:7px; }
+        .ask-chip { font-size:12.5px; font-weight:600; color:var(--ink); background:var(--bg); border:1.5px solid var(--line); border-radius:var(--radius-pill); padding:6px 12px; transition:border-color .15s ease; }
+        .ask-chip:hover { border-color:var(--ink-3); }
+        .ask-chip.on { border-color:var(--primary); color:var(--primary); background:var(--primary-soft); }
+        .ask-box { display:grid; gap:12px; margin-top:12px; background:var(--bg); border:1px solid var(--line); border-radius:var(--radius-sm); padding:13px; }
+        .ask-box label, .decline-form label { display:flex; flex-direction:column; gap:5px; font-size:12px; font-weight:600; color:var(--ink-2); }
+        .ask-box input, .decline-form textarea { width:100%; border:1.5px solid var(--line-strong); border-radius:10px; padding:9px 11px; font-size:13.5px; font-family:inherit; color:var(--ink); background:var(--card); outline:none; resize:vertical; }
+        .ask-box input:focus, .decline-form textarea:focus { border-color:var(--primary); box-shadow:0 0 0 4px var(--primary-soft); }
+
+        .decline-form { display:grid; gap:12px; }
+        .mini-btn.danger { color:#B42318; border-color:rgba(180,35,24,.35); }
+        .mini-btn.danger:hover { background:#FEF3F2; }
+        .mini-btn.danger[type="submit"] { background:#B42318; color:#fff; border-color:#B42318; }
+        .decline-done .panel-body { font-size:13px; line-height:1.55; color:var(--ink-2); background:#FEF3F2; }
+        .decline-done b { color:#B42318; }
         @media (max-width:560px) { .fin-form { grid-template-columns:1fr; } }
 
         .mini-btn { font-size:12px; font-weight:700; padding:7px 12px; border-radius:var(--radius-pill); white-space:nowrap; transition:all .15s ease; border:1.5px solid transparent; }
@@ -612,6 +753,210 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
                 </div>
             </div>
 
+            {{-- Payment: the bank's approval as it came back, entered by F&I and shown to the buyer --}}
+            <div class="panel">
+                <div class="panel-head">
+                    <h3>Payment</h3>
+                    @if ($this->takesFinancing() && $deal->hasFinancingApproval() && ! $editingFinancing)
+                        <button type="button" class="mini-btn ghost" wire:click="editFinancing">Edit</button>
+                    @else
+                        <span class="ph-right">{{ $this->takesFinancing() ? 'Bank approval' : 'Cash purchase' }}</span>
+                    @endif
+                </div>
+                <div class="panel-body">
+                    @if ($this->takesFinancing())
+                        @if ($deal->hasFinancingApproval() && ! $editingFinancing)
+                            <div class="kv">
+                                <div class="row"><span class="k">Lender</span><span class="v">{{ $deal->financing_lender }}</span></div>
+                                <div class="row"><span class="k">Payment</span><span class="v">${{ number_format($deal->financing_payment_in_cents / 100, 2) }} {{ strtolower($deal->financing_frequency_label) }}</span></div>
+                                <div class="row"><span class="k">Rate</span><span class="v">{{ rtrim(rtrim(number_format((float) $deal->financing_apr, 2), '0'), '.') }}% APR</span></div>
+                                <div class="row"><span class="k">Term</span><span class="v">{{ $deal->financing_term_months }} months</span></div>
+                                <div class="row"><span class="k">Amount financed</span><span class="v">${{ number_format($deal->financing_amount_in_cents / 100, 2) }}</span></div>
+                                @if ($deal->financing_down_payment_in_cents !== null)
+                                    <div class="row"><span class="k">Down payment</span><span class="v">${{ number_format($deal->financing_down_payment_in_cents / 100, 2) }}</span></div>
+                                @endif
+                                @if ($deal->financing_first_payment_on)
+                                    <div class="row"><span class="k">First payment</span><span class="v">{{ $deal->financing_first_payment_on->format('M j, Y') }}</span></div>
+                                @endif
+                            </div>
+                            <p class="note">The buyer sees these terms in My Garage. Entered {{ $deal->financing_approved_at->diffForHumans() }}.</p>
+                        @else
+                            <p class="note" style="margin-top:0;">Enter the approval as it came back from the bank. Saving emails the buyer their terms and shows them in My Garage.</p>
+                            <form class="fin-form" wire:submit="saveFinancing">
+                                <label class="wide">Lender
+                                    <input type="text" wire:model="financingLender" placeholder="e.g. Scotiabank" maxlength="120">
+                                    @error('financingLender') <span class="fin-err">{{ $message }}</span> @enderror
+                                </label>
+                                <label>Payment ($)
+                                    <input type="number" step="0.01" min="0" inputmode="decimal" wire:model="financingPayment">
+                                    @error('financingPayment') <span class="fin-err">{{ $message }}</span> @enderror
+                                </label>
+                                <label>How often
+                                    <select wire:model="financingFrequency">
+                                        @foreach (App\Models\Deal::PAYMENT_FREQUENCIES as $value => $label)
+                                            <option value="{{ $value }}" @selected($financingFrequency === $value)>{{ $label }}</option>
+                                        @endforeach
+                                    </select>
+                                    @error('financingFrequency') <span class="fin-err">{{ $message }}</span> @enderror
+                                </label>
+                                <label>Rate (APR %)
+                                    <input type="number" step="0.01" min="0" inputmode="decimal" wire:model="financingApr">
+                                    @error('financingApr') <span class="fin-err">{{ $message }}</span> @enderror
+                                </label>
+                                <label>Term (months)
+                                    <input type="number" step="1" min="6" inputmode="numeric" wire:model="financingTermMonths">
+                                    @error('financingTermMonths') <span class="fin-err">{{ $message }}</span> @enderror
+                                </label>
+                                <label>Amount financed ($)
+                                    <input type="number" step="0.01" min="0" inputmode="decimal" wire:model="financingAmount">
+                                    @error('financingAmount') <span class="fin-err">{{ $message }}</span> @enderror
+                                </label>
+                                <label>Down payment ($, optional)
+                                    <input type="number" step="0.01" min="0" inputmode="decimal" wire:model="financingDownPayment">
+                                    @error('financingDownPayment') <span class="fin-err">{{ $message }}</span> @enderror
+                                </label>
+                                <label>First payment (optional)
+                                    <input type="date" wire:model="financingFirstPaymentOn">
+                                    @error('financingFirstPaymentOn') <span class="fin-err">{{ $message }}</span> @enderror
+                                </label>
+                                <div class="fin-actions">
+                                    @if ($editingFinancing)
+                                        <button type="button" class="mini-btn ghost" wire:click="cancelFinancing">Cancel</button>
+                                    @endif
+                                    <button type="submit" class="mini-btn approve" wire:loading.attr="disabled" wire:target="saveFinancing">
+                                        {{ $deal->hasFinancingApproval() ? 'Save and email the buyer' : 'Save approval and email the buyer' }}
+                                    </button>
+                                </div>
+                            </form>
+                        @endif
+                    @else
+                        <p class="note" style="margin:0;">Cash purchase, so there's no bank approval to enter. The buyer settles the balance with you directly.</p>
+                    @endif
+                </div>
+            </div>
+
+            {{-- Documents --}}
+            <div class="panel">
+                <div class="panel-head">
+                    <h3>Documents</h3>
+                    <span class="ph-right">{{ $this->documentsReceived() }} of {{ $documentRows->count() }} done</span>
+                </div>
+                <div class="panel-body">
+                    @forelse ($documentRows as $row)
+                        <div class="doc-row" wire:key="doc-{{ $row['id'] }}">
+                            <div class="doc-top">
+                                <span class="doc-ic {{ $row['state'] === 'approved' || $row['state'] === 'cleared' ? 'done' : ($row['state'] === 'uploaded' ? 'review' : ($row['state'] === 'rejected' ? 'flag' : 'wait')) }}">
+                                    @if ($row['state'] === 'approved' || $row['state'] === 'cleared')
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4.5 4.5L19 7"/></svg>
+                                    @elseif ($row['state'] === 'uploaded')
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    @elseif ($row['state'] === 'rejected')
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 2 18a2 2 0 0 0 1.7 3h16.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+                                    @else
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+                                    @endif
+                                </span>
+
+                                <div class="doc-main">
+                                    <div class="doc-name">{{ $row['name'] }}</div>
+                                    <div class="doc-status">
+                                        {{ $row['status'] }}@if ($row['uploadedLabel']) · uploaded {{ $row['uploadedLabel'] }}@endif
+                                    </div>
+                                </div>
+
+                                <div class="doc-actions">
+                                    @if ($row['state'] === 'uploaded' || $row['state'] === 'approved')
+                                        <button type="button" class="mini-btn ghost"
+                                                wire:click="downloadDocument({{ $row['id'] }})"
+                                                wire:loading.attr="disabled"
+                                                wire:target="downloadDocument({{ $row['id'] }})">
+                                            Download
+                                        </button>
+                                    @endif
+
+                                    @if ($row['state'] === 'uploaded')
+                                        <button type="button" class="mini-btn approve"
+                                                wire:click="approveDocument({{ $row['id'] }})"
+                                                wire:loading.attr="disabled"
+                                                wire:target="approveDocument({{ $row['id'] }})">
+                                            Approve
+                                        </button>
+                                        <button type="button" class="mini-btn flag"
+                                                wire:click="startRejection({{ $row['id'] }})">
+                                            Request re-upload
+                                        </button>
+                                    @elseif ($row['state'] === 'approved')
+                                        <span class="doc-state approved">Approved</span>
+                                    @elseif ($row['state'] === 'cleared')
+                                        <span class="doc-state cleared">Verified</span>
+                                    @elseif ($row['state'] === 'rejected')
+                                        <span class="doc-state rejected">Awaiting re-upload</span>
+                                    @elseif ($row['state'] === 'later')
+                                        <span class="doc-state waiting">Asked for at Documents</span>
+                                    @else
+                                        <span class="doc-state waiting">Waiting on buyer</span>
+                                        @if ($row['withdrawable'])
+                                            <button type="button" class="mini-btn ghost" wire:click="withdrawRequest({{ $row['id'] }})"
+                                                    wire:confirm="Stop asking the buyer for {{ $row['name'] }}?">Withdraw</button>
+                                        @endif
+                                    @endif
+                                </div>
+                            </div>
+
+                            @if ($documentBeingRejected === $row['id'])
+                                <div class="reject-box">
+                                    <label for="reason-{{ $row['id'] }}">Reason for re-upload (optional — the buyer gets this by email)</label>
+                                    <textarea id="reason-{{ $row['id'] }}"
+                                              wire:model="rejectionReason"
+                                              placeholder="e.g. The licence photo is cut off — please re-upload showing all four corners."></textarea>
+                                    @error('rejectionReason') <div class="reject-err">{{ $message }}</div> @enderror
+                                    <div class="reject-box-actions">
+                                        <button type="button" class="mini-btn ghost" wire:click="cancelRejection">Cancel</button>
+                                        <button type="button" class="mini-btn flag"
+                                                wire:click="requestReupload({{ $row['id'] }})"
+                                                wire:loading.attr="disabled"
+                                                wire:target="requestReupload({{ $row['id'] }})">
+                                            Send back to buyer
+                                        </button>
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                    @empty
+                        <p class="empty-line">No documents on this reservation.</p>
+                    @endforelse
+
+                    @unless (in_array($deal->stage, ['cancelled', 'delivered'], true))
+                        <div class="ask">
+                            <div class="ask-label">Need something else? Ask the buyer:</div>
+                            <div class="ask-chips">
+                                @foreach ($this::EXTRA_REQUESTS as $kind => [$label])
+                                    <button type="button" class="ask-chip {{ $asking === $kind ? 'on' : '' }}" wire:click="startAsking('{{ $kind }}')">{{ $label }}</button>
+                                @endforeach
+                                <button type="button" class="ask-chip {{ $asking === 'other' ? 'on' : '' }}" wire:click="startAsking('other')">Something else…</button>
+                            </div>
+
+                            @if ($asking !== null)
+                                <form class="ask-box" wire:submit="requestMore">
+                                    <label>What you need
+                                        <input type="text" wire:model="askName" maxlength="80" placeholder="e.g. Void cheque from a different account">
+                                        @error('askName') <span class="fin-err">{{ $message }}</span> @enderror
+                                    </label>
+                                    <label>Note for the buyer (optional)
+                                        <input type="text" wire:model="askNote" maxlength="200" placeholder="{{ $this::EXTRA_REQUESTS[$asking][1] ?? 'Any detail that helps them get it right' }}">
+                                        @error('askNote') <span class="fin-err">{{ $message }}</span> @enderror
+                                    </label>
+                                    <div class="fin-actions">
+                                        <button type="button" class="mini-btn ghost" wire:click="cancelAsking">Cancel</button>
+                                        <button type="submit" class="mini-btn approve" wire:loading.attr="disabled" wire:target="requestMore">Email the buyer</button>
+                                    </div>
+                                </form>
+                            @endif
+                        </div>
+                    @endunless
+                </div>
+            </div>
+
             {{-- Vehicle --}}
             <div class="panel">
                 <div class="panel-head">
@@ -677,7 +1022,7 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
                 </div>
             @endif
 
-            {{-- Plan: what the buyer picked at checkout, then the lender's approval as F&I enters it --}}
+            {{-- Plan: what the buyer picked at checkout (the real terms live in the Payment panel) --}}
             <div class="panel">
                 <div class="panel-head">
                     <h3>Plan</h3>
@@ -696,83 +1041,6 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
                         @endif
                     </div>
 
-                    @if ($this->takesFinancing())
-                        <div class="fin-block">
-                            <div class="fin-head">
-                                <h4>Lender approval</h4>
-                                @if ($deal->hasFinancingApproval() && ! $editingFinancing)
-                                    <button type="button" class="mini-btn ghost" wire:click="editFinancing">Edit</button>
-                                @endif
-                            </div>
-
-                            @if ($deal->hasFinancingApproval() && ! $editingFinancing)
-                                <div class="kv">
-                                    <div class="row"><span class="k">Lender</span><span class="v">{{ $deal->financing_lender }}</span></div>
-                                    <div class="row"><span class="k">Payment</span><span class="v">${{ number_format($deal->financing_payment_in_cents / 100, 2) }} {{ strtolower($deal->financing_frequency_label) }}</span></div>
-                                    <div class="row"><span class="k">Rate</span><span class="v">{{ rtrim(rtrim(number_format((float) $deal->financing_apr, 2), '0'), '.') }}% APR</span></div>
-                                    <div class="row"><span class="k">Term</span><span class="v">{{ $deal->financing_term_months }} months</span></div>
-                                    <div class="row"><span class="k">Amount financed</span><span class="v">${{ number_format($deal->financing_amount_in_cents / 100, 2) }}</span></div>
-                                    @if ($deal->financing_down_payment_in_cents !== null)
-                                        <div class="row"><span class="k">Down payment</span><span class="v">${{ number_format($deal->financing_down_payment_in_cents / 100, 2) }}</span></div>
-                                    @endif
-                                    @if ($deal->financing_first_payment_on)
-                                        <div class="row"><span class="k">First payment</span><span class="v">{{ $deal->financing_first_payment_on->format('M j, Y') }}</span></div>
-                                    @endif
-                                </div>
-                                <p class="note">The buyer sees these terms in My Garage. Entered {{ $deal->financing_approved_at->diffForHumans() }}.</p>
-                            @else
-                                <p class="note">Enter the approval as it came back from the bank. Saving emails the buyer their terms and shows them in My Garage.</p>
-                                <form class="fin-form" wire:submit="saveFinancing">
-                                    <label class="wide">Lender
-                                        <input type="text" wire:model="financingLender" placeholder="e.g. Scotiabank" maxlength="120">
-                                        @error('financingLender') <span class="fin-err">{{ $message }}</span> @enderror
-                                    </label>
-                                    <label>Payment ($)
-                                        <input type="number" step="0.01" min="0" inputmode="decimal" wire:model="financingPayment">
-                                        @error('financingPayment') <span class="fin-err">{{ $message }}</span> @enderror
-                                    </label>
-                                    <label>How often
-                                        <select wire:model="financingFrequency">
-                                            @foreach (App\Models\Deal::PAYMENT_FREQUENCIES as $value => $label)
-                                                <option value="{{ $value }}" @selected($financingFrequency === $value)>{{ $label }}</option>
-                                            @endforeach
-                                        </select>
-                                        @error('financingFrequency') <span class="fin-err">{{ $message }}</span> @enderror
-                                    </label>
-                                    <label>Rate (APR %)
-                                        <input type="number" step="0.01" min="0" inputmode="decimal" wire:model="financingApr">
-                                        @error('financingApr') <span class="fin-err">{{ $message }}</span> @enderror
-                                    </label>
-                                    <label>Term (months)
-                                        <input type="number" step="1" min="6" inputmode="numeric" wire:model="financingTermMonths">
-                                        @error('financingTermMonths') <span class="fin-err">{{ $message }}</span> @enderror
-                                    </label>
-                                    <label>Amount financed ($)
-                                        <input type="number" step="0.01" min="0" inputmode="decimal" wire:model="financingAmount">
-                                        @error('financingAmount') <span class="fin-err">{{ $message }}</span> @enderror
-                                    </label>
-                                    <label>Down payment ($, optional)
-                                        <input type="number" step="0.01" min="0" inputmode="decimal" wire:model="financingDownPayment">
-                                        @error('financingDownPayment') <span class="fin-err">{{ $message }}</span> @enderror
-                                    </label>
-                                    <label>First payment (optional)
-                                        <input type="date" wire:model="financingFirstPaymentOn">
-                                        @error('financingFirstPaymentOn') <span class="fin-err">{{ $message }}</span> @enderror
-                                    </label>
-                                    <div class="fin-actions">
-                                        @if ($editingFinancing)
-                                            <button type="button" class="mini-btn ghost" wire:click="cancelFinancing">Cancel</button>
-                                        @endif
-                                        <button type="submit" class="mini-btn approve" wire:loading.attr="disabled" wire:target="saveFinancing">
-                                            {{ $deal->hasFinancingApproval() ? 'Save and email the buyer' : 'Save approval and email the buyer' }}
-                                        </button>
-                                    </div>
-                                </form>
-                            @endif
-                        </div>
-                    @else
-                        <p class="note">Cash purchase, so there's no lender approval to enter.</p>
-                    @endif
                 </div>
             </div>
 
@@ -836,95 +1104,6 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
                 </div>
             </div>
 
-            {{-- Documents --}}
-            <div class="panel">
-                <div class="panel-head">
-                    <h3>Documents</h3>
-                    <span class="ph-right">{{ $this->documentsReceived() }} of {{ $documentRows->count() }} done</span>
-                </div>
-                <div class="panel-body">
-                    @forelse ($documentRows as $row)
-                        <div class="doc-row" wire:key="doc-{{ $row['id'] }}">
-                            <div class="doc-top">
-                                <span class="doc-ic {{ $row['state'] === 'approved' || $row['state'] === 'cleared' ? 'done' : ($row['state'] === 'uploaded' ? 'review' : ($row['state'] === 'rejected' ? 'flag' : 'wait')) }}">
-                                    @if ($row['state'] === 'approved' || $row['state'] === 'cleared')
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4.5 4.5L19 7"/></svg>
-                                    @elseif ($row['state'] === 'uploaded')
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                                    @elseif ($row['state'] === 'rejected')
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 2 18a2 2 0 0 0 1.7 3h16.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
-                                    @else
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
-                                    @endif
-                                </span>
-
-                                <div class="doc-main">
-                                    <div class="doc-name">{{ $row['name'] }}</div>
-                                    <div class="doc-status">
-                                        {{ $row['status'] }}@if ($row['uploadedLabel']) · uploaded {{ $row['uploadedLabel'] }}@endif
-                                    </div>
-                                </div>
-
-                                <div class="doc-actions">
-                                    @if ($row['state'] === 'uploaded' || $row['state'] === 'approved')
-                                        <button type="button" class="mini-btn ghost"
-                                                wire:click="downloadDocument({{ $row['id'] }})"
-                                                wire:loading.attr="disabled"
-                                                wire:target="downloadDocument({{ $row['id'] }})">
-                                            Download
-                                        </button>
-                                    @endif
-
-                                    @if ($row['state'] === 'uploaded')
-                                        <button type="button" class="mini-btn approve"
-                                                wire:click="approveDocument({{ $row['id'] }})"
-                                                wire:loading.attr="disabled"
-                                                wire:target="approveDocument({{ $row['id'] }})">
-                                            Approve
-                                        </button>
-                                        <button type="button" class="mini-btn flag"
-                                                wire:click="startRejection({{ $row['id'] }})">
-                                            Request re-upload
-                                        </button>
-                                    @elseif ($row['state'] === 'approved')
-                                        <span class="doc-state approved">Approved</span>
-                                    @elseif ($row['state'] === 'cleared')
-                                        <span class="doc-state cleared">Verified</span>
-                                    @elseif ($row['state'] === 'rejected')
-                                        <span class="doc-state rejected">Awaiting re-upload</span>
-                                    @elseif ($row['state'] === 'later')
-                                        <span class="doc-state waiting">Asked for at Documents</span>
-                                    @else
-                                        <span class="doc-state waiting">Waiting on buyer</span>
-                                    @endif
-                                </div>
-                            </div>
-
-                            @if ($documentBeingRejected === $row['id'])
-                                <div class="reject-box">
-                                    <label for="reason-{{ $row['id'] }}">Reason for re-upload (optional — the buyer gets this by email)</label>
-                                    <textarea id="reason-{{ $row['id'] }}"
-                                              wire:model="rejectionReason"
-                                              placeholder="e.g. The licence photo is cut off — please re-upload showing all four corners."></textarea>
-                                    @error('rejectionReason') <div class="reject-err">{{ $message }}</div> @enderror
-                                    <div class="reject-box-actions">
-                                        <button type="button" class="mini-btn ghost" wire:click="cancelRejection">Cancel</button>
-                                        <button type="button" class="mini-btn flag"
-                                                wire:click="requestReupload({{ $row['id'] }})"
-                                                wire:loading.attr="disabled"
-                                                wire:target="requestReupload({{ $row['id'] }})">
-                                            Send back to buyer
-                                        </button>
-                                    </div>
-                                </div>
-                            @endif
-                        </div>
-                    @empty
-                        <p class="empty-line">No documents on this reservation.</p>
-                    @endforelse
-                </div>
-            </div>
-
         </div>
 
         <div class="col-side">
@@ -948,6 +1127,43 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
                     <p class="note">The dealership confirms the exact time with the buyer.</p>
                 </div>
             </div>
+
+            {{-- Decline: call the reservation off and give the buyer their $150 back --}}
+            @if ($deal->stage === 'cancelled')
+                <div class="panel decline-done">
+                    <div class="panel-body">
+                        <b>This reservation is off.</b>
+                        {{ $deal->deposit_status === 'refunded' ? 'The $' . number_format($deal->deposit_in_cents / 100) . ' deposit was refunded to the buyer’s card.' : 'There was no card deposit to refund.' }}
+                    </div>
+                </div>
+            @elseif ($deal->stage !== 'delivered')
+                <div class="panel">
+                    <div class="panel-head"><h3>Decline</h3></div>
+                    <div class="panel-body">
+                        @if (! $declining)
+                            <p class="note" style="margin:0 0 12px;">Bank said no, or the deal can't go ahead? Decline it and the buyer gets their ${{ number_format($deal->deposit_in_cents / 100) }} back.</p>
+                            <button type="button" class="mini-btn danger" wire:click="startDecline">Decline and refund ${{ number_format($deal->deposit_in_cents / 100) }}</button>
+                        @else
+                            <form class="decline-form" wire:submit="declineDeal">
+                                <label>Reason (for your records, not sent to the buyer)
+                                    <textarea wire:model="declineReason" rows="2" maxlength="500" placeholder="e.g. Not approved by any lender"></textarea>
+                                    @error('declineReason') <span class="fin-err">{{ $message }}</span> @enderror
+                                </label>
+                                <label>Note to the buyer (optional)
+                                    <textarea wire:model="declineNote" rows="3" maxlength="500" placeholder="e.g. We couldn't get an approval this time. You're welcome to try again with a co-signer."></textarea>
+                                    @error('declineNote') <span class="fin-err">{{ $message }}</span> @enderror
+                                </label>
+                                <p class="note" style="margin:0;">The buyer is emailed, the car goes back on sale, and this can't be undone.</p>
+                                <div class="fin-actions">
+                                    <button type="button" class="mini-btn ghost" wire:click="cancelDecline">Keep it</button>
+                                    <button type="submit" class="mini-btn danger" wire:loading.attr="disabled" wire:target="declineDeal"
+                                            wire:confirm="Decline {{ $deal->reference }} and refund the deposit?">Decline and refund</button>
+                                </div>
+                            </form>
+                        @endif
+                    </div>
+                </div>
+            @endif
 
             {{-- Activity log --}}
             <div class="panel">

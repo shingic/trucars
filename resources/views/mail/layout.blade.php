@@ -2,7 +2,7 @@
     Shared frame for the buyer's deal emails, matching reservation-confirmed:
     orange header band, headline, body, one button to My Garage, footer.
     Sections: title, preheader, tag, headline, intro, body (optional),
-    cta (optional, defaults to "Open My Garage →"), reason (footer line).
+    cta and cta_url (optional, default to "Open My Garage →"), reason (footer line).
     Child sections render before this file, so they can't use $font; the
     document list has its own partial (mail.partials.documents).
 --}}
@@ -57,7 +57,7 @@
                         <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                             <tr>
                                 <td align="center" bgcolor="#F5631F" style="border-radius:10px;">
-                                    <a href="{{ route('garage') }}" target="_blank" style="display:inline-block; padding:14px 30px; {{ $font }} font-size:15px; font-weight:700; color:#FFFFFF; text-decoration:none; border-radius:10px;">
+                                    <a href="@yield('cta_url', route('garage'))" target="_blank" style="display:inline-block; padding:14px 30px; {{ $font }} font-size:15px; font-weight:700; color:#FFFFFF; text-decoration:none; border-radius:10px;">
                                         @hasSection('cta') @yield('cta') @else Open My Garage → @endif
                                     </a>
                                 </td>

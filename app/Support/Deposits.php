@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
+use App\Mail\ReservationCancelled;
 use App\Models\AuditLog;
 use App\Models\Deal;
 use App\Models\DepositPayment;
@@ -176,6 +177,38 @@ class Deposits
 
         $refundId = $payment->isDemo() ? null : $this->gateway->refund($payment->stripe_payment_intent_id, 'refund-' . $payment->id);
         $this->markRefunded($payment, $refundId, $reason);
+    }
+
+    /**
+     * Cancel a live reservation and give the deposit back: refund first, so a
+     * Stripe failure (which throws) leaves the reservation untouched. Then the
+     * car goes back on sale, the trail and audit log record who and why, and
+     * the buyer is emailed. Returns whether a card deposit was refunded.
+     *
+     * $byDealer words it as the dealership declining; otherwise TruCars cancelled it.
+     */
+    public function cancelReservation(Deal $deal, string $reason, bool $byDealer, ?string $noteToBuyer = null): bool
+    {
+        abort_if(in_array($deal->stage, ['cancelled', 'delivered'], true), 422);
+
+        $payment = $deal->depositPayment;
+        $refundable = $payment !== null && $payment->status === DepositPayment::STATUS_PAID;
+
+        if ($refundable) {
+            $this->refund($payment, $reason);
+        }
+
+        $before = $deal->stage;
+        $deal->forceFill(['stage' => 'cancelled'])->save();
+        $deal->recordActivity('system', ($byDealer ? 'Reservation declined by the dealership — ' : 'Reservation cancelled by TruCars — ') . $reason, auth()->user()?->name);
+        AuditLog::record($byDealer ? 'reservation.declined' : 'reservation.cancelled', $deal, ['stage' => $before], [
+            'stage' => 'cancelled', 'reason' => $reason, 'deposit_refunded' => $payment?->fresh()->status === DepositPayment::STATUS_REFUNDED,
+        ]);
+
+        $refunded = $deal->fresh()->deposit_status === 'refunded';
+        $deal->emailBuyer(new ReservationCancelled($deal->fresh(), $byDealer, $refunded, $noteToBuyer), $byDealer ? 'Decline notice' : 'Cancellation notice');
+
+        return $refundable;
     }
 
     /** Stripe says it's refunded (refund() or the webhook — including refunds made in the Stripe dashboard). */

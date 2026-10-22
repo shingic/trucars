@@ -42,27 +42,18 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
         $this->validate(['cancelReason' => ['required', 'string', 'min:5', 'max:500']], ['cancelReason.required' => 'Say why — it goes on the deal’s record.']);
 
         $deal = $this->deal();
-        abort_if(in_array($deal->stage, ['cancelled', 'delivered'], true), 422);
 
-        $payment = $deal->depositPayment;
-        if ($payment !== null && $payment->status === \App\Models\DepositPayment::STATUS_PAID) {
-            try {
-                $deposits->refund($payment, $this->cancelReason);
-            } catch (\Throwable $e) {
-                report($e);
-                $this->addError('cancelReason', 'Stripe didn’t accept the refund, so nothing was changed. Try again, or refund it in the Stripe dashboard. (' . $e->getMessage() . ')');
+        try {
+            $refunded = $deposits->cancelReservation($deal, $this->cancelReason, byDealer: false);
+        } catch (\Throwable $e) {
+            report($e);
+            $this->addError('cancelReason', 'Stripe didn’t accept the refund, so nothing was changed. Try again, or refund it in the Stripe dashboard. (' . $e->getMessage() . ')');
 
-                return;
-            }
+            return;
         }
 
-        $before = $deal->stage;
-        $deal->forceFill(['stage' => 'cancelled'])->save();
-        $deal->recordActivity('system', 'Reservation cancelled by TruCars — ' . $this->cancelReason, auth()->user()->name);
-        AuditLog::record('reservation.cancelled', $deal, ['stage' => $before], ['stage' => 'cancelled', 'reason' => $this->cancelReason, 'deposit_refunded' => $payment?->fresh()->status === \App\Models\DepositPayment::STATUS_REFUNDED]);
-
         $this->cancelReason = '';
-        $this->statusMessage = $payment ? 'Cancelled. The $150 deposit is on its way back to the customer’s card.' : 'Cancelled. This reservation has no card deposit on file to refund.';
+        $this->statusMessage = $refunded ? 'Cancelled. The $150 deposit is on its way back to the customer’s card.' : 'Cancelled. This reservation has no card deposit on file to refund.';
     }
 
     public function deal(): Deal
