@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Vehicle;
 use App\Services\Valuation\Data\TradeInput;
 use App\Services\Valuation\TradeValuation;
+use App\Support\AddressLookup;
 use App\Support\CampaignAttribution;
 use App\Support\Deposits;
 use Livewire\Component;
@@ -705,6 +706,51 @@ new #[Layout('layouts.checkout')] class extends Component {
     /* ---------------------------------------------------------------------
        Validation per step
        --------------------------------------------------------------------- */
+    /**
+     * Address suggestions as the buyer types (Google Places). Throttled per
+     * buyer; returns nothing when the service is off or unreachable, and
+     * the fields work as plain inputs. $session is the browser's token for
+     * this address entry — typing and picking are billed as one session.
+     *
+     * @return array<int, array{id: string, text: string, description: string}>
+     */
+    public function findAddress(string $term, string $session): array
+    {
+        $lookup = app(AddressLookup::class);
+        $throttle = 'address:' . auth()->id();
+
+        if (! $lookup->enabled() || ! \Illuminate\Support\Str::isUuid($session) || \Illuminate\Support\Facades\RateLimiter::tooManyAttempts($throttle, 120)) {
+            return [];
+        }
+
+        \Illuminate\Support\Facades\RateLimiter::hit($throttle, 600);
+
+        return $lookup->find(mb_substr($term, 0, 100), $session);
+    }
+
+    /** The buyer picked a suggestion: fill street, city, province and postal code. */
+    public function pickAddress(string $id, string $session): void
+    {
+        $address = \Illuminate\Support\Str::isUuid($session) ? app(AddressLookup::class)->retrieve(mb_substr($id, 0, 300), $session) : null;
+
+        if ($address === null) {
+            return;
+        }
+
+        $this->streetAddress = $address['street'];
+        $this->city = $address['city'];
+        $this->postalCode = $address['postal_code'];
+
+        if ($address['province'] !== '') {
+            if (! in_array($address['province'], $this->provinceOptions, true)) {
+                $this->provinceOptions[] = $address['province'];
+            }
+            $this->province = $address['province'];
+        }
+
+        $this->resetValidation(['streetAddress', 'city', 'province', 'postalCode']);
+    }
+
     protected function passesBuyerStep(): bool
     {
         $this->validate([
@@ -1440,6 +1486,16 @@ new #[Layout('layouts.checkout')] class extends Component {
         .deposit-element { min-height:150px; }
         .deposit-loading { font-size:13px; color:var(--ink-3); padding:20px 0; }
         .pay-error { margin:12px 0 0; }
+        .addr { position:relative; }
+        .addr-list { position:absolute; z-index:30; left:0; right:0; top:calc(100% - 4px); margin:0; padding:6px; list-style:none; background:var(--card); border:1px solid var(--line); border-radius:var(--radius-sm); box-shadow:var(--shadow-md); max-height:320px; overflow:auto; }
+        .addr-list li { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; cursor:pointer; font-size:14px; }
+        .addr-list li svg { flex:none; color:var(--ink-3); }
+        .addr-list li span { flex:1; min-width:0; }
+        .addr-list li small { color:var(--ink-3); font-size:12.5px; }
+        .addr-list li.on { background:var(--primary-soft); }
+        .addr-list li.on svg { color:var(--primary); }
+        .addr-list .addr-foot { cursor:default; justify-content:space-between; font-size:12px; color:var(--ink-3); padding:8px 12px 4px; }
+        .addr-google { font-size:11px; }
         .demo-flag { display:inline-block; margin-bottom:12px; padding:4px 10px; border-radius:999px; background:#FFF4D6; color:#8A5A00; font-size:11.5px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; }
         .demo-pay input[readonly] { color:var(--ink-3); }
         .pay-retry { margin-top:12px; }
@@ -1741,7 +1797,31 @@ new #[Layout('layouts.checkout')] class extends Component {
 
                 <div class="section-label">Where do you call home?</div>
                 <p class="section-note">For registration and billing. Your delivery spot can differ.</p>
-                <div class="field"><label class="field-label">Street address</label><input type="text" class="field-input" wire:model="streetAddress">@error('streetAddress') <p class="field-error">{{ $message }}</p> @enderror</div>
+                @if (app(\App\Support\AddressLookup::class)->enabled())
+                    {{-- Start typing → Google address suggestions; picking one fills the form. --}}
+                    <div class="field addr" x-data="addressSuggest($wire)" x-on:click.outside="close()" x-on:keydown.escape="close()">
+                        <label class="field-label" for="street-address">Street address</label>
+                        <input id="street-address" type="text" class="field-input" wire:model="streetAddress" autocomplete="off"
+                               placeholder="Start typing your address"
+                               role="combobox" aria-autocomplete="list" :aria-expanded="open" aria-controls="addr-list"
+                               x-on:input.debounce.250ms="search($event.target.value)"
+                               x-on:keydown.arrow-down.prevent="move(1)" x-on:keydown.arrow-up.prevent="move(-1)"
+                               x-on:keydown.enter="if (open && active >= 0) { $event.preventDefault(); choose(items[active]); }">
+                        <ul id="addr-list" class="addr-list" role="listbox" x-show="open" x-cloak>
+                            <template x-for="(item, i) in items" :key="item.id">
+                                <li role="option" :aria-selected="i === active" :class="{ on: i === active }"
+                                    x-on:mousedown.prevent="choose(item)" x-on:mouseenter="active = i">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg>
+                                    <span><b x-text="item.text"></b> <small x-text="item.description"></small></span>
+                                </li>
+                            </template>
+                            <li class="addr-foot"><span>Can’t find it? Just type it in.</span><span class="addr-google">powered by Google</span></li>
+                        </ul>
+                        @error('streetAddress') <p class="field-error">{{ $message }}</p> @enderror
+                    </div>
+                @else
+                    <div class="field"><label class="field-label">Street address</label><input type="text" class="field-input" wire:model="streetAddress">@error('streetAddress') <p class="field-error">{{ $message }}</p> @enderror</div>
+                @endif
                 <div class="field-row">
                     <div class="field"><label class="field-label">City</label><input type="text" class="field-input" wire:model="city">@error('city') <p class="field-error">{{ $message }}</p> @enderror</div>
                     <div class="field"><label class="field-label">Province</label><select class="field-select" wire:model="province">@foreach ($provinceOptions as $option)<option value="{{ $option }}">{{ $option }}</option>@endforeach</select>@error('province') <p class="field-error">{{ $message }}</p> @enderror</div>
@@ -2250,6 +2330,37 @@ new #[Layout('layouts.checkout')] class extends Component {
     --}}
     @script
     <script>
+        // Address suggestions (the street field). Suggestions come from the
+        // server (findAddress); picking one fills street, city, province and
+        // postal code (pickAddress). One session token per address entry, so
+        // Google bills the typing and the pick together.
+        // crypto.randomUUID needs HTTPS; the fallback covers a plain-http local site.
+        const newSession = () => crypto.randomUUID?.() ?? '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, (c) => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
+
+        Alpine.data('addressSuggest', (wire) => ({
+            items: [], open: false, active: -1, seq: 0, session: newSession(),
+            async search(term) {
+                const ticket = ++this.seq;
+                if (term.trim().length < 3) { this.close(); return; }
+                const items = await wire.findAddress(term, this.session);
+                if (ticket !== this.seq) return; // a newer keystroke won
+                this.items = items || [];
+                this.active = this.items.length ? 0 : -1;
+                this.open = this.items.length > 0;
+            },
+            async choose(item) {
+                if (! item) return;
+                this.close();
+                await wire.pickAddress(item.id, this.session);
+                this.session = newSession(); // the next entry is a new session
+            },
+            move(step) {
+                if (! this.open) return;
+                this.active = (this.active + step + this.items.length) % this.items.length;
+            },
+            close() { this.open = false; this.active = -1; },
+        }));
+
         const publishableKey = @js(app(\App\Support\Deposits::class)->publishableKey());
         let stripe = null;
         let elements = null;

@@ -24,6 +24,12 @@ return [
         'default_mode'   => env('PAYMENTS_DEFAULT_MODE', 'demo'),
     ],
 
+    // Address suggestions at checkout (App\Support\AddressLookup), via Google
+    // Places API (New). Without a key the address fields are plain inputs.
+    'google_places' => [
+        'key' => env('GOOGLE_PLACES_KEY'),
+    ],
+
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),
     ],
