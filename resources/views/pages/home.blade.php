@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\Dealer;
-use App\Models\InspectionProgram;
 use App\Models\Vehicle;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Title;
@@ -39,8 +38,6 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
             'bodyTypes'   => $this->countsBy($listed, 'body_type', 4),
             'makes'       => $this->countsBy($listed, 'make', 10),
             'under'       => (clone $listed)->where('price_in_cents', '<', 2500000)->count(),
-            'certifiedCount' => (clone $listed)->where('is_manufacturer_certified', true)->count(),
-            'checklist'   => $this->checklistToShow($listed),
         ];
     }
 
@@ -93,24 +90,6 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
         return $dealt->take($dealt->count() >= 4 ? intdiv(min($dealt->count(), $count), 4) * 4 : $dealt->count());
     }
 
-    /**
-     * The longest brand inspection checklist that covers cars on the lot right
-     * now: a brand checklist only applies at a dealer franchised for that make,
-     * so an off-brand trade-in doesn't count. None set up, none shown.
-     */
-    private function checklistToShow($listed): ?InspectionProgram
-    {
-        $makes = (clone $listed)->join('dealers as franchise', 'franchise.id', '=', 'vehicles.dealer_id')
-            ->whereRaw('lower(vehicles.make) = lower(franchise.franchise_make)')
-            ->distinct()->pluck('vehicles.make')->map(fn ($make) => mb_strtolower(trim((string) $make)))->all();
-
-        return InspectionProgram::whereNull('dealer_id')->where('is_active', true)->whereHas('points')
-            ->with('points')->withCount('points')->get()
-            ->filter(fn (InspectionProgram $program) => in_array(mb_strtolower(trim((string) $program->make)), $makes, true))
-            ->sortByDesc('points_count')
-            ->first();
-    }
-
     private function countsBy($listed, string $column, int $limit): Collection
     {
         return (clone $listed)
@@ -158,7 +137,6 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
         'piggy'  => '<path class="d" d="M5 11.5C5 8 8.4 6 12 6c2 0 3.6.5 4.8 1.4L19.5 6l-.4 3.2c1 .9 1.4 1.8 1.6 2.8H22v3h-1.6c-.5 1.2-1.4 2.2-2.6 2.8V20h-3v-1.5h-4V20H8v-2.3C6 16.6 5 14.3 5 11.5Z"/><circle cx="16.5" cy="10.5" r=".9"/><path d="M10 6.3V4.5h3v1.6M5 11.5H3"/>',
         'grid'   => '<rect class="d" x="3.5" y="3.5" width="7" height="7" rx="1.8"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.8"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.8"/><rect class="d" x="13.5" y="13.5" width="7" height="7" rx="1.8"/>',
         'ribbon' => '<circle class="d" cx="12" cy="9.5" r="6.2"/><path d="m9.4 9.6 1.8 1.8 3.4-3.5M8.6 14.6 7 21l5-2.6 5 2.6-1.6-6.4"/>',
-        'sofa'   => '<path class="d" d="M4 11.5V9a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v2.5"/><path class="d" d="M2.5 13a1.8 1.8 0 0 1 3.6 0v1.5h11.8V13a1.8 1.8 0 0 1 3.6 0v4.5a1 1 0 0 1-1 1h-17a1 1 0 0 1-1-1Z"/><path d="M5 18.5v2M19 18.5v2"/>',
         'chat'   => '<path class="d" d="M4 5.5h16a1 1 0 0 1 1 1V16a1 1 0 0 1-1 1h-9l-4.5 3.5V17H4a1 1 0 0 1-1-1V6.5a1 1 0 0 1 1-1Z"/><path d="M10 9.3a2 2 0 1 1 2.8 1.8c-.5.3-.8.7-.8 1.3M12 14.3v.2"/>',
     ];
     $icon = fn (string $name): string => '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">' . $icons[$name] . '</svg>';
@@ -267,42 +245,17 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
 
         .car-photo .cert { position:absolute; left:10px; bottom:10px; display:inline-flex; align-items:center; gap:4px; max-width:calc(100% - 20px); background:#fff; color:var(--ink); font-size:12px; font-weight:700; padding:3px 10px 3px 4px; border-radius:999px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; --duo:var(--sky-ink); }
         .car-photo .cert .ico { width:20px; height:20px; flex-shrink:0; }
-        .badge.big { width:64px; height:64px; border-radius:20px; margin-bottom:20px; }
-        .badge.big .ico { width:38px; height:38px; stroke-width:1.4; }
-
-        /* no haggling: the usual way against ours */
-        .calm { display:grid; grid-template-columns:minmax(0, .9fr) minmax(0, 1.1fr); gap:48px; align-items:center; background:var(--butter); border-radius:28px; padding:52px; }
-        .calm p, .cpo p { font-size:17px; color:var(--ink-2); margin:14px 0 0; max-width:480px; }
-        .versus { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-        .side { border-radius:22px; padding:24px; }
-        .side h3 { font-size:15px; font-weight:700; margin:0 0 14px; }
-        .side ul { list-style:none; margin:0; padding:0; display:grid; gap:14px; }
-        .side li { display:flex; gap:11px; align-items:flex-start; font-size:15px; line-height:1.35; }
-        .side i { flex-shrink:0; width:24px; height:24px; border-radius:50%; display:grid; place-items:center; font-style:normal; font-size:12px; font-weight:800; }
-        .usual { background:rgba(255,255,255,.45); color:var(--ink-2); }
-        .usual i { background:var(--rose); color:var(--rose-ink); }
-        .ours { background:#fff; box-shadow:0 18px 40px rgba(120,80,0,.12); }
-        .ours li { font-weight:600; }
-        .ours i { background:var(--mint); color:var(--mint-ink); }
-
-        /* certified pre-owned, with a real checklist on a clipboard */
-        .cpo { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 420px); gap:56px; align-items:center; }
-        .cpo.solo { grid-template-columns:minmax(0, 1fr); }
-        .calm .badge { background:#fff; }
-        .cpo-count { font-size:16px !important; }
-        .cpo-count b { font-size:22px; color:var(--sky-ink); }
-        .clipboard { position:relative; background:var(--sky); border-radius:24px; padding:34px 26px 24px; }
-        .clipboard::before { content:""; position:absolute; top:-12px; left:50%; width:96px; height:26px; margin-left:-48px; border-radius:10px; background:var(--ink); }
-        .clip-head { background:#fff; border-radius:14px 14px 0 0; padding:18px 20px 14px; border-bottom:1.5px dashed var(--line-strong); }
-        .clip-head b { display:block; font-size:17px; }
-        .clip-head span { font-size:13.5px; color:var(--ink-2); }
-        .clipboard ul { list-style:none; margin:0; padding:8px 20px 14px; background:#fff; display:grid; }
-        .clipboard li { display:flex; align-items:center; gap:11px; padding:9px 0; font-size:15px; font-weight:600; border-bottom:1px solid var(--line); }
-        .clipboard li:last-child { border-bottom:none; }
-        .clipboard li span { margin-left:auto; font-size:13px; font-weight:500; color:var(--ink-3); white-space:nowrap; }
-        .clipboard li i { flex-shrink:0; width:22px; height:22px; border-radius:6px; background:var(--mint); color:var(--mint-ink); display:grid; place-items:center; font-style:normal; font-size:12px; font-weight:800; }
-        .clip-more { background:#fff; border-radius:0 0 14px 14px; padding:0 20px 16px; font-size:13.5px; color:var(--ink-2); }
-        .clipboard ul:last-child { border-radius:0 0 14px 14px; }
+        /* no haggling: the lines everyone has heard at a sales desk, crossed out */
+        .calm { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:56px; align-items:center; }
+        .calm p { font-size:17px; color:var(--ink-2); margin:14px 0 0; max-width:460px; }
+        .chat { display:flex; flex-direction:column; gap:10px; }
+        .chat small { font-size:13px; font-weight:600; color:var(--ink-3); margin:0 0 2px 4px; }
+        .said { align-self:flex-start; max-width:88%; background:var(--bg-2); color:var(--ink-2); font-size:16px; padding:12px 18px; border-radius:20px 20px 20px 6px; text-decoration:line-through; text-decoration-color:var(--primary); text-decoration-thickness:2.5px; }
+        .said:nth-of-type(2) { margin-left:28px; }
+        .said:nth-of-type(4) { margin-left:14px; }
+        .reply { align-self:flex-end; display:flex; align-items:flex-end; gap:10px; max-width:92%; margin-top:10px; }
+        .reply p { margin:0 !important; background:var(--primary); color:#fff !important; font-size:16px !important; font-weight:500; padding:14px 18px; border-radius:20px 20px 6px 20px; }
+        .reply span { flex-shrink:0; width:34px; height:34px; border-radius:50%; background:var(--ink); color:#fff; display:grid; place-items:center; font-weight:800; font-size:14px; }
 
         /* how it works */
         .how { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:32px; }
@@ -338,7 +291,7 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
             .how { grid-template-columns:repeat(2, minmax(0, 1fr)); }
             .how div::after { display:none; }
             .faq-wrap { grid-template-columns:minmax(0, 1fr); gap:24px; }
-            .calm, .cpo { grid-template-columns:minmax(0, 1fr); gap:32px; }
+            .calm { grid-template-columns:minmax(0, 1fr); gap:32px; }
         }
         @media (max-width:640px) {
             .home section { margin-top:64px; }
@@ -357,9 +310,8 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
             .bay b { font-size:17px; }
             .how { grid-template-columns:minmax(0, 1fr); gap:28px; }
             .close div { padding:32px 22px; }
-            .calm { padding:30px 20px; border-radius:22px; }
-            .versus { grid-template-columns:minmax(0, 1fr); }
-            .clipboard { padding:30px 14px 14px; }
+            .said { font-size:15px; }
+            .said:nth-of-type(2), .said:nth-of-type(4) { margin-left:0; }
         }
     </style>
 
@@ -425,54 +377,17 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
     {{-- NO HAGGLING --}}
     <section class="calm">
         <div>
-            <span class="badge butter big">{!! $icon('sofa') !!}</span>
             <h2>No haggling. No pressure.</h2>
-            <p>Buying a car shouldn't mean an afternoon of back-and-forth at a sales desk. Every price on TruCars is set and shown up front, so you can decide on your own time, from your own couch.</p>
+            <p>Every price on TruCars is set by the dealership and shown up front, with the fees already in it. Decide on your own time, from your own couch.</p>
         </div>
-        <div class="versus">
-            <div class="side usual">
-                <h3>The usual way</h3>
-                <ul>
-                    <li><i>✕</i>Back-and-forth over the price</li>
-                    <li><i>✕</i>Freight and admin fees added at the desk</li>
-                    <li><i>✕</i>“This deal is only good today”</li>
-                    <li><i>✕</i>Someone else buys it while you think</li>
-                </ul>
-            </div>
-            <div class="side ours">
-                <h3>On TruCars</h3>
-                <ul>
-                    <li><i>✓</i>One price, shown up front</li>
-                    <li><i>✓</i>Fees already in the price</li>
-                    <li><i>✓</i>Take as long as you like</li>
-                    <li><i>✓</i>Hold it for $150 while you decide</li>
-                </ul>
-            </div>
+        <div class="chat">
+            <small>Heard at the sales desk</small>
+            <div class="said">Let me go talk to my manager.</div>
+            <div class="said">This price is only good today.</div>
+            <div class="said">Freight and admin are extra, of course.</div>
+            <div class="said">What would it take to get you into this car today?</div>
+            <div class="reply"><p>The price on the listing is the price, fees included. Take your time, and hold it for $150 if you want to think it over.</p><span>T</span></div>
         </div>
-    </section>
-
-    {{-- CERTIFIED PRE-OWNED --}}
-    <section class="cpo @unless ($checklist) solo @endunless">
-        <div>
-            <span class="badge sky big">{!! $icon('ribbon') !!}</span>
-            <h2>Certified Pre-Owned, checked point by point</h2>
-            <p>Certified cars on TruCars come from franchise dealers and are covered by the brand's inspection checklist. Every certified listing shows each point on that list, so you can see what was checked instead of taking a badge on faith.</p>
-            @if ($certifiedCount)
-                <p class="cpo-count"><b>{{ number_format($certifiedCount) }}</b> manufacturer-certified {{ $certifiedCount === 1 ? 'car' : 'cars' }} listed right now.</p>
-            @endif
-        </div>
-        @if ($checklist)
-            @php $sections = $checklist->points->groupBy(fn ($point) => $point->section ?: 'General')->map->count(); @endphp
-            <div class="clipboard">
-                <div class="clip-head"><b>{{ $checklist->name }}</b><span>{{ $checklist->points_count }}-point inspection</span></div>
-                <ul>
-                    @foreach ($sections->take(6) as $section => $total)
-                        <li><i>✓</i>{{ $section }}<span>{{ $total }} {{ $total === 1 ? 'point' : 'points' }}</span></li>
-                    @endforeach
-                </ul>
-                @if ($sections->count() > 6)<div class="clip-more">+ {{ $sections->count() - 6 }} more sections</div>@endif
-            </div>
-        @endif
     </section>
 
     {{-- SHOP BY --}}
