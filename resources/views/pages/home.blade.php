@@ -8,26 +8,16 @@ use Livewire\Component;
 
 /*
 | The public homepage — where someone who finds TruCars lands before they
-| shop. Everything on it is live: the counts, the cars and the featured photo
-| are read from what's actually listed (published cars at active dealers).
+| shop. Everything on it is live: the counts, the cars and the photos are
+| read from what's actually listed (published cars at active dealers).
 */
 new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
-    public const PRICE_STEPS = [10000, 15000, 20000, 25000, 30000, 40000, 50000];
-
     public string $q = '';
-    public string $make = '';
-    public string $max = '';
 
     /** The search box opens the shop with the search already applied. */
     public function search(): void
     {
-        $max = (int) $this->max;
-
-        $this->redirectRoute('shop', array_filter([
-            'q'    => trim($this->q),
-            'make' => $this->make !== '' ? [$this->make] : null,
-            'max'  => in_array($max, self::PRICE_STEPS, true) ? $max : null,
-        ]), navigate: true);
+        $this->redirectRoute('shop', array_filter(['q' => trim($this->q)]), navigate: true);
     }
 
     public function with(): array
@@ -35,7 +25,6 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
         $listed = Vehicle::query()->listed();
 
         $latest = (clone $listed)->with('dealer')->withReservedFlag()->latest('vehicles.created_at')->limit(8)->get();
-        $featured = $latest->first(fn (Vehicle $vehicle) => $vehicle->primary_photo_url !== null);
         $activeDealers = Dealer::where('status', Dealer::STATUS_ACTIVE)->whereHas('vehicles', fn ($vehicles) => $vehicles->where('is_published', true));
 
         return [
@@ -43,10 +32,9 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
             'dealerCount' => (clone $activeDealers)->count(),
             'cityCount'   => (clone $activeDealers)->distinct()->count('city'),
             'latest'      => $latest,
-            'featured'    => $featured,
-            'bodyTypes'   => $this->countsBy($listed, 'body_type', 3),
+            'featured'    => $latest->first(fn (Vehicle $vehicle) => $vehicle->primary_photo_url !== null),
+            'bodyTypes'   => $this->countsBy($listed, 'body_type', 4),
             'makes'       => $this->countsBy($listed, 'make', 10),
-            'allMakes'    => (clone $listed)->whereNotNull('make')->where('make', '!=', '')->distinct()->orderBy('make')->pluck('make'),
             'under'       => (clone $listed)->where('price_in_cents', '<', 2500000)->count(),
         ];
     }
@@ -64,326 +52,319 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
 }; ?>
 
 @php
-    $bodyIcons = [
-        'SUV'         => '<path d="M3 15v-3l2-5h11l3 5h2v3"/><path d="M3 15h18"/><circle cx="7" cy="16.5" r="1.8"/><circle cx="17" cy="16.5" r="1.8"/><path d="M8 7v5M14 7v5"/>',
-        'Sedan'       => '<path d="M2 15v-2l3-1 3-4h7l4 4 3 1v2"/><path d="M2 15h20"/><circle cx="7" cy="16.5" r="1.8"/><circle cx="17" cy="16.5" r="1.8"/>',
-        'Truck'       => '<path d="M2 15V9h10v6M12 11h5l3 3v1"/><path d="M2 15h18"/><circle cx="6" cy="16.5" r="1.8"/><circle cx="16" cy="16.5" r="1.8"/>',
-        'Van'         => '<path d="M2 15V8a1 1 0 0 1 1-1h12l5 5v3"/><path d="M2 15h18"/><circle cx="6" cy="16.5" r="1.8"/><circle cx="16" cy="16.5" r="1.8"/><path d="M15 7v5"/>',
-        'Coupe'       => '<path d="M2 15v-2l5-1 4-4h4l5 4 2 1v2"/><path d="M2 15h20"/><circle cx="7" cy="16.5" r="1.8"/><circle cx="17" cy="16.5" r="1.8"/>',
-        'Convertible' => '<path d="M2 15v-2l4-1h12l4 1v2"/><path d="M2 15h20M9 12l2-3"/><circle cx="7" cy="16.5" r="1.8"/><circle cx="17" cy="16.5" r="1.8"/>',
-        'Hatchback'   => '<path d="M3 15v-3l3-4h8l5 4h2v3"/><path d="M3 15h18"/><circle cx="7" cy="16.5" r="1.8"/><circle cx="17" cy="16.5" r="1.8"/>',
-        'Wagon'       => '<path d="M2 15v-3l3-4h14l2 4v3"/><path d="M2 15h20"/><circle cx="7" cy="16.5" r="1.8"/><circle cx="17" cy="16.5" r="1.8"/>',
+    // Side-on cars drawn on a 64×32 grid: [body, windows], wheels added below.
+    $bodies = [
+        'SUV'         => ['M4 24V9q0-4 4-5h33l9 8 8 1.5q3 .7 3 3.5v7Z', 'M9 7h11v5H8ZM23 7h11v5H23ZM37 7h4l6 5H37Z', [15, 49]],
+        'Sedan'       => ['M3 24v-5q0-3 3-3.5l10-1.5 7-7h17l9 7 9 1.5q3 .5 3 3.5v5Z', 'M24.5 9H31v5H19ZM33 9h6.5l6 5H33Z', [15, 49]],
+        'Truck'       => ['M3 24v-9h27V8q0-2 2-2h11l7 8 8 1q3 .5 3 3v6Z', 'M33 8.5h9l5 5.5H33ZM6.5 15h21', [14, 49]],
+        'Van'         => ['M3 24V7q0-3 3-3h36l13 9q6 1 6 4v7Z', 'M7 7h11v6H7ZM21 7h11v6H21ZM35 7h7l8 6H35Z', [14, 49]],
+        'Hatchback'   => ['M4 24V10q0-4 4-4h30l10 8 10 1.5q3 .5 3 3.5v5Z', 'M8 9h14v5H8ZM25 9h12l7 5H25Z', [15, 49]],
+        'Coupe'       => ['M3 24v-5q0-3 4-4l11-2 9-6h11l10 7 10 1.5q3 .5 3 3.5v5Z', 'M28 9h9.5l6.5 5H22Z', [15, 49]],
     ];
-    $carIcon = '<path d="M3 15v-3l2-5h11l3 5h2v3"/><path d="M3 15h18"/><circle cx="7" cy="16.5" r="1.8"/><circle cx="17" cy="16.5" r="1.8"/>';
-    $tickerItems = ['All-in prices', 'Licensed dealers only', 'Hold any car for $150', 'Refundable until delivery', 'Pick up or delivery'];
+    $bodies['Convertible'] = $bodies['Coupe'];
+    $bodies['Wagon'] = $bodies['Hatchback'];
+
+    $car = function (string $body) use ($bodies): string {
+        [$shape, $glass, $wheels] = $bodies[$body] ?? $bodies['SUV'];
+        $svg = '<path class="paint" d="' . $shape . '"/><path class="glass" d="' . $glass . '"/>';
+        foreach ($wheels as $x) {
+            $svg .= '<circle class="tyre" cx="' . $x . '" cy="24" r="5.5"/><circle class="hub" cx="' . $x . '" cy="24" r="2.2"/>';
+        }
+
+        return '<svg class="ride" viewBox="0 0 64 32" aria-hidden="true">' . $svg . '</svg>';
+    };
+
+    // Two-tone icons: .d parts take the badge's colour, lines are ink.
+    $icons = [
+        'tag'    => '<path class="d" d="M3.5 12.2V4.5a1 1 0 0 1 1-1h7.7l8.3 8.3a1.5 1.5 0 0 1 0 2.1l-6.6 6.6a1.5 1.5 0 0 1-2.1 0Z"/><circle cx="8" cy="8" r="1.6"/><path d="m10.5 13.5 2 2 4-4"/>',
+        'store'  => '<path class="d" d="M4 20.5V10l8-5 8 5v10.5Z"/><path d="M10 20.5v-5h4v5M12 5V1.8h4l-1 1.3 1 1.3h-4M2.5 20.5h19"/>',
+        'key'    => '<circle class="d" cx="8" cy="15.5" r="4.8"/><circle cx="8" cy="15.5" r="1.4"/><path d="M11.4 12.1 20 3.5M17.2 6.3l2.4 2.4M14.6 8.9l1.9 1.9"/>',
+        'search' => '<circle class="d" cx="10.5" cy="10.5" r="6.8"/><path d="m15.5 15.5 5.5 5.5M7 12.5h7M7.6 12.5l1.2-2.6h3.4l1.2 2.6"/>',
+        'lock'   => '<rect class="d" x="5" y="10.5" width="14" height="10.5" rx="2.2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3M12 14.5V17"/>',
+        'id'     => '<rect class="d" x="3" y="5.5" width="18" height="13" rx="2.2"/><circle cx="8.5" cy="10.8" r="2"/><path d="M5.8 15.8c.6-1.4 1.6-2.1 2.7-2.1s2.1.7 2.7 2.1M14 10h4M14 13h3"/>',
+        'wheel'  => '<circle class="d" cx="12" cy="12" r="8.8"/><circle cx="12" cy="12" r="2.4"/><path d="M3.6 10.6h6M14.4 10.6h6M12 14.4v6.4"/>',
+        'piggy'  => '<path class="d" d="M5 11.5C5 8 8.4 6 12 6c2 0 3.6.5 4.8 1.4L19.5 6l-.4 3.2c1 .9 1.4 1.8 1.6 2.8H22v3h-1.6c-.5 1.2-1.4 2.2-2.6 2.8V20h-3v-1.5h-4V20H8v-2.3C6 16.6 5 14.3 5 11.5Z"/><circle cx="16.5" cy="10.5" r=".9"/><path d="M10 6.3V4.5h3v1.6M5 11.5H3"/>',
+        'grid'   => '<rect class="d" x="3.5" y="3.5" width="7" height="7" rx="1.8"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.8"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.8"/><rect class="d" x="13.5" y="13.5" width="7" height="7" rx="1.8"/>',
+        'chat'   => '<path class="d" d="M4 5.5h16a1 1 0 0 1 1 1V16a1 1 0 0 1-1 1h-9l-4.5 3.5V17H4a1 1 0 0 1-1-1V6.5a1 1 0 0 1 1-1Z"/><path d="M10 9.3a2 2 0 1 1 2.8 1.8c-.5.3-.8.7-.8 1.3M12 14.3v.2"/>',
+    ];
+    $icon = fn (string $name): string => '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">' . $icons[$name] . '</svg>';
+
+    $faqs = [
+        ['Who am I actually buying from?', 'The licensed dealership named on the listing. TruCars is where you find the car and reserve it; the dealership sells it to you, and their registration number is on every listing.'],
+        ['Is the price really all-in?', 'Yes. Freight, pre-delivery prep, dealer admin and regulator fees are already in the price you see. HST and licensing are the only things added.'],
+        ['What does the $150 deposit do?', 'It takes the car off the market while you finish up, and it comes off the price when you buy. It’s refundable any time before you take delivery.'],
+        ['Can I pick the car up myself?', 'Yes. Pick it up at the dealership, or choose delivery when you reserve. Either way you pick the day and time window.'],
+        ['What does “certified” mean on a listing?', 'It means the car is covered by the dealer’s or manufacturer’s inspection checklist, and the listing shows every point that’s checked, not just a number.'],
+    ];
 @endphp
 
 <div class="home">
-    <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..100,800..900&display=swap" rel="stylesheet">
     <style>
-        .home { --display:"Archivo", var(--font-ui); --sun:#FFD43B; --cream:#FFF3E6; --edge:2.5px solid var(--ink); --pop:5px 5px 0 var(--ink); min-width:0; }
+        .home { --peach:#FFE6D6; --sky:#DDEEFF; --mint:#DDF4E6; --butter:#FFF1C2; --lilac:#ECE5FF; --rose:#FFE0EA;
+            --peach-ink:#F5631F; --sky-ink:#2F7BEA; --mint-ink:#1E9E5A; --butter-ink:#E3A008; --lilac-ink:#7B5CE0; --rose-ink:#E0457B;
+            min-width:0; }
         .home > * { min-width:0; }
         .home section { margin-top:96px; }
-        .big { font-family:var(--display); font-stretch:75%; font-weight:900; text-transform:uppercase; letter-spacing:-.01em; line-height:.92; margin:0; }
-        .home h2.big { font-size:clamp(40px, 5.4vw, 72px); }
-        .sec-head { display:flex; align-items:flex-end; justify-content:space-between; gap:20px; flex-wrap:wrap; margin-bottom:30px; }
-        .btn-pop { display:inline-flex; align-items:center; gap:10px; font-size:16px; font-weight:800; color:var(--ink); background:#fff; border:var(--edge); border-radius:14px; padding:13px 22px; text-decoration:none; box-shadow:var(--pop); transition:transform .12s ease, box-shadow .12s ease; white-space:nowrap; }
-        .btn-pop:hover { transform:translate(-2px, -2px); box-shadow:7px 7px 0 var(--ink); }
-        .btn-pop:active { transform:translate(3px, 3px); box-shadow:2px 2px 0 var(--ink); }
-        .btn-pop.dark { background:var(--ink); color:#fff; box-shadow:5px 5px 0 var(--primary); }
-        .btn-pop.dark:hover { box-shadow:7px 7px 0 var(--primary); }
+        .home h2 { font-size:clamp(28px, 3vw, 38px); font-weight:700; letter-spacing:-.03em; line-height:1.1; margin:0; }
+        .sec-head { display:flex; align-items:flex-end; justify-content:space-between; gap:20px; flex-wrap:wrap; margin-bottom:28px; }
+        .sec-head p { margin:8px 0 0; color:var(--ink-2); font-size:16px; }
+        .sec-head > a { font-size:15px; font-weight:600; color:var(--ink); text-decoration:none; border-bottom:1.5px solid var(--ink); padding-bottom:1px; }
 
-        /* ---- hero ---- */
-        .hero { display:grid; grid-template-columns:minmax(0, 1.1fr) minmax(0, .9fr); gap:48px; align-items:center; background:var(--primary); border:var(--edge); border-radius:32px; padding:60px 56px; }
-        .hero h1 { font-size:clamp(54px, 7.6vw, 112px); color:var(--ink); }
-        .hero h1 span { color:#fff; display:block; }
-        .hero-sub { font-size:19px; font-weight:600; color:var(--ink); margin:22px 0 0; max-width:500px; }
-        .finder { margin-top:30px; display:flex; background:#fff; border:var(--edge); border-radius:18px; box-shadow:var(--pop); max-width:640px; overflow:hidden; }
-        .finder input, .finder select { font:inherit; font-size:16px; font-weight:600; color:var(--ink); border:none; outline:none; background:none; padding:17px 16px; min-width:0; }
-        .finder input { flex:1; }
-        .finder select { border-left:2px solid var(--line-strong); cursor:pointer; max-width:150px; }
-        .finder button { font-size:17px; font-weight:900; text-transform:uppercase; letter-spacing:.02em; background:var(--ink); color:#fff; padding:0 26px; }
-        .finder button:hover { background:#000; color:var(--sun); }
-        .hero-chips { display:flex; flex-wrap:wrap; gap:9px; margin-top:20px; }
-        .hero-chips a { font-size:14px; font-weight:800; color:var(--ink); background:var(--sun); border:2px solid var(--ink); border-radius:999px; padding:7px 15px; text-decoration:none; }
-        .hero-chips a:hover { background:#fff; }
+        /* icons: ink lines, the .d parts filled with the badge colour */
+        .ico { width:30px; height:30px; fill:none; stroke:var(--ink); stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+        .ico .d { fill:var(--duo, var(--peach-ink)); }
+        .badge { flex-shrink:0; width:52px; height:52px; border-radius:16px; display:grid; place-items:center; background:var(--bg-tone, var(--peach)); }
+        .badge.peach  { --bg-tone:var(--peach);  --duo:var(--peach-ink); }
+        .badge.sky    { --bg-tone:var(--sky);    --duo:var(--sky-ink); }
+        .badge.mint   { --bg-tone:var(--mint);   --duo:var(--mint-ink); }
+        .badge.butter { --bg-tone:var(--butter); --duo:var(--butter-ink); }
+        .badge.lilac  { --bg-tone:var(--lilac);  --duo:var(--lilac-ink); }
+        .badge .ico .d { opacity:.85; }
 
-        .hero-car { position:relative; display:block; text-decoration:none; color:var(--ink); }
-        .hero-photo { aspect-ratio:4/3; border:var(--edge); border-radius:24px; background:var(--cream) center/cover; box-shadow:10px 10px 0 var(--ink); }
-        .hero-car:hover .hero-photo { box-shadow:12px 12px 0 var(--ink); transform:translate(-2px, -2px); }
-        .hero-photo { transition:transform .15s ease, box-shadow .15s ease; }
-        .sticker { position:absolute; right:-18px; top:-26px; width:132px; height:132px; border-radius:50%; background:var(--sun); border:var(--edge); display:grid; place-content:center; text-align:center; transform:rotate(8deg); }
-        .sticker small { font-size:12px; font-weight:900; text-transform:uppercase; letter-spacing:.05em; }
-        .sticker b { font-family:var(--display); font-stretch:75%; font-weight:900; font-size:30px; line-height:1; }
-        .hero-label { position:absolute; left:16px; bottom:16px; background:#fff; border:2px solid var(--ink); border-radius:12px; padding:8px 13px; font-size:14px; font-weight:800; max-width:calc(100% - 32px); }
-        .hero-label span { display:block; font-size:12.5px; font-weight:600; color:var(--ink-2); }
+        /* the little cars */
+        .ride { overflow:visible; }
+        .ride .paint { fill:var(--duo, var(--peach-ink)); stroke:var(--ink); stroke-width:1.6; stroke-linejoin:round; }
+        .ride .glass { fill:#fff; stroke:var(--ink); stroke-width:1.3; stroke-linejoin:round; }
+        .ride .tyre { fill:var(--ink); }
+        .ride .hub { fill:#D9DCE0; }
 
-        /* ---- ticker ---- */
-        .ticker { margin-top:28px; background:var(--ink); color:var(--sun); border-radius:18px; overflow:hidden; white-space:nowrap; }
-        .ticker-run { display:inline-flex; animation:ticker 32s linear infinite; }
-        .ticker-run span { font-family:var(--display); font-stretch:75%; font-weight:900; font-size:24px; text-transform:uppercase; padding:16px 0; }
-        .ticker-run span::after { content:"✶"; color:var(--primary); margin:0 26px; }
-        @keyframes ticker { to { transform:translateX(-50%); } }
-        @media (prefers-reduced-motion:reduce) { .ticker-run { animation:none; } }
+        /* hero: the car is the picture */
+        .stage { position:relative; min-height:600px; border-radius:28px; overflow:hidden; background:#1b1d22 center/cover; display:flex; align-items:flex-end; }
+        .stage::before { content:""; position:absolute; inset:0; background:linear-gradient(90deg, rgba(12,13,16,.82) 0%, rgba(12,13,16,.55) 42%, rgba(12,13,16,0) 75%), linear-gradient(0deg, rgba(12,13,16,.55), rgba(12,13,16,0) 45%); }
+        .stage-inner { position:relative; padding:56px; width:100%; display:flex; align-items:flex-end; justify-content:space-between; gap:32px; flex-wrap:wrap; }
+        .stage h1 { color:#fff; font-size:clamp(42px, 5.4vw, 76px); font-weight:700; letter-spacing:-.045em; line-height:1; margin:0; max-width:11ch; }
+        .stage p { color:rgba(255,255,255,.82); font-size:18px; margin:18px 0 0; max-width:460px; }
+        .hero-search { margin-top:30px; display:flex; align-items:center; gap:8px; background:#fff; border-radius:999px; padding:7px 7px 7px 22px; max-width:560px; box-shadow:0 20px 50px rgba(0,0,0,.3); }
+        .hero-search svg { color:var(--ink-3); flex-shrink:0; }
+        .hero-search input { flex:1; min-width:0; border:none; outline:none; font-size:16px; background:none; padding:10px 4px; color:var(--ink); }
+        .hero-search button { background:var(--primary); color:#fff; font-size:15px; font-weight:700; padding:12px 24px; border-radius:999px; }
+        .hero-search button:hover { background:var(--primary-press); }
+        .chips { display:flex; gap:8px; flex-wrap:wrap; margin-top:16px; }
+        .chips a { display:inline-flex; align-items:center; gap:7px; font-size:14px; font-weight:600; color:#fff; text-decoration:none; padding:7px 14px 7px 10px; border-radius:999px; background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.25); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); transition:background .15s ease, color .15s ease; }
+        .chips a:hover { background:#fff; color:var(--ink); }
+        .chips .ride { width:26px; height:13px; --duo:#FFB98A; }
+        .chips .ride .paint, .chips .ride .glass { stroke-width:2.2; }
+        .pictured { color:#fff; text-decoration:none; font-size:14px; background:rgba(255,255,255,.14); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,.22); border-radius:14px; padding:12px 16px; }
+        .pictured span { display:block; font-size:12px; color:rgba(255,255,255,.7); }
+        .pictured b { font-size:18px; }
 
-        /* ---- shop by ---- */
-        .tiles { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:20px; }
-        .tile { position:relative; display:flex; flex-direction:column; justify-content:space-between; min-height:210px; padding:22px; border:var(--edge); border-radius:24px; color:var(--ink); text-decoration:none; overflow:hidden; transition:transform .12s ease, box-shadow .12s ease; }
-        .tile:hover { transform:translate(-3px, -3px); box-shadow:var(--pop); }
-        .tile b { font-family:var(--display); font-stretch:75%; font-weight:900; font-size:44px; line-height:.9; text-transform:uppercase; }
-        .tile em { font-style:normal; font-size:15px; font-weight:800; }
-        .tile svg { position:absolute; right:-14px; bottom:-18px; width:150px; height:150px; opacity:.9; }
-        .tile:nth-child(4n+1) { background:var(--sun); }
-        .tile:nth-child(4n+2) { background:var(--cream); }
-        .tile:nth-child(4n+3) { background:var(--ink); color:#fff; }
-        .tile:nth-child(4n+3) svg { color:var(--primary); }
-        .tile:nth-child(4n+4) { background:var(--primary); }
-        .make-row { display:flex; flex-wrap:wrap; gap:10px; margin-top:22px; }
-        .make-row a { font-size:15px; font-weight:800; color:var(--ink); text-decoration:none; border:2px solid var(--ink); border-radius:999px; padding:9px 16px; background:#fff; }
-        .make-row a span { color:var(--ink-3); margin-left:4px; }
-        .make-row a:hover { background:var(--ink); color:#fff; }
+        .facts { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); margin-top:20px; border:1px solid var(--line); border-radius:22px; }
+        .fact { padding:22px 24px; display:flex; gap:16px; align-items:center; }
+        .fact + .fact { border-left:1px solid var(--line); }
+        .fact b { display:block; font-size:16.5px; }
+        .fact span { font-size:14px; color:var(--ink-2); }
 
-        /* ---- cars ---- */
-        .cars { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:22px; }
-        .car { display:block; text-decoration:none; color:var(--ink); background:#fff; border:var(--edge); border-radius:22px; overflow:hidden; transition:transform .12s ease, box-shadow .12s ease; }
-        .car:hover { transform:translate(-3px, -3px); box-shadow:var(--pop); }
-        .car-photo { position:relative; aspect-ratio:4/3; background:var(--cream) center/cover; border-bottom:var(--edge); display:grid; place-items:center; color:var(--ink-3); font-size:13px; font-weight:700; }
-        .car-photo .reserved { position:absolute; top:10px; left:10px; background:var(--sun); border:2px solid var(--ink); color:var(--ink); border-radius:999px; padding:3px 10px; font-size:11.5px; font-weight:900; text-transform:uppercase; }
-        .car-body { padding:14px 16px 16px; }
-        .car-name { font-size:16px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .car-meta { font-size:13px; font-weight:600; color:var(--ink-2); margin-top:2px; }
-        .car-price { display:flex; align-items:center; justify-content:space-between; margin-top:12px; }
-        .car-price b { font-family:var(--display); font-stretch:75%; font-weight:900; font-size:30px; line-height:1; }
-        .car-price span { font-size:11px; font-weight:900; text-transform:uppercase; background:var(--ink); color:#fff; border-radius:6px; padding:4px 7px; }
+        /* cars */
+        .cars { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:28px 22px; }
+        .car { display:block; text-decoration:none; color:var(--ink); }
+        .car-photo { position:relative; aspect-ratio:4/3; border-radius:16px; background:var(--bg-2) center/cover; display:grid; place-items:center; color:var(--ink-3); font-size:13px; transition:transform .25s ease; }
+        .car:hover .car-photo { transform:scale(1.02); }
+        .car-photo .reserved { position:absolute; top:10px; left:10px; background:#fff; color:#7A4E00; font-size:12px; font-weight:700; padding:4px 10px; border-radius:999px; }
+        .car-name { font-size:16px; font-weight:600; margin-top:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .car-meta { font-size:13.5px; color:var(--ink-3); margin-top:2px; }
+        .car-price { font-size:19px; font-weight:700; margin-top:8px; letter-spacing:-.01em; }
+        .car-price small { font-size:13px; font-weight:500; color:var(--ink-3); }
 
-        /* ---- the deal ---- */
-        .deal { background:var(--cream); border:var(--edge); border-radius:32px; padding:56px; display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 380px); gap:56px; align-items:start; }
-        .steps { list-style:none; margin:34px 0 0; padding:0; display:grid; grid-template-columns:1fr 1fr; gap:30px 36px; counter-reset:step; }
-        .steps li { counter-increment:step; font-size:15.5px; font-weight:500; color:var(--ink-2); }
-        .steps li::before { content:counter(step); display:block; font-family:var(--display); font-stretch:75%; font-weight:900; font-size:64px; line-height:.85; color:var(--primary); -webkit-text-stroke:2.5px var(--ink); margin-bottom:10px; }
-        .steps b { display:block; font-size:19px; font-weight:900; color:var(--ink); margin-bottom:3px; }
+        /* shop by: a little car per type that drives off when you point at it */
+        .garage { display:grid; grid-template-columns:repeat(6, minmax(0, 1fr)); gap:16px; }
+        .bay { position:relative; display:flex; flex-direction:column; justify-content:space-between; gap:18px; min-height:190px; padding:20px; border-radius:24px; background:var(--tone); text-decoration:none; color:var(--ink); overflow:hidden; transition:transform .2s ease; }
+        .bay:hover { transform:translateY(-4px); }
+        .bay b { display:block; font-size:19px; font-weight:700; letter-spacing:-.01em; }
+        .bay span { font-size:13.5px; color:var(--ink-2); }
+        .bay .ride { width:100%; max-width:132px; height:auto; transition:transform .5s cubic-bezier(.3,.7,.3,1); }
+        .bay:hover .ride { animation:vroom .7s cubic-bezier(.3,.7,.3,1) forwards; }
+        .bay .ico { width:58px; height:58px; stroke-width:1.3; }
+        .bay:hover .ico { transform:rotate(-8deg) scale(1.06); }
+        .bay .ico { transition:transform .25s ease; }
+        .bay.peach  { --tone:var(--peach);  --duo:var(--peach-ink); }
+        .bay.sky    { --tone:var(--sky);    --duo:var(--sky-ink); }
+        .bay.mint   { --tone:var(--mint);   --duo:var(--mint-ink); }
+        .bay.butter { --tone:var(--butter); --duo:var(--butter-ink); }
+        .bay.lilac  { --tone:var(--lilac);  --duo:var(--lilac-ink); }
+        .bay.rose   { --tone:var(--rose);   --duo:var(--rose-ink); }
+        /* a little rev-and-go when you point at a type */
+        @keyframes vroom { 0% { transform:none; } 25% { transform:translateX(-4px) rotate(-2deg); } 60% { transform:translateX(14px) rotate(1deg); } 100% { transform:translateX(10px); } }
+        @media (prefers-reduced-motion:reduce) { .bay:hover .ride { animation:none; } }
+        .makes { display:flex; flex-wrap:wrap; gap:8px; margin-top:18px; }
+        .makes a { font-size:14px; font-weight:600; color:var(--ink); text-decoration:none; padding:8px 14px; border-radius:999px; border:1px solid var(--line-strong); }
+        .makes a span { color:var(--ink-3); margin-left:3px; }
+        .makes a:hover { border-color:var(--ink); }
 
-        /* a dealer window sticker */
-        .window { background:#fff; border:var(--edge); border-radius:6px; box-shadow:var(--pop); font-size:14.5px; }
-        .window-top { background:var(--ink); color:#fff; padding:12px 18px; font-family:var(--display); font-stretch:75%; font-weight:900; font-size:22px; text-transform:uppercase; letter-spacing:.01em; }
-        .window-body { padding:6px 18px 18px; }
-        .window-row { display:flex; justify-content:space-between; gap:12px; padding:10px 0; border-bottom:1.5px dashed var(--line-strong); }
-        .window-row b { font-weight:900; }
-        .window-row.in b { color:#0B7A59; }
-        .window-row.add b { color:var(--ink-2); font-weight:700; }
-        .window-total { display:flex; justify-content:space-between; align-items:baseline; margin-top:14px; font-weight:900; text-transform:uppercase; font-size:13px; }
-        .window-total b { font-family:var(--display); font-stretch:75%; font-size:38px; line-height:1; }
-        .window-car { font-size:12.5px; font-weight:600; color:var(--ink-3); margin-top:4px; text-align:right; }
+        /* how it works */
+        .how { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:32px; }
+        .how div { position:relative; }
+        .how .badge { width:64px; height:64px; border-radius:20px; margin-bottom:18px; }
+        .how .badge .ico { width:38px; height:38px; stroke-width:1.4; }
+        .how small { font-size:13px; font-weight:600; color:var(--ink-3); }
+        .how b { display:block; font-size:19px; letter-spacing:-.01em; margin:4px 0 6px; }
+        .how p { margin:0; font-size:15px; color:var(--ink-2); }
+        .how div:not(:last-child)::after { content:""; position:absolute; top:32px; left:80px; right:-20px; border-top:2px dashed var(--line-strong); }
 
-        /* ---- questions ---- */
-        .faq-wrap { display:grid; grid-template-columns:minmax(0, .8fr) minmax(0, 1.2fr); gap:48px; align-items:start; }
-        .faq { display:grid; gap:12px; }
-        .faq details { background:#fff; border:var(--edge); border-radius:18px; }
-        .faq details[open] { box-shadow:var(--pop); }
-        .faq summary { cursor:pointer; list-style:none; display:flex; justify-content:space-between; align-items:center; gap:16px; padding:18px 20px; font-size:17px; font-weight:800; }
+        /* questions + close */
+        .faq-wrap { display:grid; grid-template-columns:minmax(0, .8fr) minmax(0, 1.2fr); gap:56px; }
+        .faq-wrap .badge { margin-bottom:18px; }
+        .faq details { border-bottom:1px solid var(--line); }
+        .faq details:first-child { border-top:1px solid var(--line); }
+        .faq summary { cursor:pointer; list-style:none; display:flex; justify-content:space-between; gap:16px; padding:20px 0; font-size:17px; font-weight:600; }
         .faq summary::-webkit-details-marker { display:none; }
-        .faq summary::after { content:"+"; flex-shrink:0; width:30px; height:30px; border-radius:50%; background:var(--sun); border:2px solid var(--ink); display:grid; place-items:center; font-weight:900; line-height:1; }
-        .faq details[open] summary::after { content:"−"; background:var(--primary); }
-        .faq p { margin:0; padding:0 20px 20px; font-size:15.5px; color:var(--ink-2); }
-
-        /* ---- last call ---- */
-        .last { background:var(--sun); border:var(--edge); border-radius:32px; padding:56px; display:flex; align-items:center; justify-content:space-between; gap:30px; flex-wrap:wrap; }
-        .last h2 { font-size:clamp(40px, 5.6vw, 76px); }
-        .last p { margin:14px 0 0; font-size:17px; font-weight:700; }
+        .faq summary::after { content:"+"; font-size:22px; line-height:1; color:var(--ink-3); transition:transform .2s ease; }
+        .faq details[open] summary::after { transform:rotate(45deg); color:var(--primary); }
+        .faq p { margin:0 0 20px; font-size:15.5px; color:var(--ink-2); }
+        .close { position:relative; border-radius:28px; overflow:hidden; background:#1b1d22 center/cover; min-height:360px; display:flex; align-items:center; }
+        .close::before { content:""; position:absolute; inset:0; background:rgba(12,13,16,.62); }
+        .close div { position:relative; padding:56px; color:#fff; }
+        .close h2 { color:#fff; font-size:clamp(32px, 4vw, 52px); }
+        .close p { color:rgba(255,255,255,.8); font-size:17px; margin:12px 0 26px; }
+        .btn-light { display:inline-block; background:#fff; color:var(--ink); font-weight:700; font-size:16px; padding:15px 26px; border-radius:12px; text-decoration:none; }
+        .btn-light:hover { background:var(--primary); color:#fff; }
 
         @media (max-width:1100px) {
-            .hero { grid-template-columns:minmax(0, 1fr); padding:44px 36px 52px; }
-            .hero-car { max-width:560px; }
-            .tiles, .cars { grid-template-columns:repeat(2, minmax(0, 1fr)); }
-            .deal, .faq-wrap { grid-template-columns:minmax(0, 1fr); }
+            .cars { grid-template-columns:repeat(2, minmax(0, 1fr)); }
+            .garage { grid-template-columns:repeat(3, minmax(0, 1fr)); }
+            .how { grid-template-columns:repeat(2, minmax(0, 1fr)); }
+            .how div::after { display:none; }
+            .faq-wrap { grid-template-columns:minmax(0, 1fr); gap:24px; }
         }
         @media (max-width:640px) {
             .home section { margin-top:64px; }
-            .hero { padding:30px 20px 40px; border-radius:24px; gap:44px; }
-            .hero-sub { font-size:17px; }
-            .finder { flex-wrap:wrap; }
-            .finder input { flex:1 1 100%; border-bottom:2px solid var(--line-strong); }
-            .finder select { flex:1; max-width:none; border-left:none; }
-            .finder select + select { border-left:2px solid var(--line-strong); }
-            .finder button { flex:1 1 100%; padding:15px; }
-            .sticker { width:104px; height:104px; right:-6px; top:-30px; }
-            .sticker b { font-size:24px; }
-            .ticker-run span { font-size:19px; padding:12px 0; }
-            .tiles { gap:12px; }
-            .tile { min-height:150px; padding:16px; border-radius:20px; }
-            .tile b { font-size:32px; }
-            .tile svg { width:100px; height:100px; }
-            .cars { gap:12px; }
-            .car { border-radius:16px; }
-            .car-body { padding:10px 11px 12px; }
-            .car-name { font-size:14px; }
-            .car-meta { font-size:12px; }
-            .car-price { margin-top:8px; }
-            .car-price b { font-size:22px; }
-            .car-price span { display:none; }
-            .deal, .last { padding:32px 20px; border-radius:24px; }
-            .steps { grid-template-columns:minmax(0, 1fr); }
+            .stage { min-height:620px; border-radius:22px; }
+            .stage::before { background:linear-gradient(0deg, rgba(12,13,16,.9) 0%, rgba(12,13,16,.6) 55%, rgba(12,13,16,.15) 100%); }
+            .stage-inner { padding:26px 20px; }
+            .hero-search { padding-left:16px; }
+            .hero-search button { padding:11px 16px; }
+            .facts { grid-template-columns:minmax(0, 1fr); }
+            .fact + .fact { border-left:none; border-top:1px solid var(--line); }
+            .fact { padding:16px 18px; }
+            .cars { gap:22px 12px; }
+            .car-price { font-size:17px; }
+            .garage { grid-template-columns:repeat(2, minmax(0, 1fr)); gap:12px; }
+            .bay { min-height:150px; padding:16px; border-radius:20px; }
+            .bay b { font-size:17px; }
+            .how { grid-template-columns:minmax(0, 1fr); gap:28px; }
+            .close div { padding:32px 22px; }
         }
     </style>
 
     {{-- HERO --}}
-    <div class="hero">
-        <div>
-            <h1 class="big">Real cars. Real dealers. <span>All-in prices.</span></h1>
-            <p class="hero-sub">Freight, prep and dealer fees are already in every price. You add HST and licensing. That's it.</p>
+    <div class="stage" @if ($featured) style="background-image:url('{{ $featured->primary_photo_url }}')" @endif>
+        <div class="stage-inner">
+            <div>
+                <h1>Your next car, at the real price.</h1>
+                <p>Used cars from licensed dealerships, with freight, prep and fees already in the price. Just add HST and licensing.</p>
 
-            <form class="finder" wire:submit="search" role="search">
-                <input type="search" wire:model="q" placeholder="Search {{ number_format($carCount) }} cars" aria-label="Model or keyword">
-                <select wire:model="make" aria-label="Make">
-                    <option value="">Any make</option>
-                    @foreach ($allMakes as $option)
-                        <option value="{{ $option }}">{{ $option }}</option>
-                    @endforeach
-                </select>
-                <select wire:model="max" aria-label="Max price">
-                    <option value="">Any price</option>
-                    @foreach ($this::PRICE_STEPS as $step)
-                        <option value="{{ $step }}">Under ${{ number_format($step / 1000) }}k</option>
-                    @endforeach
-                </select>
-                <button type="submit">Go</button>
-            </form>
+                <form class="hero-search" wire:submit="search" role="search">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+                    <input type="search" wire:model="q" placeholder="Search a make or model, like “Outlander”" aria-label="Search cars">
+                    <button type="submit">Search</button>
+                </form>
 
-            <div class="hero-chips">
-                @foreach ($bodyTypes->keys() as $body)
-                    <a href="{{ route('shop', ['body' => [$body]]) }}" wire:navigate>{{ $body }}s</a>
-                @endforeach
-                @if ($under) <a href="{{ route('shop', ['max' => 25000]) }}" wire:navigate>Under $25k</a> @endif
+                <div class="chips">
+                    @foreach ($bodyTypes->keys() as $body)
+                        <a href="{{ route('shop', ['body' => [$body]]) }}" wire:navigate>{!! $car($body) !!} {{ $body }}s</a>
+                    @endforeach
+                    @if ($under) <a href="{{ route('shop', ['max' => 25000]) }}" wire:navigate>Under $25k</a> @endif
+                    <a href="{{ route('shop') }}" wire:navigate>Everything →</a>
+                </div>
             </div>
-        </div>
-
-        @if ($featured)
-            <a class="hero-car" href="/cars/{{ $featured->id }}" wire:navigate>
-                <div class="hero-photo" style="background-image:url('{{ $featured->primary_photo_url }}')" role="img" aria-label="{{ $featured->model_year }} {{ $featured->make }} {{ $featured->model }}"></div>
-                <div class="sticker"><small>All-in</small><b>{{ $featured->display_price }}</b></div>
-                <div class="hero-label">{{ $featured->model_year }} {{ $featured->make }} {{ $featured->model }}<span>{{ $featured->display_kilometres }} · {{ $featured->display_location }}</span></div>
-            </a>
-        @endif
-    </div>
-
-    <div class="ticker" aria-hidden="true">
-        <div class="ticker-run">
-            @foreach ([1, 2] as $copy)
-                @foreach ([...$tickerItems, ...$tickerItems] as $item)<span>{{ $item }}</span>@endforeach
-            @endforeach
+            @if ($featured)
+                <a class="pictured" href="/cars/{{ $featured->id }}" wire:navigate>
+                    <span>Pictured · {{ $featured->display_location }}</span>
+                    {{ $featured->model_year }} {{ $featured->make }} {{ $featured->model }} · <b>{{ $featured->display_price }}</b>
+                </a>
+            @endif
         </div>
     </div>
+
+    <div class="facts">
+        <div class="fact"><span class="badge peach">{!! $icon('tag') !!}</span><div><b>All-in prices</b><span>Freight, prep and dealer fees included.</span></div></div>
+        <div class="fact"><span class="badge sky">{!! $icon('store') !!}</span><div><b>Licensed dealers only</b><span>Every listing names the dealership.</span></div></div>
+        <div class="fact"><span class="badge mint">{!! $icon('key') !!}</span><div><b>Hold it for $150</b><span>Refundable until you take delivery.</span></div></div>
+    </div>
+
+    {{-- NEW CARS --}}
+    @if ($latest->isNotEmpty())
+        <section>
+            <div class="sec-head">
+                <div><h2>New on TruCars</h2><p>The latest cars dealers have listed.</p></div>
+                <a href="{{ route('shop') }}" wire:navigate>See all {{ number_format($carCount) }} cars</a>
+            </div>
+            <div class="cars">
+                @foreach ($latest as $listing)
+                    <a class="car" href="/cars/{{ $listing->id }}" wire:navigate wire:key="latest-{{ $listing->id }}">
+                        <div class="car-photo" @if ($listing->primary_photo_url) style="background-image:url('{{ $listing->primary_photo_url }}')" @endif>
+                            @unless ($listing->primary_photo_url) No photo yet @endunless
+                            @if ($listing->is_reserved)<span class="reserved">Reserved</span>@endif
+                        </div>
+                        <div class="car-name">{{ $listing->model_year }} {{ $listing->make }} {{ $listing->model }}</div>
+                        <div class="car-meta">{{ $listing->display_kilometres }} · {{ $listing->display_location }}</div>
+                        <div class="car-price">{{ $listing->display_price }} <small>all-in</small></div>
+                    </a>
+                @endforeach
+            </div>
+        </section>
+    @endif
 
     {{-- SHOP BY --}}
     @if ($bodyTypes->isNotEmpty())
         <section>
-            <div class="sec-head">
-                <h2 class="big">What are you<br>driving next?</h2>
-            </div>
-            <div class="tiles">
+            <div class="sec-head"><div><h2>What are you after?</h2><p>Pick a type and we'll show you what's on the lot.</p></div></div>
+            @php $tones = ['peach', 'sky', 'mint', 'butter']; @endphp
+            <div class="garage">
                 @foreach ($bodyTypes as $body => $total)
-                    <a class="tile" href="{{ route('shop', ['body' => [$body]]) }}" wire:navigate>
-                        <b>{{ $body }}s</b>
-                        <em>{{ $total }} {{ $total === 1 ? 'car' : 'cars' }} →</em>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">{!! $bodyIcons[$body] ?? $carIcon !!}</svg>
+                    <a class="bay {{ $tones[$loop->index % 4] }}" href="{{ route('shop', ['body' => [$body]]) }}" wire:navigate>
+                        {!! $car($body) !!}
+                        <div><b>{{ $body }}s</b><span>{{ $total }} {{ $total === 1 ? 'car' : 'cars' }}</span></div>
                     </a>
                 @endforeach
                 @if ($under)
-                    <a class="tile" href="{{ route('shop', ['max' => 25000]) }}" wire:navigate>
-                        <b>Under<br>$25k</b>
-                        <em>{{ $under }} {{ $under === 1 ? 'car' : 'cars' }} →</em>
+                    <a class="bay lilac" href="{{ route('shop', ['max' => 25000]) }}" wire:navigate>
+                        {!! $icon('piggy') !!}
+                        <div><b>Under $25k</b><span>{{ $under }} {{ $under === 1 ? 'car' : 'cars' }}</span></div>
                     </a>
                 @endif
+                <a class="bay rose" href="{{ route('shop') }}" wire:navigate>
+                    {!! $icon('grid') !!}
+                    <div><b>See everything</b><span>{{ number_format($carCount) }} {{ $carCount === 1 ? 'car' : 'cars' }}</span></div>
+                </a>
             </div>
             @if ($makes->isNotEmpty())
-                <div class="make-row">
-                    @foreach ($makes as $name => $total)
-                        <a href="{{ route('shop', ['make' => [$name]]) }}" wire:navigate>{{ $name }}<span>{{ $total }}</span></a>
-                    @endforeach
+                <div class="makes">
+                    @foreach ($makes as $name => $total)<a href="{{ route('shop', ['make' => [$name]]) }}" wire:navigate>{{ $name }}<span>{{ $total }}</span></a>@endforeach
                 </div>
             @endif
         </section>
     @endif
 
-    {{-- JUST LANDED --}}
-    @if ($latest->isNotEmpty())
-        <section>
-            <div class="sec-head">
-                <h2 class="big">Just landed</h2>
-                <a class="btn-pop" href="{{ route('shop') }}" wire:navigate>See all {{ number_format($carCount) }} cars →</a>
-            </div>
-            <div class="cars">
-                @foreach ($latest as $car)
-                    <a class="car" href="/cars/{{ $car->id }}" wire:navigate wire:key="latest-{{ $car->id }}">
-                        <div class="car-photo" @if ($car->primary_photo_url) style="background-image:url('{{ $car->primary_photo_url }}')" @endif>
-                            @unless ($car->primary_photo_url) No photo yet @endunless
-                            @if ($car->is_reserved)<span class="reserved">Reserved</span>@endif
-                        </div>
-                        <div class="car-body">
-                            <div class="car-name">{{ $car->model_year }} {{ $car->make }} {{ $car->model }}</div>
-                            <div class="car-meta">{{ $car->display_kilometres }} · {{ $car->display_location }}</div>
-                            <div class="car-price"><b>{{ $car->display_price }}</b><span>All-in</span></div>
-                        </div>
-                    </a>
-                @endforeach
-            </div>
-        </section>
-    @endif
-
-    {{-- THE DEAL --}}
-    <section class="deal">
-        <div>
-            <h2 class="big">Here's how<br>it works</h2>
-            <ol class="steps">
-                <li><b>Find it</b>Every car is listed by a licensed dealership, with where it is and what it costs.</li>
-                <li><b>Hold it for $150</b>The car gets marked reserved so nobody else can grab it. Refundable until delivery.</li>
-                <li><b>Confirm it</b>Verify your ID and the dealership calls you to sort out the details.</li>
-                <li><b>Drive it</b>Pick it up or get it delivered. Your $150 comes off the price.</li>
-            </ol>
-            <div style="margin-top:34px"><a class="btn-pop" href="{{ route('how-it-works') }}" wire:navigate>The full walkthrough →</a></div>
+    {{-- HOW IT WORKS --}}
+    <section>
+        <div class="sec-head">
+            <div><h2>How it works</h2></div>
+            <a href="{{ route('how-it-works') }}" wire:navigate>The full walkthrough</a>
         </div>
-
-        <div class="window">
-            <div class="window-top">What's in the price</div>
-            <div class="window-body">
-                <div class="window-row in">Freight &amp; prep <b>Included</b></div>
-                <div class="window-row in">Dealer admin fee <b>Included</b></div>
-                <div class="window-row in">Regulator fee <b>Included</b></div>
-                <div class="window-row in">Surprise add-ons <b>$0</b></div>
-                <div class="window-row add">HST &amp; licensing <b>Added at sale</b></div>
-                @if ($featured)
-                    <div class="window-total">All-in price <b>{{ $featured->display_price }}</b></div>
-                    <div class="window-car">{{ $featured->model_year }} {{ $featured->make }} {{ $featured->model }}</div>
-                @endif
-            </div>
+        <div class="how">
+            <div><span class="badge peach">{!! $icon('search') !!}</span><small>Step 1</small><b>Find it</b><p>Browse cars from licensed dealers, each with its all-in price.</p></div>
+            <div><span class="badge sky">{!! $icon('lock') !!}</span><small>Step 2</small><b>Hold it for $150</b><p>The car is marked reserved for you. Refundable until delivery.</p></div>
+            <div><span class="badge mint">{!! $icon('id') !!}</span><small>Step 3</small><b>Confirm it</b><p>Verify your ID and the dealership reaches out about the details.</p></div>
+            <div><span class="badge butter">{!! $icon('wheel') !!}</span><small>Step 4</small><b>Drive it</b><p>Pick it up or have it delivered. Your $150 comes off the price.</p></div>
         </div>
     </section>
 
     {{-- QUESTIONS --}}
     <section class="faq-wrap">
-        <h2 class="big">Good<br>questions</h2>
+        <div><span class="badge lilac">{!! $icon('chat') !!}</span><h2>Questions</h2></div>
         <div class="faq">
-            @foreach ([
-                ['Who am I actually buying from?', 'The licensed dealership named on the listing. TruCars is where you find the car and reserve it; the dealership sells it to you, and their registration number is on every listing.'],
-                ['Is the price really all-in?', 'Yes. Freight, pre-delivery prep, dealer admin and regulator fees are already in the price you see. HST and licensing are the only things added.'],
-                ['What does the $150 deposit do?', 'It takes the car off the market while you finish up, and it comes off the price when you buy. It’s refundable any time before you take delivery.'],
-                ['Can I pick the car up myself?', 'Yes. Pick it up at the dealership, or choose delivery when you reserve. Either way you pick the day and time window.'],
-                ['What does “certified” mean on a listing?', 'It means the car is covered by the dealer’s or manufacturer’s inspection checklist, and the listing shows every point that’s checked, not just a number.'],
-            ] as [$question, $answer])
-                <details>
-                    <summary>{{ $question }}</summary>
-                    <p>{{ $answer }}</p>
-                </details>
+            @foreach ($faqs as [$question, $answer])
+                <details><summary>{{ $question }}</summary><p>{{ $answer }}</p></details>
             @endforeach
         </div>
     </section>
 
-    {{-- LAST CALL --}}
-    <section class="last">
+    {{-- CLOSE --}}
+    <section class="close" @if ($latest->get(1)?->primary_photo_url) style="background-image:url('{{ $latest->get(1)->primary_photo_url }}')" @endif>
         <div>
-            <h2 class="big">{{ number_format($carCount) }} cars.<br>All in.</h2>
-            <p>From {{ $dealerCount }} licensed {{ $dealerCount === 1 ? 'dealer' : 'dealers' }}{{ $cityCount > 1 ? ' in ' . $cityCount . ' cities' : '' }}. Go have a look.</p>
+            <h2>{{ number_format($carCount) }} cars, all priced all-in.</h2>
+            <p>From {{ $dealerCount }} licensed {{ $dealerCount === 1 ? 'dealer' : 'dealers' }}{{ $cityCount > 1 ? ' in ' . $cityCount . ' cities' : '' }}.</p>
+            <a class="btn-light" href="{{ route('shop') }}" wire:navigate>Start shopping</a>
         </div>
-        <a class="btn-pop dark" href="{{ route('shop') }}" wire:navigate>Start shopping →</a>
     </section>
 </div>

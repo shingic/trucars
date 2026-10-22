@@ -31,8 +31,8 @@ class HomepageTest extends TestCase
 
         $this->get('/')
             ->assertOk()
-            ->assertSee('All-in prices.')
-            ->assertSee('Just landed')
+            ->assertSee('Your next car, at the real price.')
+            ->assertSee('New on TruCars')
             ->assertSee('Outlander')
             ->assertDontSee('Hidden Mirage')
             ->assertSee(route('shop'))
@@ -52,18 +52,6 @@ class HomepageTest extends TestCase
             ->set('q', 'Outlander')
             ->call('search')
             ->assertRedirect(route('shop', ['q' => 'Outlander']));
-
-        Livewire::test('pages::home')
-            ->set('make', 'Mitsubishi')
-            ->set('max', '25000')
-            ->call('search')
-            ->assertRedirect(route('shop', ['make' => ['Mitsubishi'], 'max' => 25000]));
-
-        // A price that isn't one of the choices is dropped, not passed along.
-        Livewire::test('pages::home')
-            ->set('max', '1')
-            ->call('search')
-            ->assertRedirect(route('shop'));
     }
 
     public function test_the_shop_reads_its_filters_from_the_url(): void
