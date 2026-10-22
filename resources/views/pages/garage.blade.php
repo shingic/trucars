@@ -225,6 +225,12 @@ new #[Layout('layouts.checkout')] class extends Component {
         return $deal->documents->where('is_done', true)->count();
     }
 
+    /** Documents the buyer has been asked for so far; insurance joins once the deal is finalized. */
+    public function documentsAsked(Deal $deal): int
+    {
+        return $deal->documents->filter(fn (DealDocument $document) => $document->isRequested() || $document->is_done)->count();
+    }
+
     /**
      * The status line shown under each document. Buyer-uploaded items carry an
      * uploaded_at, so we append a friendly relative time ("Uploaded · 2 minutes
@@ -292,6 +298,7 @@ new #[Layout('layouts.checkout')] class extends Component {
         $document = DealDocument::query()
             ->whereKey($documentId)
             ->whereIn('deal_id', Auth::user()->deals()->pluck('id'))
+            ->whereNotNull('requested_at')
             ->first();
 
         if ($document === null) {
@@ -401,6 +408,7 @@ new #[Layout('layouts.checkout')] class extends Component {
         .g-doc-status { font-size:12.5px; color:var(--ink-3); margin-top:1px; }
         .g-doc-action { margin-left:auto; }
         .g-doc-done { font-size:13px; font-weight:600; color:var(--good); }
+        .g-doc-later { font-size:13px; font-weight:600; color:var(--ink-3); }
         .g-doc-upload { padding:7px 16px; font-size:13px; }
         .g-doc-input { display:none; }
         .g-doc-done-wrap { display:flex; align-items:center; gap:14px; }
@@ -576,10 +584,10 @@ new #[Layout('layouts.checkout')] class extends Component {
                     <div class="g-card-head">
                         <div>
                             <h3>Documents</h3>
-                            <span class="g-card-sub">A few items to finalize your financing — the sooner they're in, the sooner the dealership locks your rate.</span>
+                            <span class="g-card-sub">A few items for the dealership. The sooner they're in, the sooner your car is ready.</span>
                         </div>
-                        <span class="g-status {{ $this->documentsDone($this->featuredDeal) === $this->featuredDeal->documents->count() ? 'confirmed' : 'pending' }}">
-                            {{ $this->documentsDone($this->featuredDeal) }} of {{ $this->featuredDeal->documents->count() }} done
+                        <span class="g-status {{ $this->documentsDone($this->featuredDeal) === $this->documentsAsked($this->featuredDeal) ? 'confirmed' : 'pending' }}">
+                            {{ $this->documentsDone($this->featuredDeal) }} of {{ $this->documentsAsked($this->featuredDeal) }} done
                         </span>
                     </div>
 
@@ -610,6 +618,8 @@ new #[Layout('layouts.checkout')] class extends Component {
                                                     </label>
                                                 @endif
                                             </div>
+                                        @elseif (! $document->isRequested())
+                                            <span class="g-doc-later">Later</span>
                                         @else
                                             <label class="btn btn-primary g-doc-upload">
                                                 <span wire:loading.remove wire:target="pendingFiles.{{ $document->id }}">Upload</span>

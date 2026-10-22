@@ -239,7 +239,11 @@
                             <tr>
                                 <td width="28" valign="top" style="font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:15px; font-weight:800; color:#F5631F; line-height:1.5;">3.</td>
                                 <td style="padding-bottom:12px; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:14px; line-height:1.55; color:#3A3F46;">
-                                    Upload any remaining documents in My Garage so the dealership can finalize your deal without delays.
+                                    @if ($deal->purchase_type === 'cash')
+                                        Once the deal is finalized, we'll email you to upload proof of insurance in My Garage.
+                                    @else
+                                        Upload your two most recent pay stubs and a void cheque in My Garage, so the lender can approve you without delays. Once the deal is finalized, we'll ask for proof of insurance.
+                                    @endif
                                 </td>
                             </tr>
                             <tr>

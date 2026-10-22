@@ -1,5 +1,6 @@
 <?php
 
+use App\Mail\DocumentReuploadRequested;
 use App\Models\Deal;
 use App\Models\DealDocument;
 use Livewire\Component;
@@ -100,9 +101,8 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
     /**
      * Send a document back to the buyer for re-upload. Flipping is_done to false
      * drops it back into the outstanding pile in My Garage (the buyer's Upload
-     * button reappears), and the optional reason rides along on the activity
-     * trail so there's a record of why. Buyer-facing email is deliberately left
-     * out of this slice — this is activity-only for now.
+     * button reappears), the buyer is emailed with the reason, and the reason
+     * rides along on the activity trail so there's a record of why.
      */
     public function requestReupload(int $documentId): void
     {
@@ -118,8 +118,9 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
         }
 
         $document->update([
-            'status'  => 'Needs re-upload',
-            'is_done' => false,
+            'status'       => 'Needs re-upload',
+            'is_done'      => false,
+            'requested_at' => now(),
         ]);
 
         $trimmedReason = trim($this->rejectionReason);
@@ -130,6 +131,11 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
             'Requested re-upload of ' . $document->name . $reasonSuffix,
             Auth::user()->name ?? 'Dealer',
             'outbound',
+        );
+
+        $this->deal->emailBuyer(
+            new DocumentReuploadRequested($this->deal, $document, $trimmedReason !== '' ? $trimmedReason : null),
+            'Re-upload request for ' . $document->name,
         );
 
         $this->documentBeingRejected = null;
@@ -161,6 +167,7 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
      * The display state for one document row, collapsing status + is_done +
      * file_path into a single word the view can switch on:
      *   cleared  — verified at checkout, no file to review (the licence)
+     *   later    — not asked for yet (insurance, until the deal is finalized)
      *   waiting  — buyer hasn't uploaded yet
      *   uploaded — file in, awaiting the manager's review
      *   approved — manager accepted it
@@ -173,7 +180,7 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
         }
 
         if ($document->file_path === null) {
-            return 'waiting';
+            return $document->isRequested() ? 'waiting' : 'later';
         }
 
         if ($document->status === 'Approved') {
@@ -194,6 +201,16 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
             'lease'   => 'Lease',
             'cash'    => 'Cash purchase',
             default   => ucfirst((string) $this->deal->purchase_type),
+        };
+    }
+
+    /** What the buyer gets emailed when the next stage is marked, if anything. */
+    public function nextStageEmail(): ?string
+    {
+        return match (Deal::NEXT_STAGE[$this->deal->stage] ?? null) {
+            'documents'          => 'Emails the buyer for proof of insurance',
+            'ready_for_delivery' => 'Emails the buyer that the car is ready',
+            default              => null,
         };
     }
 
@@ -265,6 +282,7 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
         .adv-btn:hover { background:var(--primary); }
         .adv-btn[disabled] { opacity:.55; cursor:wait; }
         .adv-done { font-size:12.5px; font-weight:700; color:var(--ink-3); }
+        .adv-note { font-size:12px; color:var(--ink-3); }
 
         /* Stage pill (shared vocabulary with the inbox) */
         .stage { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; padding:5px 11px; border-radius:var(--radius-pill); white-space:nowrap; }
@@ -415,6 +433,9 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
             </span>
 
             @if (isset(App\Models\Deal::NEXT_STAGE[$deal->stage]))
+                @if ($this->nextStageEmail())
+                    <span class="adv-note">{{ $this->nextStageEmail() }}</span>
+                @endif
                 <button type="button"
                         class="adv-btn"
                         wire:click="advanceStage"
@@ -665,6 +686,8 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
                                         <span class="doc-state cleared">Verified</span>
                                     @elseif ($row['state'] === 'rejected')
                                         <span class="doc-state rejected">Awaiting re-upload</span>
+                                    @elseif ($row['state'] === 'later')
+                                        <span class="doc-state waiting">Asked for at Documents</span>
                                     @else
                                         <span class="doc-state waiting">Waiting on buyer</span>
                                     @endif
@@ -673,7 +696,7 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
 
                             @if ($documentBeingRejected === $row['id'])
                                 <div class="reject-box">
-                                    <label for="reason-{{ $row['id'] }}">Reason for re-upload (optional — the buyer sees this on the deal trail)</label>
+                                    <label for="reason-{{ $row['id'] }}">Reason for re-upload (optional — the buyer gets this by email)</label>
                                     <textarea id="reason-{{ $row['id'] }}"
                                               wire:model="rejectionReason"
                                               placeholder="e.g. The licence photo is cut off — please re-upload showing all four corners."></textarea>

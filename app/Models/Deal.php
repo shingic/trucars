@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Mail\InsuranceRequested;
+use App\Mail\ReadyForHandover;
 use App\Models\Concerns\CarriesCampaignAttribution;
 use App\Models\Scopes\DealerScope;
 use Illuminate\Database\Eloquent\Attributes\ScopedBy;
@@ -11,7 +13,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Mail\Mailable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 #[ScopedBy(DealerScope::class)]
 class Deal extends Model
@@ -57,12 +62,13 @@ class Deal extends Model
     protected function casts(): array
     {
         return [
-            'identity_verified_at' => 'datetime',
-            'pickup_at'            => 'datetime',
-            'extras_interest'      => 'array',
-            'fees_snapshot'        => 'array',
-            'offers_snapshot'      => 'array',
-            'dealer_snapshot'      => 'array',
+            'identity_verified_at'  => 'datetime',
+            'documents_reminded_at' => 'datetime',
+            'pickup_at'             => 'datetime',
+            'extras_interest'       => 'array',
+            'fees_snapshot'         => 'array',
+            'offers_snapshot'       => 'array',
+            'dealer_snapshot'       => 'array',
         ];
     }
 
@@ -76,18 +82,26 @@ class Deal extends Model
             $deal->dealer_snapshot ??= Dealer::find($deal->dealer_id)?->toSnapshot();
         });
 
-        // Every new deal gets the canonical four documents up front so the
-        // buyer always sees the full checklist in My Garage. The driver's
-        // licence arrives pre-cleared when identity was verified at reserve;
-        // the rest start pending. Created (not creating) so the deal has an id.
         // A cancelled reservation puts the car back on sale: ring the bell for
         // everyone waiting on it — once the cancellation has committed.
         static::updated(function (Deal $deal) {
             if ($deal->wasChanged('stage') && $deal->stage === 'cancelled' && $deal->vehicle_id) {
                 DB::afterCommit(fn () => ($vehicle = Vehicle::find($deal->vehicle_id)) && VehicleAlert::notifyWaiting($vehicle));
             }
+
+            // Moving to Documents means the deal is finalized: ask for insurance.
+            if ($deal->wasChanged('stage') && $deal->stage === 'documents') {
+                $deal->requestInsurance();
+            }
+
+            if ($deal->wasChanged('stage') && $deal->stage === 'ready_for_delivery') {
+                DB::afterCommit(fn () => $deal->emailBuyer(new ReadyForHandover($deal->fresh()), 'Ready-for-handover email'));
+            }
         });
 
+        // Every new deal gets its document checklist up front so the buyer sees
+        // the whole list in My Garage; DealDocument::blueprintFor decides what's
+        // asked for now and what waits. Created (not creating) so the deal has an id.
         static::created(function (Deal $deal) {
             foreach (DealDocument::blueprintFor($deal) as $position => $document) {
                 $deal->documents()->create($document + ['sort_order' => $position]);
@@ -156,6 +170,55 @@ class Deal extends Model
             'author_name' => $authorName,
             'direction'   => $direction,
         ]);
+    }
+
+    /**
+     * Unlock the proof-of-insurance upload and email the buyer for it. Runs
+     * once: a deal that already asked (or already has the file) is left alone.
+     */
+    public function requestInsurance(): void
+    {
+        $insurance = $this->documents()->where('slug', DealDocument::INSURANCE)->whereNull('requested_at')->first();
+
+        if ($insurance === null) {
+            return;
+        }
+
+        $insurance->update(['requested_at' => now(), 'status' => 'Needed before you take the car home']);
+
+        DB::afterCommit(fn () => $this->emailBuyer(new InsuranceRequested($this->fresh()), 'Proof-of-insurance request'));
+    }
+
+    /**
+     * Send the buyer one of their deal emails. Never throws: a mail outage
+     * can't undo a stage change, so a failure is logged and noted on the
+     * deal for the dealership to follow up instead.
+     */
+    public function emailBuyer(Mailable $mail, string $what): bool
+    {
+        try {
+            Mail::to($this->email)->send($mail);
+            $this->recordActivity('email', "{$what} emailed to {$this->email}.", null, 'outbound');
+
+            return true;
+        } catch (\Throwable $sendFailure) {
+            Log::error('Buyer deal email failed to send.', [
+                'deal_reference' => $this->reference,
+                'email'          => $what,
+                'error'          => $sendFailure->getMessage(),
+            ]);
+            $this->recordActivity('system', "{$what} could not be emailed to {$this->email}. The buyer may need a call.");
+
+            return false;
+        }
+    }
+
+    /** "2021 Mitsubishi Outlander", for subject lines and copy. */
+    public function getVehicleLabelAttribute(): string
+    {
+        $vehicle = $this->vehicle()->withoutGlobalScopes()->first();
+
+        return $vehicle ? trim("{$vehicle->model_year} {$vehicle->make} {$vehicle->model}") : 'car';
     }
 
     public function getCustomerFullNameAttribute(): string
