@@ -26,17 +26,35 @@ class HomepageTest extends TestCase
 
     public function test_visitors_land_on_the_homepage_not_the_shop(): void
     {
-        $this->car(['model' => 'Outlander', 'body_type' => 'SUV']);
-        $this->car(['model' => 'Hidden Mirage', 'is_published' => false]);
+        $this->car(['model' => 'Outlander', 'body_type' => 'SUV', 'photos' => ['https://example.test/outlander.jpg']]);
+        $this->car(['model' => 'Hidden Mirage', 'is_published' => false, 'photos' => ['https://example.test/mirage.jpg']]);
+        $this->car(['model' => 'Photoless Lancer']);
 
         $this->get('/')
             ->assertOk()
+            ->assertDontSee('Photoless Lancer')
             ->assertSee('Your next car, at the real price.')
             ->assertSee('New on TruCars')
             ->assertSee('Outlander')
             ->assertDontSee('Hidden Mirage')
             ->assertSee(route('shop'))
             ->assertSee(route('how-it-works'));
+    }
+
+    public function test_the_big_photo_rotates_through_every_dealer(): void
+    {
+        $other = $this->makeDealer(['name' => 'Valley Nissan']);
+        $this->car(['model' => 'Outlander', 'photos' => ['https://example.test/outlander.jpg']]);
+        $this->car(['model' => 'NoPhoto']);
+        $other->vehicles()->create([
+            'vin' => Str::upper(Str::random(17)), 'model_year' => 2022, 'make' => 'Nissan', 'model' => 'Rogue',
+            'kilometres' => 30000, 'price_in_cents' => 2899000, 'condition' => 'USED', 'is_published' => true,
+            'photos' => ['https://example.test/rogue.jpg'],
+        ]);
+
+        $seen = collect(range(1, 30))->map(fn () => Livewire::test('pages::home')->viewData('featured')?->model)->unique();
+
+        $this->assertEqualsCanonicalizing(['Outlander', 'Rogue'], $seen->all());
     }
 
     public function test_the_site_no_longer_offers_selling_trading_or_financing(): void

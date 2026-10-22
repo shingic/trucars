@@ -24,19 +24,45 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
     {
         $listed = Vehicle::query()->listed();
 
-        $latest = (clone $listed)->with('dealer')->withReservedFlag()->latest('vehicles.created_at')->limit(8)->get();
+        // Only cars with a photo make the homepage; a few spare in case a feed sent an empty photo list.
+        $latest = (clone $listed)->whereNotNull('photos')->with('dealer')->withReservedFlag()->latest('vehicles.created_at')->limit(16)->get()
+            ->filter(fn (Vehicle $vehicle) => $vehicle->primary_photo_url !== null)->take(8)->values();
         $activeDealers = Dealer::where('status', Dealer::STATUS_ACTIVE)->whereHas('vehicles', fn ($vehicles) => $vehicles->where('is_published', true));
+        $featured = $this->showcase($listed);
 
         return [
             'carCount'    => (clone $listed)->count(),
             'dealerCount' => (clone $activeDealers)->count(),
             'cityCount'   => (clone $activeDealers)->distinct()->count('city'),
             'latest'      => $latest,
-            'featured'    => $latest->first(fn (Vehicle $vehicle) => $vehicle->primary_photo_url !== null),
+            'featured'    => $featured,
+            'closer'      => $this->showcase($listed, except: $featured),
             'bodyTypes'   => $this->countsBy($listed, 'body_type', 4),
             'makes'       => $this->countsBy($listed, 'make', 10),
             'under'       => (clone $listed)->where('price_in_cents', '<', 2500000)->count(),
         ];
+    }
+
+    /**
+     * A random car with a photo for the big pictures, different on every
+     * visit. A random dealer is picked first, so a small lot gets the same
+     * turns as a big one.
+     */
+    private function showcase($listed, ?Vehicle $except = null): ?Vehicle
+    {
+        $withPhotos = (clone $listed)->whereNotNull('photos')
+            ->when($except, fn ($query) => $query->whereKeyNot($except->id));
+
+        $dealerId = (clone $withPhotos)->distinct()->pluck('vehicles.dealer_id')->shuffle()->first();
+
+        if ($dealerId === null) {
+            return null;
+        }
+
+        // A few candidates, in case a feed sent some cars with an empty photo list.
+        return (clone $withPhotos)->where('vehicles.dealer_id', $dealerId)->with('dealer')
+            ->inRandomOrder()->limit(5)->get()
+            ->first(fn (Vehicle $vehicle) => $vehicle->primary_photo_url !== null);
     }
 
     private function countsBy($listed, string $column, int $limit): Collection
@@ -157,7 +183,7 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
         /* cars */
         .cars { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:28px 22px; }
         .car { display:block; text-decoration:none; color:var(--ink); }
-        .car-photo { position:relative; aspect-ratio:4/3; border-radius:16px; background:var(--bg-2) center/cover; display:grid; place-items:center; color:var(--ink-3); font-size:13px; transition:transform .25s ease; }
+        .car-photo { position:relative; aspect-ratio:4/3; border-radius:16px; background:var(--bg-2) center/cover; transition:transform .25s ease; }
         .car:hover .car-photo { transform:scale(1.02); }
         .car-photo .reserved { position:absolute; top:10px; left:10px; background:#fff; color:#7A4E00; font-size:12px; font-weight:700; padding:4px 10px; border-radius:999px; }
         .car-name { font-size:16px; font-weight:600; margin-top:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -291,8 +317,7 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
             <div class="cars">
                 @foreach ($latest as $listing)
                     <a class="car" href="/cars/{{ $listing->id }}" wire:navigate wire:key="latest-{{ $listing->id }}">
-                        <div class="car-photo" @if ($listing->primary_photo_url) style="background-image:url('{{ $listing->primary_photo_url }}')" @endif>
-                            @unless ($listing->primary_photo_url) No photo yet @endunless
+                        <div class="car-photo" style="background-image:url('{{ $listing->primary_photo_url }}')">
                             @if ($listing->is_reserved)<span class="reserved">Reserved</span>@endif
                         </div>
                         <div class="car-name">{{ $listing->model_year }} {{ $listing->make }} {{ $listing->model }}</div>
@@ -360,7 +385,7 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
     </section>
 
     {{-- CLOSE --}}
-    <section class="close" @if ($latest->get(1)?->primary_photo_url) style="background-image:url('{{ $latest->get(1)->primary_photo_url }}')" @endif>
+    <section class="close" @if ($closer) style="background-image:url('{{ $closer->primary_photo_url }}')" @endif>
         <div>
             <h2>{{ number_format($carCount) }} cars, all priced all-in.</h2>
             <p>From {{ $dealerCount }} licensed {{ $dealerCount === 1 ? 'dealer' : 'dealers' }}{{ $cityCount > 1 ? ' in ' . $cityCount . ' cities' : '' }}.</p>
