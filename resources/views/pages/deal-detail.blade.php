@@ -1,6 +1,7 @@
 <?php
 
 use App\Mail\DocumentReuploadRequested;
+use App\Mail\FinancingApproved;
 use App\Models\Deal;
 use App\Models\DealDocument;
 use Livewire\Component;
@@ -27,9 +28,125 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
 
     public string $rejectionReason = '';
 
+    /**
+     * The lender's approval, typed in by the finance office from what the bank
+     * sent back. Strings while editing; dollars, not cents. The form is open
+     * until an approval is saved, then closed behind an Edit button.
+     */
+    public string $financingLender = '';
+
+    public string $financingApr = '';
+
+    public string $financingTermMonths = '';
+
+    public string $financingPayment = '';
+
+    public string $financingFrequency = 'biweekly';
+
+    public string $financingAmount = '';
+
+    public string $financingDownPayment = '';
+
+    public string $financingFirstPaymentOn = '';
+
+    public bool $editingFinancing = false;
+
     public function mount(Deal $deal): void
     {
         $this->deal = $deal;
+        $this->fillFinancingForm();
+    }
+
+    /** Finance and lease deals carry a lender approval; cash deals don't. */
+    public function takesFinancing(): bool
+    {
+        return in_array($this->deal->purchase_type, ['finance', 'lease'], true);
+    }
+
+    public function editFinancing(): void
+    {
+        $this->fillFinancingForm();
+        $this->resetValidation();
+        $this->editingFinancing = true;
+    }
+
+    public function cancelFinancing(): void
+    {
+        $this->editingFinancing = false;
+        $this->resetValidation();
+    }
+
+    /**
+     * Save the approval and email the buyer the terms. Saving it a second time
+     * sends an "updated terms" email instead, so the buyer always has the
+     * numbers that are on file.
+     */
+    public function saveFinancing(): void
+    {
+        if (! $this->takesFinancing()) {
+            return;
+        }
+
+        $this->validate([
+            'financingLender'         => ['required', 'string', 'max:120'],
+            'financingApr'            => ['required', 'numeric', 'min:0', 'max:40'],
+            'financingTermMonths'     => ['required', 'integer', 'min:6', 'max:120'],
+            'financingPayment'        => ['required', 'numeric', 'min:1', 'max:100000'],
+            'financingFrequency'      => ['required', 'in:' . implode(',', array_keys(Deal::PAYMENT_FREQUENCIES))],
+            'financingAmount'         => ['required', 'numeric', 'min:1', 'max:1000000'],
+            'financingDownPayment'    => ['nullable', 'numeric', 'min:0', 'max:1000000'],
+            'financingFirstPaymentOn' => ['nullable', 'date'],
+        ], attributes: [
+            'financingLender'         => 'lender',
+            'financingApr'            => 'rate',
+            'financingTermMonths'     => 'term',
+            'financingPayment'        => 'payment',
+            'financingFrequency'      => 'payment frequency',
+            'financingAmount'         => 'amount financed',
+            'financingDownPayment'    => 'down payment',
+            'financingFirstPaymentOn' => 'first payment date',
+        ]);
+
+        $updated = $this->deal->hasFinancingApproval();
+
+        $this->deal->update([
+            'financing_lender'                => trim($this->financingLender),
+            'financing_apr'                   => $this->financingApr,
+            'financing_term_months'           => (int) $this->financingTermMonths,
+            'financing_payment_in_cents'      => (int) round((float) $this->financingPayment * 100),
+            'financing_frequency'             => $this->financingFrequency,
+            'financing_amount_in_cents'       => (int) round((float) $this->financingAmount * 100),
+            'financing_down_payment_in_cents' => $this->financingDownPayment !== '' ? (int) round((float) $this->financingDownPayment * 100) : null,
+            'financing_first_payment_on'      => $this->financingFirstPaymentOn !== '' ? $this->financingFirstPaymentOn : null,
+            'financing_approved_at'           => $this->deal->financing_approved_at ?? now(),
+        ]);
+
+        $this->deal->recordActivity(
+            'status',
+            ($updated ? 'Updated the financing approval: ' : 'Entered the financing approval: ')
+                . $this->deal->financing_lender . ', $' . number_format($this->deal->financing_payment_in_cents / 100, 2)
+                . ' ' . strtolower($this->deal->financing_frequency_label) . ' over ' . $this->deal->financing_term_months . ' months.',
+            Auth::user()->name ?? 'Dealer',
+        );
+
+        $this->deal->emailBuyer(new FinancingApproved($this->deal, $updated), $updated ? 'Updated financing terms' : 'Financing approval');
+
+        $this->editingFinancing = false;
+    }
+
+    private function fillFinancingForm(): void
+    {
+        $deal = $this->deal;
+        $dollars = fn (?int $cents) => $cents === null ? '' : rtrim(rtrim(number_format($cents / 100, 2, '.', ''), '0'), '.');
+
+        $this->financingLender = (string) $deal->financing_lender;
+        $this->financingApr = $deal->financing_apr !== null ? rtrim(rtrim((string) $deal->financing_apr, '0'), '.') : '';
+        $this->financingTermMonths = (string) ($deal->financing_term_months ?? $deal->term_months ?? '');
+        $this->financingPayment = $dollars($deal->financing_payment_in_cents);
+        $this->financingFrequency = $deal->financing_frequency ?? 'biweekly';
+        $this->financingAmount = $dollars($deal->financing_amount_in_cents);
+        $this->financingDownPayment = $dollars($deal->financing_down_payment_in_cents ?? $deal->down_payment_in_cents);
+        $this->financingFirstPaymentOn = $deal->financing_first_payment_on?->toDateString() ?? '';
     }
 
     /**
@@ -357,6 +474,18 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
         .doc-status { font-size:12px; color:var(--ink-3); margin-top:2px; }
         .doc-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; flex-shrink:0; }
 
+        .fin-block { margin-top:16px; padding-top:14px; border-top:1px solid var(--line); }
+        .fin-head { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px; }
+        .fin-head h4 { margin:0; font-size:13.5px; font-weight:800; }
+        .fin-form { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px; }
+        .fin-form label { display:flex; flex-direction:column; gap:5px; font-size:12px; font-weight:600; color:var(--ink-2); min-width:0; }
+        .fin-form label.wide, .fin-actions { grid-column:1 / -1; }
+        .fin-form input, .fin-form select { width:100%; border:1.5px solid var(--line-strong); border-radius:10px; padding:9px 11px; font-size:14px; font-family:inherit; color:var(--ink); background:var(--card); outline:none; }
+        .fin-form input:focus, .fin-form select:focus { border-color:var(--primary); box-shadow:0 0 0 4px var(--primary-soft); }
+        .fin-err { font-size:12px; color:var(--primary-press); font-weight:600; }
+        .fin-actions { display:flex; gap:9px; justify-content:flex-end; }
+        @media (max-width:560px) { .fin-form { grid-template-columns:1fr; } }
+
         .mini-btn { font-size:12px; font-weight:700; padding:7px 12px; border-radius:var(--radius-pill); white-space:nowrap; transition:all .15s ease; border:1.5px solid transparent; }
         .mini-btn[disabled] { opacity:.55; cursor:wait; }
         .mini-btn.approve { background:var(--good); color:#fff; }
@@ -548,7 +677,7 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
                 </div>
             @endif
 
-            {{-- Plan (read-only — F&I confirms the real numbers) --}}
+            {{-- Plan: what the buyer picked at checkout, then the lender's approval as F&I enters it --}}
             <div class="panel">
                 <div class="panel-head">
                     <h3>Plan</h3>
@@ -557,16 +686,93 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
                 <div class="panel-body">
                     <div class="kv">
                         <div class="row"><span class="k">Purchase type</span><span class="v">{{ $this->purchaseTypeLabel() }}</span></div>
-                        @if ($deal->purchase_type === 'finance')
+                        @if ($this->takesFinancing())
                             @if ($deal->term_months)
                                 <div class="row"><span class="k">Requested term</span><span class="v">{{ $deal->term_months }} months</span></div>
                             @endif
                             @if ($deal->down_payment_in_cents !== null)
-                                <div class="row"><span class="k">Down payment</span><span class="v">${{ number_format($deal->down_payment_in_cents / 100) }}</span></div>
+                                <div class="row"><span class="k">Requested down payment</span><span class="v">${{ number_format($deal->down_payment_in_cents / 100) }}</span></div>
                             @endif
                         @endif
                     </div>
-                    <p class="note">Plan details are what the buyer selected at checkout. The dealership's finance office confirms the rate, term and payment — those numbers are entered here in the next release.</p>
+
+                    @if ($this->takesFinancing())
+                        <div class="fin-block">
+                            <div class="fin-head">
+                                <h4>Lender approval</h4>
+                                @if ($deal->hasFinancingApproval() && ! $editingFinancing)
+                                    <button type="button" class="mini-btn ghost" wire:click="editFinancing">Edit</button>
+                                @endif
+                            </div>
+
+                            @if ($deal->hasFinancingApproval() && ! $editingFinancing)
+                                <div class="kv">
+                                    <div class="row"><span class="k">Lender</span><span class="v">{{ $deal->financing_lender }}</span></div>
+                                    <div class="row"><span class="k">Payment</span><span class="v">${{ number_format($deal->financing_payment_in_cents / 100, 2) }} {{ strtolower($deal->financing_frequency_label) }}</span></div>
+                                    <div class="row"><span class="k">Rate</span><span class="v">{{ rtrim(rtrim(number_format((float) $deal->financing_apr, 2), '0'), '.') }}% APR</span></div>
+                                    <div class="row"><span class="k">Term</span><span class="v">{{ $deal->financing_term_months }} months</span></div>
+                                    <div class="row"><span class="k">Amount financed</span><span class="v">${{ number_format($deal->financing_amount_in_cents / 100, 2) }}</span></div>
+                                    @if ($deal->financing_down_payment_in_cents !== null)
+                                        <div class="row"><span class="k">Down payment</span><span class="v">${{ number_format($deal->financing_down_payment_in_cents / 100, 2) }}</span></div>
+                                    @endif
+                                    @if ($deal->financing_first_payment_on)
+                                        <div class="row"><span class="k">First payment</span><span class="v">{{ $deal->financing_first_payment_on->format('M j, Y') }}</span></div>
+                                    @endif
+                                </div>
+                                <p class="note">The buyer sees these terms in My Garage. Entered {{ $deal->financing_approved_at->diffForHumans() }}.</p>
+                            @else
+                                <p class="note">Enter the approval as it came back from the bank. Saving emails the buyer their terms and shows them in My Garage.</p>
+                                <form class="fin-form" wire:submit="saveFinancing">
+                                    <label class="wide">Lender
+                                        <input type="text" wire:model="financingLender" placeholder="e.g. Scotiabank" maxlength="120">
+                                        @error('financingLender') <span class="fin-err">{{ $message }}</span> @enderror
+                                    </label>
+                                    <label>Payment ($)
+                                        <input type="number" step="0.01" min="0" inputmode="decimal" wire:model="financingPayment">
+                                        @error('financingPayment') <span class="fin-err">{{ $message }}</span> @enderror
+                                    </label>
+                                    <label>How often
+                                        <select wire:model="financingFrequency">
+                                            @foreach (App\Models\Deal::PAYMENT_FREQUENCIES as $value => $label)
+                                                <option value="{{ $value }}" @selected($financingFrequency === $value)>{{ $label }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('financingFrequency') <span class="fin-err">{{ $message }}</span> @enderror
+                                    </label>
+                                    <label>Rate (APR %)
+                                        <input type="number" step="0.01" min="0" inputmode="decimal" wire:model="financingApr">
+                                        @error('financingApr') <span class="fin-err">{{ $message }}</span> @enderror
+                                    </label>
+                                    <label>Term (months)
+                                        <input type="number" step="1" min="6" inputmode="numeric" wire:model="financingTermMonths">
+                                        @error('financingTermMonths') <span class="fin-err">{{ $message }}</span> @enderror
+                                    </label>
+                                    <label>Amount financed ($)
+                                        <input type="number" step="0.01" min="0" inputmode="decimal" wire:model="financingAmount">
+                                        @error('financingAmount') <span class="fin-err">{{ $message }}</span> @enderror
+                                    </label>
+                                    <label>Down payment ($, optional)
+                                        <input type="number" step="0.01" min="0" inputmode="decimal" wire:model="financingDownPayment">
+                                        @error('financingDownPayment') <span class="fin-err">{{ $message }}</span> @enderror
+                                    </label>
+                                    <label>First payment (optional)
+                                        <input type="date" wire:model="financingFirstPaymentOn">
+                                        @error('financingFirstPaymentOn') <span class="fin-err">{{ $message }}</span> @enderror
+                                    </label>
+                                    <div class="fin-actions">
+                                        @if ($editingFinancing)
+                                            <button type="button" class="mini-btn ghost" wire:click="cancelFinancing">Cancel</button>
+                                        @endif
+                                        <button type="submit" class="mini-btn approve" wire:loading.attr="disabled" wire:target="saveFinancing">
+                                            {{ $deal->hasFinancingApproval() ? 'Save and email the buyer' : 'Save approval and email the buyer' }}
+                                        </button>
+                                    </div>
+                                </form>
+                            @endif
+                        </div>
+                    @else
+                        <p class="note">Cash purchase, so there's no lender approval to enter.</p>
+                    @endif
                 </div>
             </div>
 

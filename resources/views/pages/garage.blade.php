@@ -110,8 +110,8 @@ new #[Layout('layouts.checkout')] class extends Component {
 
     public function financingConfirmed(Deal $deal): bool
     {
-        // Once the dealer moves the deal past financing, the rate is locked.
-        return $this->stageRank($deal) >= 2;
+        // Locked once the bank's approval is entered, or the dealer moves the deal past financing.
+        return $deal->hasFinancingApproval() || $this->stageRank($deal) >= 2;
     }
 
     public function trackSteps(Deal $deal): array
@@ -126,8 +126,8 @@ new #[Layout('layouts.checkout')] class extends Component {
             ],
             [
                 'label'  => 'Financing',
-                'state'  => $rank >= 2 ? 'done' : 'current',
-                'sub'    => $rank >= 2 ? 'Confirmed' : 'In review',
+                'state'  => $this->financingConfirmed($deal) ? 'done' : 'current',
+                'sub'    => $deal->hasFinancingApproval() ? 'Approved' : ($rank >= 2 ? 'Confirmed' : 'In review'),
             ],
             [
                 'label'  => 'Documents',
@@ -159,7 +159,7 @@ new #[Layout('layouts.checkout')] class extends Component {
     {
         return match ($deal->stage) {
             'reserved', 'contacted', 'appointment_set' => 'Reserved',
-            'financing'                                => 'Financing in review',
+            'financing'                                => $deal->hasFinancingApproval() ? 'Financing approved' : 'Financing in review',
             'documents'                                => 'Paperwork in progress',
             'ready_for_delivery'                       => 'Ready for delivery',
             'delivered'                                => 'Delivered',
@@ -185,7 +185,11 @@ new #[Layout('layouts.checkout')] class extends Component {
             return 'Cash purchase';
         }
 
-        return 'Finance · ' . ($deal->term_months ?? 72) . ' mo';
+        if ($deal->hasFinancingApproval()) {
+            return $deal->financing_lender . ' · ' . $deal->financing_term_months . ' mo';
+        }
+
+        return ($deal->purchase_type === 'lease' ? 'Lease' : 'Finance') . ' · ' . ($deal->term_months ?? 72) . ' mo';
     }
 
     public function estimatedBiweeklyFor(Deal $deal): float
@@ -203,6 +207,27 @@ new #[Layout('layouts.checkout')] class extends Component {
         }
 
         return $taxedPrincipal * $biweeklyRate / (1 - pow(1 + $biweeklyRate, -$periods));
+    }
+
+    /**
+     * The lender's approved terms as label => value rows for the Financing card,
+     * exactly as the dealership entered them. Optional rows drop out when blank.
+     *
+     * @return array<string, string>
+     */
+    public function approvedTerms(Deal $deal): array
+    {
+        $money = fn (int $cents) => '$' . number_format($cents / 100, 2);
+
+        return array_filter([
+            'Lender'          => $deal->financing_lender,
+            'Payment'         => $money($deal->financing_payment_in_cents) . ' ' . strtolower($deal->financing_frequency_label),
+            'Rate'            => rtrim(rtrim(number_format((float) $deal->financing_apr, 2), '0'), '.') . '% APR',
+            'Term'            => $deal->financing_term_months . ' months' . ($deal->financing_payment_count ? ' · ' . $deal->financing_payment_count . ' payments' : ''),
+            'Amount financed' => $money($deal->financing_amount_in_cents),
+            'Down payment'    => $deal->financing_down_payment_in_cents !== null ? $money($deal->financing_down_payment_in_cents) : null,
+            'First payment'   => $deal->financing_first_payment_on?->format('M j, Y'),
+        ]);
     }
 
     public function heroPhotoFor(Deal $deal): ?string
@@ -384,6 +409,13 @@ new #[Layout('layouts.checkout')] class extends Component {
         .g-fin-sub { font-size:12.5px; color:var(--ink-2); margin-top:3px; }
         .g-fin-confirmed { display:flex; align-items:center; gap:10px; font-size:14px; color:var(--ink); font-weight:500; }
         .g-fin-confirmed svg { color:var(--good); flex-shrink:0; }
+        .g-terms { display:flex; flex-wrap:wrap; gap:1px; background:var(--line); border:1px solid var(--line); border-radius:14px; overflow:hidden; margin:0; }
+        .g-terms > div { flex:1 1 200px; background:var(--card); padding:13px 15px; min-width:0; }
+        .g-terms dt { font-size:11px; text-transform:uppercase; letter-spacing:.07em; color:var(--ink-3); }
+        .g-terms dd { margin:3px 0 0; font-weight:700; font-size:15px; overflow-wrap:anywhere; }
+        .g-terms .lead dd { font-size:19px; color:var(--primary); letter-spacing:-.01em; }
+        .g-terms-note { font-size:12.5px; color:var(--ink-2); margin:12px 0 0; line-height:1.5; }
+        @media (max-width:640px) { .g-terms > div { flex-basis:140px; } }
         .g-fin-foot { margin-top:14px; padding-top:14px; border-top:1px dashed var(--line); display:flex; align-items:center; gap:9px; font-size:12.5px; color:var(--ink-2); }
         .g-fin-foot svg { color:var(--ink-3); flex-shrink:0; }
 
@@ -505,9 +537,15 @@ new #[Layout('layouts.checkout')] class extends Component {
                         <div class="g-fact"><div class="k">Province</div><div class="v">{{ $this->featuredDeal->province }}</div></div>
                     </div>
                     <div class="g-hero-pay">
-                        @if ($this->featuredDeal->purchase_type === 'finance')
-                            <span class="muted" style="font-size:13px;">{{ $this->financingConfirmed($this->featuredDeal) ? 'Payment' : 'Estimated payment' }}</span>
-                            <span class="amt">{{ $this->financingConfirmed($this->featuredDeal) ? '' : 'Est. ' }}{{ $this->asMoney($this->estimatedBiweeklyFor($this->featuredDeal)) }}<span class="per"> /biweekly</span></span>
+                        @if ($this->featuredDeal->hasFinancingApproval())
+                            <span class="muted" style="font-size:13px;">Your payment</span>
+                            <span class="amt">${{ number_format($this->featuredDeal->financing_payment_in_cents / 100, 2) }}<span class="per"> {{ strtolower($this->featuredDeal->financing_frequency_label) }}</span></span>
+                        @elseif ($this->featuredDeal->purchase_type === 'finance')
+                            <span class="muted" style="font-size:13px;">Estimated payment</span>
+                            <span class="amt">Est. {{ $this->asMoney($this->estimatedBiweeklyFor($this->featuredDeal)) }}<span class="per"> /biweekly</span></span>
+                        @elseif ($this->featuredDeal->purchase_type === 'lease')
+                            <span class="muted" style="font-size:13px;">Lease payment</span>
+                            <span class="amt" style="font-size:18px;">Set by the dealership</span>
                         @else
                             <span class="muted" style="font-size:13px;">Pay in full</span>
                             <span class="amt">{{ $this->asMoney($this->featuredDeal->vehicle->price_in_cents / 100) }}</span>
@@ -538,15 +576,37 @@ new #[Layout('layouts.checkout')] class extends Component {
                         <div>
                             <h3>Financing</h3>
                             <span class="g-card-sub">
-                                {{ $this->financingConfirmed($this->featuredDeal) ? 'Confirmed by the dealership' : 'With the dealership\'s finance office' }}
+                                @if ($this->featuredDeal->purchase_type === 'cash')
+                                    Paying in full
+                                @elseif ($this->featuredDeal->hasFinancingApproval())
+                                    Approved by {{ $this->featuredDeal->financing_lender }}
+                                @else
+                                    {{ $this->financingConfirmed($this->featuredDeal) ? 'Confirmed by the dealership' : 'With the dealership\'s finance office' }}
+                                @endif
                             </span>
                         </div>
-                        <span class="g-status {{ $this->financingConfirmed($this->featuredDeal) ? 'confirmed' : 'pending' }}">
-                            {{ $this->financingConfirmed($this->featuredDeal) ? 'Confirmed' : 'Pending' }}
-                        </span>
+                        @if ($this->featuredDeal->hasFinancingApproval())
+                            <span class="g-status confirmed">Approved</span>
+                        @elseif ($this->featuredDeal->purchase_type !== 'cash')
+                            <span class="g-status {{ $this->financingConfirmed($this->featuredDeal) ? 'confirmed' : 'pending' }}">
+                                {{ $this->financingConfirmed($this->featuredDeal) ? 'Confirmed' : 'Pending' }}
+                            </span>
+                        @endif
                     </div>
 
-                    @if ($this->financingConfirmed($this->featuredDeal))
+                    @if ($this->featuredDeal->hasFinancingApproval())
+                        <dl class="g-terms">
+                            @foreach ($this->approvedTerms($this->featuredDeal) as $label => $value)
+                                <div class="{{ $label === 'Payment' ? 'lead' : '' }}"><dt>{{ $label }}</dt><dd>{{ $value }}</dd></div>
+                            @endforeach
+                        </dl>
+                        <p class="g-terms-note">These are the terms the bank approved, as {{ ucwords(strtolower($this->featuredDeal->seller_name)) }} entered them. You'll review and sign the full agreement before anything is final.</p>
+                    @elseif ($this->featuredDeal->purchase_type === 'cash')
+                        <div class="g-fin-confirmed">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/></svg>
+                            No financing needed. You'll settle the balance directly with {{ ucwords(strtolower($this->featuredDeal->seller_name)) }}.
+                        </div>
+                    @elseif ($this->financingConfirmed($this->featuredDeal))
                         <div class="g-fin-confirmed">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/></svg>
                             {{ ucwords(strtolower($this->featuredDeal->seller_name)) }}'s finance office has confirmed your rate, term and payment — the final numbers are in your purchase agreement.
@@ -556,7 +616,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                             <div class="g-fin-spinner"></div>
                             <div>
                                 <div class="g-fin-title">Your deal is with <b>{{ ucwords(strtolower($this->featuredDeal->seller_name)) }}</b>'s finance office</div>
-                                <div class="g-fin-sub">They'll confirm your rate, term and payment. The payment above is an estimate until then.</div>
+                                <div class="g-fin-sub">They'll send it to the bank. Once it's approved, your lender, rate and payment show up right here.</div>
                             </div>
                         </div>
                     @endif

@@ -51,6 +51,8 @@ class Deal extends Model
         'street_address', 'city', 'province', 'postal_code',
         'handover_mode', 'pickup_location', 'pickup_at',
         'identity_verified_at',
+        'financing_lender', 'financing_apr', 'financing_term_months', 'financing_payment_in_cents', 'financing_frequency',
+        'financing_amount_in_cents', 'financing_down_payment_in_cents', 'financing_first_payment_on', 'financing_approved_at',
     ];
 
     protected $attributes = [
@@ -62,13 +64,16 @@ class Deal extends Model
     protected function casts(): array
     {
         return [
-            'identity_verified_at'  => 'datetime',
-            'documents_reminded_at' => 'datetime',
-            'pickup_at'             => 'datetime',
-            'extras_interest'       => 'array',
-            'fees_snapshot'         => 'array',
-            'offers_snapshot'       => 'array',
-            'dealer_snapshot'       => 'array',
+            'identity_verified_at'       => 'datetime',
+            'documents_reminded_at'      => 'datetime',
+            'financing_apr'              => 'decimal:2',
+            'financing_first_payment_on' => 'date',
+            'financing_approved_at'      => 'datetime',
+            'pickup_at'                  => 'datetime',
+            'extras_interest'            => 'array',
+            'fees_snapshot'              => 'array',
+            'offers_snapshot'            => 'array',
+            'dealer_snapshot'            => 'array',
         ];
     }
 
@@ -211,6 +216,36 @@ class Deal extends Model
 
             return false;
         }
+    }
+
+    /** How often an approved loan or lease is paid, as the lender words it. */
+    public const PAYMENT_FREQUENCIES = [
+        'weekly'       => 'Weekly',
+        'biweekly'     => 'Biweekly',
+        'semi_monthly' => 'Semi-monthly',
+        'monthly'      => 'Monthly',
+    ];
+
+    private const PAYMENTS_PER_YEAR = ['weekly' => 52, 'biweekly' => 26, 'semi_monthly' => 24, 'monthly' => 12];
+
+    /** The lender's approval has been entered by the dealership. */
+    public function hasFinancingApproval(): bool
+    {
+        return $this->financing_approved_at !== null;
+    }
+
+    /** "Biweekly", "Monthly" and so on. */
+    public function getFinancingFrequencyLabelAttribute(): ?string
+    {
+        return self::PAYMENT_FREQUENCIES[$this->financing_frequency] ?? null;
+    }
+
+    /** How many payments the approved term works out to, e.g. 156 biweekly over 72 months. */
+    public function getFinancingPaymentCountAttribute(): ?int
+    {
+        $perYear = self::PAYMENTS_PER_YEAR[$this->financing_frequency] ?? null;
+
+        return $perYear && $this->financing_term_months ? (int) round($this->financing_term_months / 12 * $perYear) : null;
     }
 
     /** "2021 Mitsubishi Outlander", for subject lines and copy. */
