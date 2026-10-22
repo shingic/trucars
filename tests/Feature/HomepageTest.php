@@ -31,8 +31,8 @@ class HomepageTest extends TestCase
 
         $this->get('/')
             ->assertOk()
-            ->assertSee('priced all-in')
-            ->assertSee('Just listed')
+            ->assertSee('All-in prices.')
+            ->assertSee('Just landed')
             ->assertSee('Outlander')
             ->assertDontSee('Hidden Mirage')
             ->assertSee(route('shop'))
