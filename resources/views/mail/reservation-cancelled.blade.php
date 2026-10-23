@@ -20,8 +20,8 @@
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4F4F2; border-radius:12px;">
             <tr>
                 <td style="padding:16px 20px; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
-                    <p style="margin:0 0 4px; font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:#9AA0A6;">A note from {{ $byDealer ? $deal->seller_name : 'TruCars' }}</p>
-                    <p style="margin:0; font-size:14px; line-height:1.6; color:#16181D;">{{ $note }}</p>
+                    <p style="margin:0 0 4px; font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:#99A1B7;">A note from {{ $byDealer ? $deal->seller_name : 'TruCars' }}</p>
+                    <p style="margin:0; font-size:14px; line-height:1.6; color:#071437;">{{ $note }}</p>
                 </td>
             </tr>
         </table>

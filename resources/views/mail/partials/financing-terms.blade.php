@@ -12,8 +12,8 @@
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4F4F2; border-radius:12px;">
     @foreach ($rows as $label => $value)
         <tr>
-            <td style="padding:{{ $loop->first ? '16px' : '9px' }} 20px {{ $loop->last ? '16px' : '0' }}; {{ $font }} font-size:14px; color:#5B6068;">{{ $label }}</td>
-            <td align="right" style="padding:{{ $loop->first ? '16px' : '9px' }} 20px {{ $loop->last ? '16px' : '0' }}; {{ $font }} font-size:14px; font-weight:700; color:#16181D;">{{ $value }}</td>
+            <td style="padding:{{ $loop->first ? '16px' : '9px' }} 20px {{ $loop->last ? '16px' : '0' }}; {{ $font }} font-size:14px; color:#4B5675;">{{ $label }}</td>
+            <td align="right" style="padding:{{ $loop->first ? '16px' : '9px' }} 20px {{ $loop->last ? '16px' : '0' }}; {{ $font }} font-size:14px; font-weight:700; color:#071437;">{{ $value }}</td>
         </tr>
     @endforeach
 </table>

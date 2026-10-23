@@ -4,9 +4,9 @@
 --}}
 <div class="offer-card offer-{{ $offer->type }}">
     <style>
-        .offer-card { position:relative; border-radius:18px; padding:16px 18px; background:linear-gradient(135deg, #14161B, #2A2D35); color:#fff; overflow:hidden; }
-        .offer-card::after { content:""; position:absolute; right:-40px; top:-60px; width:160px; height:160px; border-radius:50%; background:radial-gradient(circle, rgba(31,85,214,.45), transparent 70%); }
-        .offer-card .oc-kicker { position:relative; z-index:1; display:flex; align-items:center; gap:7px; font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:#A9C2FF; }
+        .offer-card { position:relative; border-radius:18px; padding:16px 18px; background:linear-gradient(135deg, #071437, #2A2D35); color:#fff; overflow:hidden; }
+        .offer-card::after { content:""; position:absolute; right:-40px; top:-60px; width:160px; height:160px; border-radius:50%; background:radial-gradient(circle, rgba(27,132,255,.45), transparent 70%); }
+        .offer-card .oc-kicker { position:relative; z-index:1; display:flex; align-items:center; gap:7px; font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:#8EC2FF; }
         .offer-card .oc-kicker svg { width:13px; height:13px; }
         .offer-card .oc-head { position:relative; z-index:1; font-size:30px; font-weight:800; letter-spacing:0; line-height:1.05; margin-top:8px; }
         .offer-card .oc-detail { position:relative; z-index:1; font-size:13.5px; color:rgba(255,255,255,.82); margin-top:4px; }

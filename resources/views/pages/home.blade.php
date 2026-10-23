@@ -167,12 +167,12 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
         .stage.no-photo { grid-template-columns:1fr; }
         .stage-copy { padding:52px 44px 44px; color:#fff; }
         .stage h1 { font-family:var(--font-display); font-size:clamp(46px, 5.8vw, 84px); font-weight:700; line-height:.92; text-transform:uppercase; margin:0; max-width:9ch; color:#fff; }
-        .stage p { font-size:18px; color:rgba(255,255,255,.88); margin:20px 0 0; max-width:440px; line-height:1.55; }
+        .stage p { font-size:18px; color:#fff; margin:20px 0 0; max-width:440px; line-height:1.55; }
         .hero-search { margin-top:28px; display:flex; max-width:520px; background:#fff; border:2px solid var(--ink); }
         .hero-search svg { align-self:center; margin-left:14px; color:var(--ink-3); flex-shrink:0; }
         .hero-search input { flex:1; min-width:0; border:none; outline:none; font-size:16px; background:none; padding:14px 12px; color:var(--ink); }
         .hero-search button { background:var(--ink); color:#fff; font-family:var(--font-display); font-size:18px; font-weight:600; text-transform:uppercase; padding:0 22px; }
-        .hero-search button:hover { background:#2C3038; }
+        .hero-search button:hover { background:#12224D; }
         .chips { display:flex; gap:6px; flex-wrap:wrap; margin-top:14px; }
         .chips a { display:inline-flex; align-items:center; gap:7px; font-size:14.5px; font-weight:600; color:var(--ink); text-decoration:none; padding:6px 12px 6px 9px; background:rgba(255,255,255,.88); border:1.5px solid var(--ink); }
         .chips a:hover { background:var(--ink); color:#fff; }
@@ -253,7 +253,7 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
         .close > div { padding:48px 44px; color:#fff; }
         .close h2 { color:#fff; font-size:clamp(34px, 4.4vw, 60px); line-height:.95; }
         .close p { color:rgba(255,255,255,.75); font-size:17px; margin:14px 0 26px; }
-        .close figure { margin:0; min-height:320px; background:#24272E; }
+        .close figure { margin:0; min-height:320px; background:#12224D; }
         .btn-go { display:inline-block; background:var(--primary); color:#fff; font-family:var(--font-display); font-size:20px; font-weight:700; text-transform:uppercase; padding:13px 26px; border-radius:4px; text-decoration:none; }
         .btn-go:hover { background:#fff; color:var(--ink); }
 

@@ -295,7 +295,7 @@ new #[Layout('layouts.dealer')] #[Title('CPO checklist')] class extends Componen
         .tabs a.on { color:var(--ink); border-bottom-color:var(--primary); }
         .ip-head h1 { font-size:24px; font-weight:800; letter-spacing:0; margin:0 0 6px; }
         .ip-head p { margin:0 0 20px; font-size:14px; color:var(--ink-2); max-width:680px; }
-        .msg { background:var(--good-soft); color:var(--good-ink); border:1px solid rgba(18,184,134,.25); border-radius:var(--radius-sm); padding:10px 14px; font-size:13.5px; font-weight:600; margin-bottom:16px; }
+        .msg { background:var(--good-soft); color:var(--good-ink); border:1px solid rgba(23,198,83,.25); border-radius:var(--radius-sm); padding:10px 14px; font-size:13.5px; font-weight:600; margin-bottom:16px; }
 
         .ip { display:grid; grid-template-columns:260px minmax(0, 1fr); gap:20px; align-items:start; }
         .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-sm); }
@@ -342,7 +342,7 @@ new #[Layout('layouts.dealer')] #[Title('CPO checklist')] class extends Componen
         .switch input:checked + .track .knob { transform:translateX(17px); }
         .switch input:focus-visible + .track { outline:2px solid var(--primary); outline-offset:2px; }
         .switch-lbl { font-size:13px; font-weight:700; color:var(--ink-2); min-width:44px; }
-        .inherit { display:flex; align-items:center; gap:13px; padding:13px 16px; margin-bottom:18px; border-radius:var(--radius); background:var(--good-soft); color:var(--good-ink); border:1px solid rgba(18,184,134,.22); font-size:13.5px; line-height:1.45; }
+        .inherit { display:flex; align-items:center; gap:13px; padding:13px 16px; margin-bottom:18px; border-radius:var(--radius); background:var(--good-soft); color:var(--good-ink); border:1px solid rgba(23,198,83,.22); font-size:13.5px; line-height:1.45; }
         .inherit b { display:block; font-size:14px; }
         .inherit .ic { width:34px; height:34px; border-radius:10px; background:var(--good-ink); color:#fff; display:grid; place-items:center; flex-shrink:0; }
         .inherit .ic svg { width:18px; height:18px; }

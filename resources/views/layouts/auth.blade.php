@@ -12,16 +12,16 @@
 
     <style>
         :root {
-            --bg:#F6F7F7; --card:#FFFFFF;
-            --ink:#16181D; --ink-2:#585E66; --ink-3:#969CA3;
-            --line:rgba(22,24,29,.10); --line-strong:rgba(22,24,29,.17);
-            --primary:#1F55D6; --primary-press:#1743B0; --primary-bright:#9DBBFF; --primary-soft:rgba(31,85,214,.10); --primary-line:rgba(31,85,214,.32);
-            --coral:#4F80F0; --coral-soft:rgba(79,128,240,.16);
-            --good:#12B886; --good-soft:rgba(18,184,134,.12); --good-ink:#0E5A43;
+            --bg:#F9F9F9; --card:#FFFFFF;
+            --ink:#071437; --ink-2:#4B5675; --ink-3:#78829D;
+            --line:rgba(7,20,55,.10); --line-strong:rgba(7,20,55,.17);
+            --primary:#1B84FF; --primary-press:#056EE9; --primary-bright:#6CB0FF; --primary-soft:rgba(27,132,255,.10); --primary-line:rgba(27,132,255,.32);
+            --coral:#4DA0FF; --coral-soft:rgba(77,160,255,.16);
+            --good:#17C653; --good-soft:rgba(23,198,83,.12); --good-ink:#0E5A43;
             --amber:#C8841A; --amber-soft:rgba(216,150,40,.16);
-            --shadow-sm:0 1px 3px rgba(22,24,29,.06);
-            --shadow-md:0 14px 40px rgba(22,24,29,.09), 0 3px 10px rgba(22,24,29,.05);
-            --shadow-lg:0 30px 70px rgba(22,24,29,.18);
+            --shadow-sm:0 1px 3px rgba(7,20,55,.06);
+            --shadow-md:0 14px 40px rgba(7,20,55,.09), 0 3px 10px rgba(7,20,55,.05);
+            --shadow-lg:0 30px 70px rgba(7,20,55,.18);
             --radius:18px; --radius-sm:13px; --radius-pill:999px;
             --font:"Barlow",-apple-system,sans-serif; --font-display:"Barlow Semi Condensed","Barlow",sans-serif; --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
         }

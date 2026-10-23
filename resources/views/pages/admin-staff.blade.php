@@ -245,12 +245,12 @@ new #[Layout('layouts.dealer')] #[Title('TruCars staff')] class extends Componen
         .st-head h1 { font-size:24px; font-weight:800; letter-spacing:0; margin:0 0 6px; }
         .st-head p { margin:0 0 22px; font-size:14px; color:var(--ink-2); max-width:660px; }
         .btn { font-size:14px; font-weight:700; border-radius:var(--radius-pill); padding:10px 18px; transition:all .15s ease; white-space:nowrap; }
-        .btn-primary { background:var(--primary); color:#fff; box-shadow:0 8px 20px rgba(31,85,214,.24); }
+        .btn-primary { background:var(--primary); color:#fff; box-shadow:0 8px 20px rgba(27,132,255,.24); }
         .btn-primary:hover { background:var(--primary-press); }
         .btn-ghost { background:transparent; color:var(--ink-2); border:1px solid var(--line-strong); }
         .btn-ghost:hover { border-color:var(--ink-3); color:var(--ink); }
         .btn-sm { font-size:12.5px; padding:6px 12px; }
-        .st-status { display:flex; align-items:center; gap:9px; background:var(--good-soft); color:var(--good-ink); border:1px solid rgba(18,184,134,.25); border-radius:var(--radius-sm); padding:11px 15px; font-size:13.5px; font-weight:600; margin-bottom:20px; }
+        .st-status { display:flex; align-items:center; gap:9px; background:var(--good-soft); color:var(--good-ink); border:1px solid rgba(23,198,83,.25); border-radius:var(--radius-sm); padding:11px 15px; font-size:13.5px; font-weight:600; margin-bottom:20px; }
         .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-sm); max-width:920px; margin-bottom:22px; }
         .card-head { padding:16px 20px 14px; border-bottom:1px solid var(--line); }
         .card-head .ttl { font-size:15px; font-weight:700; }

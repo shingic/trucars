@@ -53,7 +53,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealers')] class extends Component {
         .ad-head .spacer { flex:1; }
 
         .btn { display:inline-block; font-size:14px; font-weight:700; border-radius:var(--radius-pill); padding:10px 18px; transition:all .15s ease; white-space:nowrap; }
-        .btn-primary { background:var(--primary); color:#fff; box-shadow:0 8px 20px rgba(31,85,214,.24); }
+        .btn-primary { background:var(--primary); color:#fff; box-shadow:0 8px 20px rgba(27,132,255,.24); }
         .btn-primary:hover { background:var(--primary-press); }
 
         .ad-alert { display:flex; align-items:center; gap:10px; background:var(--amber-soft); color:#7A4E0A; border:1px solid rgba(216,150,40,.3); border-radius:var(--radius-sm); padding:11px 15px; font-size:13.5px; font-weight:600; margin-bottom:20px; }
@@ -76,7 +76,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealers')] class extends Component {
         .kebab > button { width:34px; height:34px; display:grid; place-items:center; border:1px solid transparent; border-radius:10px; background:none; color:var(--ink-2); cursor:pointer; transition:all .12s ease; }
         .kebab > button:hover, .kebab.open > button { background:var(--card); border-color:var(--line); color:var(--ink); box-shadow:var(--shadow-sm); }
         .kebab svg { width:18px; height:18px; flex-shrink:0; }
-        .kebab-menu { position:absolute; right:0; top:calc(100% + 6px); z-index:30; min-width:220px; background:var(--card); border:1px solid var(--line); border-radius:12px; box-shadow:0 14px 34px rgba(22,24,29,.14); padding:6px; }
+        .kebab-menu { position:absolute; right:0; top:calc(100% + 6px); z-index:30; min-width:220px; background:var(--card); border:1px solid var(--line); border-radius:12px; box-shadow:0 14px 34px rgba(7,20,55,.14); padding:6px; }
         .kebab-menu a { display:flex; align-items:center; gap:11px; padding:9px 10px; border-radius:8px; font-size:13.5px; font-weight:600; color:var(--ink); }
         .kebab-menu a svg { width:16px; height:16px; color:var(--ink-3); }
         .kebab-menu a:hover { background:var(--primary-soft); color:var(--primary-press); }

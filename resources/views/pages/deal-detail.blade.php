@@ -530,13 +530,13 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
         /* Stage pill (shared vocabulary with the inbox) */
         .stage { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; padding:5px 11px; border-radius:var(--radius-pill); white-space:nowrap; }
         .stage .dot { width:7px; height:7px; border-radius:50%; }
-        .stage.reserved { background:#E3EBFC; color:#1743B0; } .stage.reserved .dot { background:#1F55D6; }
+        .stage.reserved { background:#E9F3FF; color:#056EE9; } .stage.reserved .dot { background:#1B84FF; }
         .stage.contacted { background:#FCF3D7; color:#9A7B1B; } .stage.contacted .dot { background:#E3B53A; }
         .stage.appointment_set { background:#E3EDFB; color:#2E5FA3; } .stage.appointment_set .dot { background:#4A82D6; }
         .stage.financing { background:#EFE7FB; color:#6B47B5; } .stage.financing .dot { background:#8B5FE0; }
         .stage.documents { background:#E0F2F4; color:#1F7A85; } .stage.documents .dot { background:#2BA3B2; }
-        .stage.ready_for_delivery { background:#DDF5EB; color:#0E8A60; } .stage.ready_for_delivery .dot { background:#12B886; }
-        .stage.delivered { background:rgba(22,24,29,.07); color:var(--ink-2); } .stage.delivered .dot { background:var(--ink-3); }
+        .stage.ready_for_delivery { background:#DDF5EB; color:#0E8A60; } .stage.ready_for_delivery .dot { background:#17C653; }
+        .stage.delivered { background:rgba(7,20,55,.07); color:var(--ink-2); } .stage.delivered .dot { background:var(--ink-3); }
         .stage.cancelled { background:#FBE4E4; color:#B23A3A; } .stage.cancelled .dot { background:#D65454; }
 
         .detail-grid { display:grid; grid-template-columns:1fr 332px; gap:20px; align-items:start; }
@@ -563,7 +563,7 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
         .id-badge.no { background:var(--amber-soft); color:var(--amber); }
 
         .pill-status { font-size:11.5px; font-weight:700; padding:5px 10px; border-radius:var(--radius-pill); white-space:nowrap; }
-        .pill-status.preliminary { background:var(--coral-soft); color:#1743B0; }
+        .pill-status.preliminary { background:var(--coral-soft); color:#056EE9; }
 
         .estimate-line { display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-top:14px; padding-top:14px; border-top:1px solid var(--line); }
         .estimate-line .lbl { font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--ink-3); }
@@ -592,8 +592,8 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
         .doc-ic { width:34px; height:34px; border-radius:10px; display:grid; place-items:center; flex-shrink:0; }
         .doc-ic svg { width:17px; height:17px; }
         .doc-ic.done { background:var(--good-soft); color:var(--good-ink); }
-        .doc-ic.review { background:var(--coral-soft); color:#1743B0; }
-        .doc-ic.wait { background:rgba(22,24,29,.05); color:var(--ink-3); }
+        .doc-ic.review { background:var(--coral-soft); color:#056EE9; }
+        .doc-ic.wait { background:rgba(7,20,55,.05); color:var(--ink-3); }
         .doc-ic.flag { background:var(--amber-soft); color:var(--amber); }
         .doc-main { flex:1; min-width:0; }
         .doc-name { font-size:13.5px; font-weight:700; }
@@ -620,11 +620,11 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
         .ask-box input:focus, .decline-form textarea:focus { border-color:var(--primary); box-shadow:0 0 0 4px var(--primary-soft); }
 
         .decline-form { display:grid; gap:12px; }
-        .mini-btn.danger { color:#B42318; border-color:rgba(180,35,24,.35); }
-        .mini-btn.danger:hover { background:#FEF3F2; }
-        .mini-btn.danger[type="submit"] { background:#B42318; color:#fff; border-color:#B42318; }
-        .decline-done .panel-body { font-size:13px; line-height:1.55; color:var(--ink-2); background:#FEF3F2; }
-        .decline-done b { color:#B42318; }
+        .mini-btn.danger { color:#D81A48; border-color:rgba(180,35,24,.35); }
+        .mini-btn.danger:hover { background:#FFEEF3; }
+        .mini-btn.danger[type="submit"] { background:#D81A48; color:#fff; border-color:#D81A48; }
+        .decline-done .panel-body { font-size:13px; line-height:1.55; color:var(--ink-2); background:#FFEEF3; }
+        .decline-done b { color:#D81A48; }
         @media (max-width:560px) { .fin-form { grid-template-columns:1fr; } }
 
         .mini-btn { font-size:12px; font-weight:700; padding:7px 12px; border-radius:var(--radius-pill); white-space:nowrap; transition:all .15s ease; border:1.5px solid transparent; }
@@ -633,13 +633,13 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
         .mini-btn.approve:hover { filter:brightness(.95); }
         .mini-btn.ghost { color:var(--ink-2); border-color:var(--line-strong); }
         .mini-btn.ghost:hover { border-color:var(--ink); color:var(--ink); }
-        .mini-btn.flag { color:#1743B0; border-color:rgba(23,67,176,.35); }
+        .mini-btn.flag { color:#056EE9; border-color:rgba(5,110,233,.35); }
         .mini-btn.flag:hover { background:var(--coral-soft); }
 
         .doc-state { font-size:11.5px; font-weight:700; padding:5px 10px; border-radius:var(--radius-pill); white-space:nowrap; }
         .doc-state.approved { background:var(--good-soft); color:var(--good-ink); }
         .doc-state.cleared { background:var(--good-soft); color:var(--good-ink); }
-        .doc-state.waiting { background:rgba(22,24,29,.06); color:var(--ink-3); }
+        .doc-state.waiting { background:rgba(7,20,55,.06); color:var(--ink-3); }
         .doc-state.rejected { background:var(--amber-soft); color:var(--amber); }
 
         .reject-box { margin-top:12px; margin-left:47px; background:var(--bg); border:1px solid var(--line); border-radius:var(--radius-sm); padding:13px; }

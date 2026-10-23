@@ -107,7 +107,7 @@ new #[Layout('layouts.dealer')] #[Title('Platform settings')] class extends Comp
     <style>
         .ps-head h1 { font-size:24px; font-weight:800; letter-spacing:0; margin:0 0 6px; }
         .ps-head p { margin:0 0 20px; font-size:14px; color:var(--ink-2); }
-        .ps-status { background:var(--good-soft); color:var(--good-ink); border:1px solid rgba(18,184,134,.25); border-radius:var(--radius-sm); padding:11px 15px; font-size:13.5px; font-weight:600; margin-bottom:18px; max-width:760px; }
+        .ps-status { background:var(--good-soft); color:var(--good-ink); border:1px solid rgba(23,198,83,.25); border-radius:var(--radius-sm); padding:11px 15px; font-size:13.5px; font-weight:600; margin-bottom:18px; max-width:760px; }
         .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-sm); max-width:760px; padding:20px; display:grid; gap:18px; }
         .field { display:flex; flex-direction:column; gap:6px; }
         .field label { font-size:12.5px; font-weight:700; color:var(--ink-2); }
@@ -122,7 +122,7 @@ new #[Layout('layouts.dealer')] #[Title('Platform settings')] class extends Comp
         .pay-head h2 { margin:0; font-size:16px; font-weight:800; }
         .pay-head p { margin:2px 0 0; font-size:13px; color:var(--ink-3); }
         .mode-pill { margin-left:auto; font-size:11px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; padding:4px 10px; border-radius:var(--radius-pill); }
-        .mode-pill.demo { background:#FFF4D6; color:#8A5A00; }
+        .mode-pill.demo { background:#FFF8DD; color:#8A5A00; }
         .mode-pill.live { background:var(--good-soft); color:var(--good-ink); }
         .modes { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
         .mode { text-align:left; border:1.5px solid var(--line-strong); border-radius:var(--radius-sm); padding:14px 16px; background:var(--card); }
@@ -137,7 +137,7 @@ new #[Layout('layouts.dealer')] #[Title('Platform settings')] class extends Comp
         .conn-row { display:grid; grid-template-columns:22px 130px 1fr; gap:8px; align-items:start; font-size:13px; }
         .conn-icon { width:20px; height:20px; border-radius:50%; display:grid; place-items:center; font-size:11px; font-weight:800; }
         .conn-icon.ok { background:var(--good-soft); color:var(--good-ink); }
-        .conn-icon.bad { background:#FDE8E6; color:#B42318; }
+        .conn-icon.bad { background:#FDE8E6; color:#D81A48; }
         .conn-part { font-weight:700; }
         .conn-msg { color:var(--ink-2); }
         @media (max-width:640px) { .conn-row { grid-template-columns:22px 1fr; } .conn-msg { grid-column:2; } }

@@ -140,7 +140,7 @@ new #[Layout('layouts.dealer')] #[Title('Offer')] class extends Component {
         .state { font-size:10.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; padding:4px 10px; border-radius:var(--radius-pill); background:var(--bg); border:1px solid var(--line); color:var(--ink-2); }
         .state.live { background:var(--good-soft); color:var(--good-ink); border-color:transparent; }
         .state.scheduled { background:#E3EDFB; color:#2E5FA3; border-color:transparent; }
-        .msg { background:var(--good-soft); color:var(--good-ink); border:1px solid rgba(18,184,134,.25); border-radius:var(--radius-sm); padding:11px 15px; font-size:13.5px; font-weight:600; margin-bottom:16px; }
+        .msg { background:var(--good-soft); color:var(--good-ink); border:1px solid rgba(23,198,83,.25); border-radius:var(--radius-sm); padding:11px 15px; font-size:13.5px; font-weight:600; margin-bottom:16px; }
         .oe { display:grid; grid-template-columns:minmax(0, 1fr) 360px; gap:20px; align-items:start; }
         .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-sm); overflow:hidden; }
         .side { position:sticky; top:84px; }

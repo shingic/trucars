@@ -4,7 +4,7 @@
 --}}
 <style>
     .bh { display:flex; align-items:center; gap:16px; margin-bottom:18px; }
-    .bh .logo { width:56px; height:56px; border-radius:16px; background:#14161B; color:#fff; display:grid; place-items:center; font-size:19px; font-weight:800; letter-spacing:0; flex-shrink:0; }
+    .bh .logo { width:56px; height:56px; border-radius:16px; background:#071437; color:#fff; display:grid; place-items:center; font-size:19px; font-weight:800; letter-spacing:0; flex-shrink:0; }
     .bh h1 { font-size:26px; font-weight:800; letter-spacing:0; margin:0; }
     .bh p { margin:3px 0 0; font-size:13.5px; color:var(--ink-2); }
     .btabs { display:flex; gap:6px; margin-bottom:20px; border-bottom:1px solid var(--line); overflow-x:auto; }

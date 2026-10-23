@@ -22,7 +22,7 @@ new class extends Component {
     ];
 
     private const COLOUR_SWATCHES = [
-        'White' => '#FFFFFF', 'Black' => '#16181D', 'Silver' => '#C9CDD2',
+        'White' => '#FFFFFF', 'Black' => '#071437', 'Silver' => '#C9CDD2',
         'Gray' => '#6B7280', 'Blue' => '#2563EB', 'Red' => '#DC2626', 'Green' => '#16A34A',
     ];
 
@@ -791,7 +791,7 @@ new class extends Component {
         .filter-search { display:flex; align-items:center; gap:9px; background:var(--bg-2); border:1px solid var(--line); border-radius:12px; padding:11px 14px; margin-bottom:14px; }
         .filter-search svg { color:var(--ink-3); flex-shrink:0; }
         .filter-search input { border:none; outline:none; background:transparent; font-size:14px; width:100%; color:var(--ink); }
-        .cert-promise { background:var(--good-soft); border:1px solid rgba(18,184,134,.3); border-radius:12px; padding:13px; margin-bottom:8px; display:flex; align-items:flex-start; gap:11px; }
+        .cert-promise { background:var(--good-soft); border:1px solid rgba(23,198,83,.3); border-radius:12px; padding:13px; margin-bottom:8px; display:flex; align-items:flex-start; gap:11px; }
         .cert-promise .ic { width:32px; height:32px; border-radius:9px; background:var(--good); color:#fff; display:grid; place-items:center; flex-shrink:0; }
         .cert-promise .t { font-size:13px; font-weight:700; color:#0E5A43; }
         .cert-promise .s { font-size:11px; color:#12805F; margin-top:2px; line-height:1.4; }
@@ -826,7 +826,7 @@ new class extends Component {
         .km-readout { font-size:13px; color:var(--ink-2); margin-bottom:10px; }
         .km-readout b { color:var(--ink); font-weight:700; }
         .slider { -webkit-appearance:none; appearance:none; width:100%; height:5px; border-radius:3px; background:var(--line-strong); outline:none; }
-        .slider::-webkit-slider-thumb { -webkit-appearance:none; width:20px; height:20px; border-radius:50%; background:var(--primary); cursor:pointer; box-shadow:0 2px 6px rgba(31,85,214,.4); border:2px solid #fff; }
+        .slider::-webkit-slider-thumb { -webkit-appearance:none; width:20px; height:20px; border-radius:50%; background:var(--primary); cursor:pointer; box-shadow:0 2px 6px rgba(27,132,255,.4); border:2px solid #fff; }
         .slider::-moz-range-thumb { width:20px; height:20px; border-radius:50%; background:var(--primary); cursor:pointer; border:2px solid #fff; }
         .slider-ends { display:flex; justify-content:space-between; font-size:11px; color:var(--ink-3); margin-top:7px; }
 
@@ -859,15 +859,15 @@ new class extends Component {
         .vcard-photo { height:178px; background:var(--hero-grad); position:relative; }
         .vcard-photo img { width:100%; height:100%; object-fit:cover; display:block; }
         .vcard-tags { position:absolute; top:11px; left:11px; z-index:2; display:flex; flex-wrap:wrap; gap:6px; max-width:calc(100% - 60px); }
-        .vcard-reserved { display:inline-flex; align-items:center; background:#FFF4D6; color:#7A4E00; border-radius:var(--radius-pill); padding:4px 10px; font-size:11px; font-weight:800; letter-spacing:.03em; text-transform:uppercase; box-shadow:var(--shadow-sm); }
-        .vcard-offer { display:inline-flex; align-items:center; background:#14161B; color:#A9C2FF; border-radius:var(--radius-pill); padding:4px 10px; font-size:11px; font-weight:800; box-shadow:var(--shadow-sm); }
+        .vcard-reserved { display:inline-flex; align-items:center; background:#FFF8DD; color:#7A4E00; border-radius:var(--radius-pill); padding:4px 10px; font-size:11px; font-weight:800; letter-spacing:.03em; text-transform:uppercase; box-shadow:var(--shadow-sm); }
+        .vcard-offer { display:inline-flex; align-items:center; background:#071437; color:#8EC2FF; border-radius:var(--radius-pill); padding:4px 10px; font-size:11px; font-weight:800; box-shadow:var(--shadow-sm); }
         .vcard-badge { display:inline-flex; align-items:center; gap:5px; background:rgba(255,255,255,.96); border-radius:var(--radius-pill); padding:4px 10px 4px 7px; font-size:11px; font-weight:700; color:#0E5A43; box-shadow:var(--shadow-sm); }
         .vcard-badge .dot { width:13px; height:13px; border-radius:50%; background:var(--good); display:grid; place-items:center; color:#fff; }
         .vcard-fav { position:absolute; top:11px; right:11px; z-index:2; width:32px; height:32px; border-radius:50%; background:rgba(255,255,255,.92); display:grid; place-items:center; color:var(--ink-2); box-shadow:var(--shadow-sm); }
         .vcard-fav:hover { color:var(--primary); }
         .vcard-fav.on { color:var(--primary); }
         .vcard-fav.on svg { fill:var(--primary); }
-        .vcard-fuel-tag { position:absolute; bottom:11px; right:11px; z-index:2; background:rgba(22,24,29,.78); color:#fff; font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:var(--radius-pill); }
+        .vcard-fuel-tag { position:absolute; bottom:11px; right:11px; z-index:2; background:rgba(7,20,55,.78); color:#fff; font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:var(--radius-pill); }
         .vcard-body { padding:15px 16px 16px; display:flex; flex-direction:column; flex:1; position:relative; z-index:2; pointer-events:none; }
         .vcard-title { font-weight:700; font-size:15.5px; letter-spacing:-.01em; line-height:1.3; }
         .vcard-trim { font-size:12.5px; color:var(--ink-3); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -920,7 +920,7 @@ new class extends Component {
                 z-index:70; padding:0; padding-right:0;
                 background:var(--card);
                 border-top-left-radius:22px; border-top-right-radius:22px;
-                box-shadow:0 -20px 60px rgba(22,24,29,.28);
+                box-shadow:0 -20px 60px rgba(7,20,55,.28);
                 transform:translateY(100%);
                 transition:transform .32s cubic-bezier(.32,.72,0,1);
                 display:flex; flex-direction:column; overflow:hidden;
@@ -950,7 +950,7 @@ new class extends Component {
             }
             .sheet-apply:active { background:var(--primary-press); }
 
-            .srp-scrim { display:block; position:fixed; inset:0; background:rgba(22,24,29,.45); backdrop-filter:blur(2px); z-index:65; }
+            .srp-scrim { display:block; position:fixed; inset:0; background:rgba(7,20,55,.45); backdrop-filter:blur(2px); z-index:65; }
 
             /* count stays, desktop tools fold away (search + sort live in the toolbar) */
             .results-bar { margin-bottom:14px; }

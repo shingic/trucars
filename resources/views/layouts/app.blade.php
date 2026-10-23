@@ -10,15 +10,15 @@
     @livewireStyles
     <style>
         :root {
-            --bg:#FFFFFF; --bg-2:#F6F7F7; --card:#FFFFFF;
-            --ink:#16181D; --ink-2:#585E66; --ink-3:#969CA3;
-            --line:rgba(22,24,29,.10); --line-strong:rgba(22,24,29,.17);
-            --primary:#1F55D6; --primary-press:#1743B0; --primary-bright:#9DBBFF; --primary-soft:rgba(31,85,214,.10); --primary-line:rgba(31,85,214,.32);
-            --coral:#4F80F0; --good:#12B886; --good-soft:rgba(18,184,134,.12);
-            --shadow-sm:0 1px 3px rgba(22,24,29,.06);
-            --shadow-md:0 14px 40px rgba(22,24,29,.09), 0 3px 10px rgba(22,24,29,.05);
-            --shadow-primary:0 12px 28px rgba(31,85,214,.30);
-            --hero-grad:linear-gradient(155deg,#4F80F0,#1F55D6 65%,#133A99);
+            --bg:#FFFFFF; --bg-2:#F9F9F9; --card:#FFFFFF;
+            --ink:#071437; --ink-2:#4B5675; --ink-3:#78829D;
+            --line:rgba(7,20,55,.10); --line-strong:rgba(7,20,55,.17);
+            --primary:#1B84FF; --primary-press:#056EE9; --primary-bright:#6CB0FF; --primary-soft:rgba(27,132,255,.10); --primary-line:rgba(27,132,255,.32);
+            --coral:#4DA0FF; --good:#17C653; --good-soft:rgba(23,198,83,.12);
+            --shadow-sm:0 1px 3px rgba(7,20,55,.06);
+            --shadow-md:0 14px 40px rgba(7,20,55,.09), 0 3px 10px rgba(7,20,55,.05);
+            --shadow-primary:0 12px 28px rgba(27,132,255,.30);
+            --hero-grad:linear-gradient(155deg,#4DA0FF,#1B84FF 65%,#0560CC);
             --radius:24px; --radius-sm:16px; --radius-pill:999px;
             --font-ui:"Barlow",-apple-system,BlinkMacSystemFont,sans-serif; --font-display:"Barlow Semi Condensed","Barlow",sans-serif;
             --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
@@ -69,13 +69,13 @@
         .nav-burger:active { background:var(--bg-2); }
 
         /* slide-out drawer + scrim (mobile) */
-        .nav-scrim { position:fixed; inset:0; background:rgba(22,24,29,.5); backdrop-filter:blur(2px); z-index:55; }
+        .nav-scrim { position:fixed; inset:0; background:rgba(7,20,55,.5); backdrop-filter:blur(2px); z-index:55; }
         .nav-drawer {
             position:fixed; top:0; right:0;
             height:100vh; height:100dvh;
             width:min(86vw, 360px);
             background:var(--card); z-index:60;
-            box-shadow:-24px 0 60px rgba(22,24,29,.2);
+            box-shadow:-24px 0 60px rgba(7,20,55,.2);
             transform:translateX(100%);
             transition:transform .3s cubic-bezier(.32,.72,0,1);
             display:flex; flex-direction:column;

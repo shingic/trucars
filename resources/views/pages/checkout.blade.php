@@ -1515,11 +1515,11 @@ new #[Layout('layouts.checkout')] class extends Component {
         .gap-bar-fill { height:100%; display:flex; align-items:center; }
         .gap-bar-fill.owe { width:100%; background:var(--ink); justify-content:flex-end; }
         .gap-bar-fill.pays { background:var(--good); justify-content:flex-end; }
-        .gap-bar-fill.gap { background:repeating-linear-gradient(45deg, var(--primary), var(--primary) 7px, #4F80F0 7px, #4F80F0 14px); justify-content:center; color:#fff; font-size:11.5px; font-weight:800; letter-spacing:.04em; }
+        .gap-bar-fill.gap { background:repeating-linear-gradient(45deg, var(--primary), var(--primary) 7px, #4DA0FF 7px, #4DA0FF 14px); justify-content:center; color:#fff; font-size:11.5px; font-weight:800; letter-spacing:.04em; }
         .gap-bar-amt { color:#fff; font-weight:700; font-size:13.5px; font-family:var(--font-mono); padding:0 14px; }
         .gap-scenario-foot { display:flex; align-items:center; gap:9px; font-size:13px; color:var(--ink-2); margin-top:14px; }
         .gap-scenario-foot b { color:var(--ink); }
-        .hatch-dot { width:14px; height:14px; border-radius:4px; flex-shrink:0; background:repeating-linear-gradient(45deg, var(--primary), var(--primary) 4px, #4F80F0 4px, #4F80F0 8px); }
+        .hatch-dot { width:14px; height:14px; border-radius:4px; flex-shrink:0; background:repeating-linear-gradient(45deg, var(--primary), var(--primary) 4px, #4DA0FF 4px, #4DA0FF 8px); }
         .gap-cta { display:flex; align-items:center; justify-content:space-between; gap:16px; padding-top:18px; margin-top:18px; border-top:1px solid var(--line); }
         .gap-cta .price { font-weight:800; font-size:18px; }
         .gap-cta .price .per { font-size:13px; font-weight:500; color:var(--ink-3); }
@@ -1557,7 +1557,7 @@ new #[Layout('layouts.checkout')] class extends Component {
         .addr-list li.on svg { color:var(--primary); }
         .addr-list .addr-foot { cursor:default; justify-content:space-between; font-size:12px; color:var(--ink-3); padding:8px 12px 4px; }
         .addr-google { font-size:11px; }
-        .demo-flag { display:inline-block; margin-bottom:12px; padding:4px 10px; border-radius:999px; background:#FFF4D6; color:#8A5A00; font-size:11.5px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; }
+        .demo-flag { display:inline-block; margin-bottom:12px; padding:4px 10px; border-radius:999px; background:#FFF8DD; color:#8A5A00; font-size:11.5px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; }
         .demo-pay input[readonly] { color:var(--ink-3); }
         .pay-retry { margin-top:12px; }
         .pay-secure { display:flex; align-items:center; justify-content:center; gap:6px; font-size:12px; margin:14px 0 0; }

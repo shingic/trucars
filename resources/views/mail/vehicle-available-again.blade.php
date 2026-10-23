@@ -21,15 +21,15 @@
     <tr>
         <td align="center" style="padding:32px 16px;">
 
-            <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px; max-width:600px; background-color:#FFFFFF; border-radius:16px; overflow:hidden; box-shadow:0 1px 3px rgba(22,24,29,0.08);">
+            <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px; max-width:600px; background-color:#FFFFFF; border-radius:16px; overflow:hidden; box-shadow:0 1px 3px rgba(7,20,55,0.08);">
 
                 {{-- Header band --}}
                 <tr>
-                    <td style="background-color:#1F55D6; padding:26px 36px;">
+                    <td style="background-color:#1B84FF; padding:26px 36px;">
                         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                             <tr>
                                 <td style="{{ $font }} font-size:20px; font-weight:800; letter-spacing:-0.02em; color:#FFFFFF;">TruCars</td>
-                                <td align="right" style="{{ $font }} font-size:12px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:#D6E2FF;">Available again</td>
+                                <td align="right" style="{{ $font }} font-size:12px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:#D6E9FF;">Available again</td>
                             </tr>
                         </table>
                     </td>
@@ -46,10 +46,10 @@
                 {{-- Hero --}}
                 <tr>
                     <td style="padding:34px 36px 8px;">
-                        <h1 style="margin:0 0 10px; {{ $font }} font-size:26px; line-height:1.2; font-weight:800; letter-spacing:-0.025em; color:#16181D;">
+                        <h1 style="margin:0 0 10px; {{ $font }} font-size:26px; line-height:1.2; font-weight:800; letter-spacing:-0.025em; color:#071437;">
                             Good news, {{ $firstName }} — it's back.
                         </h1>
-                        <p style="margin:0; {{ $font }} font-size:15px; line-height:1.6; color:#5B6068;">
+                        <p style="margin:0; {{ $font }} font-size:15px; line-height:1.6; color:#4B5675;">
                             The {{ $car }}{{ $vehicle->trim ? ' ' . $vehicle->trim : '' }} you were watching at {{ ucwords(strtolower((string) $vehicle->dealer?->name)) }} is available again. Its last reservation didn't go through, so it's open to reserve right now — first come, first served.
                         </p>
                     </td>
@@ -59,8 +59,8 @@
                     <td style="padding:20px 36px 0;">
                         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F7F7F5; border-radius:12px;">
                             <tr>
-                                <td style="padding:16px 20px; {{ $font }} font-size:14px; color:#5B6068;">{{ number_format((int) $vehicle->kilometres) }} km</td>
-                                <td align="right" style="padding:16px 20px; {{ $font }} font-size:20px; font-weight:800; color:#16181D;">{{ $vehicle->display_price }}</td>
+                                <td style="padding:16px 20px; {{ $font }} font-size:14px; color:#4B5675;">{{ number_format((int) $vehicle->kilometres) }} km</td>
+                                <td align="right" style="padding:16px 20px; {{ $font }} font-size:20px; font-weight:800; color:#071437;">{{ $vehicle->display_price }}</td>
                             </tr>
                         </table>
                     </td>
@@ -71,7 +71,7 @@
                     <td style="padding:26px 36px 6px;">
                         <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                             <tr>
-                                <td align="center" bgcolor="#1F55D6" style="border-radius:10px;">
+                                <td align="center" bgcolor="#1B84FF" style="border-radius:10px;">
                                     <a href="{{ url('/cars/' . $vehicle->id) }}" target="_blank" style="display:inline-block; padding:14px 30px; {{ $font }} font-size:15px; font-weight:700; color:#FFFFFF; text-decoration:none; border-radius:10px;">
                                         See it &amp; reserve →
                                     </a>

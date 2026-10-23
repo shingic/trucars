@@ -16,7 +16,7 @@
 
 @section('body')
     @include('mail.partials.documents')
-    <p style="margin:16px 0 0; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:14px; line-height:1.6; color:#3A3F46;">
+    <p style="margin:16px 0 0; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:14px; line-height:1.6; color:#252F4A;">
         Call your insurer and tell them you're buying a {{ $deal->vehicle_label }}. They'll need the VIN, <strong>{{ $deal->vehicle()->withoutGlobalScopes()->value('vin') }}</strong>. Ask them to email you a pink slip (liability card) or a binder letter, then upload it.
     </p>
 @endsection

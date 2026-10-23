@@ -7,7 +7,7 @@
 @section('intro')
     {{ $deal->seller_name }} needs a new copy of your {{ strtolower($document->name) }} for your {{ $deal->vehicle_label }}.
     @if (filled($reason))
-        Their note: <strong style="color:#16181D;">"{{ $reason }}"</strong>
+        Their note: <strong style="color:#071437;">"{{ $reason }}"</strong>
     @endif
 @endsection
 

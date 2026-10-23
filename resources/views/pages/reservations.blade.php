@@ -156,7 +156,7 @@ new #[Layout('layouts.dealer')] class extends Component {
         .tab-btn { font-size:14px; font-weight:700; color:var(--ink-3); padding:10px 16px 12px; border-bottom:2.5px solid transparent; margin-bottom:-1.5px; transition:color .15s ease; }
         .tab-btn:hover { color:var(--ink); }
         .tab-btn.on { color:var(--ink); border-bottom-color:var(--primary); }
-        .tab-n { font-size:11.5px; font-weight:700; color:var(--ink-3); background:rgba(22,24,29,.06); padding:2px 8px; border-radius:999px; margin-left:6px; }
+        .tab-n { font-size:11.5px; font-weight:700; color:var(--ink-3); background:rgba(7,20,55,.06); padding:2px 8px; border-radius:999px; margin-left:6px; }
         .tab-btn.on .tab-n { background:var(--primary); color:#fff; }
 
         .inbox-toolbar { display:flex; align-items:center; gap:14px; margin-bottom:16px; flex-wrap:wrap; }
@@ -177,7 +177,7 @@ new #[Layout('layouts.dealer')] class extends Component {
         .dr-ref { font-family:var(--mono); font-size:11.5px; color:var(--ink-2); font-weight:600; }
 
         .dr-veh { display:flex; align-items:center; gap:11px; }
-        .dr-thumb { width:46px; height:36px; border-radius:8px; background:linear-gradient(155deg,#4F80F0,#1F55D6 70%); display:grid; place-items:center; flex-shrink:0; }
+        .dr-thumb { width:46px; height:36px; border-radius:8px; background:linear-gradient(155deg,#4DA0FF,#1B84FF 70%); display:grid; place-items:center; flex-shrink:0; }
         .dr-thumb svg { filter:drop-shadow(0 3px 4px rgba(0,0,0,.25)); }
         .dr-veh-title { font-size:13.5px; font-weight:600; line-height:1.3; }
         .dr-veh-sub { font-size:11.5px; color:var(--ink-3); }
@@ -191,19 +191,19 @@ new #[Layout('layouts.dealer')] class extends Component {
         .stage .dot { width:7px; height:7px; border-radius:50%; }
 
         /* Deal stages */
-        .stage.reserved { background:#E3EBFC; color:#1743B0; } .stage.reserved .dot { background:#1F55D6; }
+        .stage.reserved { background:#E9F3FF; color:#056EE9; } .stage.reserved .dot { background:#1B84FF; }
         .stage.contacted { background:#FCF3D7; color:#9A7B1B; } .stage.contacted .dot { background:#E3B53A; }
         .stage.appointment_set { background:#E3EDFB; color:#2E5FA3; } .stage.appointment_set .dot { background:#4A82D6; }
         .stage.financing { background:#EFE7FB; color:#6B47B5; } .stage.financing .dot { background:#8B5FE0; }
         .stage.documents { background:#E0F2F4; color:#1F7A85; } .stage.documents .dot { background:#2BA3B2; }
-        .stage.ready_for_delivery { background:#DDF5EB; color:#0E8A60; } .stage.ready_for_delivery .dot { background:#12B886; }
-        .stage.delivered { background:rgba(22,24,29,.07); color:var(--ink-2); } .stage.delivered .dot { background:var(--ink-3); }
+        .stage.ready_for_delivery { background:#DDF5EB; color:#0E8A60; } .stage.ready_for_delivery .dot { background:#17C653; }
+        .stage.delivered { background:rgba(7,20,55,.07); color:var(--ink-2); } .stage.delivered .dot { background:var(--ink-3); }
         .stage.cancelled { background:#FBE4E4; color:#B23A3A; } .stage.cancelled .dot { background:#D65454; }
 
         /* Lead statuses */
-        .stage.new { background:#E3EBFC; color:#1743B0; } .stage.new .dot { background:#1F55D6; }
-        .stage.confirmed { background:#DDF5EB; color:#0E8A60; } .stage.confirmed .dot { background:#12B886; }
-        .stage.closed { background:rgba(22,24,29,.07); color:var(--ink-2); } .stage.closed .dot { background:var(--ink-3); }
+        .stage.new { background:#E9F3FF; color:#056EE9; } .stage.new .dot { background:#1B84FF; }
+        .stage.confirmed { background:#DDF5EB; color:#0E8A60; } .stage.confirmed .dot { background:#17C653; }
+        .stage.closed { background:rgba(7,20,55,.07); color:var(--ink-2); } .stage.closed .dot { background:var(--ink-3); }
 
         .dr-action { display:flex; justify-content:flex-end; gap:8px; }
         .advance-btn { font-size:12.5px; font-weight:700; color:var(--ink); padding:8px 15px; border:1.5px solid var(--line-strong); border-radius:var(--radius-pill); white-space:nowrap; transition:all .15s ease; }

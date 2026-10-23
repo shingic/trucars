@@ -4,12 +4,12 @@
     @foreach ($documents as $document)
         <tr>
             <td style="padding:{{ $loop->first ? '16px' : '10px' }} 20px {{ $loop->last ? '16px' : '0' }};">
-                <p style="margin:0; {{ $font }} font-size:15px; font-weight:700; color:#16181D;">{{ $document->name }}</p>
-                <p style="margin:2px 0 0; {{ $font }} font-size:13px; line-height:1.5; color:#5B6068;">{{ $document->status }}</p>
+                <p style="margin:0; {{ $font }} font-size:15px; font-weight:700; color:#071437;">{{ $document->name }}</p>
+                <p style="margin:2px 0 0; {{ $font }} font-size:13px; line-height:1.5; color:#4B5675;">{{ $document->status }}</p>
             </td>
         </tr>
     @endforeach
 </table>
-<p style="margin:12px 0 0; {{ $font }} font-size:13px; line-height:1.55; color:#9AA0A6;">
+<p style="margin:12px 0 0; {{ $font }} font-size:13px; line-height:1.55; color:#99A1B7;">
     A PDF or a clear phone photo works. Files go straight to {{ $deal->seller_name }} and are kept private.
 </p>

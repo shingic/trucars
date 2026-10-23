@@ -7,7 +7,7 @@
 <style>
         .iv-note { font-size:13px; color:var(--ink-2); margin:-8px 0 16px; max-width:760px; }
         .msg { border-radius:var(--radius-sm); padding:11px 15px; font-size:13.5px; font-weight:600; margin-bottom:16px; }
-        .msg.ok { background:var(--good-soft); color:var(--good-ink); border:1px solid rgba(18,184,134,.25); }
+        .msg.ok { background:var(--good-soft); color:var(--good-ink); border:1px solid rgba(23,198,83,.25); }
         .msg.bad { background:var(--primary-soft); color:var(--primary-press); border:1px solid var(--primary-line); }
         .output { background:var(--card); border:1px solid var(--line); border-radius:var(--radius-sm); padding:12px 14px; font-family:var(--mono); font-size:12px; white-space:pre-wrap; margin-bottom:16px; color:var(--ink-2); }
         .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-sm); overflow:hidden; }

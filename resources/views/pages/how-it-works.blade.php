@@ -35,7 +35,7 @@ new #[Title('How it works — TruCars')] class extends Component {
         .hw-hero.no-photo { grid-template-columns:1fr; }
         .hw-hero-copy { padding:48px 44px 40px; }
         .hw-hero h1 { font-size:clamp(44px, 6vw, 78px); font-weight:700; line-height:.95; text-transform:uppercase; margin:0; color:#fff; }
-        .hw-hero p { font-size:18px; margin:20px 0 0; max-width:440px; color:rgba(255,255,255,.88); }
+        .hw-hero p { font-size:18px; margin:20px 0 0; max-width:440px; color:#fff; }
         .hw-hero figure { margin:0; position:relative; overflow:hidden; background:var(--primary-press); min-height:320px; }
         /* dealer photos carry a vendor badge along the bottom edge; the frame trims it off */
         .hw-hero img { position:absolute; top:0; left:0; width:100%; height:110%; object-fit:cover; object-position:center top; }
@@ -45,7 +45,7 @@ new #[Title('How it works — TruCars')] class extends Component {
         .hw-route a { flex:1; display:flex; align-items:baseline; gap:10px; padding:14px 20px; color:#fff; text-decoration:none; font-family:var(--font-display); font-size:19px; font-weight:600; text-transform:uppercase; border-left:1px solid rgba(255,255,255,.18); }
         .hw-route a:first-child { border-left:none; }
         .hw-route a span { color:var(--primary-bright); font-size:15px; }
-        .hw-route a:hover { background:#24272E; }
+        .hw-route a:hover { background:#12224D; }
 
         /* steps: a big numeral, then what happens */
         .hw-steps { list-style:none; margin:24px 0 0; padding:0; }

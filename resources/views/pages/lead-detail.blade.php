@@ -101,11 +101,11 @@ new #[Layout('layouts.dealer')] class extends Component {
 
         .stage { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; padding:5px 11px; border-radius:var(--radius-pill); white-space:nowrap; }
         .stage .dot { width:7px; height:7px; border-radius:50%; }
-        .stage.reservation { background:var(--coral-soft); color:#1743B0; } .stage.reservation .dot { background:var(--coral); }
+        .stage.reservation { background:var(--coral-soft); color:#056EE9; } .stage.reservation .dot { background:var(--coral); }
         .stage.new { background:var(--primary-soft); color:var(--primary-press); } .stage.new .dot { background:var(--primary); }
         .stage.contacted { background:var(--amber-soft); color:var(--amber); } .stage.contacted .dot { background:var(--amber); }
         .stage.confirmed { background:var(--good-soft); color:var(--good-ink); } .stage.confirmed .dot { background:var(--good); }
-        .stage.closed { background:rgba(22,24,29,.07); color:var(--ink-2); } .stage.closed .dot { background:var(--ink-3); }
+        .stage.closed { background:rgba(7,20,55,.07); color:var(--ink-2); } .stage.closed .dot { background:var(--ink-3); }
 
         .lead-grid { display:grid; grid-template-columns:minmax(0,1fr) 340px; gap:18px; align-items:start; }
 

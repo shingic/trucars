@@ -114,7 +114,7 @@ new #[Layout('layouts.dealer')] #[Title('Customer')] class extends Component {
     <style>
         .cx-head h1 { font-size:24px; font-weight:800; letter-spacing:0; margin:0 0 4px; }
         .cx-head p { margin:0 0 20px; font-size:14px; color:var(--ink-2); }
-        .cx-status { background:var(--good-soft); color:var(--good-ink); border:1px solid rgba(18,184,134,.25); border-radius:var(--radius-sm); padding:11px 15px; font-size:13.5px; font-weight:600; margin-bottom:18px; max-width:880px; }
+        .cx-status { background:var(--good-soft); color:var(--good-ink); border:1px solid rgba(23,198,83,.25); border-radius:var(--radius-sm); padding:11px 15px; font-size:13.5px; font-weight:600; margin-bottom:18px; max-width:880px; }
         .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-sm); max-width:880px; margin-bottom:20px; overflow:hidden; }
         .card-head { padding:15px 20px 13px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:12px; }
         .card-head .ttl { font-size:15px; font-weight:700; flex:1; }

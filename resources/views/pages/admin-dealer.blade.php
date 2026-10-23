@@ -906,12 +906,12 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         .dl-head p { margin:0; font-size:14px; color:var(--ink-2); max-width:640px; }
 
         .btn { font-size:14px; font-weight:700; border-radius:var(--radius-pill); padding:10px 18px; transition:all .15s ease; white-space:nowrap; }
-        .btn-primary { background:var(--primary); color:#fff; box-shadow:0 8px 20px rgba(31,85,214,.24); }
+        .btn-primary { background:var(--primary); color:#fff; box-shadow:0 8px 20px rgba(27,132,255,.24); }
         .btn-primary:hover { background:var(--primary-press); }
         .btn-ghost { background:transparent; color:var(--ink-2); border:1px solid var(--line-strong); display:inline-block; }
         .btn-ghost:hover { border-color:var(--ink-3); color:var(--ink); }
 
-        .dl-status { display:flex; align-items:center; gap:9px; background:var(--good-soft); color:var(--good-ink); border:1px solid rgba(18,184,134,.25); border-radius:var(--radius-sm); padding:11px 15px; font-size:13.5px; font-weight:600; margin-bottom:20px; }
+        .dl-status { display:flex; align-items:center; gap:9px; background:var(--good-soft); color:var(--good-ink); border:1px solid rgba(23,198,83,.25); border-radius:var(--radius-sm); padding:11px 15px; font-size:13.5px; font-weight:600; margin-bottom:20px; }
 
         .dl-grid { display:grid; gap:20px; max-width:880px; border:none; padding:0; margin:0; min-width:0; }
         .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-sm); }
@@ -919,14 +919,14 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         .card-head .ttl { font-size:15px; font-weight:700; }
         .card-head .sub { font-size:12.5px; color:var(--ink-3); margin-top:2px; }
         .brand-fixed { display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:9px 10px 9px 12px; border:1px solid var(--line); border-radius:var(--radius-sm); background:var(--bg); }
-        .brand-chip { font-size:13.5px; font-weight:800; padding:4px 11px; border-radius:var(--radius-pill); background:#14161B; color:#fff; }
+        .brand-chip { font-size:13.5px; font-weight:800; padding:4px 11px; border-radius:var(--radius-pill); background:#071437; color:#fff; }
         .brand-chip.missing { background:var(--amber-soft); color:var(--amber); }
         .brand-follows-text { font-size:12.5px; color:var(--ink-3); flex:1; min-width:200px; }
         .brand-follows-text a { color:var(--primary-press); font-weight:700; }
         .brand-change { font-size:12.5px; font-weight:700; color:var(--ink-2); padding:6px 12px; border-radius:var(--radius-pill); border:1px solid var(--line-strong); background:var(--card); }
         .brand-change:hover { border-color:var(--ink-3); color:var(--ink); }
-        .bc-scrim { position:fixed; inset:0; background:rgba(22,24,29,.45); backdrop-filter:blur(2px); z-index:80; display:grid; place-items:center; padding:20px; }
-        .bc { width:min(560px, 100%); max-height:calc(100vh - 40px); overflow:auto; background:var(--card); border-radius:22px; box-shadow:0 30px 80px rgba(22,24,29,.3); }
+        .bc-scrim { position:fixed; inset:0; background:rgba(7,20,55,.45); backdrop-filter:blur(2px); z-index:80; display:grid; place-items:center; padding:20px; }
+        .bc { width:min(560px, 100%); max-height:calc(100vh - 40px); overflow:auto; background:var(--card); border-radius:22px; box-shadow:0 30px 80px rgba(7,20,55,.3); }
         .bc-head { padding:22px 24px 6px; }
         .bc-head .warn { display:inline-flex; align-items:center; gap:7px; font-size:11.5px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--primary-press); }
         .bc-head h2 { font-size:21px; font-weight:800; letter-spacing:0; margin:8px 0 4px; }
@@ -996,13 +996,13 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
 
 
         /* ---- profile ---- */
-        .hero { position:relative; border-radius:24px; overflow:hidden; min-height:200px; background:linear-gradient(120deg, #F6F7F7 0%, #FFF4EC 100%); border:1px solid var(--line); margin-bottom:18px; }
+        .hero { position:relative; border-radius:24px; overflow:hidden; min-height:200px; background:linear-gradient(120deg, #F9F9F9 0%, #FFF4EC 100%); border:1px solid var(--line); margin-bottom:18px; }
         .hero-photo { position:absolute; inset:0 0 0 38%; background:var(--hero-grad) center/cover; opacity:.9; }
-        .hero:not(.has-photo) .hero-photo { background:radial-gradient(500px 260px at 80% 30%, rgba(31,85,214,.35), transparent 70%), repeating-linear-gradient(135deg, rgba(31,85,214,.06) 0 14px, transparent 14px 28px); opacity:1; }
+        .hero:not(.has-photo) .hero-photo { background:radial-gradient(500px 260px at 80% 30%, rgba(27,132,255,.35), transparent 70%), repeating-linear-gradient(135deg, rgba(27,132,255,.06) 0 14px, transparent 14px 28px); opacity:1; }
         .hero-fade { position:absolute; inset:0; background:linear-gradient(90deg, #FAFAFA 0%, #FAFAFA 34%, rgba(250,250,250,.85) 46%, rgba(250,250,250,0) 66%); }
         .hero-body { position:relative; display:flex; align-items:center; gap:26px; padding:28px 30px; min-height:200px; }
         .hero-brand { display:flex; flex-direction:column; align-items:center; gap:6px; flex-shrink:0; width:96px; }
-        .mark { width:72px; height:72px; border-radius:20px; background:#14161B; color:#fff; display:grid; place-items:center; font-size:24px; font-weight:800; letter-spacing:0; box-shadow:0 10px 26px rgba(22,24,29,.18); }
+        .mark { width:72px; height:72px; border-radius:20px; background:#071437; color:#fff; display:grid; place-items:center; font-size:24px; font-weight:800; letter-spacing:0; box-shadow:0 10px 26px rgba(7,20,55,.18); }
         .mark.big { width:58px; height:58px; font-size:19px; border-radius:17px; box-shadow:none; }
         .mark-name { font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-2); text-align:center; }
         .hero-main { flex:1; min-width:0; }
@@ -1023,8 +1023,8 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         .hero-actions { align-self:flex-start; }
         .hbtn { display:inline-flex; align-items:center; gap:7px; font-size:13px; font-weight:700; padding:9px 14px; border-radius:var(--radius-pill); background:rgba(255,255,255,.92); border:1px solid var(--line); box-shadow:var(--shadow-sm); }
         .hbtn:hover { border-color:var(--primary-line); color:var(--primary-press); }
-        .photo-btn { position:absolute; right:16px; bottom:16px; display:inline-flex; align-items:center; gap:7px; font-size:12.5px; font-weight:700; color:#fff; padding:8px 13px; border-radius:var(--radius-pill); background:rgba(22,24,29,.62); backdrop-filter:blur(6px); cursor:pointer; }
-        .photo-btn:hover { background:rgba(22,24,29,.8); }
+        .photo-btn { position:absolute; right:16px; bottom:16px; display:inline-flex; align-items:center; gap:7px; font-size:12.5px; font-weight:700; color:#fff; padding:8px 13px; border-radius:var(--radius-pill); background:rgba(7,20,55,.62); backdrop-filter:blur(6px); cursor:pointer; }
+        .photo-btn:hover { background:rgba(7,20,55,.8); }
 
         .pf { display:grid; grid-template-columns:minmax(0, 1fr) 290px; gap:18px; align-items:start; }
         .pf-main { min-width:0; }
@@ -1097,7 +1097,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         .sp-current { display:flex; align-items:center; gap:9px; width:100%; padding:10px 12px; border-radius:12px; border:1px solid var(--line-strong); font-size:14px; font-weight:700; background:var(--card); text-align:left; }
         .sp-current.static { cursor:default; }
         .sp-chev { margin-left:auto; color:var(--ink-3); }
-        .sp-menu { position:absolute; left:0; right:0; top:calc(100% + 6px); background:var(--card); border:1px solid var(--line); border-radius:14px; box-shadow:0 14px 34px rgba(22,24,29,.14); padding:6px; z-index:20; }
+        .sp-menu { position:absolute; left:0; right:0; top:calc(100% + 6px); background:var(--card); border:1px solid var(--line); border-radius:14px; box-shadow:0 14px 34px rgba(7,20,55,.14); padding:6px; z-index:20; }
         .sp-menu button { display:flex; align-items:flex-start; gap:10px; width:100%; padding:9px 10px; border-radius:9px; text-align:left; }
         .sp-menu button:hover { background:var(--bg); }
         .sp-menu .st-dot { margin-top:5px; }
@@ -1118,7 +1118,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         .qa { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:11px; margin-top:8px; border-radius:12px; font-size:13.5px; font-weight:700; border:1px solid var(--line-strong); background:var(--card); color:var(--ink); }
         .qa:first-of-type { margin-top:0; }
         .qa:hover { border-color:var(--ink-3); }
-        .qa.primary { background:var(--primary); border-color:var(--primary); color:#fff; box-shadow:0 8px 20px rgba(31,85,214,.22); }
+        .qa.primary { background:var(--primary); border-color:var(--primary); color:#fff; box-shadow:0 8px 20px rgba(27,132,255,.22); }
         .qa.primary:hover { background:var(--primary-press); }
         .err { font-size:12px; color:var(--primary-press); font-weight:600; }
 

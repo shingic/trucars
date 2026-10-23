@@ -82,14 +82,14 @@ new #[Layout('layouts.dealer')] #[Title('Brands')] class extends Component {
         .brand:hover { border-color:var(--primary-line); transform:translateY(-1px); }
         .brand.quiet { box-shadow:none; background:transparent; }
         .brand-top { display:flex; align-items:center; gap:12px; }
-        .logo { width:44px; height:44px; border-radius:13px; background:#14161B; color:#fff; display:grid; place-items:center; font-weight:800; font-size:15px; flex-shrink:0; }
+        .logo { width:44px; height:44px; border-radius:13px; background:#071437; color:#fff; display:grid; place-items:center; font-weight:800; font-size:15px; flex-shrink:0; }
         .brand.quiet .logo { background:var(--bg); color:var(--ink-3); border:1px solid var(--line); }
         .brand .nm { font-size:16px; font-weight:800; letter-spacing:-.01em; }
         .brand .dl { font-size:12.5px; color:var(--ink-3); }
         .chips { display:flex; gap:6px; flex-wrap:wrap; }
         .chip { display:inline-flex; align-items:center; gap:5px; font-size:11.5px; font-weight:700; padding:4px 9px; border-radius:var(--radius-pill); background:var(--bg); color:var(--ink-3); border:1px solid var(--line); }
         .chip.on { background:var(--good-soft); color:var(--good-ink); border-color:transparent; }
-        .chip.offer { background:#14161B; color:#A9C2FF; border-color:transparent; }
+        .chip.offer { background:#071437; color:#8EC2FF; border-color:transparent; }
         .chip svg { width:12px; height:12px; }
         .sec { font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3); margin:26px 0 12px; }
     </style>

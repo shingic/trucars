@@ -695,12 +695,12 @@ new class extends Component {
     <style>
         [x-cloak] { display:none !important; }
         .btn-reserved { background:var(--bg, #f2f2f2); color:var(--ink-3, #777); border:1px solid var(--line, #e5e5e5); cursor:not-allowed; display:inline-flex; align-items:center; justify-content:center; gap:8px; }
-        .btn-bell { display:inline-flex; align-items:center; justify-content:center; gap:8px; border:1.5px solid var(--line-strong, #d5d5d5); background:var(--card, #fff); color:var(--ink, #16181d); font-weight:700; }
+        .btn-bell { display:inline-flex; align-items:center; justify-content:center; gap:8px; border:1.5px solid var(--line-strong, #d5d5d5); background:var(--card, #fff); color:var(--ink, #071437); font-weight:700; }
         .btn-bell:hover { border-color:var(--primary); color:var(--primary-press, var(--primary)); }
         .btn-bell.on { border-color:transparent; background:#E7F8F1; color:#0B7355; }
         .btn-bell.on svg { animation:bell-ring .6s ease 1; transform-origin:50% 10%; }
         @keyframes bell-ring { 20% { transform:rotate(14deg); } 45% { transform:rotate(-12deg); } 70% { transform:rotate(7deg); } 100% { transform:rotate(0); } }
-        .reserved-note { display:flex; gap:10px; align-items:flex-start; background:#FFF4D6; color:#6B4500; border-radius:14px; padding:12px 14px; font-size:13.5px; line-height:1.45; margin:0 22px 14px; }
+        .reserved-note { display:flex; gap:10px; align-items:flex-start; background:#FFF8DD; color:#6B4500; border-radius:14px; padding:12px 14px; font-size:13.5px; line-height:1.45; margin:0 22px 14px; }
 
         .vdp-back { display:inline-flex; align-items:center; gap:7px; font-size:13.5px; font-weight:600; color:var(--ink-2); margin-bottom:18px; text-decoration:none; }
         .vdp-back:hover { color:var(--primary); }
@@ -720,13 +720,13 @@ new class extends Component {
         .gallery-hero.grabbing { cursor:grabbing; }
         .gallery-img { width:100%; height:100%; object-fit:cover; display:block; -webkit-user-drag:none; }
         .gallery-badges { position:absolute; top:18px; left:18px; z-index:2; display:flex; flex-direction:column; align-items:flex-start; gap:8px; pointer-events:none; }
-        .gallery-badge.reserved { background:#FFF4D6; color:#7A4E00; }
+        .gallery-badge.reserved { background:#FFF8DD; color:#7A4E00; }
         .gallery-badge.reserved .dot { background:#C98A00; }
         .gallery-badge { display:inline-flex; align-items:center; gap:7px; background:rgba(255,255,255,.96); border-radius:var(--radius-pill); padding:8px 15px 8px 10px; font-size:13px; font-weight:700; color:#0E5A43; box-shadow:var(--shadow-md); }
         .gallery-badge .dot { width:18px; height:18px; border-radius:50%; background:var(--good); display:grid; place-items:center; }
 
-        .ghero-fs { position:absolute; z-index:3; top:18px; right:18px; width:40px; height:40px; border:none; border-radius:11px; background:rgba(22,24,29,.55); backdrop-filter:blur(6px); color:#fff; display:grid; place-items:center; cursor:pointer; transition:background .15s ease; }
-        .ghero-fs:hover { background:rgba(22,24,29,.82); }
+        .ghero-fs { position:absolute; z-index:3; top:18px; right:18px; width:40px; height:40px; border:none; border-radius:11px; background:rgba(7,20,55,.55); backdrop-filter:blur(6px); color:#fff; display:grid; place-items:center; cursor:pointer; transition:background .15s ease; }
+        .ghero-fs:hover { background:rgba(7,20,55,.82); }
 
         .ghero-arrow { position:absolute; z-index:3; top:50%; transform:translateY(-50%); width:44px; height:44px; border:none; border-radius:50%; background:rgba(255,255,255,.92); color:var(--ink); display:grid; place-items:center; cursor:pointer; box-shadow:var(--shadow-md); opacity:0; transition:opacity .16s ease, background .15s ease; }
         .gallery-hero:hover .ghero-arrow { opacity:1; }
@@ -734,15 +734,15 @@ new class extends Component {
         .ghero-arrow.left { left:16px; }
         .ghero-arrow.right { right:16px; }
 
-        .ghero-spin { position:absolute; z-index:3; bottom:18px; left:18px; display:inline-flex; align-items:center; gap:7px; padding:9px 14px; border:none; border-radius:var(--radius-pill); background:rgba(22,24,29,.6); backdrop-filter:blur(6px); color:#fff; font-size:12.5px; font-weight:700; cursor:pointer; transition:background .15s ease; }
-        .ghero-spin:hover { background:rgba(22,24,29,.82); }
+        .ghero-spin { position:absolute; z-index:3; bottom:18px; left:18px; display:inline-flex; align-items:center; gap:7px; padding:9px 14px; border:none; border-radius:var(--radius-pill); background:rgba(7,20,55,.6); backdrop-filter:blur(6px); color:#fff; font-size:12.5px; font-weight:700; cursor:pointer; transition:background .15s ease; }
+        .ghero-spin:hover { background:rgba(7,20,55,.82); }
         .ghero-spin[aria-pressed="true"] { background:var(--primary); }
 
-        .ghero-counter { position:absolute; z-index:3; bottom:18px; right:18px; padding:6px 12px; border-radius:var(--radius-pill); background:rgba(22,24,29,.6); backdrop-filter:blur(6px); color:#fff; font-size:12.5px; font-weight:700; letter-spacing:.02em; }
+        .ghero-counter { position:absolute; z-index:3; bottom:18px; right:18px; padding:6px 12px; border-radius:var(--radius-pill); background:rgba(7,20,55,.6); backdrop-filter:blur(6px); color:#fff; font-size:12.5px; font-weight:700; letter-spacing:.02em; }
 
         .ghero-hotspot { position:absolute; z-index:4; transform:translate(-50%,-50%); width:30px; height:30px; border:none; background:transparent; cursor:pointer; padding:0; }
-        .hs-dot { display:block; width:18px; height:18px; margin:6px; border-radius:50%; background:var(--primary); box-shadow:0 0 0 4px rgba(31,85,214,.35), var(--shadow-md); animation:hsPulse 2s ease-in-out infinite; }
-        @keyframes hsPulse { 0%, 100% { box-shadow:0 0 0 4px rgba(31,85,214,.35), var(--shadow-md); } 50% { box-shadow:0 0 0 9px rgba(31,85,214,.10), var(--shadow-md); } }
+        .hs-dot { display:block; width:18px; height:18px; margin:6px; border-radius:50%; background:var(--primary); box-shadow:0 0 0 4px rgba(27,132,255,.35), var(--shadow-md); animation:hsPulse 2s ease-in-out infinite; }
+        @keyframes hsPulse { 0%, 100% { box-shadow:0 0 0 4px rgba(27,132,255,.35), var(--shadow-md); } 50% { box-shadow:0 0 0 9px rgba(27,132,255,.10), var(--shadow-md); } }
         .hs-pop { position:absolute; bottom:130%; left:50%; transform:translateX(-50%); white-space:nowrap; background:var(--ink); color:#fff; font-size:12px; font-weight:600; padding:7px 11px; border-radius:9px; box-shadow:var(--shadow-md); z-index:5; }
         .hs-pop::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:6px solid transparent; border-top-color:var(--ink); }
 
@@ -803,10 +803,10 @@ new class extends Component {
            green tint fading out — enough to read as a trust zone without the
            old wall-of-green. Green is now an accent (shield, warranty, checks),
            not the surface. */
-        .cert-block { background:linear-gradient(180deg, rgba(18,184,134,.04), var(--card) 130px); border:1px solid var(--line-strong); border-top:3px solid var(--good); border-radius:var(--radius); overflow:hidden; }
+        .cert-block { background:linear-gradient(180deg, rgba(23,198,83,.04), var(--card) 130px); border:1px solid var(--line-strong); border-top:3px solid var(--good); border-radius:var(--radius); overflow:hidden; }
 
         .cert-head { padding:22px 24px 18px; display:flex; align-items:flex-start; gap:16px; }
-        .cert-shield { width:46px; height:46px; border-radius:13px; background:var(--good); display:grid; place-items:center; flex-shrink:0; box-shadow:0 8px 18px rgba(18,184,134,.28); }
+        .cert-shield { width:46px; height:46px; border-radius:13px; background:var(--good); display:grid; place-items:center; flex-shrink:0; box-shadow:0 8px 18px rgba(23,198,83,.28); }
         .cert-headtext { min-width:0; }
         .cert-head h3 { margin:0; font-size:18px; font-weight:800; letter-spacing:-.01em; }
         .cert-head .cert-by { font-size:13px; font-weight:700; color:var(--good); margin-top:3px; }
@@ -816,7 +816,7 @@ new class extends Component {
            near-white off-white panel (a touch of contrast against the white
            card, not more green), with a hairline border and the faintest lift.
            The green icon is the single green anchor here. */
-        .cert-warranty { margin:0 24px 20px; display:flex; align-items:center; gap:15px; padding:18px 20px; border-radius:14px; background:#F5FBF8; border:1px solid rgba(18,184,134,.16); box-shadow:0 1px 2px rgba(16,24,40,.04); }
+        .cert-warranty { margin:0 24px 20px; display:flex; align-items:center; gap:15px; padding:18px 20px; border-radius:14px; background:#F5FBF8; border:1px solid rgba(23,198,83,.16); box-shadow:0 1px 2px rgba(16,24,40,.04); }
         .cw-ic { width:40px; height:40px; border-radius:11px; background:var(--good); color:#fff; display:grid; place-items:center; flex-shrink:0; }
         .cw-body { flex:1; min-width:0; }
         .cw-value { font-size:23px; font-weight:800; letter-spacing:0; color:var(--ink); line-height:1.1; }
@@ -898,7 +898,7 @@ new class extends Component {
             flex-direction:column; gap:10px;
             background:rgba(255,255,255,.97); backdrop-filter:saturate(160%) blur(14px);
             border-top:1px solid var(--line);
-            box-shadow:0 -10px 34px rgba(22,24,29,.12);
+            box-shadow:0 -10px 34px rgba(7,20,55,.12);
             padding:12px 16px calc(12px + env(safe-area-inset-bottom));
         }
         .vdp-stickybar .sb-line { display:flex; align-items:baseline; flex-wrap:wrap; gap:5px 9px; }
