@@ -92,23 +92,25 @@ new #[Layout('layouts.checkout')] class extends Component {
 
 @push('styles')
     <style>
-        .auth-top { border-bottom:1px solid var(--line); background:var(--card); }
+        .auth-top { border-bottom:1px solid var(--line-strong); background:var(--card); }
         .auth-top-inner { max-width:1080px; margin:0 auto; padding:0 26px; display:flex; align-items:center; height:64px; }
         .auth-wrap { max-width:440px; margin:0 auto; padding:56px 26px 90px; }
-        .auth-card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-md); padding:32px 30px; }
-        .auth-h1 { font-size:26px; font-weight:800; letter-spacing:0; margin:0 0 6px; }
-        .auth-lede { font-size:14px; color:var(--ink-2); margin:0 0 24px; line-height:1.55; }
+        .auth-card { background:var(--card); border:1px solid var(--line-strong); border-top:3px solid var(--ink); border-radius:var(--radius); padding:30px 30px 32px; }
+        .auth-h1 { font-family:var(--font-display); font-size:36px; font-weight:700; text-transform:uppercase; line-height:1; letter-spacing:0; margin:0 0 10px; }
+        .auth-lede { font-size:15px; color:var(--ink-2); margin:0 0 24px; line-height:1.55; }
+        .auth-form .btn-primary { font-family:var(--font-display); text-transform:uppercase; font-size:18px; font-weight:600; border-radius:3px; }
         .auth-form { display:flex; flex-direction:column; gap:16px; }
-        .auth-swap { text-align:center; font-size:13.5px; color:var(--ink-2); margin-top:18px; }
-        .auth-fineprint { font-size:11.5px; color:var(--ink-3); line-height:1.5; margin:2px 0 0; }
-        .field-error { color:var(--bad); font-size:12.5px; font-weight:600; margin:7px 0 0; }
+        .auth-swap { text-align:center; font-size:14px; color:var(--ink-2); margin-top:18px; }
+        .auth-fineprint { font-size:13px; color:var(--ink-3); line-height:1.5; margin:2px 0 0; }
+        .field-error { color:#D81A48; font-size:13px; font-weight:600; margin:7px 0 0; }
+        @media (max-width:560px) { .auth-wrap { padding:32px 16px 70px; } .auth-top-inner { padding:0 16px; } .auth-card { padding:24px 18px; } }
     </style>
 @endpush
 
 <div>
     <header class="auth-top">
         <div class="auth-top-inner">
-            <a href="/" class="brand"><span class="glyph">T</span> TruCars</a>
+            <a href="/" class="brand"><span class="wordmark">Tru<b>Cars</b></span></a>
         </div>
     </header>
 

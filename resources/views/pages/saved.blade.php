@@ -108,9 +108,6 @@ new class extends Component {
 
     @if ($savedVehicles->isEmpty())
         <div class="saved-empty">
-            <span class="saved-empty-icon">
-                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M19 14c1.5-1.5 3-3.3 3-5.5A4.5 4.5 0 0 0 12 5 4.5 4.5 0 0 0 2 8.5c0 2.2 1.5 4 3 5.5l7 7Z"/></svg>
-            </span>
             <div class="saved-empty-title">No saved cars yet</div>
             <p class="saved-empty-text">Tap the heart on any car and it will be kept here for you — across visits, on any device you sign in from.</p>
             <a href="{{ route('shop') }}" wire:navigate class="saved-empty-cta">
@@ -133,28 +130,28 @@ new class extends Component {
     <style>
         [x-cloak] { display:none !important; }
 
-        .saved-head { margin-bottom:22px; }
-        .saved-back { display:inline-flex; align-items:center; gap:7px; font-size:13.5px; font-weight:600; color:var(--ink-2); text-decoration:none; margin-bottom:18px; }
-        .saved-back:hover { color:var(--primary); }
-        .saved-title { font-size:30px; font-weight:800; letter-spacing:0; margin:0; }
-        .saved-sub { color:var(--ink-2); font-size:15px; margin:6px 0 0; }
+        .saved-head { padding-bottom:16px; margin-bottom:28px; border-bottom:2px solid var(--ink); }
+        .saved-back { display:inline-flex; align-items:center; gap:7px; font-size:14px; font-weight:600; color:var(--ink-2); text-decoration:underline; text-underline-offset:3px; margin-bottom:18px; }
+        .saved-back:hover { color:var(--ink); }
+        .saved-title { font-family:var(--font-display); font-size:44px; font-weight:700; text-transform:uppercase; line-height:1; letter-spacing:0; margin:0; }
+        .saved-sub { color:var(--ink-2); font-size:15px; margin:10px 0 0; }
 
         /* Same floor grid so a saved car reads exactly as it does on the floor. */
         .grid { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:34px 22px; }
         @media (max-width:1350px) { .grid { grid-template-columns:repeat(3, minmax(0, 1fr)); } }
         @media (max-width:1000px) { .grid { grid-template-columns:repeat(2, minmax(0, 1fr)); } }
 
-
-        .saved-empty { max-width:440px; margin:40px auto 20px; text-align:center; padding:20px; }
-        .saved-empty-icon { display:inline-grid; place-items:center; width:66px; height:66px; border-radius:50%; background:var(--primary-soft); color:var(--primary); margin-bottom:18px; }
-        .saved-empty-title { font-size:20px; font-weight:800; letter-spacing:0; }
-        .saved-empty-text { font-size:14.5px; color:var(--ink-2); line-height:1.55; margin:8px 0 22px; }
-        .saved-empty-cta { display:inline-flex; align-items:center; gap:8px; font-size:15px; font-weight:700; color:#fff; text-decoration:none; background:var(--primary); border-radius:var(--radius-pill); padding:13px 24px; box-shadow:var(--shadow-primary); transition:background .16s ease, transform .16s ease; }
-        .saved-empty-cta:hover { background:var(--primary-press); transform:translateY(-1px); }
+        /* empty: a plain note in a dashed box */
+        .saved-empty { max-width:560px; margin:8px 0 20px; padding:24px 26px; border:1.5px dashed var(--line-strong); border-radius:3px; }
+        .saved-empty-title { font-family:var(--font-display); font-size:24px; font-weight:700; text-transform:uppercase; line-height:1; letter-spacing:0; }
+        .saved-empty-text { font-size:15px; color:var(--ink-2); line-height:1.55; margin:10px 0 20px; }
+        .saved-empty-cta { display:inline-flex; align-items:center; gap:8px; font-family:var(--font-display); font-size:18px; font-weight:600; text-transform:uppercase; color:#fff; text-decoration:none; background:var(--primary); border-radius:3px; padding:11px 22px; transition:background .16s ease; }
+        .saved-empty-cta:hover { background:var(--primary-press); }
 
         @media (max-width:860px) {
-            .saved-title { font-size:25px; }
+            .saved-title { font-size:34px; }
             .saved-sub { font-size:14px; }
+            .saved-empty { padding:20px 18px; }
             .grid { grid-template-columns:minmax(0, 1fr); gap:30px; }
         }
     </style>

@@ -60,15 +60,15 @@ new #[Layout('layouts.dealer')] #[Title('All stores')] class extends Component {
 
 @push('styles')
     <style>
-        .dg-head h1 { font-size:24px; font-weight:800; letter-spacing:0; margin:0 0 6px; }
-        .dg-head p { margin:0 0 20px; font-size:14px; color:var(--ink-2); max-width:680px; }
-        .dg-table { width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow-sm); }
-        .dg-table th { text-align:left; font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3); padding:12px 16px; border-bottom:1px solid var(--line); }
-        .dg-table td { padding:13px 16px; border-bottom:1px solid var(--line); font-size:14px; }
-        .dg-table tr:last-child td { border-bottom:none; }
+        .dg-head h1 { font-family:var(--font-display); font-size:34px; font-weight:700; text-transform:uppercase; line-height:1; letter-spacing:0; margin:0 0 10px; }
+        .dg-head p { margin:0 0 22px; font-size:15px; color:var(--ink-2); max-width:680px; }
+        .dg-table { width:100%; border-collapse:collapse; background:var(--card); border-top:2px solid var(--ink); }
+        .dg-table th { text-align:left; font-family:var(--font-display); font-size:14px; font-weight:700; text-transform:uppercase; color:var(--ink-3); padding:11px 16px; border-bottom:2px solid var(--ink); white-space:nowrap; }
+        .dg-table td { padding:13px 16px; border-bottom:1px solid var(--line-strong); font-size:14.5px; }
         .dg-table .num { text-align:right; font-variant-numeric:tabular-nums; }
-        .dg-table .nm { font-weight:700; } .dg-table .sub { font-size:12.5px; color:var(--ink-3); }
-        .dg-table tfoot td { font-weight:800; background:var(--bg); }
+        .dg-table td.num { font-family:var(--font-display); font-size:17px; font-weight:700; color:var(--ink); }
+        .dg-table .nm { font-weight:700; } .dg-table .sub { font-size:13px; color:var(--ink-3); }
+        .dg-table tfoot td { font-weight:800; background:var(--bg); border-top:2px solid var(--ink); border-bottom:2px solid var(--ink); }
         .dg-wrap { overflow-x:auto; }
     </style>
 @endpush

@@ -63,7 +63,7 @@ new #[Layout('layouts.dealer')] #[Title('Inventory')] class extends Component {
 
 @push('styles')
     <style>
-        .iv-head h1 { font-size:24px; font-weight:800; letter-spacing:0; margin:0 0 16px; }
+        .iv-head h1 { font-size:34px; font-weight:700; text-transform:uppercase; line-height:1; letter-spacing:0; margin:0 0 18px; }
     </style>
 @endpush
 

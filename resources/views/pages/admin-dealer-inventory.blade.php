@@ -64,10 +64,8 @@ new #[Layout('layouts.dealer')] #[Title('Inventory')] class extends Component {
 
 @push('styles')
     <style>
-        .tabs { display:flex; gap:6px; margin-bottom:18px; border-bottom:1px solid var(--line); }
-        .tabs a { padding:9px 14px; font-size:14px; font-weight:600; color:var(--ink-2); border-bottom:2px solid transparent; margin-bottom:-1px; }
-        .tabs a.on { color:var(--ink); border-bottom-color:var(--primary); }
-        .iv-head h1 { font-size:24px; font-weight:800; letter-spacing:0; margin:0 0 16px; }
+        .iv-head h1 { font-family:var(--font-display); font-size:36px; font-weight:700; line-height:1; text-transform:uppercase; letter-spacing:0; margin:0 0 18px; color:var(--ink); overflow-wrap:anywhere; }
+        @media (max-width:760px) { .iv-head h1 { font-size:30px; } }
     </style>
 @endpush
 

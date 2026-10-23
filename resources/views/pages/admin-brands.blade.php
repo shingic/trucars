@@ -67,31 +67,34 @@ new #[Layout('layouts.dealer')] #[Title('Brands')] class extends Component {
 
 @push('styles')
     <style>
-        .br-head { display:flex; align-items:flex-end; gap:16px; margin-bottom:18px; flex-wrap:wrap; }
-        .br-head h1 { font-size:24px; font-weight:800; letter-spacing:0; margin:0 0 6px; }
-        .br-head p { margin:0; font-size:14px; color:var(--ink-2); max-width:620px; }
+        .br-head { display:flex; align-items:flex-end; gap:16px; margin-bottom:22px; flex-wrap:wrap; }
+        .br-head h1 { font-family:var(--font-display); font-size:34px; font-weight:700; text-transform:uppercase; line-height:1; letter-spacing:0; margin:0 0 8px; }
+        .br-head p { margin:0; font-size:15px; color:var(--ink-2); max-width:620px; }
         .br-head .spacer { flex:1; }
         .br-tools { display:flex; gap:8px; flex-wrap:wrap; }
-        .br-tools input { border:1px solid var(--line-strong); border-radius:var(--radius-pill); padding:9px 15px; font-size:14px; font-family:inherit; background:var(--card); min-width:180px; }
-        .br-tools input:focus { outline:none; border-color:var(--primary); }
-        .btn { display:inline-flex; align-items:center; gap:7px; font-size:13.5px; font-weight:700; border-radius:var(--radius-pill); padding:9px 16px; background:var(--ink); color:#fff; white-space:nowrap; }
-        .btn:hover { background:var(--primary); }
-        .err { font-size:12px; color:var(--primary-press); font-weight:600; }
-        .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:14px; }
-        .brand { display:flex; flex-direction:column; gap:14px; padding:18px; border-radius:var(--radius); background:var(--card); border:1px solid var(--line); box-shadow:var(--shadow-sm); text-decoration:none; transition:border-color .15s ease, transform .15s ease; }
-        .brand:hover { border-color:var(--primary-line); transform:translateY(-1px); }
-        .brand.quiet { box-shadow:none; background:transparent; }
-        .brand-top { display:flex; align-items:center; gap:12px; }
-        .logo { width:44px; height:44px; border-radius:13px; background:#071437; color:#fff; display:grid; place-items:center; font-weight:800; font-size:15px; flex-shrink:0; }
-        .brand.quiet .logo { background:var(--bg); color:var(--ink-3); border:1px solid var(--line); }
-        .brand .nm { font-size:16px; font-weight:800; letter-spacing:-.01em; }
-        .brand .dl { font-size:12.5px; color:var(--ink-3); }
+        .br-tools input { border:1.5px solid var(--line-strong); border-radius:3px; padding:9px 12px; font-size:14px; font-family:inherit; background:#fff; color:var(--ink); min-width:180px; }
+        .br-tools input:focus { outline:none; border-color:var(--ink); }
+        .br-tools input:focus-visible { box-shadow:0 0 0 2px var(--primary-soft); }
+        .btn { display:inline-flex; align-items:center; gap:7px; font-family:var(--font-display); font-size:15px; font-weight:700; text-transform:uppercase; border-radius:3px; padding:9px 18px; background:var(--primary); color:#fff; white-space:nowrap; }
+        .btn:hover { background:var(--primary-press); }
+        .btn:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
+        .err { font-size:13px; color:#D81A48; font-weight:600; }
+        .grid { display:flex; flex-direction:column; border-top:2px solid var(--ink); }
+        .brand { display:flex; align-items:center; gap:16px; flex-wrap:wrap; padding:13px 6px; border-bottom:1px solid var(--line-strong); text-decoration:none; transition:background .12s ease; }
+        .brand:hover { background:#fff; }
+        .brand:hover .nm { text-decoration:underline; text-underline-offset:3px; }
+        .brand-top { display:flex; align-items:center; gap:12px; flex:1; min-width:200px; }
+        .logo { width:40px; height:40px; border-radius:3px; background:var(--ink); color:#fff; display:grid; place-items:center; font-family:var(--font-display); font-weight:700; font-size:16px; flex-shrink:0; }
+        .brand.quiet .logo { background:#fff; color:var(--ink-3); border:1.5px solid var(--line-strong); }
+        .brand .nm { font-family:var(--font-display); font-size:19px; font-weight:700; text-transform:uppercase; line-height:1.1; color:var(--ink); }
+        .brand.quiet .nm { color:var(--ink-2); }
+        .brand .dl { font-size:13px; color:var(--ink-3); }
         .chips { display:flex; gap:6px; flex-wrap:wrap; }
-        .chip { display:inline-flex; align-items:center; gap:5px; font-size:11.5px; font-weight:700; padding:4px 9px; border-radius:var(--radius-pill); background:var(--bg); color:var(--ink-3); border:1px solid var(--line); }
-        .chip.on { background:var(--good-soft); color:var(--good-ink); border-color:transparent; }
-        .chip.offer { background:#071437; color:#8EC2FF; border-color:transparent; }
+        .chip { display:inline-flex; align-items:center; gap:5px; font-size:13px; font-weight:700; padding:3px 8px; border-radius:2px; background:#fff; color:var(--ink-3); border:1px solid var(--line-strong); }
+        .chip.on { background:#E6F8EC; color:#0B7355; border-color:transparent; }
+        .chip.offer { background:var(--ink); color:#fff; border-color:var(--ink); }
         .chip svg { width:12px; height:12px; }
-        .sec { font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3); margin:26px 0 12px; }
+        .sec { font-family:var(--font-display); font-size:22px; font-weight:700; text-transform:uppercase; line-height:1; color:var(--ink); margin:30px 0 10px; }
     </style>
 @endpush
 

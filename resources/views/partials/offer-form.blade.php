@@ -12,33 +12,38 @@
 @endphp
 <style>
     .of-form { border:none; margin:0; padding:0; min-width:0; }
-    .of-sec { padding:18px 20px; border-bottom:1px solid var(--line); }
+    .of-sec { padding:18px 20px; border-bottom:1px solid var(--line-strong); }
     .of-sec:last-child { border-bottom:none; }
-    .of-sec-t { font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3); margin-bottom:12px; }
-    .types { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:8px; margin-bottom:14px; }
-    .type { display:flex; align-items:center; gap:10px; padding:11px 12px; border-radius:12px; border:1.5px solid var(--line-strong); font-size:13px; font-weight:700; color:var(--ink-2); text-align:left; background:var(--card); }
-    .type .ic { width:30px; height:30px; border-radius:9px; background:var(--bg); display:grid; place-items:center; flex-shrink:0; }
-    .type .ic svg { width:16px; height:16px; }
-    .type.on { border-color:var(--primary); background:var(--primary-soft); color:var(--primary-press); }
-    .type.on .ic { background:var(--primary); color:#fff; }
-    .grid { display:grid; grid-template-columns:repeat(6, minmax(0, 1fr)); gap:12px; }
-    .f { display:flex; flex-direction:column; gap:5px; }
+    .of-sec-t { font-family:var(--font-display); font-size:20px; font-weight:700; text-transform:uppercase; line-height:1.1; color:var(--ink); margin-bottom:14px; }
+    .types { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); border:1.5px solid var(--ink); border-radius:3px; margin-bottom:16px; }
+    .type { display:flex; align-items:center; gap:9px; padding:11px 13px; font-size:14px; font-weight:700; color:var(--ink); text-align:left; background:#fff; transition:background .14s ease, color .14s ease; }
+    .type + .type { border-left:1.5px solid var(--ink); }
+    .type .ic { display:inline-flex; color:var(--ink-3); flex-shrink:0; }
+    .type .ic svg { width:17px; height:17px; }
+    .type:hover { background:var(--bg-2); }
+    .type.on { background:var(--ink); color:#fff; }
+    .type.on .ic { color:var(--primary-bright); }
+    .type:focus-visible { outline:2px solid var(--primary); outline-offset:2px; }
+    .grid { display:grid; grid-template-columns:repeat(6, minmax(0, 1fr)); gap:14px 12px; }
+    .f { display:flex; flex-direction:column; gap:6px; }
     .f.w1 { grid-column:span 1; } .f.w2 { grid-column:span 2; } .f.w4 { grid-column:span 4; } .f.w6 { grid-column:1 / -1; }
-    .f label { font-size:12.5px; font-weight:700; color:var(--ink-2); }
+    .f label { font-size:13.5px; font-weight:700; color:var(--ink); }
     .f .opt { font-weight:500; color:var(--ink-3); }
-    .f input, .f textarea { border:1px solid var(--line-strong); border-radius:var(--radius-sm); padding:9px 12px; font-size:14px; font-family:inherit; background:var(--card); width:100%; }
-    .f input:focus, .f textarea:focus { outline:none; border-color:var(--primary); }
-    .f input[readonly], .of-form:disabled input, .of-form:disabled textarea { background:var(--bg); color:var(--ink-2); }
+    .f input, .f textarea { border:1.5px solid var(--line-strong); border-radius:3px; padding:9px 12px; font-size:15px; font-family:inherit; color:var(--ink); background:#fff; width:100%; }
+    .f input:focus, .f textarea:focus { outline:none; border-color:var(--ink); box-shadow:0 0 0 2px var(--primary-soft); }
+    .f input[readonly], .of-form:disabled input, .of-form:disabled textarea { background:var(--bg-2); color:var(--ink-2); }
     .provs { display:flex; flex-wrap:wrap; gap:5px; }
-    .prov { font-size:12px; font-weight:700; padding:5px 9px; border-radius:8px; border:1px solid var(--line-strong); cursor:pointer; color:var(--ink-2); }
-    .prov input { display:none; }
+    .prov { position:relative; font-size:13px; font-weight:700; padding:5px 9px; border-radius:3px; border:1.5px solid var(--line-strong); background:#fff; cursor:pointer; color:var(--ink-2); }
+    .prov:hover { border-color:var(--ink); color:var(--ink); }
+    .prov:focus-within { outline:2px solid var(--primary); outline-offset:1px; }
+    .prov input { position:absolute; opacity:0; width:1px; height:1px; pointer-events:none; }
     .prov.on { background:var(--ink); border-color:var(--ink); color:#fff; }
     .checks { gap:8px; }
-    .check { display:flex; align-items:center; gap:8px; font-size:13.5px; font-weight:600; color:var(--ink); cursor:pointer; }
-    .f .check input { width:16px; height:16px; padding:0; flex:none; accent-color:var(--primary); }
+    .check { display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600; color:var(--ink); cursor:pointer; }
+    .f .check input { width:16px; height:16px; padding:0; flex:none; accent-color:var(--ink); }
     .f .check .opt { font-weight:500; }
-    .err { font-size:12px; color:var(--primary-press); font-weight:600; }
-    @media (max-width:760px) { .types { grid-template-columns:1fr; } .grid { grid-template-columns:repeat(2, minmax(0, 1fr)); } .f.w4, .f.w6 { grid-column:1 / -1; } .f.w2 { grid-column:span 2; } }
+    .err { font-size:13px; color:#D81A48; font-weight:600; }
+    @media (max-width:760px) { .types { grid-template-columns:1fr; } .type + .type { border-left:none; border-top:1.5px solid var(--ink); } .grid { grid-template-columns:repeat(2, minmax(0, 1fr)); } .f.w4, .f.w6 { grid-column:1 / -1; } .f.w2 { grid-column:span 2; } }
 </style>
 <fieldset class="of-form" @disabled($readOnly)>
     <div class="of-sec">

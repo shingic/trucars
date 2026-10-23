@@ -70,24 +70,26 @@ new #[Layout('layouts.dealer')] #[Title('Customers')] class extends Component {
 
 @push('styles')
     <style>
-        .cu-head h1 { font-size:24px; font-weight:800; letter-spacing:0; margin:0 0 6px; }
-        .cu-head p { margin:0 0 20px; font-size:14px; color:var(--ink-2); max-width:640px; }
+        .cu-head h1 { font-family:var(--font-display); font-size:36px; font-weight:700; line-height:1; text-transform:uppercase; margin:0 0 10px; }
+        .cu-head p { margin:0 0 22px; font-size:15px; color:var(--ink-2); max-width:640px; }
         .cu-search { display:flex; gap:10px; max-width:640px; margin-bottom:6px; }
-        .cu-search input { flex:1; border:1px solid var(--line-strong); border-radius:var(--radius-pill); padding:10px 16px; font-size:14px; font-family:inherit; }
-        .cu-search input:focus { outline:none; border-color:var(--primary); }
-        .btn { font-size:14px; font-weight:700; border-radius:var(--radius-pill); padding:10px 18px; white-space:nowrap; }
-        .btn-primary { background:var(--primary); color:#fff; }
-        .err { font-size:12px; color:var(--primary-press); font-weight:600; }
-        .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-sm); max-width:880px; margin-top:18px; overflow:hidden; }
-        .cu-row { display:flex; align-items:center; gap:14px; padding:13px 20px; border-bottom:1px solid var(--line); }
-        .cu-row:last-child { border-bottom:none; }
-        .cu-row:hover { background:var(--bg); }
+        .cu-search input { flex:1; min-width:0; background:#fff; border:1.5px solid var(--line-strong); border-radius:3px; padding:10px 14px; font-size:15px; font-family:inherit; color:var(--ink); }
+        .cu-search input:focus { outline:none; border-color:var(--ink); box-shadow:0 0 0 3px var(--primary-soft); }
+        .btn { font-size:14px; font-weight:700; border-radius:3px; padding:10px 18px; white-space:nowrap; transition:background .15s ease; }
+        .btn-primary { background:var(--primary); color:#fff; font-family:var(--font-display); font-size:16px; text-transform:uppercase; }
+        .btn-primary:hover { background:var(--primary-press); }
+        .err { font-size:13px; color:#D81A48; font-weight:600; }
+        .card { max-width:880px; margin-top:22px; border-top:2px solid var(--ink); }
+        .cu-row { display:flex; align-items:center; gap:14px; padding:13px 6px; border-bottom:1px solid var(--line-strong); }
+        .cu-row:hover { background:#fff; }
         .cu-row > div { flex:1; min-width:0; }
-        .cu-name { font-size:14px; font-weight:700; }
-        .cu-meta { font-size:12px; color:var(--ink-3); margin-top:2px; }
-        .cu-go { font-size:13px; font-weight:700; color:var(--primary); }
-        .cu-empty { padding:18px 20px; font-size:13.5px; color:var(--ink-3); }
-        .cu-note { font-size:12px; color:var(--ink-3); }
+        .cu-name { font-size:15px; font-weight:700; }
+        .cu-meta { font-size:13px; color:var(--ink-3); margin-top:2px; overflow-wrap:anywhere; }
+        .cu-go { font-size:14px; font-weight:700; color:var(--primary-press); text-decoration:underline; text-underline-offset:3px; white-space:nowrap; }
+        .cu-row:hover .cu-go { color:var(--ink); }
+        .cu-empty { margin-top:14px; padding:18px 20px; border:1.5px dashed var(--line-strong); border-radius:3px; font-size:15px; color:var(--ink-3); }
+        .cu-note { font-size:13px; color:var(--ink-3); }
+        @media (max-width:640px) { .cu-head h1 { font-size:30px; } }
     </style>
 @endpush
 

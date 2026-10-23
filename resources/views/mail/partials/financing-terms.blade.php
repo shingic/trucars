@@ -9,7 +9,7 @@
     'Down payment'    => $deal->financing_down_payment_in_cents !== null ? '$' . number_format($deal->financing_down_payment_in_cents / 100, 2) : null,
     'First payment'   => $deal->financing_first_payment_on?->format('F j, Y'),
 ]))
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4F4F2; border-radius:12px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#FFFFFF; border:1px solid #D5D7DD; border-top:2px solid #071437;">
     @foreach ($rows as $label => $value)
         <tr>
             <td style="padding:{{ $loop->first ? '16px' : '9px' }} 20px {{ $loop->last ? '16px' : '0' }}; {{ $font }} font-size:14px; color:#4B5675;">{{ $label }}</td>

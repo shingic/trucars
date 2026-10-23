@@ -55,28 +55,32 @@ new #[Layout('layouts.dealer')] #[Title('Offers & incentives')] class extends Co
 
 @push('styles')
     <style>
-        .ob-top { display:flex; align-items:center; gap:10px; margin-bottom:14px; flex-wrap:wrap; }
+        .ob-top { display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
         .ob-top .spacer { flex:1; }
-        .seg { display:inline-flex; background:var(--bg); border:1px solid var(--line); border-radius:var(--radius-pill); padding:3px; gap:3px; }
-        .seg button { display:inline-flex; align-items:center; gap:6px; padding:7px 14px; border-radius:var(--radius-pill); font-size:13px; font-weight:700; color:var(--ink-2); }
-        .seg button.on { background:var(--card); color:var(--ink); box-shadow:var(--shadow-sm); }
-        .seg .n { font-size:11px; color:var(--ink-3); }
-        .btn { display:inline-flex; align-items:center; gap:7px; font-size:14px; font-weight:700; border-radius:var(--radius-pill); padding:10px 18px; background:var(--primary); color:#fff; }
+        .seg { display:inline-flex; flex-wrap:wrap; border:1.5px solid var(--ink); border-radius:3px; overflow:hidden; background:#fff; }
+        .seg button { display:inline-flex; align-items:center; gap:6px; padding:8px 14px; font-size:14px; font-weight:700; color:var(--ink); border-right:1.5px solid var(--ink); }
+        .seg button:last-child { border-right:none; }
+        .seg button:hover { background:var(--bg); }
+        .seg button.on { background:var(--ink); color:#fff; }
+        .seg button:focus-visible { outline:2px solid var(--primary); outline-offset:-3px; }
+        .seg .n { font-family:var(--font-display); font-size:14px; font-weight:600; color:var(--ink-3); }
+        .seg button.on .n { color:var(--primary-bright); }
+        .btn { display:inline-flex; align-items:center; gap:7px; font-family:var(--font-display); font-size:15px; font-weight:700; text-transform:uppercase; border-radius:3px; padding:10px 18px; background:var(--primary); color:#fff; }
         .btn:hover { background:var(--primary-press); }
         .btn svg { width:15px; height:15px; }
-        .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-sm); overflow:hidden; }
-        .of-row { display:grid; grid-template-columns:120px minmax(0, 1.6fr) 190px 100px 20px; gap:16px; align-items:center; padding:14px 20px; border-bottom:1px solid var(--line); text-decoration:none; }
-        .of-row:last-child { border-bottom:none; }
-        .of-row:hover { background:var(--bg); }
-        .big { font-size:19px; font-weight:800; letter-spacing:0; color:var(--primary-press); }
-        .nm { font-size:14px; font-weight:700; }
-        .meta { font-size:12px; color:var(--ink-3); margin-top:2px; }
-        .dates { font-size:12.5px; font-weight:600; }
-        .pill { justify-self:start; font-size:10.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; padding:3px 9px; border-radius:var(--radius-pill); background:var(--bg); border:1px solid var(--line); color:var(--ink-2); }
-        .pill.live { background:var(--good-soft); color:var(--good-ink); border-color:transparent; }
-        .pill.scheduled { background:#E3EDFB; color:#2E5FA3; border-color:transparent; }
+        .card { border-top:2px solid var(--ink); }
+        .of-row { display:grid; grid-template-columns:120px minmax(0, 1.6fr) 190px 100px 20px; gap:16px; align-items:center; padding:13px 6px; border-bottom:1px solid var(--line-strong); text-decoration:none; }
+        .of-row:hover { background:#fff; }
+        .of-row:hover .nm { text-decoration:underline; text-underline-offset:3px; }
+        .big { font-family:var(--font-display); font-size:22px; font-weight:700; line-height:1; color:var(--ink); }
+        .nm { font-size:15px; font-weight:700; }
+        .meta { font-size:13px; color:var(--ink-3); margin-top:2px; }
+        .dates { font-size:14px; font-weight:600; color:var(--ink-2); }
+        .pill { justify-self:start; font-family:var(--font-display); font-size:13px; font-weight:600; text-transform:uppercase; padding:2px 8px; border-radius:2px; background:#fff; border:1px solid var(--line-strong); color:var(--ink-2); }
+        .pill.live { background:#E6F8EC; color:#0B7355; border-color:transparent; }
+        .pill.scheduled { background:var(--primary-soft); color:var(--primary-press); border-color:transparent; }
         .go { width:16px; height:16px; color:var(--ink-3); }
-        .empty { padding:30px 20px; text-align:center; color:var(--ink-3); font-size:13.5px; }
+        .empty { margin-top:14px; padding:22px 20px; border:1.5px dashed var(--line-strong); border-radius:3px; color:var(--ink-2); font-size:14px; }
         @media (max-width:860px) { .of-row { grid-template-columns:96px minmax(0, 1fr) 16px; } .of-row .hide-sm { display:none; } }
     </style>
 @endpush

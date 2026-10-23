@@ -5,38 +5,47 @@
     from inventoryViewData(): $inventoryDealer, $canManage, $counts, $vehicles.
 --}}
 <style>
-        .iv-note { font-size:13px; color:var(--ink-2); margin:-8px 0 16px; max-width:760px; }
-        .msg { border-radius:var(--radius-sm); padding:11px 15px; font-size:13.5px; font-weight:600; margin-bottom:16px; }
-        .msg.ok { background:var(--good-soft); color:var(--good-ink); border:1px solid rgba(23,198,83,.25); }
-        .msg.bad { background:var(--primary-soft); color:var(--primary-press); border:1px solid var(--primary-line); }
-        .output { background:var(--card); border:1px solid var(--line); border-radius:var(--radius-sm); padding:12px 14px; font-family:var(--mono); font-size:12px; white-space:pre-wrap; margin-bottom:16px; color:var(--ink-2); }
-        .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-sm); overflow:hidden; }
-        .import { padding:14px 18px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:16px; }
-        .import .lbl { font-size:13.5px; font-weight:700; }
-        .import .opt { font-size:12.5px; color:var(--ink-2); display:flex; gap:6px; align-items:center; flex-basis:100%; }
-        .import .hint { font-size:12px; color:var(--ink-3); flex-basis:100%; }
-        .btn { font-size:13px; font-weight:700; border-radius:var(--radius-pill); padding:8px 15px; white-space:nowrap; }
+        .iv-note { font-size:14px; color:var(--ink-2); margin:-8px 0 18px; max-width:760px; }
+        .msg { border-radius:3px; padding:11px 15px; font-size:14px; font-weight:600; margin-bottom:16px; background:#fff; border:1px solid var(--line-strong); }
+        .msg.ok { color:#0B7355; border-left:3px solid var(--good); }
+        .msg.bad { background:#FFEEF3; color:#D81A48; border-color:rgba(216,26,72,.25); }
+        .output { background:var(--bg-2); border:1px solid var(--line-strong); border-radius:3px; padding:12px 14px; font-family:var(--mono); font-size:13px; white-space:pre-wrap; margin-bottom:16px; color:var(--ink-2); }
+        .card { border-top:2px solid var(--ink); }
+        .card.import { background:#fff; border:1px solid var(--line-strong); border-radius:4px; }
+        .import { padding:14px 18px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; margin-bottom:22px; }
+        .import .lbl { font-family:var(--font-display); font-size:18px; font-weight:700; text-transform:uppercase; }
+        .import input[type=file] { font:inherit; font-size:14px; min-width:0; max-width:100%; }
+        .import .opt { font-size:14px; color:var(--ink-2); display:flex; gap:8px; align-items:center; flex-basis:100%; }
+        .import .hint { font-size:13px; color:var(--ink-3); flex-basis:100%; }
+        .btn { font-size:13.5px; font-weight:700; border-radius:3px; padding:8px 15px; white-space:nowrap; transition:background .14s ease, color .14s ease; }
         .btn-primary { background:var(--primary); color:#fff; }
-        .btn-ghost { border:1px solid var(--line-strong); color:var(--ink-2); }
-        .btn:disabled { opacity:.5; }
-        .filters { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
-        .chip { border:1px solid var(--line-strong); border-radius:var(--radius-pill); padding:6px 12px; font-size:12.5px; font-weight:600; color:var(--ink-2); }
-        .chip.on { border-color:var(--primary); background:var(--primary-soft); color:var(--primary-press); }
-        .filters input { margin-left:auto; border:1px solid var(--line-strong); border-radius:var(--radius-pill); padding:7px 14px; font-size:13.5px; min-width:240px; font-family:inherit; }
-        .bulk { display:flex; gap:8px; align-items:center; padding:10px 18px; border-bottom:1px solid var(--line); background:var(--bg); font-size:13px; }
-        .v-row { display:grid; grid-template-columns:24px 64px minmax(0, 1.6fr) 110px 90px 130px 110px; gap:12px; align-items:center; padding:10px 18px; border-bottom:1px solid var(--line); font-size:13px; }
-        .v-row:last-child { border-bottom:none; }
-        .v-photo { width:64px; height:44px; border-radius:7px; background:var(--hero-grad) center/cover; }
+        .btn-primary:hover { background:var(--primary-press); }
+        .btn-ghost { background:#fff; border:1.5px solid var(--ink); color:var(--ink); padding:6.5px 13.5px; }
+        .btn-ghost:hover { background:var(--ink); color:#fff; }
+        .btn:disabled { opacity:.5; pointer-events:none; }
+        .btn:focus-visible, .chip:focus-visible { outline:2px solid var(--primary); outline-offset:2px; }
+        .filters { display:flex; gap:4px 18px; flex-wrap:wrap; align-items:flex-end; margin-bottom:14px; border-bottom:1px solid var(--line-strong); }
+        .chip { padding:8px 0 9px; margin-bottom:-1px; border-bottom:3px solid transparent; font-size:14px; font-weight:700; color:var(--ink-3); }
+        .chip:hover { color:var(--ink); }
+        .chip.on { color:var(--ink); border-bottom-color:var(--primary); }
+        .filters input { margin:0 0 8px auto; border:1.5px solid var(--line-strong); border-radius:3px; padding:7px 12px; font-size:14px; min-width:240px; max-width:100%; font-family:inherit; background:#fff; color:var(--ink); }
+        .filters input:focus { outline:none; border-color:var(--ink); box-shadow:0 0 0 2px var(--primary-soft); }
+        .bulk { display:flex; gap:8px; align-items:center; padding:9px 0; border-bottom:2px solid var(--ink); font-size:14px; font-weight:600; }
+        .v-row { display:grid; grid-template-columns:24px 64px minmax(0, 1.6fr) 120px 90px 130px 110px; gap:12px; align-items:center; padding:10px 0; border-bottom:1px solid var(--line-strong); font-size:14px; }
+        .v-row input[type=checkbox], .import input[type=checkbox] { width:16px; height:16px; accent-color:var(--ink); }
+        .v-photo { width:64px; height:44px; border-radius:2px; background:var(--bg-2) center/cover; }
         .v-title { font-weight:700; }
-        .v-meta { font-size:11.5px; color:var(--ink-3); font-family:var(--mono); }
-        .tag { display:inline-block; font-size:10px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; padding:2px 7px; border-radius:var(--radius-pill); margin-right:4px; }
-        .tag.live { background:var(--good-soft); color:var(--good-ink); }
-        .tag.off { background:var(--bg); color:var(--ink-3); border:1px solid var(--line); }
-        .tag.held { background:var(--amber-soft); color:var(--amber); }
-        .tag.cert { background:var(--active); color:var(--ink-2); }
-        .empty { padding:18px; font-size:13.5px; color:var(--ink-3); }
+        .v-meta { font-size:13px; color:var(--ink-3); font-family:var(--mono); }
+        .v-price { font-family:var(--font-display); font-size:17px; font-weight:700; color:var(--ink); }
+        .tag { display:inline-block; font-family:var(--font-display); font-size:13px; font-weight:700; letter-spacing:.02em; text-transform:uppercase; padding:1px 7px; border-radius:2px; margin-right:4px; }
+        .tag.live { background:#E5F8EC; color:#0B7355; }
+        .tag.off { background:var(--bg-2); color:var(--ink-3); border:1px solid var(--line-strong); }
+        .tag.held { background:#FFF8DD; color:#7A4E00; }
+        .tag.cert { background:var(--ink); color:#fff; }
+        .empty { margin-top:12px; padding:14px 16px; font-size:14px; color:var(--ink-2); border:1.5px dashed var(--line-strong); border-radius:3px; }
         .pages { margin-top:14px; }
         @media (max-width:980px){ .v-row { grid-template-columns:24px 64px 1fr auto; } .v-row .hide-sm { display:none; } }
+        @media (max-width:560px){ .filters input { min-width:0; width:100%; margin-left:0; } .v-row { grid-template-columns:24px 52px minmax(0, 1fr); } .v-row > :nth-last-child(-n+2) { grid-column:3; } .v-row > :last-child { text-align:left !important; } .v-photo { width:52px; height:38px; } }
 </style>
 
     @if ($statusMessage !== '') <div class="msg ok">{{ $statusMessage }}</div> @endif
@@ -81,7 +90,7 @@
                     <div class="v-title">{{ $vehicle->model_year }} {{ $vehicle->make }} {{ $vehicle->model }} {{ $vehicle->trim }}</div>
                     <div class="v-meta">{{ $vehicle->vin }}{{ $vehicle->stock_number ? ' · #' . $vehicle->stock_number : '' }}</div>
                 </span>
-                <span class="hide-sm">{{ $vehicle->display_price }}<br><span class="v-meta">{{ $vehicle->display_kilometres }} · {{ strtolower($vehicle->condition) }}</span></span>
+                <span class="hide-sm"><span class="v-price">{{ $vehicle->display_price }}</span><br><span class="v-meta">{{ $vehicle->display_kilometres }} · {{ strtolower($vehicle->condition) }}</span></span>
                 <span class="hide-sm">
                     @if ($vehicle->is_manufacturer_certified) <span class="tag cert">Mfr CPO</span>
                     @elseif ($vehicle->is_certified) <span class="tag cert">Certified</span> @endif

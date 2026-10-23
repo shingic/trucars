@@ -255,7 +255,7 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
         .faq summary::after { content:"+"; font-family:var(--font-display); font-size:26px; line-height:.8; color:var(--ink-3); }
         .faq details[open] summary::after { content:"–"; }
         .faq p { margin:0 0 20px; font-size:15.5px; color:var(--ink-2); max-width:620px; line-height:1.55; }
-        .close { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); background:var(--ink); border-radius:6px; overflow:hidden; }
+        .close { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); background:var(--ink); border-radius:4px; overflow:hidden; }
         .close.no-photo { grid-template-columns:1fr; }
         .close > div { padding:48px 44px; color:#fff; }
         .close h2 { color:#fff; font-size:clamp(34px, 4.4vw, 60px); line-height:.95; }

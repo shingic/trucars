@@ -74,28 +74,32 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
 
 @push('styles')
     <style>
-        .rd-head h1 { font-size:24px; font-weight:800; letter-spacing:0; margin:0 0 4px; font-family:var(--mono); }
-        .rd-head p { margin:0 0 20px; font-size:14px; color:var(--ink-2); }
-        .rd-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; max-width:980px; }
-        .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-sm); overflow:hidden; }
+        .rd-head h1 { font-family:var(--font-display); font-size:36px; font-weight:700; line-height:1; text-transform:uppercase; margin:0 0 10px; overflow-wrap:anywhere; }
+        .rd-head p { margin:0 0 22px; font-size:15px; color:var(--ink-2); }
+        .rd-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px 32px; max-width:980px; }
+        .card { border-top:2px solid var(--ink); margin-bottom:24px; min-width:0; }
         .card.wide { grid-column:1 / -1; }
-        .card-head { padding:15px 20px 13px; border-bottom:1px solid var(--line); font-size:15px; font-weight:700; }
-        .kv { display:grid; grid-template-columns:130px 1fr; gap:9px 14px; padding:15px 20px; font-size:13.5px; }
-        .kv .k { color:var(--ink-3); font-size:12.5px; }
-        .act { padding:11px 20px; border-bottom:1px solid var(--line); font-size:13px; }
-        .act:last-child { border-bottom:none; }
-        .act .meta { font-size:11.5px; color:var(--ink-3); margin-top:2px; }
-        .kv a { color:var(--primary); font-weight:700; }
-        .meta-line { font-size:12px; color:var(--ink-3); margin-top:3px; }
-        .mono { font-family:var(--mono); }
-        .rd-msg { background:var(--good-soft); color:var(--good-ink); border-radius:var(--radius-sm); padding:11px 15px; font-size:13.5px; font-weight:600; margin-bottom:16px; max-width:980px; }
-        .refund { padding:15px 20px; font-size:13.5px; color:var(--ink-2); }
-        .refund p { margin:0 0 10px; }
-        .refund textarea { width:100%; border:1px solid var(--line-strong); border-radius:var(--radius-sm); padding:9px 12px; font:inherit; font-size:13.5px; resize:vertical; background:var(--card); color:var(--ink); }
-        .refund .err { color:var(--bad, #c0392b); font-size:12.5px; font-weight:600; margin-top:6px; }
-        .btn-danger { margin-top:10px; border-radius:var(--radius-pill); padding:9px 16px; font-size:13.5px; font-weight:700; background:#C0392B; color:#fff; }
+        .card-head { padding:12px 0; border-bottom:1px solid var(--line-strong); font-family:var(--font-display); font-size:22px; font-weight:700; line-height:1.05; text-transform:uppercase; }
+        .kv { display:grid; grid-template-columns:130px 1fr; font-size:15px; }
+        .kv > span { padding:10px 0; border-bottom:1px solid var(--line-strong); min-width:0; overflow-wrap:anywhere; }
+        .kv .k { color:var(--ink-3); font-size:14px; padding-right:14px; }
+        .act { padding:11px 0; border-bottom:1px solid var(--line-strong); font-size:15px; }
+        .act .meta { font-size:13px; color:var(--ink-3); margin-top:2px; }
+        .kv a { color:var(--primary-press); font-weight:700; text-decoration:underline; text-underline-offset:3px; }
+        .kv a:hover { color:var(--ink); }
+        .meta-line { font-size:13px; color:var(--ink-3); margin-top:3px; }
+        .mono { font-family:var(--mono); overflow-wrap:anywhere; }
+        .rd-msg { background:var(--good-soft); color:#0B7355; border-left:3px solid var(--good); border-radius:2px; padding:11px 15px; font-size:14px; font-weight:600; margin-bottom:20px; max-width:980px; }
+        .refund { padding:14px 0 0; font-size:15px; color:var(--ink-2); }
+        .refund p { margin:0 0 12px; max-width:720px; }
+        .refund textarea { width:100%; background:#fff; border:1.5px solid var(--line-strong); border-radius:3px; padding:9px 12px; font:inherit; font-size:15px; resize:vertical; color:var(--ink); }
+        .refund textarea:focus { outline:none; border-color:var(--ink); box-shadow:0 0 0 3px var(--primary-soft); }
+        .refund .err { color:#D81A48; font-size:13px; font-weight:600; margin-top:6px; }
+        .btn-danger { margin-top:12px; border-radius:3px; padding:9px 16px; font-size:14px; font-weight:700; background:#fff; color:#D81A48; border:1.5px solid #D81A48; transition:background .15s ease, color .15s ease; }
+        .btn-danger:hover:not(:disabled) { background:#D81A48; color:#fff; }
         .btn-danger:disabled { opacity:.6; }
         @media (max-width:860px){ .rd-grid { grid-template-columns:1fr; } }
+        @media (max-width:640px){ .rd-head h1 { font-size:30px; } }
     </style>
 @endpush
 

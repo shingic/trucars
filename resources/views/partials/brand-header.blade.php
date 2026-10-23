@@ -3,14 +3,17 @@
     and $activeTab: overview | checklist | offers.
 --}}
 <style>
-    .bh { display:flex; align-items:center; gap:16px; margin-bottom:18px; }
-    .bh .logo { width:56px; height:56px; border-radius:16px; background:#071437; color:#fff; display:grid; place-items:center; font-size:19px; font-weight:800; letter-spacing:0; flex-shrink:0; }
-    .bh h1 { font-size:26px; font-weight:800; letter-spacing:0; margin:0; }
-    .bh p { margin:3px 0 0; font-size:13.5px; color:var(--ink-2); }
-    .btabs { display:flex; gap:6px; margin-bottom:20px; border-bottom:1px solid var(--line); overflow-x:auto; }
-    .btabs a { display:inline-flex; align-items:center; gap:7px; padding:9px 14px; font-size:14px; font-weight:600; color:var(--ink-2); border-bottom:2px solid transparent; margin-bottom:-1px; white-space:nowrap; }
+    .bh { display:flex; align-items:center; gap:16px; margin-bottom:20px; }
+    .bh .logo { width:56px; height:56px; border-radius:3px; background:var(--ink); color:#fff; display:grid; place-items:center; font-family:var(--font-display); font-size:22px; font-weight:700; letter-spacing:0; flex-shrink:0; }
+    .bh h1 { font-family:var(--font-display); font-size:34px; font-weight:700; text-transform:uppercase; line-height:1; letter-spacing:0; margin:0; }
+    .bh p { margin:6px 0 0; font-size:14px; color:var(--ink-2); }
+    .btabs { display:flex; gap:4px; margin-bottom:22px; box-shadow:inset 0 -2px 0 var(--ink); overflow-x:auto; }
+    .btabs a { display:inline-flex; align-items:center; gap:7px; padding:11px 14px 10px; font-family:var(--font-display); font-size:16px; font-weight:600; text-transform:uppercase; color:var(--ink-2); text-decoration:none; border-bottom:3px solid transparent; white-space:nowrap; }
+    .btabs a:hover { color:var(--ink); }
     .btabs a.on { color:var(--ink); border-bottom-color:var(--primary); }
-    .btabs svg { width:15px; height:15px; }
+    .btabs svg { width:15px; height:15px; color:var(--ink-3); }
+    .btabs a.on svg { color:var(--ink); }
+    @media (max-width:560px) { .bh h1 { font-size:28px; } .bh .logo { width:46px; height:46px; font-size:19px; } }
 </style>
 @php $dealerCount = $brand->dealers()->count(); @endphp
 <div class="bh">

@@ -14,7 +14,7 @@
 
 @section('body')
     @include('mail.partials.financing-terms')
-    <p style="margin:12px 0 0; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:13px; line-height:1.55; color:#99A1B7;">
+    <p style="margin:12px 0 0; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:13px; line-height:1.55; color:#78829D;">
         You'll review and sign the full agreement with the dealership before anything is final.
     </p>
 @endsection

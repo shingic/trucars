@@ -22,7 +22,7 @@
                     <button type="button" class="btn btn-ghost btn-sm" wire:click="reinstateStaff({{ $member->id }})">Reinstate</button>
                 @else
                     <span class="u-pill">Active</span>
-                    <button type="button" class="btn btn-ghost btn-sm" wire:click="suspendStaff({{ $member->id }})" wire:confirm="Suspend {{ $member->email }}? They won't be able to sign in.">Suspend</button>
+                    <button type="button" class="btn btn-ghost btn-warn btn-sm" wire:click="suspendStaff({{ $member->id }})" wire:confirm="Suspend {{ $member->email }}? They won't be able to sign in.">Suspend</button>
                 @endif
             </div>
             @if ($accessUserId === $member->id)
@@ -60,7 +60,7 @@
                 <span class="u-pill u-wait">Invited</span>
                 <span class="u-acts">
                     <button type="button" class="btn btn-ghost btn-sm" wire:click="resendInvitation({{ $invitation->id }})">Resend</button>
-                    <button type="button" class="btn btn-ghost btn-sm" wire:click="revokeInvitation({{ $invitation->id }})">Revoke</button>
+                    <button type="button" class="btn btn-ghost btn-warn btn-sm" wire:click="revokeInvitation({{ $invitation->id }})">Revoke</button>
                 </span>
             </div>
         @endforeach

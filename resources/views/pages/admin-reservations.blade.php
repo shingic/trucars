@@ -76,21 +76,26 @@ new #[Layout('layouts.dealer')] #[Title('Reservations')] class extends Component
 
 @push('styles')
     <style>
-        .rv-head h1 { font-size:24px; font-weight:800; letter-spacing:0; margin:0 0 6px; }
-        .rv-head p { margin:0 0 18px; font-size:14px; color:var(--ink-2); }
-        .rv-filters { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:16px; }
-        .rv-filters input, .rv-filters select { border:1px solid var(--line-strong); border-radius:var(--radius-sm); padding:9px 12px; font-size:13.5px; font-family:inherit; background:var(--card); }
+        .rv-head h1 { font-family:var(--font-display); font-size:36px; font-weight:700; line-height:1; text-transform:uppercase; margin:0 0 10px; }
+        .rv-head p { margin:0 0 20px; font-size:15px; color:var(--ink-2); }
+        .rv-filters { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:20px; }
+        .rv-filters input, .rv-filters select { background:#fff; border:1.5px solid var(--line-strong); border-radius:3px; padding:9px 12px; font-size:14px; font-family:inherit; color:var(--ink); max-width:100%; }
+        .rv-filters input:focus, .rv-filters select:focus { outline:none; border-color:var(--ink); box-shadow:0 0 0 3px var(--primary-soft); }
         .rv-filters input { flex:1; min-width:220px; }
-        .btn { font-size:13.5px; font-weight:700; border-radius:var(--radius-pill); padding:9px 16px; background:var(--primary); color:#fff; }
-        .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-sm); overflow:hidden; }
-        .rv-row { display:grid; grid-template-columns:110px minmax(0, 1.3fr) minmax(0, 1.3fr) 150px 90px; gap:14px; align-items:center; padding:12px 18px; border-bottom:1px solid var(--line); font-size:13.5px; }
-        .rv-row:last-child { border-bottom:none; }
-        .rv-row .meta { font-size:12px; color:var(--ink-3); }
-        .rv-row a { font-weight:700; color:var(--primary); text-align:right; }
-        .ref { font-family:var(--mono); font-weight:600; }
-        .empty { padding:18px; color:var(--ink-3); font-size:13.5px; }
-        .pages { margin-top:14px; }
+        .btn { font-family:var(--font-display); font-size:16px; font-weight:700; text-transform:uppercase; border-radius:3px; padding:9px 18px; background:var(--primary); color:#fff; transition:background .15s ease; }
+        .btn:hover { background:var(--primary-press); }
+        .card { border-top:2px solid var(--ink); }
+        .rv-row { display:grid; grid-template-columns:120px minmax(0, 1.3fr) minmax(0, 1.3fr) 150px 90px; gap:14px; align-items:center; padding:12px 6px; border-bottom:1px solid var(--line-strong); font-size:14px; }
+        .rv-row:hover { background:#fff; }
+        .rv-row > span { min-width:0; overflow-wrap:anywhere; }
+        .rv-row .meta { font-size:13px; color:var(--ink-3); }
+        .rv-row a { font-weight:700; color:var(--primary-press); text-align:right; text-decoration:underline; text-underline-offset:3px; white-space:nowrap; }
+        .rv-row a:hover { color:var(--ink); }
+        .ref { font-family:var(--mono); font-weight:600; font-size:14px; }
+        .empty { margin-top:14px; padding:18px 20px; border:1.5px dashed var(--line-strong); border-radius:3px; color:var(--ink-3); font-size:15px; }
+        .pages { margin-top:16px; }
         @media (max-width:900px){ .rv-row { grid-template-columns:1fr 1fr; } }
+        @media (max-width:640px){ .rv-head h1 { font-size:30px; } .rv-filters input { min-width:0; flex-basis:100%; } }
     </style>
 @endpush
 

@@ -217,24 +217,27 @@ new class extends Component {
     <style>
         [x-cloak] { display:none !important; }
 
-        .cs-head { margin-bottom:22px; }
-        .cs-eyebrow { display:inline-flex; align-items:center; gap:7px; font-size:12.5px; font-weight:700; color:var(--primary); background:var(--primary-soft); border-radius:var(--radius-pill); padding:5px 12px; margin-bottom:12px; }
-        .cs-title { font-size:30px; font-weight:800; letter-spacing:0; margin:0; }
-        .cs-sub { color:var(--ink-2); font-size:15px; margin:6px 0 0; }
+        .cs-head { padding-bottom:16px; margin-bottom:24px; border-bottom:2px solid var(--ink); }
+        .cs-eyebrow { display:inline-flex; align-items:center; gap:6px; font-family:var(--font-display); font-size:14px; font-weight:600; text-transform:uppercase; color:#fff; background:var(--ink); border-radius:2px; padding:4px 10px; margin-bottom:14px; }
+        .cs-eyebrow svg { color:var(--good); }
+        .cs-title { font-family:var(--font-display); font-size:44px; font-weight:700; text-transform:uppercase; line-height:1; letter-spacing:0; margin:0; }
+        .cs-sub { color:var(--ink-2); font-size:15px; margin:10px 0 0; }
 
-        .cs-unavailable { display:flex; gap:12px; align-items:flex-start; border:1px solid var(--primary-line); background:var(--primary-soft); border-radius:var(--radius-sm); padding:14px 16px; margin-bottom:22px; font-size:14px; }
-        .cs-unavailable svg { color:var(--primary); flex-shrink:0; margin-top:1px; }
-        .cs-unavailable strong { display:block; }
-        .cs-unavailable span { color:var(--ink-2); }
+        .cs-unavailable { display:flex; gap:12px; align-items:flex-start; border:1px solid var(--line-strong); border-left:3px solid #C59A00; background:#FFF8DD; border-radius:3px; padding:14px 16px; margin-bottom:22px; font-size:14.5px; color:#5C3D00; }
+        .cs-unavailable svg { color:#C59A00; flex-shrink:0; margin-top:1px; }
+        .cs-unavailable strong { display:block; color:#5C3D00; }
+        .cs-unavailable span { color:#7A4E00; }
 
-        .cs-tools { display:flex; gap:12px; margin-bottom:22px; }
-        .cs-search { flex:1; max-width:420px; display:flex; align-items:center; gap:9px; border:1px solid var(--line-strong); border-radius:var(--radius-pill); padding:0 16px; color:var(--ink-3); background:var(--card); }
-        .cs-search:focus-within { border-color:var(--primary); }
-        .cs-search input { flex:1; border:none; outline:none; font-size:14.5px; padding:11px 0; color:var(--ink); background:none; min-width:0; }
-        .cs-sort { border:1px solid var(--line-strong); border-radius:var(--radius-pill); padding:0 14px; font-size:14px; font-family:inherit; color:var(--ink); background:var(--card); }
+        .cs-tools { display:flex; gap:12px; margin-bottom:24px; }
+        .cs-search { flex:1; max-width:420px; display:flex; align-items:center; gap:9px; border:1.5px solid var(--line-strong); border-radius:3px; padding:0 12px; color:var(--ink-3); background:#fff; }
+        .cs-search:focus-within { border-color:var(--ink); }
+        .cs-search input { flex:1; border:none; outline:none; font-size:15px; padding:10px 0; color:var(--ink); background:none; min-width:0; }
+        .cs-sort { border:1.5px solid var(--ink); border-radius:3px; padding:0 12px; font-size:14px; font-weight:600; font-family:inherit; color:var(--ink); background:#fff; outline:none; }
+        .cs-sort:focus-visible { outline:2px solid var(--primary); outline-offset:2px; }
 
-        .cs-empty { max-width:440px; margin:40px auto 20px; text-align:center; padding:20px; color:var(--ink-2); font-size:14.5px; }
-        .cs-empty-title { font-size:20px; font-weight:800; letter-spacing:0; color:var(--ink); margin-bottom:8px; }
+        .cs-empty { max-width:560px; margin:8px 0 20px; padding:24px 26px; border:1.5px dashed var(--line-strong); border-radius:3px; color:var(--ink-2); font-size:15px; }
+        .cs-empty p { margin:0; }
+        .cs-empty-title { font-family:var(--font-display); font-size:24px; font-weight:700; text-transform:uppercase; line-height:1; letter-spacing:0; color:var(--ink); margin-bottom:10px; }
 
         /* Same floor grid and card styles as the marketplace and Saved cars. */
         .grid { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:34px 22px; }
@@ -243,7 +246,7 @@ new class extends Component {
 
 
         @media (max-width:860px) {
-            .cs-title { font-size:25px; }
+            .cs-title { font-size:34px; }
             .cs-sub { font-size:14px; }
             .cs-tools { flex-direction:column; }
             .cs-search { max-width:none; }

@@ -16,10 +16,10 @@
             --primary:#1B84FF; --primary-press:#056EE9; --primary-bright:#6CB0FF; --primary-soft:rgba(27,132,255,.10); --primary-line:rgba(27,132,255,.32);
             --coral:#4DA0FF; --good:#17C653; --good-soft:rgba(23,198,83,.12);
             --shadow-sm:0 1px 3px rgba(7,20,55,.06);
-            --shadow-md:0 14px 40px rgba(7,20,55,.09), 0 3px 10px rgba(7,20,55,.05);
-            --shadow-primary:0 12px 28px rgba(27,132,255,.30);
-            --hero-grad:linear-gradient(155deg,#4DA0FF,#1B84FF 65%,#0560CC);
-            --radius:24px; --radius-sm:16px; --radius-pill:999px;
+            --shadow-md:0 8px 24px rgba(7,20,55,.10);
+            --shadow-primary:none;
+            --hero-grad:#DDE3EE;
+            --radius:4px; --radius-sm:3px; --radius-pill:3px;
             --font-ui:"Barlow",-apple-system,BlinkMacSystemFont,sans-serif; --font-display:"Barlow Semi Condensed","Barlow",sans-serif;
             --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
         }
@@ -31,28 +31,31 @@
         input { font-family:inherit; }
         a { color:inherit; }
 
-        .nav { position:sticky; top:0; z-index:40; background:rgba(255,255,255,.9); backdrop-filter:saturate(160%) blur(14px); border-bottom:1px solid var(--line); }
+        .nav { position:sticky; top:0; z-index:40; background:#fff; border-bottom:1px solid var(--line-strong); }
         .nav-inner { max-width:1600px; margin:0 auto; padding:14px 24px; display:flex; align-items:center; gap:28px; }
-        .brand { display:flex; align-items:center; gap:9px; font-weight:800; font-size:17px; letter-spacing:0; text-decoration:none; }
-        .brand .glyph { width:28px; height:28px; border-radius:9px; background:var(--primary); color:#fff; display:grid; place-items:center; font-weight:800; font-size:15px; box-shadow:var(--shadow-primary); }
+        .brand { display:flex; align-items:center; text-decoration:none; }
+        /* the TruCars wordmark: condensed caps, "Cars" in blue */
+        .wordmark { font-family:var(--font-display); font-size:24px; font-weight:800; line-height:1; text-transform:uppercase; letter-spacing:.01em; color:var(--ink); white-space:nowrap; }
+        .wordmark b { font-weight:800; color:var(--primary); }
         .nav-links { display:flex; align-items:center; gap:22px; }
-        .nav-links a { font-size:14.5px; font-weight:600; color:var(--ink-2); text-decoration:none; }
+        .nav-links a { font-family:var(--font-display); font-size:18px; font-weight:600; text-transform:uppercase; color:var(--ink-2); text-decoration:none; padding:4px 0; border-bottom:2px solid transparent; }
         .nav-links a.active, .nav-links a:hover { color:var(--ink); }
+        .nav-links a.active { border-bottom-color:var(--primary); }
         .nav-right { margin-left:auto; display:flex; align-items:center; gap:16px; }
         .nav-loc { display:flex; align-items:center; gap:7px; font-size:13.5px; color:var(--ink-2); font-weight:500; }
         .nav-loc svg { color:var(--primary); }
-        .nav-acct { width:36px; height:36px; border-radius:50%; background:var(--bg-2); border:1px solid var(--line); display:grid; place-items:center; font-weight:700; font-size:13px; color:var(--ink-2); text-decoration:none; transition:border-color .15s ease, color .15s ease; }
-        .nav-acct:hover { border-color:var(--primary); color:var(--primary); }
+        .nav-acct { width:36px; height:36px; border-radius:3px; background:#fff; border:1.5px solid var(--ink); display:grid; place-items:center; font-weight:700; font-size:13px; color:var(--ink-2); text-decoration:none; transition:border-color .15s ease, color .15s ease; }
+        .nav-acct:hover { background:var(--ink); color:#fff; }
 
         /* desktop account dropdown */
         .acct { position:relative; display:inline-flex; }
         .acct-badge { position:absolute; top:-4px; right:-4px; min-width:18px; height:18px; padding:0 5px; border-radius:var(--radius-pill); background:var(--primary); color:#fff; font-size:10.5px; font-weight:700; display:grid; place-items:center; border:2px solid var(--bg); box-shadow:var(--shadow-sm); }
-        .acct-menu { position:absolute; top:calc(100% + 10px); right:0; width:252px; background:var(--card); border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow-md); padding:8px; z-index:50; }
+        .acct-menu { position:absolute; top:calc(100% + 10px); right:0; width:252px; background:var(--card); border:1.5px solid var(--ink); border-radius:3px; box-shadow:var(--shadow-md); padding:8px; z-index:50; }
         .acct-menu-head { padding:10px 12px 12px; border-bottom:1px solid var(--line); margin-bottom:6px; }
         .acct-menu-name { display:block; font-size:14.5px; font-weight:700; letter-spacing:-.01em; }
         .acct-menu-email { display:block; font-size:12.5px; color:var(--ink-3); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .acct-menu form { margin:0; }
-        .acct-menu-item { display:flex; align-items:center; gap:11px; width:100%; padding:10px 12px; border-radius:10px; font-size:14px; font-weight:600; color:var(--ink); text-decoration:none; text-align:left; background:none; transition:background .14s ease, color .14s ease; }
+        .acct-menu-item { display:flex; align-items:center; gap:11px; width:100%; padding:10px 12px; border-radius:4px; font-size:14px; font-weight:600; color:var(--ink); text-decoration:none; text-align:left; background:none; transition:background .14s ease, color .14s ease; }
         .acct-menu-item:hover { background:var(--bg-2); }
         .acct-menu-item svg { color:var(--ink-3); flex-shrink:0; }
         .acct-menu-item:hover svg { color:var(--primary); }
@@ -61,15 +64,15 @@
         .acct-menu-sep { height:1px; background:var(--line); margin:6px 4px; }
         .acct-menu-signout { color:var(--ink-2); }
         .acct-menu-signout:hover { background:var(--primary-soft); color:var(--primary); }
-        .nav-signin { display:inline-flex; align-items:center; font-size:14.5px; font-weight:700; color:var(--ink); text-decoration:none; border:1.5px solid var(--line-strong); border-radius:var(--radius-pill); padding:8px 18px; transition:border-color .15s ease, color .15s ease; }
-        .nav-signin:hover { border-color:var(--primary); color:var(--primary); }
+        .nav-signin { display:inline-flex; align-items:center; font-size:14.5px; font-weight:700; color:var(--ink); text-decoration:none; border:1.5px solid var(--ink); border-radius:3px; padding:7px 16px; }
+        .nav-signin:hover { background:var(--ink); color:#fff; }
 
         /* hamburger — hidden on desktop, shown under 860px */
-        .nav-burger { display:none; margin-left:auto; width:42px; height:42px; border-radius:12px; align-items:center; justify-content:center; color:var(--ink); }
+        .nav-burger { display:none; margin-left:auto; width:42px; height:42px; border-radius:4px; align-items:center; justify-content:center; color:var(--ink); }
         .nav-burger:active { background:var(--bg-2); }
 
         /* slide-out drawer + scrim (mobile) */
-        .nav-scrim { position:fixed; inset:0; background:rgba(7,20,55,.5); backdrop-filter:blur(2px); z-index:55; }
+        .nav-scrim { position:fixed; inset:0; background:rgba(7,20,55,.5); z-index:55; }
         .nav-drawer {
             position:fixed; top:0; right:0;
             height:100vh; height:100dvh;
@@ -83,7 +86,7 @@
         }
         .nav-drawer.is-open { transform:translateX(0); }
         .drawer-top { display:flex; align-items:center; justify-content:space-between; padding:16px 18px; border-bottom:1px solid var(--line); }
-        .drawer-close { width:40px; height:40px; border-radius:50%; background:var(--bg-2); display:grid; place-items:center; color:var(--ink-2); }
+        .drawer-close { width:40px; height:40px; border-radius:3px; border:1.5px solid var(--ink); background:#fff; display:grid; place-items:center; color:var(--ink-2); }
         .drawer-close:active { color:var(--ink); }
         .drawer-auth { padding:16px 18px; border-bottom:1px solid var(--line); }
         .drawer-signin { display:flex; align-items:center; justify-content:center; width:100%; font-size:15px; font-weight:700; color:#fff; text-decoration:none; background:var(--ink); border-radius:var(--radius-pill); padding:13px 18px; }
@@ -94,14 +97,14 @@
         .drawer-row { display:flex; align-items:center; gap:14px; padding:18px; border-bottom:1px solid var(--line); text-decoration:none; color:var(--ink); }
         .drawer-row:active { background:var(--bg-2); }
         .drawer-row .dr-main { flex:1; min-width:0; }
-        .drawer-row .dr-title { font-size:17px; font-weight:700; letter-spacing:-.01em; }
+        .drawer-row .dr-title { font-family:var(--font-display); font-size:21px; font-weight:700; text-transform:uppercase; }
         .drawer-row.active .dr-title { color:var(--primary); }
         .drawer-row .dr-sub { font-size:13px; color:var(--ink-3); margin-top:2px; }
         .drawer-row .dr-chev { color:var(--ink-3); flex-shrink:0; }
         .drawer-row .dr-count { min-width:22px; height:22px; padding:0 7px; border-radius:var(--radius-pill); background:var(--primary); color:#fff; font-size:12px; font-weight:700; display:grid; place-items:center; flex-shrink:0; }
         .drawer-foot { padding:16px 18px calc(16px + env(safe-area-inset-bottom)); border-top:1px solid var(--line); }
         .drawer-signout-form { margin:0 0 14px; }
-        .drawer-signout { display:flex; align-items:center; justify-content:center; gap:9px; width:100%; font-size:15px; font-weight:700; color:var(--ink); background:var(--bg-2); border-radius:var(--radius-pill); padding:13px 18px; }
+        .drawer-signout { display:flex; align-items:center; justify-content:center; gap:9px; width:100%; font-size:15px; font-weight:700; color:var(--ink); background:#fff; border:1.5px solid var(--ink); border-radius:var(--radius-pill); padding:13px 18px; }
         .drawer-signout svg { color:var(--ink-2); flex-shrink:0; }
         .drawer-signout:active { background:var(--line); }
         .drawer-loc { display:inline-flex; align-items:center; gap:7px; font-size:13.5px; color:var(--ink-2); font-weight:500; }
@@ -109,13 +112,14 @@
 
         .page { max-width:1600px; margin:0 auto; padding:32px 24px 64px; }
 
-        .site-foot { border-top:1px solid var(--line); background:var(--bg-2); }
+        .site-foot { background:var(--ink); color:#fff; }
         .site-foot-inner { max-width:1600px; margin:0 auto; padding:28px 24px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; }
-        .site-foot .brand { font-size:15px; }
+        .site-foot .wordmark { color:#fff; font-size:22px; }
+        .site-foot .wordmark b { color:var(--primary-bright); }
         .site-foot-links { display:flex; gap:20px; flex-wrap:wrap; }
-        .site-foot-links a { font-size:13px; color:var(--ink-2); text-decoration:none; }
-        .site-foot-links a:hover { color:var(--ink); }
-        .site-foot-legal { font-size:12px; color:var(--ink-3); width:100%; }
+        .site-foot-links a { font-size:14px; color:rgba(255,255,255,.75); text-decoration:none; }
+        .site-foot-links a:hover { color:#fff; }
+        .site-foot-legal { font-size:13px; color:rgba(255,255,255,.55); width:100%; padding-top:14px; border-top:1px solid rgba(255,255,255,.14); }
 
         @media (max-width:860px) {
             .nav-inner { padding:10px 16px; gap:12px; padding-top:max(10px, env(safe-area-inset-top)); }
@@ -141,7 +145,7 @@
      x-effect="document.body.style.overflow = menuOpen ? 'hidden' : ''"
      @keydown.escape.window="menuOpen = false">
     <div class="nav-inner">
-        <a href="{{ $brandUrl }}" wire:navigate class="brand"><span class="glyph">T</span> TruCars</a>
+        <a href="{{ $brandUrl }}" wire:navigate class="brand"><span class="wordmark">Tru<b>Cars</b></span></a>
 
         <div class="nav-links">
             @if ($referredCampaign)
@@ -231,7 +235,7 @@
 
     <aside class="nav-drawer" :class="{ 'is-open': menuOpen }" x-cloak>
         <div class="drawer-top">
-            <a href="{{ $brandUrl }}" wire:navigate class="brand" @click="menuOpen = false"><span class="glyph">T</span> TruCars</a>
+            <a href="{{ $brandUrl }}" wire:navigate class="brand" @click="menuOpen = false"><span class="wordmark">Tru<b>Cars</b></span></a>
             <button type="button" class="drawer-close" @click="menuOpen = false" aria-label="Close menu">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg>
             </button>
@@ -323,14 +327,14 @@
 
 <footer class="site-foot">
     <div class="site-foot-inner">
-        <span class="brand"><span class="glyph">T</span> TruCars</span>
+        <span class="brand"><span class="wordmark">Tru<b>Cars</b></span></span>
         <nav class="site-foot-links">
             <a href="{{ route('home') }}" wire:navigate>Home</a>
             <a href="{{ route('shop') }}" wire:navigate>Shop cars</a>
             <a href="{{ route('how-it-works') }}" wire:navigate>How it works</a>
             @guest <a href="{{ route('buyer.login') }}" wire:navigate>Sign in</a> @endguest
         </nav>
-        <span class="site-foot-legal">© {{ date('Y') }} TruCars — every price all-in per OMVIC. Ontario.</span>
+        <span class="site-foot-legal">© {{ date('Y') }} TruCars. Every price is all-in, with freight, prep and dealer fees included. HST and licensing are extra.</span>
     </div>
 </footer>
 

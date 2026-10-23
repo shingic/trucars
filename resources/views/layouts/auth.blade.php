@@ -12,7 +12,7 @@
 
     <style>
         :root {
-            --bg:#F9F9F9; --card:#FFFFFF;
+            --bg:#F9F9F9; --bg-2:#F9F9F9; --card:#FFFFFF;
             --ink:#071437; --ink-2:#4B5675; --ink-3:#78829D;
             --line:rgba(7,20,55,.10); --line-strong:rgba(7,20,55,.17);
             --primary:#1B84FF; --primary-press:#056EE9; --primary-bright:#6CB0FF; --primary-soft:rgba(27,132,255,.10); --primary-line:rgba(27,132,255,.32);
@@ -20,9 +20,9 @@
             --good:#17C653; --good-soft:rgba(23,198,83,.12); --good-ink:#0E5A43;
             --amber:#C8841A; --amber-soft:rgba(216,150,40,.16);
             --shadow-sm:0 1px 3px rgba(7,20,55,.06);
-            --shadow-md:0 14px 40px rgba(7,20,55,.09), 0 3px 10px rgba(7,20,55,.05);
+            --shadow-md:0 8px 24px rgba(7,20,55,.10);
             --shadow-lg:0 30px 70px rgba(7,20,55,.18);
-            --radius:18px; --radius-sm:13px; --radius-pill:999px;
+            --radius:4px; --radius-sm:3px; --radius-pill:3px;
             --font:"Barlow",-apple-system,sans-serif; --font-display:"Barlow Semi Condensed","Barlow",sans-serif; --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
         }
 
@@ -33,6 +33,9 @@
         button { font-family:inherit; cursor:pointer; border:none; background:none; }
         input { font-family:inherit; }
         a { color:inherit; }
+        /* the TruCars wordmark: condensed caps, "Cars" in blue */
+        .wordmark { font-family:var(--font-display); font-size:24px; font-weight:800; line-height:1; text-transform:uppercase; letter-spacing:.01em; color:var(--ink); white-space:nowrap; }
+        .wordmark b { font-weight:800; color:var(--primary); }
     </style>
 
     @livewireStyles

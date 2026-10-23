@@ -48,19 +48,19 @@ new #[Layout('layouts.dealer')] #[Title('Audit log')] class extends Component {
 
 @push('styles')
     <style>
-        .al-head { display:flex; align-items:flex-end; gap:16px; margin-bottom:18px; }
-        .al-head h1 { font-size:24px; font-weight:800; letter-spacing:0; margin:0; flex:1; }
-        .al-head select { border:1px solid var(--line-strong); border-radius:var(--radius-sm); padding:8px 12px; font-family:inherit; font-size:13.5px; background:var(--card); }
-        .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-sm); overflow:hidden; }
-        .al-row { display:grid; grid-template-columns:150px 200px minmax(0, 1fr); gap:14px; padding:12px 18px; border-bottom:1px solid var(--line); font-size:13px; }
-        .al-row:last-child { border-bottom:none; }
-        .al-when { color:var(--ink-3); font-family:var(--mono); font-size:12px; }
+        .al-head { display:flex; align-items:flex-end; gap:16px; margin-bottom:20px; flex-wrap:wrap; }
+        .al-head h1 { font-family:var(--font-display); font-size:36px; font-weight:700; line-height:1; text-transform:uppercase; margin:0; flex:1; }
+        .al-head select { background:#fff; border:1.5px solid var(--line-strong); border-radius:3px; padding:8px 12px; font-family:inherit; font-size:14px; font-weight:600; color:var(--ink); }
+        .al-head select:focus { outline:none; border-color:var(--ink); box-shadow:0 0 0 3px var(--primary-soft); }
+        .card { border-top:2px solid var(--ink); }
+        .al-row { display:grid; grid-template-columns:170px 210px minmax(0, 1fr); gap:14px; padding:12px 0; border-bottom:1px solid var(--line-strong); font-size:14px; }
+        .al-when { color:var(--ink-3); font-family:var(--mono); font-size:13px; }
         .al-who { color:var(--ink-2); overflow:hidden; text-overflow:ellipsis; }
-        .al-what b { font-family:var(--mono); font-size:12.5px; }
-        .al-diff { font-family:var(--mono); font-size:11.5px; color:var(--ink-3); margin-top:4px; word-break:break-word; }
-        .al-empty { padding:20px; color:var(--ink-3); font-size:13.5px; }
+        .al-what b { font-family:var(--mono); font-size:13px; color:var(--ink); }
+        .al-diff { font-family:var(--mono); font-size:13px; color:var(--ink-3); margin-top:4px; word-break:break-word; }
+        .al-empty { margin-top:14px; padding:18px 20px; border:1.5px dashed var(--line-strong); border-radius:3px; color:var(--ink-3); font-size:15px; }
         .al-pages { margin-top:16px; }
-        @media (max-width:760px){ .al-row { grid-template-columns:1fr; gap:4px; } }
+        @media (max-width:760px){ .al-row { grid-template-columns:1fr; gap:4px; } .al-head h1 { font-size:30px; } }
     </style>
 @endpush
 

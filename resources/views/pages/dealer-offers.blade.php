@@ -45,21 +45,21 @@ new #[Layout('layouts.dealer')] #[Title('Offers')] class extends Component {
 
 @push('styles')
     <style>
-        .do-head h1 { font-size:24px; font-weight:800; letter-spacing:0; margin:0 0 6px; }
-        .do-head p { margin:0 0 20px; font-size:14px; color:var(--ink-2); max-width:680px; }
-        .offers { display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:14px; }
-        .oc { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-sm); overflow:hidden; display:flex; flex-direction:column; }
-        .oc-top { padding:18px 18px 12px; }
-        .oc-k { display:flex; align-items:center; gap:8px; font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3); }
-        .oc-big { font-size:28px; font-weight:800; letter-spacing:0; margin-top:6px; }
-        .oc-t { font-size:14px; font-weight:700; margin-top:2px; }
-        .oc-m { font-size:12.5px; color:var(--ink-3); margin-top:6px; line-height:1.5; }
-        .oc-fine { font-size:12px; color:var(--ink-2); background:var(--bg); padding:10px 18px; border-top:1px solid var(--line); margin-top:auto; }
-        .oc-foot { display:flex; align-items:center; padding:12px 18px; border-top:1px solid var(--line); font-size:12.5px; font-weight:600; color:var(--ink-2); }
-        .pill { font-size:10.5px; font-weight:800; letter-spacing:.05em; padding:3px 9px; border-radius:var(--radius-pill); background:var(--bg); border:1px solid var(--line); color:var(--ink-2); }
-        .pill.live { background:var(--good-soft); color:var(--good-ink); border-color:transparent; }
-        .pill.scheduled { background:#E3EDFB; color:#2E5FA3; border-color:transparent; }
-        .empty { background:var(--card); border:1px dashed var(--line-strong); border-radius:var(--radius); padding:26px; text-align:center; font-size:13.5px; color:var(--ink-3); }
+        .do-head h1 { font-size:34px; font-weight:700; text-transform:uppercase; line-height:1; letter-spacing:0; margin:0 0 10px; }
+        .do-head p { margin:0 0 22px; font-size:14.5px; color:var(--ink-2); max-width:680px; }
+        .offers { display:grid; grid-template-columns:repeat(auto-fill, minmax(min(320px, 100%), 1fr)); gap:24px 20px; }
+        .oc { border-top:2px solid var(--ink); display:flex; flex-direction:column; }
+        .oc-top { padding:12px 0 12px; }
+        .oc-k { display:flex; align-items:center; flex-wrap:wrap; gap:8px; font-size:14px; font-weight:700; color:var(--ink-2); }
+        .oc-big { font-family:var(--font-display); font-size:34px; font-weight:700; line-height:1; letter-spacing:0; color:var(--ink); margin-top:8px; }
+        .oc-t { font-size:15px; font-weight:700; margin-top:4px; }
+        .oc-m { font-size:13.5px; color:var(--ink-3); margin-top:6px; line-height:1.5; }
+        .oc-fine { font-size:13px; color:var(--ink-2); padding:10px 0; border-top:1px solid var(--line-strong); margin-top:auto; }
+        .oc-foot { display:flex; align-items:center; padding:10px 0; border-top:1px solid var(--line-strong); border-bottom:1px solid var(--line-strong); font-family:var(--font-display); font-size:15px; font-weight:700; text-transform:uppercase; color:var(--ink); }
+        .pill { font-family:var(--font-display); font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.02em; padding:1px 8px; border-radius:2px; background:var(--bg-2); border:1px solid var(--line-strong); color:var(--ink-2); }
+        .pill.live { background:#E5F8EC; color:#0B7355; border-color:transparent; }
+        .pill.scheduled { background:var(--primary-soft); color:var(--primary-press); border-color:transparent; }
+        .empty { border:1.5px dashed var(--line-strong); border-radius:3px; padding:18px 20px; font-size:14.5px; color:var(--ink-2); }
     </style>
 @endpush
 

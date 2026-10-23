@@ -242,47 +242,50 @@ new #[Layout('layouts.dealer')] #[Title('TruCars staff')] class extends Componen
 
 @push('styles')
     <style>
-        .st-head h1 { font-size:24px; font-weight:800; letter-spacing:0; margin:0 0 6px; }
-        .st-head p { margin:0 0 22px; font-size:14px; color:var(--ink-2); max-width:660px; }
-        .btn { font-size:14px; font-weight:700; border-radius:var(--radius-pill); padding:10px 18px; transition:all .15s ease; white-space:nowrap; }
-        .btn-primary { background:var(--primary); color:#fff; box-shadow:0 8px 20px rgba(27,132,255,.24); }
-        .btn-primary:hover { background:var(--primary-press); }
-        .btn-ghost { background:transparent; color:var(--ink-2); border:1px solid var(--line-strong); }
-        .btn-ghost:hover { border-color:var(--ink-3); color:var(--ink); }
-        .btn-sm { font-size:12.5px; padding:6px 12px; }
-        .st-status { display:flex; align-items:center; gap:9px; background:var(--good-soft); color:var(--good-ink); border:1px solid rgba(23,198,83,.25); border-radius:var(--radius-sm); padding:11px 15px; font-size:13.5px; font-weight:600; margin-bottom:20px; }
-        .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-sm); max-width:920px; margin-bottom:22px; }
-        .card-head { padding:16px 20px 14px; border-bottom:1px solid var(--line); }
-        .card-head .ttl { font-size:15px; font-weight:700; }
-        .card-head .sub { font-size:12.5px; color:var(--ink-3); margin-top:2px; }
-        .m-row { padding:14px 20px; border-bottom:1px solid var(--line); }
-        .m-row:last-child { border-bottom:none; }
+        .st-head h1 { font-family:var(--font-display); font-size:36px; font-weight:700; line-height:1; text-transform:uppercase; margin:0 0 10px; }
+        .st-head p { margin:0 0 24px; font-size:15px; color:var(--ink-2); max-width:660px; }
+        .btn { display:inline-flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; border-radius:3px; padding:10px 18px; border:1.5px solid transparent; transition:background .15s ease, color .15s ease, border-color .15s ease; white-space:nowrap; }
+        .btn-primary { background:var(--primary); border-color:var(--primary); color:#fff; font-family:var(--font-display); font-size:16px; text-transform:uppercase; }
+        .btn-primary:hover { background:var(--primary-press); border-color:var(--primary-press); }
+        .btn-primary:disabled { opacity:.6; }
+        .btn-ghost { background:#fff; color:var(--ink); border-color:var(--ink); }
+        .btn-ghost:hover { background:var(--ink); color:#fff; }
+        .btn-sm { font-size:13px; padding:6px 12px; }
+        .btn-primary.btn-sm { font-size:14px; }
+        .st-status { display:flex; align-items:center; gap:9px; background:var(--good-soft); color:#0B7355; border-left:3px solid var(--good); border-radius:2px; padding:11px 15px; font-size:14px; font-weight:600; margin-bottom:22px; max-width:920px; }
+        .card { max-width:920px; margin-bottom:34px; border-top:2px solid var(--ink); }
+        .card.boxed { background:#fff; border:1.5px solid var(--ink); border-radius:4px; }
+        .card-head { padding:12px 0 12px; border-bottom:1px solid var(--line-strong); }
+        .card.boxed .card-head { padding:16px 20px 14px; }
+        .card-head .ttl { font-family:var(--font-display); font-size:22px; font-weight:700; line-height:1.05; text-transform:uppercase; }
+        .card-head .sub { font-size:14px; color:var(--ink-3); margin-top:4px; }
+        .m-row { padding:14px 0; border-bottom:1px solid var(--line-strong); }
         .m-top { display:flex; align-items:center; gap:12px; }
         .m-top > div:first-child { flex:1; min-width:0; }
-        .m-name { font-size:14px; font-weight:700; }
-        .m-meta { font-size:12px; color:var(--ink-3); margin-top:2px; }
+        .m-name { font-size:15px; font-weight:700; }
+        .m-meta { font-size:13px; color:var(--ink-3); margin-top:2px; font-weight:400; }
         .m-perms { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
-        .perm { font-size:11.5px; font-weight:600; color:var(--ink-2); background:var(--bg); border:1px solid var(--line); border-radius:var(--radius-pill); padding:2px 9px; }
-        .pill { font-size:10.5px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; padding:3px 9px; border-radius:var(--radius-pill); background:var(--good-soft); color:var(--good-ink); }
-        .pill.off { background:var(--primary-soft); color:var(--primary-press); }
-        .pill.wait { background:var(--amber-soft); color:var(--amber); }
-        .pill.owner { background:var(--active); color:var(--ink); }
-        .acts { display:flex; gap:6px; }
-        .perm-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px 18px; margin-top:12px; }
-        .perm-opt { display:flex; gap:9px; align-items:flex-start; font-size:13px; }
-        .perm-opt input { margin-top:3px; }
-        .perm-opt .d { display:block; font-size:11.5px; color:var(--ink-3); }
+        .perm { font-size:13px; font-weight:600; color:var(--ink-2); background:#fff; border:1px solid var(--line-strong); border-radius:2px; padding:1px 8px; }
+        .pill { font-family:var(--font-display); font-size:13px; font-weight:600; text-transform:uppercase; padding:2px 8px; border-radius:2px; background:var(--good-soft); color:#0B7355; white-space:nowrap; }
+        .pill.off { background:#FFEEF3; color:#D81A48; }
+        .pill.wait { background:#FFF8DD; color:#7A4E00; }
+        .pill.owner { background:var(--ink); color:#fff; }
+        .acts { display:flex; gap:6px; flex-wrap:wrap; }
+        .perm-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px 18px; margin-top:12px; }
+        .perm-opt { display:flex; gap:9px; align-items:flex-start; font-size:14px; font-weight:600; }
+        .perm-opt input { margin-top:3px; width:16px; height:16px; accent-color:var(--ink); flex-shrink:0; }
+        .perm-opt .d { display:block; font-size:13px; font-weight:400; color:var(--ink-3); }
         .perm-opt.locked { opacity:.5; }
-        .form { padding:18px 20px; display:grid; gap:14px; }
+        .form { padding:18px 20px 20px; display:grid; gap:16px; }
         .row2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
         .field { display:flex; flex-direction:column; gap:6px; }
-        .field label, .lbl { font-size:12.5px; font-weight:700; color:var(--ink-2); }
-        .field input { border:1px solid var(--line-strong); border-radius:var(--radius-sm); padding:10px 13px; font-size:14px; font-family:inherit; }
-        .field input:focus { outline:none; border-color:var(--primary); }
-        .err { font-size:12px; color:var(--primary-press); font-weight:600; }
+        .field label, .lbl { font-size:14px; font-weight:700; color:var(--ink); }
+        .field input { background:#fff; border:1.5px solid var(--line-strong); border-radius:3px; padding:10px 13px; font-size:15px; font-family:inherit; color:var(--ink); }
+        .field input:focus { outline:none; border-color:var(--ink); box-shadow:0 0 0 3px var(--primary-soft); }
+        .err { font-size:13px; color:#D81A48; font-weight:600; }
         .presets { display:flex; gap:8px; flex-wrap:wrap; }
-        .end { display:flex; justify-content:flex-end; gap:8px; }
-        @media (max-width:760px){ .perm-grid, .row2 { grid-template-columns:1fr; } .m-top { flex-wrap:wrap; } }
+        .end { display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap; }
+        @media (max-width:760px){ .perm-grid, .row2 { grid-template-columns:1fr; } .m-top { flex-wrap:wrap; } .st-head h1 { font-size:30px; } }
     </style>
 @endpush
 
@@ -367,7 +370,7 @@ new #[Layout('layouts.dealer')] #[Title('TruCars staff')] class extends Componen
         @endforeach
     </div>
 
-    <div class="card">
+    <div class="card boxed">
         <div class="card-head">
             <div class="ttl">Invite a staff member</div>
             <div class="sub">They'll get an email link to set their password. You can only grant access you hold yourself.</div>

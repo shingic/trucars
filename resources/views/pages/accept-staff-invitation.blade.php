@@ -110,24 +110,27 @@ new #[Layout('layouts.auth')] class extends Component {
 @push('styles')
     <style>
         .inv-wrap { max-width:440px; margin:0 auto; padding:64px 24px 90px; }
-        .inv-brand { display:flex; align-items:center; gap:9px; font-weight:800; font-size:17px; margin-bottom:36px; }
-        .inv-brand .glyph { width:28px; height:28px; border-radius:9px; background:var(--primary); color:#fff; display:grid; place-items:center; font-size:15px; }
-        .inv-title { font-size:26px; font-weight:800; letter-spacing:0; margin:0 0 8px; }
+        .inv-brand { display:flex; align-items:center; padding-bottom:18px; border-bottom:2px solid var(--ink); margin-bottom:32px; }
+        .inv-title { font-family:var(--font-display); font-size:36px; font-weight:700; line-height:1; text-transform:uppercase; letter-spacing:0; margin:0 0 12px; }
         .inv-lead { font-size:15px; color:var(--ink-2); margin:0 0 26px; }
         .inv-field { display:flex; flex-direction:column; gap:6px; margin-bottom:16px; }
-        .inv-field label { font-size:13px; font-weight:700; color:var(--ink-2); }
-        .inv-field input { border:1px solid var(--line-strong); border-radius:var(--radius-sm); padding:12px 14px; font-size:15px; font-family:inherit; background:var(--card); }
-        .inv-field input:focus { outline:none; border-color:var(--primary); }
-        .inv-field input[readonly] { background:var(--bg); color:var(--ink-3); }
-        .inv-err { font-size:12.5px; color:var(--primary-press); font-weight:600; }
-        .inv-btn { width:100%; margin-top:8px; background:var(--primary); color:#fff; font-size:15px; font-weight:700; border:none; border-radius:var(--radius-pill); padding:14px; cursor:pointer; font-family:inherit; }
+        .inv-field label { font-size:14px; font-weight:700; color:var(--ink); }
+        .inv-field input { border:1.5px solid var(--line-strong); border-radius:3px; padding:12px 14px; font-size:15px; font-family:inherit; color:var(--ink); background:#fff; }
+        .inv-field input:focus { outline:none; border-color:var(--ink); }
+        .inv-field input:focus-visible { box-shadow:0 0 0 2px var(--primary-soft); }
+        .inv-field input[readonly] { background:var(--bg-2, #F9F9F9); color:var(--ink-3); }
+        .inv-err { font-size:13px; color:#D81A48; font-weight:600; }
+        .inv-btn { width:100%; margin-top:8px; background:var(--primary); color:#fff; font-family:var(--font-display); font-size:17px; font-weight:700; text-transform:uppercase; letter-spacing:.02em; border:none; border-radius:3px; padding:14px; cursor:pointer; }
         .inv-btn:hover { background:var(--primary-press); }
-        .inv-note { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:22px; font-size:14.5px; color:var(--ink-2); }
+        .inv-btn:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
+        .inv-btn[disabled] { opacity:.65; cursor:wait; }
+        .inv-note { background:#fff; border:1px solid var(--line-strong); border-top:2px solid var(--ink); border-radius:3px; padding:22px; font-size:15px; color:var(--ink-2); }
+        .inv-note a { color:var(--primary); font-weight:600; text-decoration:underline; text-underline-offset:3px; }
     </style>
 @endpush
 
 <div class="inv-wrap">
-    <div class="inv-brand"><span class="glyph">T</span> TruCars</div>
+    <div class="inv-brand"><span class="wordmark">Tru<b>Cars</b></span></div>
 
     @if (! $isUsable)
         <h1 class="inv-title">This invitation can't be used</h1>

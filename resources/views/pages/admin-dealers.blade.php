@@ -47,56 +47,59 @@ new #[Layout('layouts.dealer')] #[Title('Dealers')] class extends Component {
 
 @push('styles')
     <style>
-        .ad-head { display:flex; align-items:flex-start; gap:20px; margin-bottom:22px; }
-        .ad-head h1 { font-size:24px; font-weight:800; letter-spacing:0; margin:0 0 6px; }
-        .ad-head p { margin:0; font-size:14px; color:var(--ink-2); max-width:640px; }
+        .ad-head { display:flex; align-items:flex-end; gap:20px; margin-bottom:22px; }
+        .ad-head h1 { font-family:var(--font-display); font-size:40px; font-weight:700; line-height:1; text-transform:uppercase; letter-spacing:0; margin:0 0 10px; color:var(--ink); }
+        .ad-head p { margin:0; font-size:15px; color:var(--ink-2); max-width:640px; }
         .ad-head .spacer { flex:1; }
 
-        .btn { display:inline-block; font-size:14px; font-weight:700; border-radius:var(--radius-pill); padding:10px 18px; transition:all .15s ease; white-space:nowrap; }
-        .btn-primary { background:var(--primary); color:#fff; box-shadow:0 8px 20px rgba(27,132,255,.24); }
-        .btn-primary:hover { background:var(--primary-press); }
+        .btn { display:inline-block; font-family:var(--font-display); font-size:15px; font-weight:600; text-transform:uppercase; letter-spacing:.02em; border-radius:3px; padding:10px 18px; border:1.5px solid transparent; transition:background .15s ease; white-space:nowrap; }
+        .btn-primary { background:var(--primary); border-color:var(--primary); color:#fff; box-shadow:none; }
+        .btn-primary:hover { background:var(--primary-press); border-color:var(--primary-press); }
+        .btn:focus-visible { outline:2px solid var(--primary); outline-offset:2px; }
 
-        .ad-alert { display:flex; align-items:center; gap:10px; background:var(--amber-soft); color:#7A4E0A; border:1px solid rgba(216,150,40,.3); border-radius:var(--radius-sm); padding:11px 15px; font-size:13.5px; font-weight:600; margin-bottom:20px; }
+        .ad-alert { display:flex; align-items:center; flex-wrap:wrap; gap:10px; background:#FFF8DD; color:#5C3D00; border-left:3px solid #C59A00; border-radius:2px; padding:11px 15px; font-size:14px; font-weight:600; margin-bottom:22px; }
         .ad-alert label { margin-left:auto; display:flex; align-items:center; gap:7px; cursor:pointer; white-space:nowrap; }
+        .ad-alert input[type=checkbox] { accent-color:var(--ink); width:16px; height:16px; }
 
-        .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-sm); }
-        .ad-row { display:grid; grid-template-columns:minmax(0, 1.5fr) minmax(0, 1.4fr) 150px 110px 44px; gap:16px; align-items:center; padding:14px 20px; border-bottom:1px solid var(--line); }
-        .ad-row:last-child { border-bottom:none; }
-        .ad-row.head { font-size:11px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-3); padding-top:11px; padding-bottom:11px; }
-        .ad-row .nm { font-size:14px; font-weight:700; }
-        .ad-row .meta { font-size:12px; color:var(--ink-3); margin-top:2px; }
-        .ad-row .miss { font-size:12px; color:var(--amber); font-weight:600; margin-top:3px; }
+        .card { background:transparent; border:none; border-radius:0; box-shadow:none; }
+        .ad-row { display:grid; grid-template-columns:minmax(0, 1.5fr) minmax(0, 1.4fr) 150px 110px 44px; gap:16px; align-items:center; padding:13px 8px; border-bottom:1px solid var(--line-strong); }
+        .ad-row.head { font-family:var(--font-display); font-size:14px; font-weight:600; text-transform:uppercase; color:var(--ink-3); padding-top:8px; padding-bottom:8px; border-bottom:2px solid var(--ink); }
+        .ad-row .nm { font-size:15px; font-weight:700; color:var(--ink); }
+        .ad-row .meta { font-size:13px; color:var(--ink-3); margin-top:2px; }
+        .ad-row .miss { font-size:13px; color:#7A4E00; font-weight:600; margin-top:3px; }
         .ad-row .num { font-family:var(--mono); font-size:13.5px; }
         .ad-row { transition:background .12s ease; }
-        .ad-row:not(.head):hover { background:var(--bg); }
-        .ad-row:last-child { border-radius:0 0 var(--radius) var(--radius); }
-        .ad-row .nm a:hover { color:var(--primary-press); }
+        .ad-row:not(.head):hover { background:#fff; }
+        .ad-row .nm a:hover { color:var(--primary-press); text-decoration:underline; text-underline-offset:3px; }
 
         .kebab { position:relative; justify-self:end; }
-        .kebab > button { width:34px; height:34px; display:grid; place-items:center; border:1px solid transparent; border-radius:10px; background:none; color:var(--ink-2); cursor:pointer; transition:all .12s ease; }
-        .kebab > button:hover, .kebab.open > button { background:var(--card); border-color:var(--line); color:var(--ink); box-shadow:var(--shadow-sm); }
+        .kebab > button { width:34px; height:34px; display:grid; place-items:center; border:1.5px solid transparent; border-radius:3px; background:none; color:var(--ink-2); cursor:pointer; transition:background .12s ease, color .12s ease, border-color .12s ease; }
+        .kebab > button:hover, .kebab.open > button { background:#fff; border-color:var(--ink); color:var(--ink); }
+        .kebab > button:focus-visible { outline:2px solid var(--primary); outline-offset:2px; }
         .kebab svg { width:18px; height:18px; flex-shrink:0; }
-        .kebab-menu { position:absolute; right:0; top:calc(100% + 6px); z-index:30; min-width:220px; background:var(--card); border:1px solid var(--line); border-radius:12px; box-shadow:0 14px 34px rgba(7,20,55,.14); padding:6px; }
-        .kebab-menu a { display:flex; align-items:center; gap:11px; padding:9px 10px; border-radius:8px; font-size:13.5px; font-weight:600; color:var(--ink); }
+        .kebab-menu { position:absolute; right:0; top:calc(100% + 4px); z-index:30; min-width:220px; background:#fff; border:1px solid var(--line-strong); border-radius:4px; box-shadow:var(--shadow-md); padding:4px; }
+        .kebab-menu a { display:flex; align-items:center; gap:11px; padding:9px 10px; border-radius:2px; font-size:14px; font-weight:600; color:var(--ink); }
         .kebab-menu a svg { width:16px; height:16px; color:var(--ink-3); }
-        .kebab-menu a:hover { background:var(--primary-soft); color:var(--primary-press); }
-        .kebab-menu a:hover svg { color:var(--primary); }
-        .kebab-menu .count { margin-left:auto; font-family:var(--mono); font-size:11.5px; font-weight:700; color:var(--ink-3); background:var(--bg); border-radius:var(--radius-pill); padding:1px 8px; }
-        .kebab-menu hr { border:none; border-top:1px solid var(--line); margin:5px 4px; }
-        .pill { display:inline-block; font-size:10.5px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; padding:3px 9px; border-radius:var(--radius-pill); }
-        .pill-active { background:var(--good-soft); color:var(--good-ink); }
-        .pill-draft { background:var(--bg); color:var(--ink-2); border:1px solid var(--line); }
-        .pill-suspended { background:var(--primary-soft); color:var(--primary-press); }
-        .ad-empty { padding:20px; font-size:13.5px; color:var(--ink-3); }
+        .kebab-menu a:hover { background:var(--bg-2); color:var(--ink); }
+        .kebab-menu a:hover svg { color:var(--ink); }
+        .kebab-menu .count { margin-left:auto; font-family:var(--font-display); font-size:13px; font-weight:600; color:var(--ink-2); background:var(--bg-2); border:1px solid var(--line-strong); border-radius:2px; padding:0 6px; }
+        .kebab-menu hr { border:none; border-top:1px solid var(--line-strong); margin:4px 0; }
+        .pill { display:inline-block; font-family:var(--font-display); font-size:13px; font-weight:600; text-transform:uppercase; padding:2px 7px; border-radius:2px; }
+        .pill-active { background:var(--good-soft); color:#0B7355; }
+        .pill-draft { background:#FFF8DD; color:#7A4E00; }
+        .pill-suspended { background:#FFEEF3; color:#D81A48; }
+        .ad-empty { margin-top:14px; padding:18px 16px; font-size:14px; color:var(--ink-2); border:1.5px dashed var(--line-strong); border-radius:3px; }
 
         @media (max-width:860px){
-            .ad-head { flex-direction:column; }
-            .ad-row { grid-template-columns:1fr 1fr; }
+            .ad-head { flex-direction:column; align-items:flex-start; }
+            .ad-head h1 { font-size:32px; }
+            .ad-row { grid-template-columns:1fr 1fr; padding-left:0; padding-right:0; }
             .ad-row.head { display:none; }
+            .card { border-top:2px solid var(--ink); }
             .ad-row > :first-child, .ad-row > :nth-child(2) { grid-column:1 / -1; }
             .ad-row { position:relative; }
             .ad-row .nm { padding-right:40px; }
-            .kebab { position:absolute; top:10px; right:14px; }
+            .kebab { position:absolute; top:10px; right:0; }
         }
     </style>
 @endpush
@@ -140,7 +143,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealers')] class extends Component {
                         <div class="miss">Missing: {{ implode(', ', array_map(fn ($field) => str_replace('_', ' ', $field), $dealer->missingAddressFields())) }}</div>
                     @endif
                 </div>
-                <div class="meta" style="color:{{ $dealer->timezone ? 'var(--ink-2)' : 'var(--amber)' }}">{{ $dealer->timezone ?? 'Not set' }}</div>
+                <div class="meta" style="color:{{ $dealer->timezone ? 'var(--ink-2)' : '#7A4E00' }}">{{ $dealer->timezone ?? 'Not set' }}</div>
                 <div><span class="pill pill-{{ $dealer->status }}">{{ \App\Models\Dealer::STATUS_LABELS[$dealer->status] ?? $dealer->status }}</span></div>
                 <div class="kebab" x-data="{ open: false }" :class="{ open }" @click.outside="open = false" @keydown.escape.window="open = false">
                     <button type="button" @click="open = ! open" :aria-expanded="open" aria-haspopup="menu" aria-label="Actions for {{ $dealer->name }}">
