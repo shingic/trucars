@@ -26,13 +26,13 @@ new #[Layout('layouts.dealer')] #[Title('Fee schedule')] class extends Component
         // visitor is signed in — it doesn't prove they're a dealer. A buyer
         // account (no dealer_id) would otherwise reach dealer() and 500, so
         // stop them here with a clear status instead.
-        abort_unless(auth()->user()?->dealer !== null, 403, 'This area is for dealer accounts.');
+        abort_unless(auth()->user()?->portalDealer() !== null, 403, 'This area is for dealer accounts.');
     }
 
     /** The signed-in dealership. Guaranteed non-null past the mount guard. */
     protected function dealer(): Dealer
     {
-        return auth()->user()->dealer;
+        return auth()->user()->portalDealer();
     }
 
     /** This dealer's full schedule, in display order. */

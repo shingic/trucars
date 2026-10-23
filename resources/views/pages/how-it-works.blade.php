@@ -5,249 +5,178 @@ use Livewire\Component;
 
 /*
 | How TruCars works, start to finish, for shoppers. Static content — kept in
-| step with the actual flow: listing → reserve ($150, refundable) → ID check
-| and dealer contact → pickup or delivery.
+| step with the actual flow: listing → reserve ($150, refundable) → ID check,
+| documents and the dealer's call → financing approval → insurance → pickup
+| or delivery. The deposit wording mirrors checkout; change both together.
 */
 new #[Title('How it works — TruCars')] class extends Component {
 }; ?>
 
-<div class="hiw">
+<div class="hw">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600&display=swap" rel="stylesheet">
     <style>
-        .hiw .eyebrow { display:inline-flex; align-items:center; gap:8px; font-size:12.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--primary-press); }
-        .hiw .eyebrow::before { content:""; width:18px; height:2px; background:var(--primary); border-radius:2px; }
-        .hiw h2 { font-size:clamp(26px, 3vw, 38px); font-weight:800; letter-spacing:-.03em; line-height:1.1; margin:12px 0 0; }
+        .hw { max-width:1040px; margin:0 auto; padding:40px 0 72px; color:var(--ink); font-size:16px; line-height:1.6; }
+        .hw h1, .hw h2, .hw h3 { font-family:"Barlow Semi Condensed", var(--font-ui); font-weight:600; letter-spacing:0; color:var(--ink); }
+        .hw h1 { font-size:clamp(34px, 4.4vw, 48px); line-height:1.08; margin:0; max-width:760px; }
+        .hw h2 { font-size:28px; line-height:1.15; margin:0 0 6px; }
+        .hw h3 { font-size:22px; line-height:1.2; margin:0; }
+        .hw p { margin:0 0 12px; max-width:640px; }
+        .hw a { color:var(--primary-press); }
+        .hw .muted { color:var(--ink-2); }
 
-        .hiw-hero { text-align:center; padding:56px 20px 30px; max-width:860px; margin:0 auto; }
-        .hiw-hero h1 { font-size:clamp(38px, 5.4vw, 68px); font-weight:800; letter-spacing:-.045em; line-height:1; margin:18px 0 0; }
-        .hiw-hero h1 em { font-style:normal; background:var(--hero-grad); -webkit-background-clip:text; background-clip:text; color:transparent; }
-        .hiw-hero p { font-size:18.5px; color:var(--ink-2); margin:18px auto 0; max-width:640px; }
-        .jump { display:flex; justify-content:center; gap:8px; flex-wrap:wrap; margin-top:28px; }
-        .jump a { display:inline-flex; align-items:center; gap:8px; padding:9px 16px; border-radius:var(--radius-pill); border:1px solid var(--line-strong); text-decoration:none; font-size:14px; font-weight:600; transition:all .14s ease; }
-        .jump a:hover { border-color:var(--primary); color:var(--primary-press); }
-        .jump a span { font-family:var(--font-mono); font-size:12px; color:var(--primary-press); }
+        .hw-intro { padding-bottom:28px; border-bottom:2px solid var(--ink); }
+        .hw-intro p { font-size:18px; color:var(--ink-2); margin-top:14px; }
 
-        /* steps */
-        .timeline { position:relative; max-width:1120px; margin:56px auto 0; }
-        .timeline::before { content:""; position:absolute; left:50%; top:30px; bottom:30px; width:2px; background:linear-gradient(var(--primary-line), var(--line)); transform:translateX(-50%); }
-        .tstep { position:relative; display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center; padding:36px 0; scroll-margin-top:90px; }
-        .tstep .dot { position:absolute; left:50%; top:50%; transform:translate(-50%, -50%); width:54px; height:54px; border-radius:18px; background:var(--card); border:2px solid var(--primary); display:grid; place-items:center; font-weight:800; font-size:19px; color:var(--primary-press); box-shadow:0 0 0 8px var(--bg); z-index:1; }
-        .tstep:nth-child(even) .copy { order:2; }
-        .tstep .copy h3 { font-size:28px; font-weight:800; letter-spacing:-.025em; margin:10px 0 10px; }
-        .tstep .copy p { margin:0; font-size:16px; color:var(--ink-2); }
-        .tstep .copy ul { margin:16px 0 0; padding:0; list-style:none; display:grid; gap:9px; }
-        .tstep .copy li { display:flex; gap:10px; font-size:14.5px; color:var(--ink); }
-        .tstep .copy li svg { flex-shrink:0; color:var(--good); margin-top:2px; }
-        .tstep .when { font-family:var(--font-mono); font-size:12px; color:var(--ink-3); }
+        /* the four steps: number and name on the left, what happens on the right */
+        .hw-steps { list-style:none; margin:0; padding:0; counter-reset:step; }
+        .hw-step { display:grid; grid-template-columns:260px minmax(0, 1fr); gap:32px; padding:28px 0; border-bottom:1px solid var(--line-strong); }
+        .hw-step > header { counter-increment:step; }
+        .hw-step > header::before { content:"Step " counter(step); display:block; font-size:13px; font-weight:600; color:var(--primary-press); margin-bottom:4px; }
+        .hw-step .hw-meta { font-size:14px; color:var(--ink-3); margin-top:6px; }
+        .hw-step ul { margin:4px 0 12px; padding-left:20px; max-width:640px; }
+        .hw-step li { margin:4px 0; }
+        .hw-step li::marker { color:var(--ink-3); }
 
-        /* mini illustrations */
-        .ill { border-radius:28px; background:var(--bg-2); padding:28px; min-height:250px; display:grid; place-items:center; position:relative; overflow:hidden; }
-        .ill::after { content:""; position:absolute; inset:auto -60px -90px auto; width:220px; height:220px; border-radius:50%; background:radial-gradient(circle, rgba(245,99,31,.16), transparent 70%); }
-        .mock { position:relative; z-index:1; width:100%; max-width:340px; background:var(--card); border-radius:20px; box-shadow:var(--shadow-md); padding:18px; }
-        .mock .row { display:flex; justify-content:space-between; align-items:center; font-size:13px; padding:7px 0; color:var(--ink-2); }
-        .mock .row b { color:var(--ink); }
-        .mock .ok { color:var(--good); font-weight:700; }
-        .mock .bar { height:9px; border-radius:9px; background:var(--bg-2); margin:6px 0; }
-        .mock .bar.w1 { width:80%; } .mock .bar.w2 { width:55%; } .mock .bar.w3 { width:68%; }
-        .mock .pill { display:inline-block; font-size:11px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; padding:4px 10px; border-radius:var(--radius-pill); background:var(--good-soft); color:#0B7A59; }
-        .mock .big { font-size:28px; font-weight:800; letter-spacing:-.02em; }
-        .mock .btn { display:block; text-align:center; margin-top:12px; padding:11px; border-radius:var(--radius-pill); background:var(--primary); color:#fff; font-weight:700; font-size:14px; }
-        .mock .search { display:flex; align-items:center; gap:8px; border:1.5px solid var(--line-strong); border-radius:var(--radius-pill); padding:9px 14px; font-size:13px; color:var(--ink-3); }
-        .mock .cards { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; }
-        .mock .mini { border-radius:12px; background:var(--bg-2); padding:9px; }
-        .mock .mini i { display:block; aspect-ratio:4/3; border-radius:8px; background:var(--hero-grad); opacity:.75; margin-bottom:7px; }
-        .mock .mini b { font-size:12.5px; }
-        .mock .chat { display:flex; gap:10px; align-items:flex-start; margin-top:4px; }
-        .mock .chat .av { width:32px; height:32px; border-radius:50%; background:var(--ink); color:#fff; display:grid; place-items:center; font-size:12px; font-weight:800; flex-shrink:0; }
-        .mock .chat .bubble { background:var(--bg-2); border-radius:4px 14px 14px 14px; padding:10px 12px; font-size:13px; }
-        .mock .slots { display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; margin-top:10px; }
-        .mock .slots span { text-align:center; font-size:12px; font-weight:700; padding:8px 0; border-radius:10px; border:1.5px solid var(--line-strong); }
-        .mock .slots span.on { border-color:var(--primary); background:var(--primary-soft); color:var(--primary-press); }
+        .hw-section { padding:44px 0 8px; }
+        .hw-section > p.muted { margin-bottom:20px; }
 
-        /* what's in the price */
-        .inprice { margin-top:80px; border-radius:36px; background:#14161B; color:#fff; padding:56px; display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:48px; align-items:center; }
-        .inprice h2 { color:#fff; }
-        .inprice .eyebrow { color:#FFB98A; }
-        .inprice .eyebrow::before { background:#FFB98A; }
-        .inprice p { color:rgba(255,255,255,.72); font-size:16px; margin:14px 0 0; }
-        .ledger { display:grid; gap:10px; }
-        .ledger div { display:flex; justify-content:space-between; align-items:center; padding:14px 18px; border-radius:16px; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.08); font-size:15px; }
-        .ledger div b { color:#5EE0B5; font-size:13.5px; }
-        .ledger div.extra { background:transparent; border-style:dashed; color:rgba(255,255,255,.6); }
-        .ledger div.extra b { color:rgba(255,255,255,.6); }
+        /* plain tables, ruled like a printed price sheet */
+        .hw-table { width:100%; max-width:820px; border-collapse:collapse; font-size:15px; }
+        .hw-table th { text-align:left; font-size:13px; font-weight:600; color:var(--ink-2); padding:0 16px 8px 0; border-bottom:1px solid var(--ink); }
+        .hw-table td { padding:12px 16px 12px 0; border-bottom:1px solid var(--line-strong); vertical-align:top; }
+        .hw-table td:first-child { font-weight:600; width:34%; }
+        .hw-table .group td { padding-top:22px; font-size:13px; font-weight:600; color:var(--ink-2); border-bottom:1px solid var(--ink); }
 
-        /* deposit + not-us */
-        .twin { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-top:20px; }
-        .panel { border-radius:28px; border:1px solid var(--line); padding:34px; }
-        .panel h3 { font-size:22px; font-weight:800; letter-spacing:-.02em; margin:14px 0 10px; }
-        .panel p { margin:0; color:var(--ink-2); font-size:15px; }
-        .panel .badge { width:48px; height:48px; border-radius:15px; display:grid; place-items:center; background:var(--primary-soft); color:var(--primary-press); }
-        .facts { display:grid; gap:10px; margin-top:18px; }
-        .facts div { display:flex; gap:12px; font-size:14.5px; }
-        .facts b { min-width:110px; }
+        .hw-two { display:grid; grid-template-columns:1fr 1fr; gap:48px; padding-top:44px; }
+        .hw-two dl { margin:12px 0 0; }
+        .hw-two dt { font-weight:600; margin-top:12px; }
+        .hw-two dd { margin:2px 0 0; color:var(--ink-2); }
 
-        .cta { margin-top:80px; text-align:center; padding:60px 24px; border-radius:36px; background:var(--bg-2); }
-        .cta h2 { margin:0; }
-        .cta p { color:var(--ink-2); font-size:17px; margin:12px 0 26px; }
-        .btn-hero { display:inline-flex; align-items:center; gap:9px; font-size:15.5px; font-weight:700; border-radius:var(--radius-pill); padding:15px 28px; text-decoration:none; background:var(--primary); color:#fff; box-shadow:var(--shadow-primary); }
-        .btn-hero:hover { background:var(--primary-press); }
+        .hw-end { margin-top:52px; padding-top:24px; border-top:2px solid var(--ink); display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; }
+        .hw-end p { margin:0; font-size:17px; }
+        .hw-btn { display:inline-block; padding:12px 22px; border-radius:4px; background:var(--primary); color:#fff !important; font-weight:600; text-decoration:none; }
+        .hw-btn:hover { background:var(--primary-press); }
 
-        @media (max-width:900px) {
-            .timeline::before { left:27px; }
-            .tstep { grid-template-columns:1fr; gap:22px; padding:28px 0 28px 76px; }
-            .tstep .dot { left:27px; top:56px; }
-            .tstep:nth-child(even) .copy { order:0; }
-            .inprice, .twin { grid-template-columns:1fr; }
-            .inprice { padding:36px 22px; border-radius:26px; }
-            .ill { padding:18px; min-height:0; }
+        @media (max-width:820px) {
+            .hw { padding-top:24px; }
+            .hw-step { grid-template-columns:1fr; gap:10px; }
+            .hw-two { grid-template-columns:1fr; gap:36px; }
+            .hw-table td:first-child { width:auto; }
         }
     </style>
 
-    @php $check = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>'; @endphp
-
-    <div class="hiw-hero">
-        <span class="eyebrow">How it works</span>
-        <h1>Four steps. <em>No haggling.</em></h1>
-        <p>TruCars connects you with cars at licensed dealerships, with the real, all-in price up front. Here’s exactly what happens from the moment you find a car to the day you drive it home.</p>
-        <div class="jump">
-            <a href="#find"><span>01</span> Find</a>
-            <a href="#hold"><span>02</span> Hold</a>
-            <a href="#confirm"><span>03</span> Confirm</a>
-            <a href="#drive"><span>04</span> Drive</a>
-        </div>
+    <div class="hw-intro">
+        <h1>How buying a car on TruCars works</h1>
+        <p>Every car here is sold by a licensed dealership, at the price on the listing. You reserve it online, the dealership finishes the deal with you, and you pick it up or have it delivered. Here is each step and what you’ll be asked for along the way.</p>
     </div>
 
-    <div class="timeline">
-        <div class="tstep" id="find">
-            <span class="dot">1</span>
-            <div class="copy">
-                <span class="when">Takes as long as you like</span>
-                <h3>Find the one</h3>
-                <p>Every car is listed by a licensed dealership and shows the price you’ll actually pay. Filter by budget, body style, make and distance from you.</p>
+    <ol class="hw-steps">
+        <li class="hw-step" id="find">
+            <header>
+                <h3>Find a car</h3>
+                <div class="hw-meta">No account needed to browse</div>
+            </header>
+            <div>
+                <p>Search by budget, body style, make and distance. Each listing shows:</p>
                 <ul>
-                    <li>{!! $check !!} The selling dealer and their registration number on every listing</li>
-                    <li>{!! $check !!} All-in price — freight, prep and fees already included</li>
-                    <li>{!! $check !!} Certified cars list every inspection point</li>
-                    <li>{!! $check !!} Save favourites to compare later</li>
+                    <li>the dealership selling it, where it is, and its dealer registration number</li>
+                    <li>the price you’ll pay before tax and licensing</li>
+                    <li>for certified cars, the full inspection checklist</li>
                 </ul>
+                <p class="muted">Sign in to save cars and compare them later.</p>
             </div>
-            <div class="ill">
-                <div class="mock">
-                    <div class="search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg> SUV under $35,000 near me</div>
-                    <div class="cards">
-                        <div class="mini"><i></i><b>$31,990</b><div class="bar w1"></div></div>
-                        <div class="mini"><i></i><b>$28,450</b><div class="bar w2"></div></div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        </li>
 
-        <div class="tstep" id="hold">
-            <span class="dot">2</span>
-            <div class="copy">
-                <span class="when">About 5 minutes</span>
-                <h3>Hold it for $150</h3>
-                <p>Reserve online and the car is taken off the market for you while you finish up. Tell us how you’d like to pay and whether you want it picked up or delivered.</p>
-                <ul>
-                    <li>{!! $check !!} $150 deposit, refundable any time before delivery</li>
-                    <li>{!! $check !!} It comes straight off the price when you buy</li>
-                    <li>{!! $check !!} No one else can reserve the car while it’s held for you</li>
-                </ul>
+        <li class="hw-step" id="reserve">
+            <header>
+                <h3>Reserve it for $150</h3>
+                <div class="hw-meta">About five minutes online</div>
+            </header>
+            <div>
+                <p>Checkout asks how you’d like to pay (cash, finance or lease), whether you have a trade-in, and when you’d like to pick the car up or have it delivered. You also do a quick ID check.</p>
+                <p>Once you pay the $150 deposit, the car is held for you and nobody else can reserve it. The deposit comes off the price when you buy, and it’s refundable any time before delivery.</p>
             </div>
-            <div class="ill">
-                <div class="mock">
-                    <div class="row"><b>2023 Mitsubishi Outlander</b><span class="pill">Available</span></div>
-                    <div class="row">All-in price <b>$31,990</b></div>
-                    <div class="row">Deposit today <b>$150</b></div>
-                    <div class="row">Refundable <span class="ok">✓ Before delivery</span></div>
-                    <span class="btn">Reserve this car</span>
-                </div>
-            </div>
-        </div>
+        </li>
 
-        <div class="tstep" id="confirm">
-            <span class="dot">3</span>
-            <div class="copy">
-                <span class="when">Usually within a day</span>
-                <h3>Confirm the details</h3>
-                <p>Verify your ID and upload any documents from My Garage. The dealership then contacts you to confirm the final numbers and answer anything you want to know.</p>
-                <ul>
-                    <li>{!! $check !!} Quick online ID check — no trip to the store just for paperwork</li>
-                    <li>{!! $check !!} Track every step of your deal in My Garage</li>
-                    <li>{!! $check !!} Talk to the actual dealership selling the car</li>
-                </ul>
+        <li class="hw-step" id="confirm">
+            <header>
+                <h3>Finish the paperwork</h3>
+                <div class="hw-meta">The dealership usually calls within a day</div>
+            </header>
+            <div>
+                <p>The dealership contacts you to go over the numbers and answer questions. You upload documents in My Garage when they’re asked for (the table below lists them), and you can see where your deal is at any time.</p>
+                <p>If you’re financing, the dealership sends your application to a lender. When the bank approves it, the actual terms appear in My Garage: the lender, your rate, the payment and how often, the term, and the date of your first payment.</p>
             </div>
-            <div class="ill">
-                <div class="mock">
-                    <div class="row"><b>My Garage</b><span class="pill">Reserved</span></div>
-                    <div class="row">ID verified <span class="ok">✓</span></div>
-                    <div class="row">Documents <span class="ok">✓ 2 of 2</span></div>
-                    <div class="chat">
-                        <span class="av">D</span>
-                        <span class="bubble">Hi! Your Outlander is set aside. Does Thursday work for pickup?</span>
-                    </div>
-                </div>
-            </div>
-        </div>
+        </li>
 
-        <div class="tstep" id="drive">
-            <span class="dot">4</span>
-            <div class="copy">
-                <span class="when">On the day you choose</span>
-                <h3>Drive it home</h3>
-                <p>Pick the car up at the dealership, or have it delivered. You choose the day and the time window when you reserve.</p>
-                <ul>
-                    <li>{!! $check !!} Pickup or delivery — your call</li>
-                    <li>{!! $check !!} Your $150 deposit is already credited</li>
-                    <li>{!! $check !!} Only HST and licensing on top of the price you saw</li>
-                </ul>
+        <li class="hw-step" id="handover">
+            <header>
+                <h3>Pick it up</h3>
+                <div class="hw-meta">On the day you chose</div>
+            </header>
+            <div>
+                <p>Collect the car at the dealership, or have it brought to your address, in the time window you picked at checkout. The dealership confirms the exact time with you beforehand.</p>
+                <p>You pay the balance: the listed price, less your $150 deposit, plus HST and licensing.</p>
             </div>
-            <div class="ill">
-                <div class="mock">
-                    <div class="row"><b>Handover</b><span>Pickup</span></div>
-                    <div class="slots"><span>Wed</span><span class="on">Thu</span><span>Fri</span></div>
-                    <div class="slots"><span>10–12</span><span class="on">12–2</span><span>2–4</span></div>
-                    <div class="row" style="margin-top:8px">You’re all set <span class="ok">✓</span></div>
-                </div>
-            </div>
-        </div>
+        </li>
+    </ol>
+
+    <section class="hw-section" id="documents">
+        <h2>What you’ll be asked for</h2>
+        <p class="muted">Nothing is due all at once. Each document is requested when the dealership needs it, and we’ll email you if one is still missing.</p>
+        <table class="hw-table">
+            <thead>
+                <tr><th>Document</th><th>When</th><th>Who needs it</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Driver’s licence</td><td>Right after you reserve</td><td>Everyone</td></tr>
+                <tr><td>Your last two pay stubs</td><td>Right after you reserve</td><td>Finance and lease buyers</td></tr>
+                <tr><td>A void cheque</td><td>Right after you reserve</td><td>Finance and lease buyers, for the car payments</td></tr>
+                <tr><td>Proof of insurance</td><td>Once your deal is finalized</td><td>Everyone, before you take the car home</td></tr>
+            </tbody>
+        </table>
+        <p class="muted" style="margin-top:14px">A PDF or a clear phone photo is fine. The dealership may occasionally ask for something else, such as a bank statement, and will tell you why.</p>
+    </section>
+
+    <section class="hw-section" id="price">
+        <h2>What the listed price includes</h2>
+        <p class="muted">Dealers on TruCars list an all-in price. Their own costs are already in it; only government charges are added.</p>
+        <table class="hw-table">
+            <tbody>
+                <tr class="group"><td colspan="2">In the listed price</td></tr>
+                <tr><td>The car</td><td></td></tr>
+                <tr><td>Freight and pre-delivery inspection</td><td>Where the dealer charges them</td></tr>
+                <tr><td>Dealer admin fees</td><td></td></tr>
+                <tr class="group"><td colspan="2">Added when you buy</td></tr>
+                <tr><td>HST or GST/PST</td><td>At your province’s rate</td></tr>
+                <tr><td>Licensing and registration</td><td>At cost</td></tr>
+            </tbody>
+        </table>
+        <p class="muted" style="margin-top:14px">Checkout shows every line for the car you’ve chosen before you pay anything.</p>
+    </section>
+
+    <div class="hw-two">
+        <section id="deposit">
+            <h2>About the $150 deposit</h2>
+            <dl>
+                <dt>What it does</dt>
+                <dd>Takes the car off the market while you finish up.</dd>
+                <dt>When you buy</dt>
+                <dd>It comes straight off the price.</dd>
+                <dt>If you change your mind</dt>
+                <dd>It’s refundable any time before you take delivery.</dd>
+            </dl>
+        </section>
+        <section id="seller">
+            <h2>Who you’re buying from</h2>
+            <p>TruCars doesn’t own any of the cars. Each one is sold by the dealership named on the listing, which is licensed in its province. They handle your financing, paperwork and handover, and they’re the ones who give you the keys.</p>
+            <p class="muted">Questions about a specific car are best asked to that dealership. My Garage shows which one is handling your purchase.</p>
+        </section>
     </div>
 
-    <div class="inprice">
-        <div>
-            <span class="eyebrow">What’s in the price</span>
-            <h2>The number on the listing is the number you pay.</h2>
-            <p>Everything it takes to get the car ready to sell is already in the price you see. The only things added at purchase are tax and your plates.</p>
-        </div>
-        <div class="ledger">
-            <div>Vehicle <b>✓ Included</b></div>
-            <div>Freight &amp; pre-delivery inspection <b>✓ Included</b></div>
-            <div>Dealer admin fee <b>✓ Included</b></div>
-            <div>Regulator fee <b>✓ Included</b></div>
-            <div class="extra">HST <b>Added at purchase</b></div>
-            <div class="extra">Licensing &amp; plates <b>Added at purchase</b></div>
-        </div>
-    </div>
-
-    <div class="twin">
-        <div class="panel">
-            <span class="badge"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
-            <h3>Your $150 deposit</h3>
-            <div class="facts">
-                <div><b>What it does</b><span>Takes the car off the market while you finish up.</span></div>
-                <div><b>When you buy</b><span>It comes straight off the price.</span></div>
-                <div><b>If you don’t</b><span>It’s refundable any time before you take delivery.</span></div>
-            </div>
-        </div>
-        <div class="panel">
-            <span class="badge"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6"/></svg></span>
-            <h3>Who you’re buying from</h3>
-            <p>TruCars doesn’t own the cars. Each one is sold by the licensed dealership on the listing — you see their name, location and registration number before you reserve, and they’re the ones who hand you the keys.</p>
-        </div>
-    </div>
-
-    <div class="cta">
-        <h2>Ready when you are.</h2>
-        <p>Every car, every dealer, every price all-in.</p>
-        <a class="btn-hero" href="{{ route('shop') }}" wire:navigate>Browse cars <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+    <div class="hw-end">
+        <p>Start with the cars near you.</p>
+        <a class="hw-btn" href="{{ route('shop') }}" wire:navigate>Browse cars</a>
     </div>
 </div>

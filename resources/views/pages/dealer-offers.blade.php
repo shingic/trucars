@@ -19,7 +19,7 @@ new #[Layout('layouts.dealer')] #[Title('Offers')] class extends Component {
 
     public function offers(): Collection
     {
-        $dealer = auth()->user()->dealer;
+        $dealer = auth()->user()->portalDealer();
 
         if (! $dealer->brand_id) {
             return collect();
@@ -63,7 +63,7 @@ new #[Layout('layouts.dealer')] #[Title('Offers')] class extends Component {
     </style>
 @endpush
 
-@php $dealer = auth()->user()->dealer; $offers = $this->offers(); @endphp
+@php $dealer = auth()->user()->portalDealer(); $offers = $this->offers(); @endphp
 
 <div>
     <div class="do-head">

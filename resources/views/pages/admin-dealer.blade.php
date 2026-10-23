@@ -116,6 +116,19 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
     public ?int $editingRooftopId = null;
     public array $rooftopForm = [];
 
+    // Opening hours and extra pickup points for one store, main store included.
+    #[Locked]
+    public ?int $hoursRooftopId = null;
+    public bool $hoursKnown = false;
+    public array $hoursForm = [];
+    public array $pickupForm = [];
+
+    // Which stores a staff member can work with (Team tab).
+    #[Locked]
+    public ?int $accessUserId = null;
+    public bool $accessAllStores = true;
+    public array $accessStoreIds = [];
+
     // Invite form for the dealer users card.
     public string $inviteName = '';
     public string $inviteEmail = '';
@@ -270,6 +283,75 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
 
         $this->cancelRooftop();
         $this->statusMessage = $wasNew ? "Added {$rooftop->name}. Import its feed with --dealer={$dealer->id} --new-rooftop, or match it by feed id." : "Saved {$rooftop->name}.";
+    }
+
+    public function startHours(int $rooftopId): void
+    {
+        Gate::authorize(Permission::DEALERS_MANAGE);
+        $rooftop = $this->dealerOrFail()->rooftops()->findOrFail($rooftopId);
+
+        $this->resetValidation();
+        $this->hoursRooftopId = $rooftop->id;
+        $this->hoursKnown = $rooftop->hasHours();
+        $this->hoursForm = collect(Rooftop::WEEKDAYS)->map(function (string $label, string $day) use ($rooftop) {
+            $hours = $rooftop->hours[$day] ?? null;
+
+            return [
+                'open'   => $hours === null && $rooftop->hasHours() ? false : true,
+                'from'   => $hours[0] ?? '09:00',
+                'until'  => $hours[1] ?? '18:00',
+            ];
+        })->all();
+        $points = $rooftop->pickupPoints();
+        $this->pickupForm = collect(range(0, 2))->map(fn (int $i) => ['name' => $points[$i]['name'] ?? '', 'address' => $points[$i]['address'] ?? ''])->all();
+    }
+
+    public function cancelHours(): void
+    {
+        $this->hoursRooftopId = null;
+    }
+
+    public function saveHours(): void
+    {
+        Gate::authorize(Permission::DEALERS_MANAGE);
+        $rooftop = $this->dealerOrFail()->rooftops()->findOrFail($this->hoursRooftopId);
+
+        $rules = [];
+        foreach (array_keys(Rooftop::WEEKDAYS) as $day) {
+            if ($this->hoursKnown && ! empty($this->hoursForm[$day]['open'])) {
+                $rules["hoursForm.{$day}.from"] = ['required', 'date_format:H:i'];
+                $rules["hoursForm.{$day}.until"] = ['required', 'date_format:H:i', "after:hoursForm.{$day}.from"];
+            }
+        }
+        foreach (range(0, 2) as $i) {
+            $rules["pickupForm.{$i}.name"] = ['nullable', 'string', 'max:80', "required_with:pickupForm.{$i}.address"];
+            $rules["pickupForm.{$i}.address"] = ['nullable', 'string', 'max:160', "required_with:pickupForm.{$i}.name"];
+        }
+
+        $this->validate($rules, [
+            'hoursForm.*.until.after'          => 'Closing time must be after opening time.',
+            'pickupForm.*.name.required_with'    => 'Give this pickup point a name.',
+            'pickupForm.*.address.required_with' => 'Add the pickup point’s address.',
+        ], collect(Rooftop::WEEKDAYS)->flatMap(fn (string $label, string $day) => [
+            "hoursForm.{$day}.from" => "{$label} opening time", "hoursForm.{$day}.until" => "{$label} closing time",
+        ])->all());
+
+        $hours = $this->hoursKnown
+            ? collect(Rooftop::WEEKDAYS)->map(fn (string $label, string $day) => empty($this->hoursForm[$day]['open'])
+                ? null
+                : [$this->hoursForm[$day]['from'], $this->hoursForm[$day]['until']])->all()
+            : null;
+        $points = collect($this->pickupForm)
+            ->map(fn (array $point) => ['name' => trim((string) $point['name']), 'address' => trim((string) $point['address'])])
+            ->filter(fn (array $point) => $point['name'] !== '')
+            ->values()->all();
+
+        $before = $rooftop->only(['hours', 'pickup_points']);
+        $rooftop->update(['hours' => $hours, 'pickup_points' => $points ?: null]);
+        AuditLog::record('rooftop.hours_updated', $rooftop, $before, $rooftop->only(['hours', 'pickup_points']));
+
+        $this->hoursRooftopId = null;
+        $this->statusMessage = "Saved hours and pickup points for {$rooftop->display_name}.";
     }
 
     /** Close or reopen a store. A closed store's cars come off the marketplace; the main store follows the dealer's status instead. */
@@ -521,7 +603,67 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
 
     public function staffMembers(): Collection
     {
-        return $this->dealerId === null ? collect() : $this->dealerOrFail()->staff()->orderBy('name')->get();
+        return $this->dealerId === null ? collect() : $this->dealerOrFail()->staff()->with('storeGrants.dealer:id,name')->orderBy('name')->get();
+    }
+
+    /**
+     * Stores a staff member of this dealer can be given: its own, plus those
+     * of the other dealers in its group. Nothing outside the group, ever.
+     */
+    public function grantableStores(): Collection
+    {
+        $dealer = $this->dealerOrFail();
+
+        return Rooftop::with('dealer:id,name')
+            ->whereIn('dealer_id', $dealer->dealer_group_id
+                ? Dealer::where('dealer_group_id', $dealer->dealer_group_id)->select('id')
+                : [$dealer->id])
+            ->get()
+            ->sortBy(fn (Rooftop $store) => [$store->dealer_id !== $dealer->id, $store->dealer->name, ! $store->is_primary, $store->display_name])
+            ->values();
+    }
+
+    public function startStoreAccess(int $userId): void
+    {
+        Gate::authorize(Permission::DEALER_USERS_MANAGE);
+        $member = $this->dealerOrFail()->staff()->whereKey($userId)->firstOrFail();
+
+        $this->accessUserId = $member->id;
+        $this->accessStoreIds = $member->storeGrants()->pluck('rooftops.id')->map(fn ($id) => (string) $id)->all();
+        $this->accessAllStores = $this->accessStoreIds === [];
+        $this->resetErrorBag('accessStoreIds');
+    }
+
+    public function cancelStoreAccess(): void
+    {
+        $this->accessUserId = null;
+    }
+
+    /** Either every store of this dealer (no grants), or exactly the chosen ones. */
+    public function saveStoreAccess(): void
+    {
+        Gate::authorize(Permission::DEALER_USERS_MANAGE);
+        $member = $this->dealerOrFail()->staff()->whereKey($this->accessUserId)->firstOrFail();
+
+        $chosen = $this->accessAllStores ? [] : array_values(array_intersect(
+            $this->grantableStores()->pluck('id')->all(),
+            array_map('intval', $this->accessStoreIds),
+        ));
+
+        if (! $this->accessAllStores && $chosen === []) {
+            $this->addError('accessStoreIds', 'Choose at least one store, or give access to all of this dealer’s stores.');
+
+            return;
+        }
+
+        $before = $member->storeGrants()->pluck('rooftops.id')->all();
+        $member->storeGrants()->sync($chosen);
+        AuditLog::record('dealer_user.store_access_changed', $member, ['stores' => $before ?: 'all'], ['stores' => $chosen ?: 'all']);
+
+        $this->accessUserId = null;
+        $this->statusMessage = $chosen === []
+            ? "{$member->email} can work with every store of this dealer."
+            : "{$member->email} can now work with " . count($chosen) . ' ' . (count($chosen) === 1 ? 'store' : 'stores') . '.';
     }
 
     public function openInvitations(): Collection
@@ -834,6 +976,19 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         .u-pill.u-off { background:var(--primary-soft); color:var(--primary-press); }
         .u-pill.u-wait { background:var(--amber-soft); color:var(--amber); }
         .u-acts { display:flex; gap:6px; }
+        .rt-hours { display:grid; gap:8px; padding:12px 0 16px; border-bottom:1px solid var(--line); }
+        .rt-day { display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:13.5px; }
+        .rt-day .u-check { width:130px; }
+        .rt-day input[type=time], .rt-day input[type=text] { border:1px solid var(--line-strong); border-radius:var(--radius-sm); padding:7px 10px; font:inherit; font-size:13.5px; background:var(--card); color:var(--ink); flex:1; min-width:0; }
+        .rt-day input[type=time] { flex:0 0 auto; }
+        .rt-hours .err { font-size:12px; color:var(--primary-press); font-weight:600; }
+        .rt-hours .hint { font-size:12px; color:var(--ink-3); }
+        .rt-hours .sb-label { font-size:12.5px; font-weight:700; color:var(--ink-2); margin-top:6px; }
+        .rt-hours .opt { font-weight:500; color:var(--ink-3); }
+        .u-access { display:grid; gap:8px; padding:14px 20px 16px; border-bottom:1px solid var(--line); background:var(--bg); }
+        .u-stores { display:grid; gap:6px; padding:4px 0 4px 22px; }
+        .u-check { display:flex; align-items:center; gap:8px; font-size:13.5px; font-weight:600; }
+        .u-access .err { font-size:12px; color:var(--primary-press); font-weight:600; }
         .u-empty { padding:14px 20px; font-size:13.5px; color:var(--ink-3); border-bottom:1px solid var(--line); }
         .u-invite { display:grid; grid-template-columns:1fr 1fr auto; gap:14px; align-items:end; padding:18px 20px; }
         @media (max-width:760px){ .u-invite { grid-template-columns:1fr; } .u-row { flex-wrap:wrap; } }
@@ -1239,9 +1394,11 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
                                     <span class="grow">
                                         <b>{{ $rooftop->display_name }} @if ($rooftop->is_primary) · <span style="color:var(--ink-3)">Main store</span> @endif</b>
                                         <small>{{ implode(' · ', $rooftop->address_lines) ?: 'No address yet' }} · {{ $rooftop->vehicles_count }} {{ $rooftop->vehicles_count === 1 ? 'car' : 'cars' }} · feed {{ $rooftop->feed_rooftop_id ?? 'not linked' }}</small>
+                                        <small>{{ $rooftop->hasHours() ? 'Hours set' : 'No hours set' }}{{ count($rooftop->pickupPoints()) ? ' · ' . count($rooftop->pickupPoints()) . ' extra pickup ' . (count($rooftop->pickupPoints()) === 1 ? 'point' : 'points') : '' }}</small>
                                     </span>
+                                    @if ($canManage) <button type="button" class="ebtn" wire:click="startHours({{ $rooftop->id }})">Hours &amp; pickup</button> @endif
                                     @if ($rooftop->is_primary)
-                                        <small style="color:var(--ink-3)">Edited above</small>
+                                        <small style="color:var(--ink-3)">Address edited above</small>
                                     @else
                                         <span class="dot-st {{ $rooftop->is_active ? 'on' : 'off' }}">{{ $rooftop->is_active ? 'Open' : 'Closed' }}</span>
                                         @if ($canManage)
@@ -1250,6 +1407,46 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
                                         @endif
                                     @endif
                                 </div>
+                                @if ($hoursRooftopId === $rooftop->id)
+                                    <form wire:submit="saveHours" class="rt-hours" wire:key="hours-{{ $rooftop->id }}">
+                                        <label class="u-check"><input type="checkbox" wire:model.live="hoursKnown"> Opening hours are known</label>
+                                        @if ($hoursKnown)
+                                            @foreach (\App\Models\Rooftop::WEEKDAYS as $day => $dayLabel)
+                                                <div class="rt-day">
+                                                    <label class="u-check"><input type="checkbox" wire:model.live="hoursForm.{{ $day }}.open"> {{ $dayLabel }}</label>
+                                                    @if (! empty($hoursForm[$day]['open']))
+                                                        <input type="time" wire:model="hoursForm.{{ $day }}.from" aria-label="{{ $dayLabel }} opens">
+                                                        <span>to</span>
+                                                        <input type="time" wire:model="hoursForm.{{ $day }}.until" aria-label="{{ $dayLabel }} closes">
+                                                    @else
+                                                        <span style="color:var(--ink-3)">Closed</span>
+                                                    @endif
+                                                </div>
+                                                @error("hoursForm.{$day}.from") <span class="err">{{ $message }}</span> @enderror
+                                                @error("hoursForm.{$day}.until") <span class="err">{{ $message }}</span> @enderror
+                                            @endforeach
+                                            <span class="hint">Buyers can only pick handover windows inside these hours.</span>
+                                        @else
+                                            <span class="hint">Without hours, buyers can pick any window from 10am to 6pm.</span>
+                                        @endif
+
+                                        <div class="sb-label">Other pickup points <span class="opt">(optional)</span></div>
+                                        @foreach (range(0, 2) as $i)
+                                            <div class="rt-day">
+                                                <input type="text" wire:model="pickupForm.{{ $i }}.name" placeholder="Name" maxlength="80" aria-label="Pickup point {{ $i + 1 }} name">
+                                                <input type="text" wire:model="pickupForm.{{ $i }}.address" placeholder="Address" maxlength="160" aria-label="Pickup point {{ $i + 1 }} address" style="flex:2">
+                                            </div>
+                                            @error("pickupForm.{$i}.name") <span class="err">{{ $message }}</span> @enderror
+                                            @error("pickupForm.{$i}.address") <span class="err">{{ $message }}</span> @enderror
+                                        @endforeach
+                                        <span class="hint">Offered at checkout after the store itself.</span>
+
+                                        <div class="u-acts" style="justify-content:flex-end">
+                                            <button type="button" class="btn btn-ghost btn-sm" wire:click="cancelHours">Cancel</button>
+                                            <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                                        </div>
+                                    </form>
+                                @endif
                             @endforeach
                         </div>
 

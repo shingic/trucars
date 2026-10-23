@@ -258,8 +258,10 @@ class Vehicle extends Model
      * we'd rather show nothing than present generic used cars as factory CPO.
      * is_certified is deliberately not consulted: it's an age/kilometre guess,
      * not evidence of a manufacturer program.
+     *
+     * A campaign for one store passes $rooftopId to show only that store's cars.
      */
-    public function scopeEligibleForDealerCpo(Builder $query, Dealer $dealer): void
+    public function scopeEligibleForDealerCpo(Builder $query, Dealer $dealer, ?int $rooftopId = null): void
     {
         if (blank($dealer->franchise_make)) {
             $query->whereRaw('1 = 0');
@@ -268,6 +270,7 @@ class Vehicle extends Model
         }
 
         $query->where('vehicles.dealer_id', $dealer->id)
+            ->when($rooftopId !== null, fn (Builder $cars) => $cars->where('vehicles.rooftop_id', $rooftopId))
             ->where('is_published', true)
             ->where('condition', 'USED')
             ->where('is_manufacturer_certified', true)
@@ -279,8 +282,8 @@ class Vehicle extends Model
                 ->where('stage', '!=', 'cancelled'));
     }
 
-    public function isEligibleForDealerCpo(Dealer $dealer): bool
+    public function isEligibleForDealerCpo(Dealer $dealer, ?int $rooftopId = null): bool
     {
-        return self::query()->whereKey($this->id)->eligibleForDealerCpo($dealer)->exists();
+        return self::query()->whereKey($this->id)->eligibleForDealerCpo($dealer, $rooftopId)->exists();
     }
 }

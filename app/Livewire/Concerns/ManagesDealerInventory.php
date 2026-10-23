@@ -70,9 +70,17 @@ trait ManagesDealerInventory
         $this->selected = [];
     }
 
+    /** The stores this list is limited to, or null for every store of the dealer. */
+    protected function inventoryRooftopIds(): ?array
+    {
+        return null;
+    }
+
     private function inventoryQuery(): Builder
     {
-        return Vehicle::query()->where('dealer_id', $this->inventoryDealerId());
+        return Vehicle::query()
+            ->where('dealer_id', $this->inventoryDealerId())
+            ->when($this->inventoryRooftopIds() !== null, fn (Builder $cars) => $cars->whereIn('rooftop_id', $this->inventoryRooftopIds()));
     }
 
     public function publish(int $vehicleId): void

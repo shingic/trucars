@@ -176,6 +176,21 @@ Route::domain($staffDomain)->group(function () {
     Route::livewire('/campaigns', 'pages::campaigns')
         ->middleware(EnsureUserIsStaff::class)
         ->name('dealer.campaigns');
+
+    // Staff with stores at more than one dealer of a group: every store they
+    // can see, side by side, and which dealer the rest of the portal shows.
+    Route::livewire('/group', 'pages::dealer-group')
+        ->middleware(EnsureUserIsStaff::class)
+        ->name('dealer.group');
+
+    Route::post('/switch-dealer', function (\Illuminate\Http\Request $request) {
+        $dealerId = (int) $request->input('dealer_id');
+        abort_unless(in_array($dealerId, $request->user()->accessibleDealerIds(), true), 403);
+
+        $request->session()->put(\App\Models\User::PORTAL_DEALER_SESSION, $dealerId);
+
+        return redirect()->route('dealer.reservations');
+    })->middleware(EnsureUserIsStaff::class)->name('dealer.switch');
 });
 
 /*

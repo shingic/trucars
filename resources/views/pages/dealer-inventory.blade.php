@@ -24,7 +24,13 @@ new #[Layout('layouts.dealer')] #[Title('Inventory')] class extends Component {
 
     protected function inventoryDealerId(): int
     {
-        return (int) auth()->user()->dealer_id;
+        return (int) auth()->user()->portalDealerId();
+    }
+
+    /** Staff limited to chosen stores see only those stores' cars. */
+    protected function inventoryRooftopIds(): ?array
+    {
+        return auth()->user()->isLimitedToStores() ? auth()->user()->accessibleRooftopIds() : null;
     }
 
     protected function authorizeInventoryView(): void
@@ -35,7 +41,7 @@ new #[Layout('layouts.dealer')] #[Title('Inventory')] class extends Component {
     protected function authorizeInventoryManage(): void
     {
         $this->authorizeInventoryView();
-        abort_if(auth()->user()->dealer?->isSuspended(), 403);
+        abort_if(auth()->user()->portalDealer()?->isSuspended(), 403);
     }
 
     public function canManageInventory(): bool

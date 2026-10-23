@@ -38,7 +38,7 @@ new class extends Component {
         abort_if($campaign === null, 404);
         abort_unless($vehicle->dealer_id === $campaign->dealer_id, 404);
 
-        if (! $vehicle->isEligibleForDealerCpo($campaign->dealer)) {
+        if (! $vehicle->isEligibleForDealerCpo($campaign->dealer, $campaign->rooftop_id)) {
             session()->flash('campaign_unavailable_vehicle', "{$vehicle->model_year} {$vehicle->make} {$vehicle->model}");
             $this->redirectRoute('campaign.shop', ['token' => $token]);
 
@@ -564,6 +564,7 @@ new class extends Component {
                             <div class="dealer-sub">
                                 @if ($store instanceof \App\Models\Rooftop && $store->name) {{ $store->name }} · @endif
                                 {{ implode(' · ', $store->address_lines) ?: $store->display_location }}
+                                @if ($store instanceof \App\Models\Rooftop && $store->todayLabel()) <span class="dot-sep"></span> {{ $store->todayLabel() }} @endif
                                 @if ($vehicle->dealer->registration_number)
                                     <span class="dot-sep"></span> {{ $vehicle->dealer->regulator ?? 'Dealer reg.' }}&nbsp;#{{ $vehicle->dealer->registration_number }}
                                 @endif

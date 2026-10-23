@@ -46,7 +46,7 @@ new class extends Component {
         if ($campaign->targetsVehicle()) {
             $target = $campaign->vehicle;
 
-            if ($target !== null && $target->isEligibleForDealerCpo($campaign->dealer)) {
+            if ($target !== null && $target->isEligibleForDealerCpo($campaign->dealer, $campaign->rooftop_id)) {
                 $this->redirectRoute('campaign.vehicle', ['token' => $token, 'vehicle' => $target->id]);
 
                 return;
@@ -82,7 +82,7 @@ new class extends Component {
     {
         return Vehicle::query()
             ->with(VehicleCertification::EAGER)
-            ->eligibleForDealerCpo($this->dealer)
+            ->eligibleForDealerCpo($this->dealer, $this->campaign->rooftop_id)
             ->when(trim($this->search) !== '', function (Builder $query) {
                 $keyword = '%' . trim($this->search) . '%';
                 $query->where(function (Builder $keywordQuery) use ($keyword) {
@@ -101,7 +101,7 @@ new class extends Component {
     #[Computed]
     public function totalCount(): int
     {
-        return Vehicle::query()->eligibleForDealerCpo($this->dealer)->count();
+        return Vehicle::query()->eligibleForDealerCpo($this->dealer, $this->campaign->rooftop_id)->count();
     }
 
     /**
@@ -122,7 +122,7 @@ new class extends Component {
             return;
         }
 
-        $vehicleIsHere = Vehicle::query()->eligibleForDealerCpo($this->dealer)->whereKey($vehicleId)->exists();
+        $vehicleIsHere = Vehicle::query()->eligibleForDealerCpo($this->dealer, $this->campaign->rooftop_id)->whereKey($vehicleId)->exists();
 
         if (! $vehicleIsHere) {
             return;

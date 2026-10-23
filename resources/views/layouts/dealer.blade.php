@@ -54,6 +54,9 @@
         .nav-item:hover { background:var(--bg); color:var(--ink); }
         .nav-item.on { background:var(--active); color:var(--ink); }
         .nav-item.on svg { color:var(--primary); }
+        .sb-switch { padding:0 12px; }
+        .sb-switch .sb-group-label { display:block; padding-left:0; }
+        .sb-switch select { width:100%; margin-top:6px; border:1px solid var(--line-strong); border-radius:10px; padding:8px 10px; font:inherit; font-size:13.5px; font-weight:600; color:var(--ink); background:var(--card); }
         .nav-badge { margin-left:auto; font-size:10px; font-weight:800; padding:2px 7px; border-radius:var(--radius-pill); background:var(--primary-soft); color:var(--primary-press); }
 
         .sb-foot { border-top:1px solid var(--line); padding:13px 14px; display:flex; align-items:center; gap:10px; }
@@ -75,7 +78,7 @@
             :root { --sidebar-w:72px; }
             .sb-brand { justify-content:center; padding:18px 0 16px; }
             .sb-brand .nm { display:none; }
-            .sb-group-label, .nav-item .nav-label, .sb-foot .meta { display:none; }
+            .sb-group-label, .nav-item .nav-label, .sb-foot .meta, .sb-switch { display:none; }
             .nav-item { justify-content:center; padding:11px; gap:0; }
             .sb-foot { justify-content:center; }
             .content-body { padding:22px 18px 60px; }
@@ -96,8 +99,26 @@
         <nav class="sb-scroll">
             {{-- Navigation only — every page enforces its own role on the server. --}}
             @if (auth()->user()->isDealerStaff())
+                @if (count(auth()->user()->accessibleDealerIds()) > 1)
+                    <form method="POST" action="{{ route('dealer.switch') }}" class="sb-group sb-switch">
+                        @csrf
+                        <label class="sb-group-label" for="portal-dealer">Dealership</label>
+                        <select id="portal-dealer" name="dealer_id" onchange="this.form.submit()">
+                            @foreach (\App\Models\Dealer::whereIn('id', auth()->user()->accessibleDealerIds())->orderBy('name')->get(['id', 'name']) as $portalOption)
+                                <option value="{{ $portalOption->id }}" @selected($portalOption->id === auth()->user()->portalDealerId())>{{ ucwords(strtolower($portalOption->name)) }}</option>
+                            @endforeach
+                        </select>
+                    </form>
+                @endif
                 <div class="sb-group">
                     <div class="sb-group-label">Desk</div>
+                    @if (count(auth()->user()->accessibleRooftopIds()) > 1)
+                        <a href="{{ route('dealer.group') }}"
+                           class="nav-item {{ request()->routeIs('dealer.group') ? 'on' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/></svg>
+                            <span class="nav-label">All stores</span>
+                        </a>
+                    @endif
                     <a href="{{ route('dealer.reservations') }}"
                        class="nav-item {{ request()->routeIs('dealer.reservations') ? 'on' : '' }}">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
@@ -179,7 +200,7 @@
             <span class="av">{{ collect(explode(' ', auth()->user()->name))->take(2)->map(fn ($namePart) => mb_strtoupper(mb_substr($namePart, 0, 1)))->implode('') }}</span>
             <div class="meta">
                 <div class="nm">{{ auth()->user()->name }}</div>
-                <div class="rl">{{ auth()->user()->dealer?->name ?? (auth()->user()->isOwner() ? 'TruCars owner' : (auth()->user()->isInternalStaff() ? 'TruCars staff' : '')) }}</div>
+                <div class="rl">{{ auth()->user()->portalDealer()?->name ?? (auth()->user()->isOwner() ? 'TruCars owner' : (auth()->user()->isInternalStaff() ? 'TruCars staff' : '')) }}</div>
             </div>
         </div>
     </aside>

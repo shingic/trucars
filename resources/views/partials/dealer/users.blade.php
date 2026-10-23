@@ -2,15 +2,21 @@
     <div class="card dl-users" id="users">
         <div class="card-head">
             <div class="ttl">Dealer users</div>
-            <div class="sub">Staff who can sign in to this dealer's portal. They see this dealer's data only. New staff join by invitation and set their own password.</div>
+            <div class="sub">Staff who can sign in to this dealer's portal. They see this dealer's stores unless limited to chosen ones; a store at another dealer of the same group needs to be given here. New staff join by invitation and set their own password.</div>
         </div>
 
+        @php $grantable = $this->dealerId ? $this->grantableStores() : collect(); @endphp
         @forelse ($this->staffMembers() as $member)
             <div class="u-row" wire:key="staff-{{ $member->id }}">
                 <div>
                     <div class="u-name">{{ $member->name }}</div>
-                    <div class="u-meta">{{ $member->email }}</div>
+                    <div class="u-meta">{{ $member->email }} ·
+                        {{ $member->storeGrants->isEmpty() ? 'All of this dealer’s stores' : $member->storeGrants->map(fn ($store) => ucwords(strtolower($store->display_name)))->implode(', ') }}
+                    </div>
                 </div>
+                @if ($grantable->count() > 1)
+                    <button type="button" class="btn btn-ghost btn-sm" wire:click="startStoreAccess({{ $member->id }})">Stores</button>
+                @endif
                 @if ($member->isSuspended())
                     <span class="u-pill u-off">Suspended</span>
                     <button type="button" class="btn btn-ghost btn-sm" wire:click="reinstateStaff({{ $member->id }})">Reinstate</button>
@@ -19,6 +25,28 @@
                     <button type="button" class="btn btn-ghost btn-sm" wire:click="suspendStaff({{ $member->id }})" wire:confirm="Suspend {{ $member->email }}? They won't be able to sign in.">Suspend</button>
                 @endif
             </div>
+            @if ($accessUserId === $member->id)
+                <div class="u-access" wire:key="access-{{ $member->id }}">
+                    <label class="u-check"><input type="radio" wire:model.live="accessAllStores" value="1" @checked($accessAllStores)> Every store of this dealer, including new ones</label>
+                    <label class="u-check"><input type="radio" wire:model.live="accessAllStores" value="0" @checked(! $accessAllStores)> Only these stores</label>
+                    @unless ($accessAllStores)
+                        <div class="u-stores">
+                            @foreach ($grantable as $store)
+                                <label class="u-check" wire:key="grant-{{ $store->id }}">
+                                    <input type="checkbox" wire:model="accessStoreIds" value="{{ $store->id }}">
+                                    {{ ucwords(strtolower($store->display_name)) }}
+                                    @if ($store->dealer_id !== $dealerId) <span class="u-meta">· {{ ucwords(strtolower($store->dealer->name)) }}, same group</span> @endif
+                                </label>
+                            @endforeach
+                        </div>
+                    @endunless
+                    @error('accessStoreIds') <span class="err">{{ $message }}</span> @enderror
+                    <div class="u-acts">
+                        <button type="button" class="btn btn-ghost btn-sm" wire:click="cancelStoreAccess">Cancel</button>
+                        <button type="button" class="btn btn-primary btn-sm" wire:click="saveStoreAccess">Save access</button>
+                    </div>
+                </div>
+            @endif
         @empty
             <div class="u-empty">No staff yet.</div>
         @endforelse

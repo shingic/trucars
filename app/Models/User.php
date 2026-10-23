@@ -148,6 +148,113 @@ class User extends Authenticatable
     }
 
     /**
+     * The stores this staff member is limited to. Empty means every store of
+     * their own dealer. A store at another dealer counts only while both
+     * dealers are in the same group — see accessibleRooftopIds().
+     */
+    public function storeGrants(): BelongsToMany
+    {
+        return $this->belongsToMany(Rooftop::class)->withTimestamps();
+    }
+
+    /** @var array{grants: bool, rooftops: array<int, int>, dealers: array<int, int>}|null */
+    private ?array $storeAccess = null;
+
+    /**
+     * Rooftop ids this staff member may work with: every store of their dealer
+     * when no stores were chosen, otherwise exactly the chosen ones. Being in a
+     * group grants nothing by itself — another dealer's store needs a grant.
+     *
+     * @return array<int, int>
+     */
+    public function accessibleRooftopIds(): array
+    {
+        return $this->storeAccess()['rooftops'];
+    }
+
+    /** @return array<int, int> the dealers those stores belong to */
+    public function accessibleDealerIds(): array
+    {
+        return $this->storeAccess()['dealers'];
+    }
+
+    /** Limited to chosen stores rather than all of their dealer's. */
+    public function isLimitedToStores(): bool
+    {
+        return $this->storeAccess()['grants'];
+    }
+
+    /** Whether every store of this dealer is open to them. */
+    public function seesAllStoresOf(Dealer|int $dealer): bool
+    {
+        $storeIds = Rooftop::where('dealer_id', $dealer instanceof Dealer ? $dealer->id : $dealer)->pluck('id')->all();
+
+        return $storeIds !== [] && array_diff($storeIds, $this->accessibleRooftopIds()) === [];
+    }
+
+    /** Drop the cached access after grants change. */
+    public function forgetStoreAccess(): void
+    {
+        $this->storeAccess = null;
+    }
+
+    private function storeAccess(): array
+    {
+        if ($this->storeAccess !== null) {
+            return $this->storeAccess;
+        }
+
+        if (! $this->isDealerStaff() || $this->dealer === null) {
+            return $this->storeAccess = ['grants' => false, 'rooftops' => [], 'dealers' => []];
+        }
+
+        $home = $this->dealer;
+        $grants = $this->storeGrants()->with('dealer:id,dealer_group_id')->get();
+
+        $stores = $grants->isEmpty()
+            ? $home->rooftops()->get(['id', 'dealer_id'])
+            : $grants->filter(fn (Rooftop $store) => (int) $store->dealer_id === $home->id
+                || ($home->dealer_group_id !== null && $store->dealer?->dealer_group_id === $home->dealer_group_id));
+
+        return $this->storeAccess = [
+            'grants'   => $grants->isNotEmpty(),
+            'rooftops' => $stores->pluck('id')->map(fn ($id) => (int) $id)->values()->all(),
+            'dealers'  => $stores->pluck('dealer_id')->map(fn ($id) => (int) $id)->unique()->values()->all(),
+        ];
+    }
+
+    /** Session key for the dealer a group staff member is working in. */
+    public const PORTAL_DEALER_SESSION = 'portal_dealer_id';
+
+    /**
+     * The dealer the portal is showing right now. Normally their own; staff
+     * with stores at more than one dealer of a group can switch, and the
+     * choice is honoured only while they still have a store there.
+     */
+    public function portalDealerId(): ?int
+    {
+        if (! $this->isDealerStaff()) {
+            return $this->dealer_id;
+        }
+
+        $allowed = $this->accessibleDealerIds();
+        $chosen = request()->hasSession() ? (int) request()->session()->get(self::PORTAL_DEALER_SESSION) : 0;
+
+        return match (true) {
+            in_array($chosen, $allowed, true)                => $chosen,
+            in_array((int) $this->dealer_id, $allowed, true) => (int) $this->dealer_id,
+            default                                          => $allowed[0] ?? null,
+        };
+    }
+
+    public function portalDealer(): ?Dealer
+    {
+        $dealerId = $this->portalDealerId();
+
+        return $dealerId === (int) $this->dealer_id ? $this->dealer : ($dealerId ? Dealer::find($dealerId) : null);
+    }
+
+    /**
      * Reservations this buyer has placed across the marketplace. These are the
      * cars shown in My Garage. Not dealer-scoped — a buyer can hold deals at
      * more than one dealership, so DealerScope is dropped on this side.

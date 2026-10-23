@@ -271,6 +271,7 @@ new #[Layout('layouts.checkout')] class extends Component {
 
         // Pre-select the first available handover day so the step opens ready to go.
         $this->handoverDate = $this->handoverDateOptions()[0]['date'] ?? null;
+        $this->keepTimeSlotAvailable();
     }
 
     /* ---------------------------------------------------------------------
@@ -686,13 +687,24 @@ new #[Layout('layouts.checkout')] class extends Component {
 
         if (in_array($date, $availableDates, true)) {
             $this->handoverDate = $date;
+            $this->keepTimeSlotAvailable();
         }
     }
 
     public function setHandoverTimeSlot(string $slotKey): void
     {
-        if (array_key_exists($slotKey, $this->handoverTimeSlots)) {
+        if (array_key_exists($slotKey, $this->availableTimeSlots($this->handoverDate))) {
             $this->handoverTimeSlot = $slotKey;
+        }
+    }
+
+    /** A window outside the chosen day's hours moves to that day's first one. */
+    private function keepTimeSlotAvailable(): void
+    {
+        $slots = $this->availableTimeSlots($this->handoverDate);
+
+        if (! array_key_exists($this->handoverTimeSlot, $slots) && $slots !== []) {
+            $this->handoverTimeSlot = array_key_first($slots);
         }
     }
 
@@ -787,7 +799,7 @@ new #[Layout('layouts.checkout')] class extends Component {
         $this->validate([
             'handoverMode'     => ['required', 'in:pickup,delivery'],
             'handoverDate'     => ['required', 'in:' . implode(',', $availableDates)],
-            'handoverTimeSlot' => ['required', 'in:' . implode(',', array_keys($this->handoverTimeSlots))],
+            'handoverTimeSlot' => ['required', 'in:' . implode(',', array_keys($this->availableTimeSlots($this->handoverDate)))],
         ], [
             'handoverDate.required' => 'Pick a day that works for you.',
             'handoverDate.in'       => 'Pick a day that works for you.',
@@ -989,16 +1001,20 @@ new #[Layout('layouts.checkout')] class extends Component {
        --------------------------------------------------------------------- */
 
     /**
-     * The next six collection/delivery days, generated from tomorrow so the
-     * options never go stale. Each row carries the parts the date chip renders.
-     * "Tomorrow" is the dealer's tomorrow — the windows are their opening hours.
+     * The next six collection/delivery days the store is open, from tomorrow
+     * so the options never go stale. Each row carries the parts the date chip
+     * renders. "Tomorrow" is the store's tomorrow.
      */
     public function handoverDateOptions(): array
     {
         $options = [];
 
-        for ($dayOffset = 1; $dayOffset <= 6; $dayOffset++) {
+        for ($dayOffset = 1; $dayOffset <= 14 && count($options) < 6; $dayOffset++) {
             $day = now($this->dealerTimezone())->addDays($dayOffset);
+
+            if ($this->availableTimeSlots($day->format('Y-m-d')) === []) {
+                continue;
+            }
 
             $options[] = [
                 'date'    => $day->format('Y-m-d'),
@@ -1012,7 +1028,35 @@ new #[Layout('layouts.checkout')] class extends Component {
     }
 
     /**
-     * Where a buyer can collect the car: the rooftop it sits at.
+     * The two-hour windows that fit inside the store's hours on that day —
+     * all of them when the store's hours haven't been entered.
+     *
+     * @return array<string, string>
+     */
+    public function availableTimeSlots(?string $date): array
+    {
+        $store = $this->vehicle->locatedAt();
+
+        if ($date === null || ! $store instanceof \App\Models\Rooftop || ! $store->hasHours()) {
+            return $this->handoverTimeSlots;
+        }
+
+        $hours = $store->hoursOn(\Illuminate\Support\Carbon::parse($date . ' 12:00', $this->dealerTimezone()));
+
+        if ($hours === null) {
+            return [];
+        }
+
+        return array_filter($this->handoverTimeSlots, function (string $label, string $start) use ($hours) {
+            $end = sprintf('%02d:%s', (int) substr($start, 0, 2) + 2, substr($start, 3));
+
+            return $start >= $hours[0] && $end <= $hours[1];
+        }, ARRAY_FILTER_USE_BOTH);
+    }
+
+    /**
+     * Where a buyer can collect the car: the rooftop it sits at, then any
+     * other pickup points that store has set up.
      *
      * @return array<int, array{name: string, address: string}>
      */
@@ -1020,10 +1064,16 @@ new #[Layout('layouts.checkout')] class extends Component {
     {
         $store = $this->vehicle->locatedAt();
 
-        return [[
-            'name'    => ucwords(strtolower($store instanceof \App\Models\Rooftop ? $store->display_name : (string) $store?->name)),
-            'address' => implode(', ', $store?->address_lines ?? []),
-        ]];
+        return [
+            [
+                'name'    => ucwords(strtolower($store instanceof \App\Models\Rooftop ? $store->display_name : (string) $store?->name)),
+                'address' => implode(', ', $store?->address_lines ?? []),
+            ],
+            ...($store instanceof \App\Models\Rooftop ? array_map(fn (array $point) => [
+                'name'    => $point['name'],
+                'address' => (string) ($point['address'] ?? ''),
+            ], $store->pickupPoints()) : []),
+        ];
     }
 
     public function selectedPickupSpotName(): string
@@ -2002,7 +2052,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                     <span class="radio"></span>
                     <div>
                         <div class="choice-title">I'll pick it up <span class="tag-free">FREE</span></div>
-                        <div class="choice-sub">At {{ $this->pickupSpots()[0]['name'] }}{{ $this->vehicle->display_location ? ', ' . $this->vehicle->display_location : '' }} · we cover up to $100 of your ride there</div>
+                        <div class="choice-sub">At {{ $this->pickupSpots()[0]['name'] }}{{ $this->vehicle->display_location ? ', ' . $this->vehicle->display_location : '' }}{{ count($this->pickupSpots()) > 1 ? ' or ' . (count($this->pickupSpots()) - 1) . ' more ' . (count($this->pickupSpots()) === 2 ? 'spot' : 'spots') : '' }} · we cover up to $100 of your ride there</div>
                     </div>
                 </button>
                 <button type="button" class="choice {{ $handoverMode === 'delivery' ? 'is-on' : '' }}" wire:click="setHandoverMode('delivery')">
@@ -2039,7 +2089,7 @@ new #[Layout('layouts.checkout')] class extends Component {
 
                 <div class="section-label">Pick a time window</div>
                 <div class="slot-grid">
-                    @foreach ($handoverTimeSlots as $slotKey => $slotLabel)
+                    @foreach ($this->availableTimeSlots($handoverDate) as $slotKey => $slotLabel)
                         <button type="button" class="slot {{ $handoverTimeSlot === $slotKey ? 'is-on' : '' }}" wire:click="setHandoverTimeSlot('{{ $slotKey }}')">{{ $slotLabel }}</button>
                     @endforeach
                 </div>

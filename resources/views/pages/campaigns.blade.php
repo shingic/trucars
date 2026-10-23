@@ -30,18 +30,20 @@ new #[Layout('layouts.dealer')] #[Title('Campaigns')] class extends Component {
     public string $campaignSource = 'facebook_instagram';
     public string $destinationType = Campaign::DESTINATION_CPO_INVENTORY;
     public $targetVehicleId = '';
+    /** '' = every store of the dealer; otherwise one rooftop id. */
+    public string $campaignStoreId = '';
 
     public string $statusMessage = '';
 
     public function mount(): void
     {
-        abort_unless(auth()->user()?->dealer !== null, 403, 'This area is for dealer accounts.');
+        abort_unless(auth()->user()?->portalDealer() !== null, 403, 'This area is for dealer accounts.');
     }
 
     /** The signed-in dealership. Guaranteed non-null past the mount guard. */
     protected function dealer(): Dealer
     {
-        return auth()->user()->dealer;
+        return auth()->user()->portalDealer();
     }
 
     #[Computed]
@@ -54,10 +56,35 @@ new #[Layout('layouts.dealer')] #[Title('Campaigns')] class extends Component {
     public function campaigns(): Collection
     {
         return $this->dealer()->campaigns()
-            ->with('vehicle')
+            ->with(['vehicle', 'rooftop.dealer'])
             ->withCount(['deals', 'leads'])
             ->latest()
             ->get();
+    }
+
+    /**
+     * Stores a campaign can be limited to: this dealer's open stores the
+     * signed-in staff member works with.
+     */
+    #[Computed]
+    public function storeOptions(): Collection
+    {
+        return $this->dealer()->rooftops()
+            ->where('is_active', true)
+            ->whereKey(auth()->user()->accessibleRooftopIds())
+            ->get();
+    }
+
+    /** Whether "every store" is on offer — only to staff who see them all. */
+    #[Computed]
+    public function canTargetAllStores(): bool
+    {
+        return auth()->user()->seesAllStoresOf($this->dealer());
+    }
+
+    private function chosenStoreId(): ?int
+    {
+        return $this->campaignStoreId === '' ? null : (int) $this->campaignStoreId;
     }
 
     /** This dealer's cars a campaign may point at — and the only ones it can. */
@@ -65,7 +92,7 @@ new #[Layout('layouts.dealer')] #[Title('Campaigns')] class extends Component {
     public function eligibleVehicles(): Collection
     {
         return Vehicle::query()
-            ->eligibleForDealerCpo($this->dealer())
+            ->eligibleForDealerCpo($this->dealer(), $this->chosenStoreId())
             ->orderBy('model')
             ->orderByDesc('model_year')
             ->get();
@@ -93,12 +120,27 @@ new #[Layout('layouts.dealer')] #[Title('Campaigns')] class extends Component {
     public function startCreate(): void
     {
         $this->resetEditor();
+        $this->campaignStoreId = $this->canTargetAllStores ? '' : (string) ($this->storeOptions->first()?->id ?? '');
         $this->showEditor = true;
+    }
+
+    /** A campaign this staff member may change: store-limited staff can't touch whole-dealer ones. */
+    private function ownCampaign(int $campaignId): Campaign
+    {
+        $campaign = $this->dealer()->campaigns()->whereKey($campaignId)->firstOrFail();
+        abort_if($campaign->rooftop_id === null && ! $this->canTargetAllStores, 403);
+
+        return $campaign;
+    }
+
+    public function updatedCampaignStoreId(): void
+    {
+        unset($this->eligibleVehicles, $this->previewVehicles);
     }
 
     public function startEdit(int $campaignId): void
     {
-        $campaign = $this->dealer()->campaigns()->whereKey($campaignId)->firstOrFail();
+        $campaign = $this->ownCampaign($campaignId);
 
         $this->resetEditor();
         $this->editingCampaignId = $campaign->id;
@@ -106,6 +148,7 @@ new #[Layout('layouts.dealer')] #[Title('Campaigns')] class extends Component {
         $this->campaignSource = $campaign->source;
         $this->destinationType = $campaign->destination_type;
         $this->targetVehicleId = (string) ($campaign->vehicle_id ?? '');
+        $this->campaignStoreId = (string) ($campaign->rooftop_id ?? '');
         $this->showEditor = true;
     }
 
@@ -128,13 +171,21 @@ new #[Layout('layouts.dealer')] #[Title('Campaigns')] class extends Component {
             'destinationType' => 'destination',
         ]);
 
+        $storeId = $this->chosenStoreId();
+
+        if ($storeId === null ? ! $this->canTargetAllStores : ! $this->storeOptions->contains('id', $storeId)) {
+            $this->addError('campaignStoreId', 'Choose one of your stores.');
+
+            return;
+        }
+
         $vehicleId = null;
 
         if ($validated['destinationType'] === Campaign::DESTINATION_VEHICLE) {
             // Ownership and eligibility in one: an id from another dealer, or an
             // unpublished, held or non-CPO car, simply isn't found.
             $vehicle = Vehicle::query()
-                ->eligibleForDealerCpo($this->dealer())
+                ->eligibleForDealerCpo($this->dealer(), $storeId)
                 ->whereKey((int) $validated['targetVehicleId'])
                 ->first();
 
@@ -147,13 +198,14 @@ new #[Layout('layouts.dealer')] #[Title('Campaigns')] class extends Component {
             $vehicleId = $vehicle->id;
         }
 
-        $campaign = $this->editingCampaign ?? new Campaign(['dealer_id' => $this->dealer()->id]);
+        $campaign = $this->editingCampaignId !== null ? $this->ownCampaign($this->editingCampaignId) : new Campaign(['dealer_id' => $this->dealer()->id]);
 
         $campaign->fill([
             'name'             => $validated['campaignName'],
             'source'           => $validated['campaignSource'],
             'destination_type' => $validated['destinationType'],
             'vehicle_id'       => $vehicleId,
+            'rooftop_id'       => $storeId,
         ]);
 
         if ($intent === 'activate') {
@@ -183,7 +235,7 @@ new #[Layout('layouts.dealer')] #[Title('Campaigns')] class extends Component {
 
     public function activateCampaign(int $campaignId): void
     {
-        $campaign = $this->dealer()->campaigns()->whereKey($campaignId)->firstOrFail();
+        $campaign = $this->ownCampaign($campaignId);
         $blocker = $this->activationBlocker($campaign);
 
         if ($blocker !== null) {
@@ -205,7 +257,7 @@ new #[Layout('layouts.dealer')] #[Title('Campaigns')] class extends Component {
 
     public function pauseCampaign(int $campaignId): void
     {
-        $campaign = $this->dealer()->campaigns()->whereKey($campaignId)->firstOrFail();
+        $campaign = $this->ownCampaign($campaignId);
 
         $campaign->update(['status' => Campaign::STATUS_PAUSED]);
 
@@ -226,7 +278,7 @@ new #[Layout('layouts.dealer')] #[Title('Campaigns')] class extends Component {
 
         if ($campaign->targetsVehicle()) {
             $vehicleIsEligible = $campaign->vehicle_id !== null && Vehicle::query()
-                ->eligibleForDealerCpo($this->dealer())
+                ->eligibleForDealerCpo($this->dealer(), $campaign->rooftop_id)
                 ->whereKey($campaign->vehicle_id)
                 ->exists();
 
@@ -235,7 +287,9 @@ new #[Layout('layouts.dealer')] #[Title('Campaigns')] class extends Component {
                 : 'The featured vehicle is no longer published and available as manufacturer CPO. Pick another car or point the campaign at your CPO inventory.';
         }
 
-        return $this->eligibleVehicles->isEmpty()
+        $hasCars = Vehicle::query()->eligibleForDealerCpo($this->dealer(), $campaign->rooftop_id)->exists();
+
+        return ! $hasCars
             ? "You don't have any published, available manufacturer-certified vehicles yet, so the link would land on an empty page."
             : null;
     }
@@ -248,7 +302,7 @@ new #[Layout('layouts.dealer')] #[Title('Campaigns')] class extends Component {
 
     protected function resetEditor(): void
     {
-        $this->reset(['editingCampaignId', 'campaignName', 'campaignSource', 'destinationType', 'targetVehicleId']);
+        $this->reset(['editingCampaignId', 'campaignName', 'campaignSource', 'destinationType', 'targetVehicleId', 'campaignStoreId']);
         $this->resetValidation();
         unset($this->editingCampaign);
     }
@@ -398,7 +452,7 @@ new #[Layout('layouts.dealer')] #[Title('Campaigns')] class extends Component {
             <div class="card">
                 <div class="card-head">
                     <div class="ttl">{{ $editingCampaignId === null ? 'Create campaign' : 'Edit campaign' }}</div>
-                    <div class="sub">{{ $this->editingCampaign?->status_label ?? 'New' }} · {{ auth()->user()->dealer->name }}</div>
+                    <div class="sub">{{ $this->editingCampaign?->status_label ?? 'New' }} · {{ $this->dealer()->name }}</div>
                 </div>
 
                 <div class="cmp-form">
@@ -407,6 +461,20 @@ new #[Layout('layouts.dealer')] #[Title('Campaigns')] class extends Component {
                         <input id="campaignName" type="text" wire:model="campaignName" placeholder="e.g. Spring CPO event" maxlength="80">
                         @error('campaignName') <span class="err">{{ $message }}</span> @enderror
                     </div>
+
+                    @if ($this->storeOptions->count() > 1 || ! $this->canTargetAllStores)
+                        <div class="field">
+                            <label for="campaignStoreId">Which store</label>
+                            <select id="campaignStoreId" wire:model.live="campaignStoreId">
+                                @if ($this->canTargetAllStores) <option value="">All stores</option> @endif
+                                @foreach ($this->storeOptions as $store)
+                                    <option value="{{ $store->id }}">{{ ucwords(strtolower($store->display_name)) }}{{ $store->display_location ? ' · ' . $store->display_location : '' }}</option>
+                                @endforeach
+                            </select>
+                            <span class="hint">Shoppers from this link only see cars at this store.</span>
+                            @error('campaignStoreId') <span class="err">{{ $message }}</span> @enderror
+                        </div>
+                    @endif
 
                     <div class="field">
                         <span class="lbl">Where you'll post the link</span>
@@ -514,7 +582,7 @@ new #[Layout('layouts.dealer')] #[Title('Campaigns')] class extends Component {
                 </div>
                 <div class="pv">
                     <span class="pv-eyebrow">{{ $this->franchiseMake ?? 'Manufacturer' }} Certified Pre-Owned</span>
-                    <div class="pv-dealer">{{ ucwords(strtolower(auth()->user()->dealer->name)) }}</div>
+                    <div class="pv-dealer">{{ ucwords(strtolower($this->dealer()->name)) }}</div>
                     <div class="pv-count">
                         @if ($destinationType === 'vehicle')
                             Opens on the featured vehicle
@@ -562,6 +630,7 @@ new #[Layout('layouts.dealer')] #[Title('Campaigns')] class extends Component {
                         @else
                             CPO inventory
                         @endif
+                        @if ($campaign->rooftop) · {{ ucwords(strtolower($campaign->rooftop->display_name)) }} @endif
                     </div>
                 </div>
                 <div><span class="pill pill-{{ $campaign->status }}">{{ $campaign->status_label }}</span></div>

@@ -14,7 +14,8 @@ use Illuminate\Support\Str;
 /**
  * A dealer's trackable TruCars link. The dealer places it in their own ad or
  * post; TruCars never publishes it anywhere. Whoever follows the link lands in
- * a TruCars experience scoped to this dealer's eligible manufacturer-CPO stock.
+ * a TruCars experience scoped to this dealer's eligible manufacturer-CPO stock,
+ * at one of its stores when rooftop_id is set.
  *
  * The public URL carries only the token. Dealer, destination and status are
  * always read back from this row — never from the query string or referrer.
@@ -55,7 +56,7 @@ class Campaign extends Model
     ];
 
     protected $fillable = [
-        'dealer_id', 'name', 'source', 'destination_type', 'vehicle_id', 'status', 'activated_at',
+        'dealer_id', 'rooftop_id', 'name', 'source', 'destination_type', 'vehicle_id', 'status', 'activated_at',
     ];
 
     protected $attributes = [
@@ -107,6 +108,12 @@ class Campaign extends Model
     public function dealer(): BelongsTo
     {
         return $this->belongsTo(Dealer::class);
+    }
+
+    /** The one store this campaign shows, or null for every store of the dealer. */
+    public function rooftop(): BelongsTo
+    {
+        return $this->belongsTo(Rooftop::class);
     }
 
     /** The target car, for 'vehicle' campaigns. */
