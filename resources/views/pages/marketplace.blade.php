@@ -498,7 +498,7 @@ new class extends Component {
             </button>
             <label class="mb-btn mb-sort">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h12M3 12h8M3 18h5M17 6v12m0 0 3-3m-3 3-3-3"/></svg>
-                <select wire:model.live="sort">
+                <select class="bare" wire:model.live="sort">
                     <option value="newest">Newest</option>
                     <option value="price-low">Price: low to high</option>
                     <option value="price-high">Price: high to low</option>

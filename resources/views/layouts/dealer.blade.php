@@ -61,6 +61,7 @@
         .sb-switch .sb-group-label { display:block; padding-left:0; }
         .sb-switch select { width:100%; margin-top:6px; border:1px solid rgba(255,255,255,.25); border-radius:3px; padding:8px 10px; font:inherit; font-size:13.5px; font-weight:600; color:#fff; background:rgba(255,255,255,.06); }
         .sb-switch select option { color:var(--ink); }
+        .sidebar .sb-switch select:not(.bare) { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important; }
         .nav-badge { margin-left:auto; font-size:11px; font-weight:700; padding:2px 7px; border-radius:2px; background:var(--primary); color:#fff; }
 
         .sb-foot { border-top:1px solid rgba(255,255,255,.12); padding:13px 14px; display:flex; align-items:center; gap:10px; }
@@ -86,6 +87,23 @@
             .nav-item { justify-content:center; padding:11px; gap:0; }
             .sb-foot { justify-content:center; }
             .content-body { padding:22px 18px 60px; }
+        }
+        /* form controls: one flat, square look everywhere instead of each browser's own.
+           :where() keeps these at zero specificity, so any page's own field styles still win. */
+        :where(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):not([type=hidden]):not([type=submit]):not([type=button]), select, textarea) {
+            font:inherit; color:var(--ink); background-color:#fff;
+            border:1.5px solid var(--line-strong); border-radius:3px;
+            -webkit-appearance:none; appearance:none;
+        }
+        :where(input:not([type=checkbox]):not([type=radio]):not([type=range]), select, textarea):focus { outline:none; border-color:var(--ink); }
+        :where(input, textarea)::placeholder { color:var(--ink-3); opacity:1; }
+        :where(input[type=checkbox], input[type=radio]) { accent-color:var(--ink); }
+        /* every dropdown gets the same single chevron, even where a page sets its own background */
+        select:not([multiple]):not(.bare) {
+            -webkit-appearance:none; appearance:none;
+            background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23071437' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+            background-repeat:no-repeat !important; background-position:right 12px center !important; background-size:14px 14px !important;
+            padding-right:36px !important;
         }
     </style>
 

@@ -1442,6 +1442,33 @@ new #[Layout('layouts.checkout')] class extends Component {
     }
 }; ?>
 
+@php
+    // Line icons for checkout's choices, section headings and review rows: one 24px grid, drawn in currentColor.
+    $iconPaths = [
+        'trade'    => '<path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/>',
+        'skip'     => '<path d="M5 12h14"/><path d="m13 6 6 6-6 6"/>',
+        'store'    => '<path d="M3 21h18"/><path d="M5 21V8l7-4 7 4v13"/><path d="M9 21v-6h6v6"/>',
+        'truck'    => '<path d="M2 6h12v11H2z"/><path d="M14 10h4l4 4v3h-8"/><circle cx="6.5" cy="18" r="2"/><circle cx="17.5" cy="18" r="2"/>',
+        'bank'     => '<path d="M3 21h18"/><path d="M3 10h18"/><path d="M12 3 3 8v2h18V8Z"/><path d="M6 10v8M10 10v8M14 10v8M18 10v8"/>',
+        'cash'     => '<rect x="2" y="6" width="20" height="12" rx="1"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/>',
+        'car'      => '<path d="M3 17v-5l2.5-5h13L21 12v5"/><path d="M3 17h18"/><circle cx="7.5" cy="17" r="2"/><circle cx="16.5" cy="17" r="2"/><path d="M3 12h18"/>',
+        'user'     => '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/>',
+        'shield'   => '<path d="M12 3 4 6v6c0 5 8 9 8 9s8-4 8-9V6Z"/>',
+        'none'     => '<circle cx="12" cy="12" r="9"/><path d="M8 12h8"/>',
+        'plus'     => '<rect x="3" y="3" width="18" height="18" rx="1"/><path d="M12 8v8M8 12h8"/>',
+        'key'      => '<circle cx="8" cy="15" r="4"/><path d="m10.8 12.2 9.2-9.2"/><path d="m17 6 3 3"/><path d="m15 8 2 2"/>',
+        'id'       => '<rect x="2" y="5" width="20" height="14" rx="1"/><circle cx="8" cy="12" r="2.5"/><path d="M14 10h5M14 14h4"/>',
+        'pin'      => '<path d="M12 22s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/>',
+        'calendar' => '<rect x="3" y="5" width="18" height="16" rx="1"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+        'clock'    => '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+        'gauge'    => '<path d="M4 18a9 9 0 1 1 16 0"/><path d="m12 13 4-4"/><circle cx="12" cy="14" r="1.2"/>',
+        'file'     => '<path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6"/><path d="M9 13h7M9 17h7"/>',
+        'dollar'   => '<path d="M12 2v20"/><path d="M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
+        'alert'    => '<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/>',
+    ];
+    $icon = fn (string $name, int $size = 24) => '<svg class="ic-line" width="' . $size . '" height="' . $size . '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' . ($iconPaths[$name] ?? '') . '</svg>';
+@endphp
+
 @push('styles')
     <style>
         [x-cloak] { display:none !important; }
@@ -1476,7 +1503,23 @@ new #[Layout('layouts.checkout')] class extends Component {
         .step-btn:hover { background:var(--ink); color:#fff; }
         .step-val { min-width:78px; text-align:center; font-family:var(--font-display); font-weight:700; font-size:20px; }
 
+        /* icons: bare line icons, navy, blue when their option is chosen */
+        .ic-line { display:inline-block; flex-shrink:0; vertical-align:-0.2em; }
+        .choice-ic { display:grid; place-items:center; color:var(--ink); flex-shrink:0; }
+        .choice.is-on .choice-ic { color:var(--primary); }
+        .choice.no-cover { margin-top:16px; }
+        .section-label .ic-line { color:var(--ink); margin-right:6px; vertical-align:-0.18em; }
+        .rev-label .ic-line { color:var(--ink); margin-right:5px; vertical-align:-0.22em; }
+        .plan-name .ic-line { display:block; color:var(--ink-3); margin-bottom:8px; }
+        .plan.is-on .plan-name .ic-line { color:var(--primary); }
+        .seg-btn .ic-line { margin-right:6px; vertical-align:-0.25em; }
+
         .estimate-note { padding:18px 20px; margin-top:20px; }
+        /* the finance estimate must not be missed: an amber warning, set apart from everything around it */
+        .estimate-note.is-warning { position:relative; background:#FFF8DD; border:2px solid #C59A00; border-left-width:8px; padding:20px 22px 20px 70px; }
+        .estimate-note.is-warning .en-ic { position:absolute; left:22px; top:20px; color:#8A6300; }
+        .estimate-note.is-warning .en-title { font-size:24px; color:#5C3D00; margin-bottom:6px; }
+        .estimate-note.is-warning .section-note { color:#4A3200; font-size:15.5px; line-height:1.55; }
         .en-title { font-family:var(--font-display); font-size:18px; font-weight:700; text-transform:uppercase; margin-bottom:6px; }
 
         /* warranty tiers */
@@ -1677,10 +1720,12 @@ new #[Layout('layouts.checkout')] class extends Component {
 
                     <button type="button" class="choice {{ $wantsTrade === true ? 'is-on' : '' }}" wire:click="setWantsTrade(true)">
                         <span class="radio"></span>
+                        <span class="choice-ic">{!! $icon('trade', 30) !!}</span>
                         <div><div class="choice-title">Yes, value my car</div><div class="choice-sub">A few quick questions — preliminary estimate in about a minute</div></div>
                     </button>
                     <button type="button" class="choice {{ $wantsTrade === false ? 'is-on' : '' }}" wire:click="setWantsTrade(false)">
                         <span class="radio"></span>
+                        <span class="choice-ic">{!! $icon('skip', 30) !!}</span>
                         <div><div class="choice-title">No trade this time</div><div class="choice-sub">Skip ahead — you can always add one later</div></div>
                     </button>
                     @error('wantsTrade') <p class="field-error">{{ $message }}</p> @enderror
@@ -1726,7 +1771,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                     <h1 class="h1">How's it holding up?</h1>
                     <p class="lede">Honest answers keep your estimate realistic — the dealership confirms everything when they inspect the car.</p>
 
-                    <div class="section-label">Condition</div>
+                    <div class="section-label">{!! $icon('gauge', 24) !!} Condition</div>
                     <div class="field">
                         <label class="field-label">Exterior — paint, body, rust</label>
                         <div class="seg seg-wrap">
@@ -1760,7 +1805,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                         </div>
                     </div>
 
-                    <div class="section-label">History &amp; ownership</div>
+                    <div class="section-label">{!! $icon('file', 24) !!} History &amp; ownership</div>
                     <p class="section-note">Your answers here, including accident history, are your own disclosure — the dealership verifies them at inspection.</p>
                     <div class="field">
                         <label class="field-label">Any reported accidents or damage?</label>
@@ -1815,7 +1860,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                         </div>
                     </div>
 
-                    <div class="section-label">Money still owing</div>
+                    <div class="section-label">{!! $icon('dollar', 24) !!} Money still owing</div>
                     <div class="field"><label class="field-label">Outstanding loan or lease balance <span class="muted">(optional)</span></label><div class="money-input"><span class="dollar">$</span><input type="number" wire:model="tradeLienOwing" placeholder="0" inputmode="numeric"></div>@error('tradeLienOwing') <p class="field-error">{{ $message }}</p> @enderror</div>
                     <p class="section-note">Still owe something? No problem — the dealership pays off your lender directly and applies whatever equity is left to your {{ $vehicle->model }}.</p>
 
@@ -1866,7 +1911,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                 <div class="field"><label class="field-label">Email</label><input type="email" class="field-input" wire:model="email" placeholder="you@example.com">@error('email') <p class="field-error">{{ $message }}</p> @enderror</div>
                 <div class="field"><label class="field-label">Mobile number</label><input type="text" class="field-input" wire:model="phone" placeholder="(647) 555-0123">@error('phone') <p class="field-error">{{ $message }}</p> @enderror</div>
 
-                <div class="section-label">Where do you call home?</div>
+                <div class="section-label">{!! $icon('pin', 24) !!} Where do you call home?</div>
                 <p class="section-note">For registration and billing. Your delivery spot can differ.</p>
                 @if (app(\App\Support\AddressLookup::class)->enabled())
                     {{-- Start typing → Google address suggestions; picking one fills the form. --}}
@@ -1905,8 +1950,8 @@ new #[Layout('layouts.checkout')] class extends Component {
                 <p class="lede">Finance to own over time, or pay in full today. The payment shown is an estimate — the dealership's finance office confirms your real rate after you reserve.</p>
 
                 <div class="seg" style="margin-bottom:24px;">
-                    <button type="button" class="seg-btn {{ $purchaseType === 'finance' ? 'is-active' : '' }}" wire:click="setPurchaseType('finance')">Finance</button>
-                    <button type="button" class="seg-btn {{ $purchaseType === 'cash' ? 'is-active' : '' }}" wire:click="setPurchaseType('cash')">Cash</button>
+                    <button type="button" class="seg-btn {{ $purchaseType === 'finance' ? 'is-active' : '' }}" wire:click="setPurchaseType('finance')">{!! $icon('bank', 18) !!} Finance</button>
+                    <button type="button" class="seg-btn {{ $purchaseType === 'cash' ? 'is-active' : '' }}" wire:click="setPurchaseType('cash')">{!! $icon('cash', 18) !!} Cash</button>
                 </div>
 
                 @if ($purchaseType === 'finance')
@@ -1926,7 +1971,8 @@ new #[Layout('layouts.checkout')] class extends Component {
                     </div>
                     @error('downPayment') <p class="field-error">{{ $message }}</p> @enderror
 
-                    <div class="card estimate-note">
+                    <div class="card estimate-note is-warning" role="note">
+                        <span class="en-ic">{!! $icon('alert', 30) !!}</span>
                         <div class="en-title">This payment is an estimate</div>
                         <p class="section-note" style="margin:0;">When you reserve, your deal goes to the dealership's finance office — they confirm your actual rate, term and payment, and the final numbers reach you before delivery. No credit check to see this estimate, and no rate shopping.</p>
                     </div>
@@ -1937,14 +1983,14 @@ new #[Layout('layouts.checkout')] class extends Component {
                     </div>
                 @endif
 
-                <div class="section-label">Pick your safety net</div>
+                <div class="section-label">{!! $icon('shield', 24) !!} Pick your safety net</div>
                 <p class="section-note">Every plan starts with your fully refundable deposit and the dealership's certified warranty. Step up for longer cover and fewer surprise bills. Extended coverage is optional and never required to buy — pick a tier to flag your interest, and the dealership's F&amp;I office reviews availability and pricing with you later. Nothing is added to your reservation today.</p>
 
                 <div class="plan-grid">
                     @foreach ($warrantyOptions as $key => $option)
                         <button type="button" class="plan {{ $warrantyPlan === $key ? 'is-on' : '' }}" wire:click="selectWarranty('{{ $key }}')">
                             @if ($option['popular'])<span class="plan-badge">★ Most chosen</span>@endif
-                            <div class="plan-name">{{ $option['name'] }}</div>
+                            <div class="plan-name">{!! $icon('shield', 24) !!} {{ $option['name'] }}</div>
                             <div class="plan-tag">{{ $option['tag'] }}</div>
                             <ul class="plan-feats">
                                 @foreach ($option['feats'] as $feat)
@@ -1996,9 +2042,11 @@ new #[Layout('layouts.checkout')] class extends Component {
                     </div>
                 </div>
 
-                <div style="margin-top:16px;">
-                    <button type="button" class="text-link subtle" wire:click="selectWarranty(null)">No added coverage</button>
-                </div>
+                <button type="button" class="choice no-cover {{ $warrantyPlan === null ? 'is-on' : '' }}" wire:click="selectWarranty(null)" aria-pressed="{{ $warrantyPlan === null ? 'true' : 'false' }}">
+                    <span class="radio"></span>
+                    <span class="choice-ic">{!! $icon('none', 30) !!}</span>
+                    <div><div class="choice-title">No added coverage</div></div>
+                </button>
 
             @elseif ($this->stepKey() === 'extras')
                 <div class="step-meta">Step 4 · Extras</div>
@@ -2034,7 +2082,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                     </div>
                 </div>
 
-                <div class="section-label">More you can stack on</div>
+                <div class="section-label">{!! $icon('plus', 24) !!} More you can stack on</div>
                 <div class="extras-grid">
                     @foreach ($extrasCatalog as $key => $extra)
                         <button type="button" class="extra {{ in_array($key, $selectedExtras, true) ? 'is-on' : '' }}" wire:click="toggleExtra('{{ $key }}')">
@@ -2060,6 +2108,7 @@ new #[Layout('layouts.checkout')] class extends Component {
 
                 <button type="button" class="choice {{ $handoverMode === 'pickup' ? 'is-on' : '' }}" wire:click="setHandoverMode('pickup')">
                     <span class="radio"></span>
+                        <span class="choice-ic">{!! $icon('store', 30) !!}</span>
                     <div>
                         <div class="choice-title">I'll pick it up <span class="tag-free">FREE</span></div>
                         <div class="choice-sub">At {{ $this->pickupSpots()[0]['name'] }}{{ $this->vehicle->display_location ? ', ' . $this->vehicle->display_location : '' }}{{ count($this->pickupSpots()) > 1 ? ' or ' . (count($this->pickupSpots()) - 1) . ' more ' . (count($this->pickupSpots()) === 2 ? 'spot' : 'spots') : '' }} · we cover up to $100 of your ride there</div>
@@ -2067,6 +2116,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                 </button>
                 <button type="button" class="choice {{ $handoverMode === 'delivery' ? 'is-on' : '' }}" wire:click="setHandoverMode('delivery')">
                     <span class="radio"></span>
+                        <span class="choice-ic">{!! $icon('truck', 30) !!}</span>
                     <div>
                         <div class="choice-title">Bring it to me <span class="tag-free">FREE</span></div>
                         <div class="choice-sub">Dropped at {{ $city !== '' ? $city : 'your address' }}, keys in hand, paperwork done on the spot</div>
@@ -2074,7 +2124,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                 </button>
 
                 @if ($handoverMode === 'pickup')
-                    <div class="section-label">Where you'll collect it</div>
+                    <div class="section-label">{!! $icon('pin', 24) !!} Where you'll collect it</div>
                     <div class="spot-grid">
                         @foreach ($this->pickupSpots() as $spotIndex => $spot)
                             <button type="button" class="spot {{ $pickupSpotIndex === $spotIndex ? 'is-on' : '' }}" wire:click="setPickupSpot({{ $spotIndex }})">
@@ -2085,7 +2135,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                     </div>
                 @endif
 
-                <div class="section-label">Which day works?</div>
+                <div class="section-label">{!! $icon('calendar', 24) !!} Which day works?</div>
                 <div class="date-grid">
                     @foreach ($this->handoverDateOptions() as $dateOption)
                         <button type="button" class="date-chip {{ $handoverDate === $dateOption['date'] ? 'is-on' : '' }}" wire:click="setHandoverDate('{{ $dateOption['date'] }}')">
@@ -2097,7 +2147,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                 </div>
                 @error('handoverDate') <p class="field-error">{{ $message }}</p> @enderror
 
-                <div class="section-label">Pick a time window</div>
+                <div class="section-label">{!! $icon('clock', 24) !!} Pick a time window</div>
                 <div class="slot-grid">
                     @foreach ($this->availableTimeSlots($handoverDate) as $slotKey => $slotLabel)
                         <button type="button" class="slot {{ $handoverTimeSlot === $slotKey ? 'is-on' : '' }}" wire:click="setHandoverTimeSlot('{{ $slotKey }}')">{{ $slotLabel }}</button>
@@ -2128,42 +2178,42 @@ new #[Layout('layouts.checkout')] class extends Component {
 
                 <div class="rev-card">
                     <div>
-                        <div class="rev-label">Trade-in</div>
+                        <div class="rev-label">{!! $icon('car', 18) !!} Trade-in</div>
                         <div class="rev-value">{{ $this->tradeSummaryLabel() }}</div>
                     </div>
                     <button type="button" class="text-link" wire:click="jumpTo(0)">Edit</button>
                 </div>
                 <div class="rev-card">
                     <div>
-                        <div class="rev-label">You</div>
+                        <div class="rev-label">{!! $icon('user', 18) !!} You</div>
                         <div class="rev-value">{{ $firstName }} {{ $lastName }} · {{ $city }}, {{ $province }}</div>
                     </div>
                     <button type="button" class="text-link" wire:click="jumpTo(1)">Edit</button>
                 </div>
                 <div class="rev-card">
                     <div>
-                        <div class="rev-label">Plan &amp; payment</div>
+                        <div class="rev-label">{!! $icon('bank', 18) !!} Plan &amp; payment</div>
                         <div class="rev-value">{{ $purchaseType === 'finance' ? 'Finance · ' . $termMonths . ' mo · ' . $this->asMoney($downPayment) . ' down · est. ' . $this->asMoney($this->estimatedBiweekly) . '/biweekly' : 'Cash · ' . $this->asMoney($this->priceDollars) }}{{ $warrantyPlan ? ' · ' . $warrantyOptions[$warrantyPlan]['name'] . ' coverage interest' : '' }}</div>
                     </div>
                     <button type="button" class="text-link" wire:click="jumpTo(2)">Edit</button>
                 </div>
                 <div class="rev-card">
                     <div>
-                        <div class="rev-label">Extras</div>
+                        <div class="rev-label">{!! $icon('shield', 18) !!} Extras</div>
                         <div class="rev-value">{{ ($wantsGap || count($selectedExtras) > 0) ? collect($this->coverageInterestLabels())->reject(fn ($label) => str_ends_with($label, ' plan'))->join(', ') . ' · interest only' : 'None' }}</div>
                     </div>
                     <button type="button" class="text-link" wire:click="jumpTo(3)">Edit</button>
                 </div>
                 <div class="rev-card">
                     <div>
-                        <div class="rev-label">Handover</div>
+                        <div class="rev-label">{!! $icon('key', 18) !!} Handover</div>
                         <div class="rev-value">{{ $this->handoverSummaryLabel() }}</div>
                     </div>
                     <button type="button" class="text-link" wire:click="jumpTo(4)">Edit</button>
                 </div>
                 <div class="rev-card">
                     <div>
-                        <div class="rev-label">Identity</div>
+                        <div class="rev-label">{!! $icon('id', 18) !!} Identity</div>
                         <div class="rev-value">{{ $identityVerified ? 'Verified' : 'Not verified' }}</div>
                     </div>
                     <button type="button" class="text-link" wire:click="jumpTo(5)">Edit</button>
