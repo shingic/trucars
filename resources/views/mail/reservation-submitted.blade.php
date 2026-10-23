@@ -21,13 +21,13 @@
 
                 {{-- Header band --}}
                 <tr>
-                    <td style="background-color:#F5631F; padding:26px 36px;">
+                    <td style="background-color:#1F55D6; padding:26px 36px;">
                         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                             <tr>
                                 <td style="font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:20px; font-weight:800; letter-spacing:-0.02em; color:#FFFFFF;">
                                     TruCars
                                 </td>
-                                <td align="right" style="font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:12px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:#FFE2D2;">
+                                <td align="right" style="font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:12px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:#D6E2FF;">
                                     New reservation
                                 </td>
                             </tr>
@@ -151,19 +151,19 @@
 
                         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                             <tr>
-                                <td width="28" valign="top" style="font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:15px; font-weight:800; color:#F5631F; line-height:1.5;">1.</td>
+                                <td width="28" valign="top" style="font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:15px; font-weight:800; color:#1F55D6; line-height:1.5;">1.</td>
                                 <td style="padding-bottom:12px; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:14px; line-height:1.55; color:#3A3F46;">
                                     Reach out to confirm financing and final numbers. Any figures the buyer saw at checkout were estimates — your finance office authors the real rate.
                                 </td>
                             </tr>
                             <tr>
-                                <td width="28" valign="top" style="font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:15px; font-weight:800; color:#F5631F; line-height:1.5;">2.</td>
+                                <td width="28" valign="top" style="font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:15px; font-weight:800; color:#1F55D6; line-height:1.5;">2.</td>
                                 <td style="padding-bottom:12px; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:14px; line-height:1.55; color:#3A3F46;">
                                     Identity is verified, but your KYC/AML stays yours — capture it as usual against the deal.
                                 </td>
                             </tr>
                             <tr>
-                                <td width="28" valign="top" style="font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:15px; font-weight:800; color:#F5631F; line-height:1.5;">3.</td>
+                                <td width="28" valign="top" style="font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:15px; font-weight:800; color:#1F55D6; line-height:1.5;">3.</td>
                                 <td style="font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:14px; line-height:1.55; color:#3A3F46;">
                                     Work the deal and advance the stages in your console — every move syncs to the buyer's My Garage.
                                 </td>
@@ -177,7 +177,7 @@
                     <td style="padding:30px 36px 6px;">
                         <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                             <tr>
-                                <td align="center" bgcolor="#F5631F" style="border-radius:10px;">
+                                <td align="center" bgcolor="#1F55D6" style="border-radius:10px;">
                                     <a href="{{ route('dealer.login') }}" target="_blank" style="display:inline-block; padding:14px 30px; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:15px; font-weight:700; color:#FFFFFF; text-decoration:none; border-radius:10px;">
                                         Open your console →
                                     </a>

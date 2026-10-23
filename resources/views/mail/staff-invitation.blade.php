@@ -12,7 +12,7 @@
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px; background:#FFFFFF; border-radius:16px; border:1px solid rgba(22,24,29,.09);">
                     <tr>
                         <td style="padding:28px 28px 8px;">
-                            <span style="display:inline-block; width:28px; height:28px; line-height:28px; text-align:center; border-radius:9px; background:#F5631F; color:#FFFFFF; font-weight:800;">T</span>
+                            <span style="display:inline-block; width:28px; height:28px; line-height:28px; text-align:center; border-radius:9px; background:#1F55D6; color:#FFFFFF; font-weight:800;">T</span>
                             <span style="font-weight:800; font-size:17px; margin-left:6px; vertical-align:middle;">TruCars</span>
                         </td>
                     </tr>
@@ -23,7 +23,7 @@
                                 You've been invited to join the <b style="color:#16181D;">TruCars Command Centre</b>,
                                 TruCars' internal workspace. Set your password to finish creating your account.
                             </p>
-                            <a href="{{ $acceptUrl }}" style="display:inline-block; background:#F5631F; color:#FFFFFF; text-decoration:none; font-weight:700; font-size:15px; padding:13px 24px; border-radius:999px;">Set up my account</a>
+                            <a href="{{ $acceptUrl }}" style="display:inline-block; background:#1F55D6; color:#FFFFFF; text-decoration:none; font-weight:700; font-size:15px; padding:13px 24px; border-radius:999px;">Set up my account</a>
                             <p style="font-size:13px; line-height:1.55; color:#969CA3; margin:22px 0 0;">
                                 This link works once and expires {{ $invitation->expires_at->format('F j, Y') }}. If you weren't expecting it, you can ignore this email — no account is created until you set a password.
                             </p>

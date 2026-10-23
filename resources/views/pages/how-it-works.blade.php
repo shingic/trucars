@@ -30,20 +30,21 @@ new #[Title('How it works — TruCars')] class extends Component {
         .hw p { margin:0 0 12px; max-width:620px; }
         .hw .muted { color:var(--ink-2); }
 
-        /* hero: a flat orange sign, with a real car from the lot */
-        .hw-hero { background:var(--primary); color:var(--ink); border-radius:6px; overflow:hidden; display:grid; grid-template-columns:minmax(0, 1.1fr) minmax(0, 1fr); }
+        /* hero: a flat blue sign, with a real car from the lot */
+        .hw-hero { background:var(--primary); color:#fff; border-radius:6px; overflow:hidden; display:grid; grid-template-columns:minmax(0, 1.1fr) minmax(0, 1fr); }
         .hw-hero.no-photo { grid-template-columns:1fr; }
         .hw-hero-copy { padding:48px 44px 40px; }
-        .hw-hero h1 { font-size:clamp(44px, 6vw, 78px); font-weight:700; line-height:.95; text-transform:uppercase; margin:0; }
-        .hw-hero p { font-size:18px; margin:20px 0 0; max-width:440px; color:#2A1306; }
-        .hw-hero figure { margin:0; position:relative; background:#D9530F; min-height:320px; }
-        .hw-hero img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
-        .hw-hero figcaption { position:absolute; left:0; bottom:0; background:var(--ink); color:#fff; font-size:13px; padding:8px 12px; }
+        .hw-hero h1 { font-size:clamp(44px, 6vw, 78px); font-weight:700; line-height:.95; text-transform:uppercase; margin:0; color:#fff; }
+        .hw-hero p { font-size:18px; margin:20px 0 0; max-width:440px; color:rgba(255,255,255,.88); }
+        .hw-hero figure { margin:0; position:relative; overflow:hidden; background:var(--primary-press); min-height:320px; }
+        /* dealer photos carry a vendor badge along the bottom edge; the frame trims it off */
+        .hw-hero img { position:absolute; top:0; left:0; width:100%; height:110%; object-fit:cover; object-position:center top; }
+        .hw-hero figcaption { position:absolute; z-index:1; left:0; bottom:0; background:var(--ink); color:#fff; font-size:13px; padding:8px 12px; }
         .hw-hero figcaption a { color:#fff; text-decoration:none; } .hw-hero figcaption a:hover { text-decoration:underline; }
         .hw-route { grid-column:1 / -1; display:flex; background:var(--ink); }
         .hw-route a { flex:1; display:flex; align-items:baseline; gap:10px; padding:14px 20px; color:#fff; text-decoration:none; font-family:var(--font-display); font-size:19px; font-weight:600; text-transform:uppercase; border-left:1px solid rgba(255,255,255,.18); }
         .hw-route a:first-child { border-left:none; }
-        .hw-route a span { color:var(--primary); font-size:15px; }
+        .hw-route a span { color:var(--primary-bright); font-size:15px; }
         .hw-route a:hover { background:#24272E; }
 
         /* steps: a big numeral, then what happens */
@@ -84,8 +85,8 @@ new #[Title('How it works — TruCars')] class extends Component {
 
         .hw-end { margin-top:60px; background:var(--ink); color:#fff; border-radius:6px; padding:30px 32px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; }
         .hw-end h2 { color:#fff; font-size:32px; font-weight:700; text-transform:uppercase; margin:0; }
-        .hw-btn { display:inline-block; padding:13px 24px; border-radius:4px; background:var(--primary); color:var(--ink); font-family:var(--font-display); font-size:18px; font-weight:700; text-transform:uppercase; text-decoration:none; }
-        .hw-btn:hover { background:#fff; }
+        .hw-btn { display:inline-block; padding:13px 24px; border-radius:4px; background:var(--primary); color:#fff; font-family:var(--font-display); font-size:18px; font-weight:700; text-transform:uppercase; text-decoration:none; }
+        .hw-btn:hover { background:#fff; color:var(--ink); }
 
         @media (max-width:860px) {
             .hw-hero { grid-template-columns:1fr; }

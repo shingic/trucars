@@ -826,7 +826,7 @@ new class extends Component {
         .km-readout { font-size:13px; color:var(--ink-2); margin-bottom:10px; }
         .km-readout b { color:var(--ink); font-weight:700; }
         .slider { -webkit-appearance:none; appearance:none; width:100%; height:5px; border-radius:3px; background:var(--line-strong); outline:none; }
-        .slider::-webkit-slider-thumb { -webkit-appearance:none; width:20px; height:20px; border-radius:50%; background:var(--primary); cursor:pointer; box-shadow:0 2px 6px rgba(245,99,31,.4); border:2px solid #fff; }
+        .slider::-webkit-slider-thumb { -webkit-appearance:none; width:20px; height:20px; border-radius:50%; background:var(--primary); cursor:pointer; box-shadow:0 2px 6px rgba(31,85,214,.4); border:2px solid #fff; }
         .slider::-moz-range-thumb { width:20px; height:20px; border-radius:50%; background:var(--primary); cursor:pointer; border:2px solid #fff; }
         .slider-ends { display:flex; justify-content:space-between; font-size:11px; color:var(--ink-3); margin-top:7px; }
 
@@ -860,7 +860,7 @@ new class extends Component {
         .vcard-photo img { width:100%; height:100%; object-fit:cover; display:block; }
         .vcard-tags { position:absolute; top:11px; left:11px; z-index:2; display:flex; flex-wrap:wrap; gap:6px; max-width:calc(100% - 60px); }
         .vcard-reserved { display:inline-flex; align-items:center; background:#FFF4D6; color:#7A4E00; border-radius:var(--radius-pill); padding:4px 10px; font-size:11px; font-weight:800; letter-spacing:.03em; text-transform:uppercase; box-shadow:var(--shadow-sm); }
-        .vcard-offer { display:inline-flex; align-items:center; background:#14161B; color:#FFB98A; border-radius:var(--radius-pill); padding:4px 10px; font-size:11px; font-weight:800; box-shadow:var(--shadow-sm); }
+        .vcard-offer { display:inline-flex; align-items:center; background:#14161B; color:#A9C2FF; border-radius:var(--radius-pill); padding:4px 10px; font-size:11px; font-weight:800; box-shadow:var(--shadow-sm); }
         .vcard-badge { display:inline-flex; align-items:center; gap:5px; background:rgba(255,255,255,.96); border-radius:var(--radius-pill); padding:4px 10px 4px 7px; font-size:11px; font-weight:700; color:#0E5A43; box-shadow:var(--shadow-sm); }
         .vcard-badge .dot { width:13px; height:13px; border-radius:50%; background:var(--good); display:grid; place-items:center; color:#fff; }
         .vcard-fav { position:absolute; top:11px; right:11px; z-index:2; width:32px; height:32px; border-radius:50%; background:rgba(255,255,255,.92); display:grid; place-items:center; color:var(--ink-2); box-shadow:var(--shadow-sm); }

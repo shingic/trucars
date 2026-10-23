@@ -21,13 +21,13 @@
 
                 {{-- Header band --}}
                 <tr>
-                    <td style="background-color:#F5631F; padding:26px 36px;">
+                    <td style="background-color:#1F55D6; padding:26px 36px;">
                         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                             <tr>
                                 <td style="font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:20px; font-weight:800; letter-spacing:-0.02em; color:#FFFFFF;">
                                     TruCars
                                 </td>
-                                <td align="right" style="font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:12px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:#FFE2D2;">
+                                <td align="right" style="font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:12px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:#D6E2FF;">
                                     Verify your email
                                 </td>
                             </tr>

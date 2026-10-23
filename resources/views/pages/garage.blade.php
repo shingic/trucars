@@ -400,7 +400,7 @@ new #[Layout('layouts.checkout')] class extends Component {
         .g-card-head h3 { margin:0; font-size:18px; font-weight:800; letter-spacing:-.01em; }
         .g-card-sub { font-size:13px; color:var(--ink-2); }
         .g-status { font-size:12px; font-weight:700; padding:5px 12px; border-radius:var(--radius-pill); white-space:nowrap; }
-        .g-status.pending { background:rgba(255,138,61,.16); color:#C85A14; }
+        .g-status.pending { background:rgba(79,128,240,.16); color:#1743B0; }
         .g-status.confirmed { background:var(--good-soft); color:#0E5A43; }
         .g-fin-pending { display:flex; gap:14px; align-items:center; }
         .g-fin-spinner { width:30px; height:30px; border-radius:50%; border:3px solid var(--line); border-top-color:var(--primary); animation:g-spin .9s linear infinite; flex-shrink:0; }

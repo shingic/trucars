@@ -165,7 +165,7 @@ new #[Layout('layouts.dealer')] #[Title('Fee schedule')] class extends Component
         .fees-head .spacer { flex:1; }
 
         .btn { font-size:14px; font-weight:700; border-radius:var(--radius-pill); padding:10px 18px; transition:all .15s ease; white-space:nowrap; }
-        .btn-primary { background:var(--primary); color:#fff; box-shadow:0 8px 20px rgba(245,99,31,.24); }
+        .btn-primary { background:var(--primary); color:#fff; box-shadow:0 8px 20px rgba(31,85,214,.24); }
         .btn-primary:hover { background:var(--primary-press); }
         .btn-ghost { background:transparent; color:var(--ink-2); border:1px solid var(--line-strong); }
         .btn-ghost:hover { border-color:var(--ink-3); color:var(--ink); }

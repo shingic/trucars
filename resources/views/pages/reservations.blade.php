@@ -177,7 +177,7 @@ new #[Layout('layouts.dealer')] class extends Component {
         .dr-ref { font-family:var(--mono); font-size:11.5px; color:var(--ink-2); font-weight:600; }
 
         .dr-veh { display:flex; align-items:center; gap:11px; }
-        .dr-thumb { width:46px; height:36px; border-radius:8px; background:linear-gradient(155deg,#FF8A3D,#F5631F 70%); display:grid; place-items:center; flex-shrink:0; }
+        .dr-thumb { width:46px; height:36px; border-radius:8px; background:linear-gradient(155deg,#4F80F0,#1F55D6 70%); display:grid; place-items:center; flex-shrink:0; }
         .dr-thumb svg { filter:drop-shadow(0 3px 4px rgba(0,0,0,.25)); }
         .dr-veh-title { font-size:13.5px; font-weight:600; line-height:1.3; }
         .dr-veh-sub { font-size:11.5px; color:var(--ink-3); }
@@ -191,7 +191,7 @@ new #[Layout('layouts.dealer')] class extends Component {
         .stage .dot { width:7px; height:7px; border-radius:50%; }
 
         /* Deal stages */
-        .stage.reserved { background:#FDEAD9; color:#B5611A; } .stage.reserved .dot { background:#F5631F; }
+        .stage.reserved { background:#E3EBFC; color:#1743B0; } .stage.reserved .dot { background:#1F55D6; }
         .stage.contacted { background:#FCF3D7; color:#9A7B1B; } .stage.contacted .dot { background:#E3B53A; }
         .stage.appointment_set { background:#E3EDFB; color:#2E5FA3; } .stage.appointment_set .dot { background:#4A82D6; }
         .stage.financing { background:#EFE7FB; color:#6B47B5; } .stage.financing .dot { background:#8B5FE0; }
@@ -201,7 +201,7 @@ new #[Layout('layouts.dealer')] class extends Component {
         .stage.cancelled { background:#FBE4E4; color:#B23A3A; } .stage.cancelled .dot { background:#D65454; }
 
         /* Lead statuses */
-        .stage.new { background:#FDEAD9; color:#B5611A; } .stage.new .dot { background:#F5631F; }
+        .stage.new { background:#E3EBFC; color:#1743B0; } .stage.new .dot { background:#1F55D6; }
         .stage.confirmed { background:#DDF5EB; color:#0E8A60; } .stage.confirmed .dot { background:#12B886; }
         .stage.closed { background:rgba(22,24,29,.07); color:var(--ink-2); } .stage.closed .dot { background:var(--ink-3); }
 

@@ -25,11 +25,11 @@
 
                 {{-- Header band --}}
                 <tr>
-                    <td style="background-color:#F5631F; padding:26px 36px;">
+                    <td style="background-color:#1F55D6; padding:26px 36px;">
                         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                             <tr>
                                 <td style="{{ $font }} font-size:20px; font-weight:800; letter-spacing:-0.02em; color:#FFFFFF;">TruCars</td>
-                                <td align="right" style="{{ $font }} font-size:12px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:#FFE2D2;">Available again</td>
+                                <td align="right" style="{{ $font }} font-size:12px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:#D6E2FF;">Available again</td>
                             </tr>
                         </table>
                     </td>
@@ -71,7 +71,7 @@
                     <td style="padding:26px 36px 6px;">
                         <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                             <tr>
-                                <td align="center" bgcolor="#F5631F" style="border-radius:10px;">
+                                <td align="center" bgcolor="#1F55D6" style="border-radius:10px;">
                                     <a href="{{ url('/cars/' . $vehicle->id) }}" target="_blank" style="display:inline-block; padding:14px 30px; {{ $font }} font-size:15px; font-weight:700; color:#FFFFFF; text-decoration:none; border-radius:10px;">
                                         See it &amp; reserve →
                                     </a>

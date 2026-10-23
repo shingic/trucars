@@ -114,8 +114,8 @@ new #[Layout('layouts.auth')] class extends Component {
             position:relative; overflow:hidden; color:#fff; padding:46px 54px;
             display:flex; flex-direction:column;
             background:
-                radial-gradient(120% 80% at 12% 10%, rgba(245,99,31,.24), transparent 55%),
-                radial-gradient(90% 70% at 88% 102%, rgba(255,138,61,.13), transparent 60%),
+                radial-gradient(120% 80% at 12% 10%, rgba(31,85,214,.24), transparent 55%),
+                radial-gradient(90% 70% at 88% 102%, rgba(79,128,240,.13), transparent 60%),
                 linear-gradient(160deg, #1B1E24 0%, #121317 60%, #0E0F12 100%);
         }
         .auth-brand::after {
@@ -126,7 +126,7 @@ new #[Layout('layouts.auth')] class extends Component {
         .auth-brand > * { position:relative; z-index:1; }
 
         .auth-brand-mark { display:inline-flex; align-items:center; gap:11px; font-weight:800; font-size:18px; letter-spacing:0; }
-        .auth-brand-glyph { width:30px; height:30px; border-radius:9px; background:var(--primary); display:grid; place-items:center; font-size:15px; color:#fff; box-shadow:0 8px 22px rgba(245,99,31,.4); }
+        .auth-brand-glyph { width:30px; height:30px; border-radius:9px; background:var(--primary); display:grid; place-items:center; font-size:15px; color:#fff; box-shadow:0 8px 22px rgba(31,85,214,.4); }
 
         .auth-brand-body { margin:auto 0; max-width:430px; }
         .auth-brand-headline { font-size:42px; line-height:1.08; font-weight:800; letter-spacing:0; margin:0 0 18px; }
@@ -166,7 +166,7 @@ new #[Layout('layouts.auth')] class extends Component {
         .auth-remember input:checked + .auth-remember-box svg { opacity:1; }
         .auth-remember input:focus-visible + .auth-remember-box { box-shadow:0 0 0 4px var(--primary-soft); }
 
-        .auth-submit { margin-top:6px; width:100%; background:var(--primary); color:#fff; font-size:15px; font-weight:700; padding:14px 20px; border-radius:12px; box-shadow:0 12px 26px rgba(245,99,31,.28); transition:all .15s ease; }
+        .auth-submit { margin-top:6px; width:100%; background:var(--primary); color:#fff; font-size:15px; font-weight:700; padding:14px 20px; border-radius:12px; box-shadow:0 12px 26px rgba(31,85,214,.28); transition:all .15s ease; }
         .auth-submit:hover { background:var(--primary-press); }
         .auth-submit[disabled] { opacity:.65; cursor:wait; box-shadow:none; }
 

@@ -1515,11 +1515,11 @@ new #[Layout('layouts.checkout')] class extends Component {
         .gap-bar-fill { height:100%; display:flex; align-items:center; }
         .gap-bar-fill.owe { width:100%; background:var(--ink); justify-content:flex-end; }
         .gap-bar-fill.pays { background:var(--good); justify-content:flex-end; }
-        .gap-bar-fill.gap { background:repeating-linear-gradient(45deg, var(--primary), var(--primary) 7px, #FF8A3D 7px, #FF8A3D 14px); justify-content:center; color:#fff; font-size:11.5px; font-weight:800; letter-spacing:.04em; }
+        .gap-bar-fill.gap { background:repeating-linear-gradient(45deg, var(--primary), var(--primary) 7px, #4F80F0 7px, #4F80F0 14px); justify-content:center; color:#fff; font-size:11.5px; font-weight:800; letter-spacing:.04em; }
         .gap-bar-amt { color:#fff; font-weight:700; font-size:13.5px; font-family:var(--font-mono); padding:0 14px; }
         .gap-scenario-foot { display:flex; align-items:center; gap:9px; font-size:13px; color:var(--ink-2); margin-top:14px; }
         .gap-scenario-foot b { color:var(--ink); }
-        .hatch-dot { width:14px; height:14px; border-radius:4px; flex-shrink:0; background:repeating-linear-gradient(45deg, var(--primary), var(--primary) 4px, #FF8A3D 4px, #FF8A3D 8px); }
+        .hatch-dot { width:14px; height:14px; border-radius:4px; flex-shrink:0; background:repeating-linear-gradient(45deg, var(--primary), var(--primary) 4px, #4F80F0 4px, #4F80F0 8px); }
         .gap-cta { display:flex; align-items:center; justify-content:space-between; gap:16px; padding-top:18px; margin-top:18px; border-top:1px solid var(--line); }
         .gap-cta .price { font-weight:800; font-size:18px; }
         .gap-cta .price .per { font-size:13px; font-weight:500; color:var(--ink-3); }

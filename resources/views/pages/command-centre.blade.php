@@ -199,7 +199,7 @@ new #[Layout('layouts.dealer')] #[Title('Command Centre')] class extends Compone
         .cc-actions { display:flex; gap:8px; flex-wrap:wrap; }
         .qa { display:inline-flex; align-items:center; gap:7px; font-size:13.5px; font-weight:700; padding:9px 15px; border-radius:var(--radius-pill); border:1px solid var(--line-strong); background:var(--card); color:var(--ink); transition:all .15s ease; }
         .qa:hover { border-color:var(--primary-line); color:var(--primary-press); }
-        .qa.primary { background:var(--primary); border-color:var(--primary); color:#fff; box-shadow:0 8px 20px rgba(245,99,31,.22); }
+        .qa.primary { background:var(--primary); border-color:var(--primary); color:#fff; box-shadow:0 8px 20px rgba(31,85,214,.22); }
         .qa.primary:hover { background:var(--primary-press); color:#fff; }
         .qa svg { width:15px; height:15px; }
 

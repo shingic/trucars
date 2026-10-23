@@ -23,20 +23,20 @@
             --ink-3:#969CA3;
             --line:rgba(22,24,29,.10);
             --line-strong:rgba(22,24,29,.17);
-            --primary:#F5631F;
-            --primary-press:#E2520F;
-            --primary-soft:rgba(245,99,31,.10);
-            --primary-line:rgba(245,99,31,.32);
-            --coral:#FF8A3D;
-            --coral-soft:rgba(255,138,61,.14);
+            --primary:#1F55D6;
+            --primary-press:#1743B0; --primary-bright:#9DBBFF;
+            --primary-soft:rgba(31,85,214,.10);
+            --primary-line:rgba(31,85,214,.32);
+            --coral:#4F80F0;
+            --coral-soft:rgba(79,128,240,.14);
             --good:#12B886;
             --good-soft:rgba(18,184,134,.12);
             --bad:#D65454;
             --bad-soft:rgba(214,84,84,.10);
             --shadow-sm:0 1px 3px rgba(22,24,29,.06);
             --shadow-md:0 14px 40px rgba(22,24,29,.09), 0 3px 10px rgba(22,24,29,.05);
-            --shadow-primary:0 12px 28px rgba(245,99,31,.30);
-            --hero-grad:linear-gradient(155deg,#FF8A3D,#F5631F 65%,#EC4E0C);
+            --shadow-primary:0 12px 28px rgba(31,85,214,.30);
+            --hero-grad:linear-gradient(155deg,#4F80F0,#1F55D6 65%,#133A99);
             --radius:24px; --radius-sm:16px; --radius-pill:999px;
             --font-ui:"Barlow",-apple-system,BlinkMacSystemFont,sans-serif; --font-display:"Barlow Semi Condensed","Barlow",sans-serif;
             --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
@@ -127,7 +127,7 @@
         .btn-primary { background:var(--primary); color:#fff; box-shadow:var(--shadow-primary); }
         .btn-primary:hover { background:var(--primary-press); }
         .btn-soft { background:var(--primary-soft); color:var(--primary); }
-        .btn-soft:hover { background:rgba(245,99,31,.16); }
+        .btn-soft:hover { background:rgba(31,85,214,.16); }
         .btn-ghost { background:var(--card); color:var(--ink); border:1.5px solid var(--line-strong); }
         .btn-ghost:hover { border-color:var(--primary); color:var(--primary); }
         .btn-block { width:100%; }

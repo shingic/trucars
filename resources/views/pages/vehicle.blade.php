@@ -741,8 +741,8 @@ new class extends Component {
         .ghero-counter { position:absolute; z-index:3; bottom:18px; right:18px; padding:6px 12px; border-radius:var(--radius-pill); background:rgba(22,24,29,.6); backdrop-filter:blur(6px); color:#fff; font-size:12.5px; font-weight:700; letter-spacing:.02em; }
 
         .ghero-hotspot { position:absolute; z-index:4; transform:translate(-50%,-50%); width:30px; height:30px; border:none; background:transparent; cursor:pointer; padding:0; }
-        .hs-dot { display:block; width:18px; height:18px; margin:6px; border-radius:50%; background:var(--primary); box-shadow:0 0 0 4px rgba(245,99,31,.35), var(--shadow-md); animation:hsPulse 2s ease-in-out infinite; }
-        @keyframes hsPulse { 0%, 100% { box-shadow:0 0 0 4px rgba(245,99,31,.35), var(--shadow-md); } 50% { box-shadow:0 0 0 9px rgba(245,99,31,.10), var(--shadow-md); } }
+        .hs-dot { display:block; width:18px; height:18px; margin:6px; border-radius:50%; background:var(--primary); box-shadow:0 0 0 4px rgba(31,85,214,.35), var(--shadow-md); animation:hsPulse 2s ease-in-out infinite; }
+        @keyframes hsPulse { 0%, 100% { box-shadow:0 0 0 4px rgba(31,85,214,.35), var(--shadow-md); } 50% { box-shadow:0 0 0 9px rgba(31,85,214,.10), var(--shadow-md); } }
         .hs-pop { position:absolute; bottom:130%; left:50%; transform:translateX(-50%); white-space:nowrap; background:var(--ink); color:#fff; font-size:12px; font-weight:600; padding:7px 11px; border-radius:9px; box-shadow:var(--shadow-md); z-index:5; }
         .hs-pop::after { content:''; position:absolute; top:100%; left:50%; transform:translateX(-50%); border:6px solid transparent; border-top-color:var(--ink); }
 

@@ -53,7 +53,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealers')] class extends Component {
         .ad-head .spacer { flex:1; }
 
         .btn { display:inline-block; font-size:14px; font-weight:700; border-radius:var(--radius-pill); padding:10px 18px; transition:all .15s ease; white-space:nowrap; }
-        .btn-primary { background:var(--primary); color:#fff; box-shadow:0 8px 20px rgba(245,99,31,.24); }
+        .btn-primary { background:var(--primary); color:#fff; box-shadow:0 8px 20px rgba(31,85,214,.24); }
         .btn-primary:hover { background:var(--primary-press); }
 
         .ad-alert { display:flex; align-items:center; gap:10px; background:var(--amber-soft); color:#7A4E0A; border:1px solid rgba(216,150,40,.3); border-radius:var(--radius-sm); padding:11px 15px; font-size:13.5px; font-weight:600; margin-bottom:20px; }

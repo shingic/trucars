@@ -155,19 +155,19 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
 
         .ico { width:44px; height:44px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
 
-        /* the little cars: flat, ink outline, orange paint */
+        /* the little cars: flat, ink outline, blue paint */
         .ride { overflow:visible; }
         .ride .paint { fill:var(--paint, var(--primary)); stroke:var(--ink); stroke-width:1.6; stroke-linejoin:round; }
         .ride .glass { fill:#fff; stroke:var(--ink); stroke-width:1.3; stroke-linejoin:round; }
         .ride .tyre { fill:var(--ink); }
         .ride .hub { fill:#D9DCE0; }
 
-        /* hero: an orange sign beside a real car from the lot */
+        /* hero: a blue sign beside a real car from the lot */
         .stage { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1.15fr); background:var(--primary); border-radius:6px; overflow:hidden; }
         .stage.no-photo { grid-template-columns:1fr; }
-        .stage-copy { padding:52px 44px 44px; color:var(--ink); }
-        .stage h1 { font-family:var(--font-display); font-size:clamp(46px, 5.8vw, 84px); font-weight:700; line-height:.92; text-transform:uppercase; margin:0; max-width:9ch; }
-        .stage p { font-size:18px; color:#2A1306; margin:20px 0 0; max-width:440px; line-height:1.55; }
+        .stage-copy { padding:52px 44px 44px; color:#fff; }
+        .stage h1 { font-family:var(--font-display); font-size:clamp(46px, 5.8vw, 84px); font-weight:700; line-height:.92; text-transform:uppercase; margin:0; max-width:9ch; color:#fff; }
+        .stage p { font-size:18px; color:rgba(255,255,255,.88); margin:20px 0 0; max-width:440px; line-height:1.55; }
         .hero-search { margin-top:28px; display:flex; max-width:520px; background:#fff; border:2px solid var(--ink); }
         .hero-search svg { align-self:center; margin-left:14px; color:var(--ink-3); flex-shrink:0; }
         .hero-search input { flex:1; min-width:0; border:none; outline:none; font-size:16px; background:none; padding:14px 12px; color:var(--ink); }
@@ -178,26 +178,30 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
         .chips a:hover { background:var(--ink); color:#fff; }
         .chips a:hover .ride .paint { stroke:#fff; }
         .chips .ride { width:26px; height:13px; }
-        .stage figure { margin:0; position:relative; min-height:560px; background:#D9530F center/cover; }
-        .pictured { position:absolute; left:0; bottom:0; background:var(--ink); color:#fff; text-decoration:none; font-size:14px; padding:10px 14px; }
+        .stage figure { margin:0; position:relative; min-height:560px; background:var(--primary-press); }
+        /* dealer photos carry a vendor badge along the bottom edge; the frame trims it off */
+        .shot { position:relative; overflow:hidden; }
+        .shot > img { position:absolute; top:0; left:0; width:100%; height:110%; object-fit:cover; object-position:center top; }
+
+        .pictured { position:absolute; z-index:1; left:0; bottom:0; background:var(--ink); color:#fff; text-decoration:none; font-size:14px; padding:10px 14px; }
         .pictured span { display:block; font-size:12px; color:rgba(255,255,255,.65); }
-        .pictured b { font-family:var(--font-display); font-size:20px; font-weight:700; color:var(--primary); }
+        .pictured b { font-family:var(--font-display); font-size:20px; font-weight:700; color:var(--primary-bright); }
         .pictured:hover b { color:#fff; }
 
         /* three promises, as a black road-sign strip */
         .facts { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); background:var(--ink); color:#fff; border-radius:0 0 6px 6px; margin-top:-6px; }
         .fact { padding:18px 22px; }
         .fact + .fact { border-left:1px solid rgba(255,255,255,.16); }
-        .fact b { display:block; font-family:var(--font-display); font-size:21px; font-weight:600; text-transform:uppercase; color:var(--primary); }
+        .fact b { display:block; font-family:var(--font-display); font-size:21px; font-weight:600; text-transform:uppercase; color:var(--primary-bright); }
         .fact span { font-size:14.5px; color:rgba(255,255,255,.78); }
 
         /* cars */
         .cars { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:34px 22px; }
         .car { display:block; text-decoration:none; color:var(--ink); }
-        .car-photo { position:relative; aspect-ratio:4/3; border-radius:3px; background:var(--bg-2) center/cover; }
+        .car-photo { aspect-ratio:4/3; border-radius:3px; background:var(--bg-2); }
         .car:hover .car-name { color:var(--primary-press); }
-        .car-photo .reserved { position:absolute; top:0; left:0; background:var(--ink); color:#fff; font-family:var(--font-display); font-size:14px; font-weight:600; text-transform:uppercase; padding:4px 10px; }
-        .car-photo .cert { position:absolute; left:0; bottom:0; max-width:100%; background:var(--primary); color:var(--ink); font-family:var(--font-display); font-size:14px; font-weight:600; text-transform:uppercase; padding:4px 10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .car-photo .reserved { position:absolute; z-index:1; top:0; left:0; background:var(--ink); color:#fff; font-family:var(--font-display); font-size:14px; font-weight:600; text-transform:uppercase; padding:4px 10px; }
+        .car-photo .cert { position:absolute; z-index:1; left:0; bottom:0; max-width:100%; background:var(--primary); color:#fff; font-family:var(--font-display); font-size:14px; font-weight:600; text-transform:uppercase; padding:4px 10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .car-name { font-size:16.5px; font-weight:700; margin-top:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .car-meta { font-size:14px; color:var(--ink-3); margin-top:1px; }
         .car-price { font-family:var(--font-display); font-size:26px; font-weight:700; line-height:1; margin-top:10px; padding-top:10px; border-top:1px solid var(--line-strong); }
@@ -209,17 +213,17 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
         .heard small { display:block; font-family:var(--font-display); font-size:15px; font-weight:600; text-transform:uppercase; color:var(--ink-3); margin-bottom:6px; }
         .said { font-family:var(--font-display); font-size:clamp(22px, 2.4vw, 30px); font-weight:500; line-height:1.2; color:var(--ink-3); padding:8px 0; border-bottom:1px solid var(--line-strong); text-decoration:line-through; text-decoration-color:var(--primary); text-decoration-thickness:3px; }
         .reply { margin-top:18px; background:var(--ink); color:#fff; padding:18px 20px; font-size:17px; line-height:1.5; }
-        .reply b { display:block; font-family:var(--font-display); font-size:15px; font-weight:600; text-transform:uppercase; color:var(--primary); margin-bottom:4px; }
+        .reply b { display:block; font-family:var(--font-display); font-size:15px; font-weight:600; text-transform:uppercase; color:var(--primary-bright); margin-bottom:4px; }
 
         /* shop by: outlined tiles; the little car drives off when you point at it */
         .garage { display:grid; grid-template-columns:repeat(6, minmax(0, 1fr)); gap:0; border:2px solid var(--ink); }
         .bay { display:flex; flex-direction:column; justify-content:space-between; gap:18px; min-height:180px; padding:18px; text-decoration:none; color:var(--ink); overflow:hidden; background:#fff; }
         .bay + .bay { border-left:2px solid var(--ink); }
-        .bay:hover { background:var(--primary); }
+        .bay:hover { background:var(--primary); color:#fff; }
         .bay:hover .ride { --paint:#fff; animation:vroom .7s cubic-bezier(.3,.7,.3,1) forwards; }
         .bay b { display:block; font-family:var(--font-display); font-size:24px; font-weight:700; text-transform:uppercase; line-height:1; }
         .bay span { font-size:14px; color:var(--ink-2); }
-        .bay:hover span { color:var(--ink); }
+        .bay:hover span { color:rgba(255,255,255,.85); }
         .bay .ride { width:100%; max-width:128px; height:auto; }
         @keyframes vroom { 0% { transform:none; } 25% { transform:translateX(-4px) rotate(-2deg); } 60% { transform:translateX(14px) rotate(1deg); } 100% { transform:translateX(10px); } }
         @media (prefers-reduced-motion:reduce) { .bay:hover .ride { animation:none; } }
@@ -249,9 +253,9 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
         .close > div { padding:48px 44px; color:#fff; }
         .close h2 { color:#fff; font-size:clamp(34px, 4.4vw, 60px); line-height:.95; }
         .close p { color:rgba(255,255,255,.75); font-size:17px; margin:14px 0 26px; }
-        .close figure { margin:0; min-height:320px; background:#24272E center/cover; }
-        .btn-go { display:inline-block; background:var(--primary); color:var(--ink); font-family:var(--font-display); font-size:20px; font-weight:700; text-transform:uppercase; padding:13px 26px; border-radius:4px; text-decoration:none; }
-        .btn-go:hover { background:#fff; }
+        .close figure { margin:0; min-height:320px; background:#24272E; }
+        .btn-go { display:inline-block; background:var(--primary); color:#fff; font-family:var(--font-display); font-size:20px; font-weight:700; text-transform:uppercase; padding:13px 26px; border-radius:4px; text-decoration:none; }
+        .btn-go:hover { background:#fff; color:var(--ink); }
 
         @media (max-width:1100px) {
             .cars { grid-template-columns:repeat(2, minmax(0, 1fr)); }
@@ -302,7 +306,8 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
             </div>
         </div>
         @if ($featured)
-            <figure style="background-image:url('{{ $featured->primary_photo_url }}')">
+            <figure class="shot">
+                <img src="{{ $featured->primary_photo_url }}" alt="">
                 <a class="pictured" href="/cars/{{ $featured->id }}" wire:navigate>
                     <span>Pictured · {{ $featured->display_location }}</span>
                     {{ $featured->model_year }} {{ $featured->make }} {{ $featured->model }} · <b>{{ $featured->display_price }}</b>
@@ -327,7 +332,8 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
             <div class="cars">
                 @foreach ($mix as $listing)
                     <a class="car" href="/cars/{{ $listing->id }}" wire:navigate wire:key="mix-{{ $listing->id }}">
-                        <div class="car-photo" style="background-image:url('{{ $listing->primary_photo_url }}')">
+                        <div class="car-photo shot">
+                            <img src="{{ $listing->primary_photo_url }}" alt="" loading="lazy">
                             @if ($listing->is_reserved)<span class="reserved">Reserved</span>@endif
                             @if ($certified = $listing->certification())<span class="cert">{{ $certified->badge }}</span>@endif
                         </div>
@@ -417,6 +423,6 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
             <p>From {{ $dealerCount }} licensed {{ $dealerCount === 1 ? 'dealer' : 'dealers' }}{{ $cityCount > 1 ? ' in ' . $cityCount . ' cities' : '' }}.</p>
             <a class="btn-go" href="{{ route('shop') }}" wire:navigate>Start shopping</a>
         </div>
-        @if ($closer) <figure style="background-image:url('{{ $closer->primary_photo_url }}')"></figure> @endif
+        @if ($closer) <figure class="shot"><img src="{{ $closer->primary_photo_url }}" alt="" loading="lazy"></figure> @endif
     </section>
 </div>

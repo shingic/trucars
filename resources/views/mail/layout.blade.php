@@ -1,6 +1,6 @@
 {{--
     Shared frame for the buyer's deal emails, matching reservation-confirmed:
-    orange header band, headline, body, one button to My Garage, footer.
+    blue header band, headline, body, one button to My Garage, footer.
     Sections: title, preheader, tag, headline, intro, body (optional),
     cta and cta_url (optional, default to "Open My Garage →"), reason (footer line).
     Child sections render before this file, so they can't use $font; the
@@ -27,11 +27,11 @@
             <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px; max-width:600px; background-color:#FFFFFF; border-radius:16px; overflow:hidden; box-shadow:0 1px 3px rgba(22,24,29,0.08);">
 
                 <tr>
-                    <td style="background-color:#F5631F; padding:26px 36px;">
+                    <td style="background-color:#1F55D6; padding:26px 36px;">
                         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                             <tr>
                                 <td style="{{ $font }} font-size:20px; font-weight:800; letter-spacing:-0.02em; color:#FFFFFF;">TruCars</td>
-                                <td align="right" style="{{ $font }} font-size:12px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:#FFE2D2;">@yield('tag')</td>
+                                <td align="right" style="{{ $font }} font-size:12px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:#D6E2FF;">@yield('tag')</td>
                             </tr>
                         </table>
                     </td>
@@ -56,7 +56,7 @@
                     <td style="padding:30px 36px 6px;">
                         <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                             <tr>
-                                <td align="center" bgcolor="#F5631F" style="border-radius:10px;">
+                                <td align="center" bgcolor="#1F55D6" style="border-radius:10px;">
                                     <a href="@yield('cta_url', route('garage'))" target="_blank" style="display:inline-block; padding:14px 30px; {{ $font }} font-size:15px; font-weight:700; color:#FFFFFF; text-decoration:none; border-radius:10px;">
                                         @hasSection('cta') @yield('cta') @else Open My Garage → @endif
                                     </a>

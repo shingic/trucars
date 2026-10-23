@@ -16,13 +16,13 @@
             --bg:#F6F7F7; --card:#FFFFFF;
             --ink:#16181D; --ink-2:#585E66; --ink-3:#969CA3;
             --line:rgba(22,24,29,.09); --line-strong:rgba(22,24,29,.15);
-            --primary:#F5631F; --primary-press:#E2520F; --primary-soft:rgba(245,99,31,.10); --primary-line:rgba(245,99,31,.30);
-            --coral:#FF8A3D; --coral-soft:rgba(255,138,61,.16);
+            --primary:#1F55D6; --primary-press:#1743B0; --primary-bright:#9DBBFF; --primary-soft:rgba(31,85,214,.10); --primary-line:rgba(31,85,214,.30);
+            --coral:#4F80F0; --coral-soft:rgba(79,128,240,.16);
             --good:#12B886; --good-soft:rgba(18,184,134,.12); --good-ink:#0E5A43;
             --amber:#C8841A; --amber-soft:rgba(216,150,40,.16);
             --active:#F3F1EF;
             --btn:#16181D; --btn-press:#101114;
-            --hero-grad:linear-gradient(155deg,#FF8A3D,#F5631F);
+            --hero-grad:linear-gradient(155deg,#4F80F0,#1F55D6);
             --shadow-sm:0 1px 3px rgba(22,24,29,.06);
             --shadow-md:0 14px 40px rgba(22,24,29,.09), 0 3px 10px rgba(22,24,29,.05);
             --shadow-lg:0 30px 70px rgba(22,24,29,.18);
@@ -43,7 +43,7 @@
         .sidebar { width:var(--sidebar-w); flex-shrink:0; background:var(--card); border-right:1px solid var(--line); display:flex; flex-direction:column; height:100vh; position:sticky; top:0; }
 
         .sb-brand { display:flex; align-items:center; gap:11px; padding:18px 20px 16px; }
-        .sb-brand .glyph { width:34px; height:34px; border-radius:10px; background:var(--hero-grad); color:#fff; display:grid; place-items:center; font-weight:800; font-size:16px; box-shadow:0 6px 16px rgba(245,99,31,.30); flex-shrink:0; }
+        .sb-brand .glyph { width:34px; height:34px; border-radius:10px; background:var(--hero-grad); color:#fff; display:grid; place-items:center; font-weight:800; font-size:16px; box-shadow:0 6px 16px rgba(31,85,214,.30); flex-shrink:0; }
         .sb-brand .nm { font-weight:800; font-size:16px; letter-spacing:0; }
 
         .sb-scroll { flex:1; overflow-y:auto; padding:6px 12px 22px; }
