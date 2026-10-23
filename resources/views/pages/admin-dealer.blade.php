@@ -4,7 +4,9 @@ use App\Mail\DealerInvitationMail;
 use App\Models\AuditLog;
 use App\Models\Brand;
 use App\Models\Dealer;
+use App\Models\DealerGroup;
 use App\Models\DealerInvitation;
+use App\Models\Rooftop;
 use App\Models\User;
 use App\Support\CanadianAddress;
 use App\Support\Permission;
@@ -22,7 +24,9 @@ use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
 
 /*
-| TruCars admin — create or edit one dealer: one selling rooftop at one address.
+| TruCars admin — create or edit one selling dealer and its rooftops. The
+| dealer's own address is its main store (mirrored onto the primary rooftop);
+| further stores are added on the Location tab.
 |
 | A draft can be saved with gaps. Going live (draft → active) needs the full
 | address and a timezone, and cars can only be published once the address is
@@ -70,6 +74,8 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
 
     public string $name = '';
     public string $registrationNumber = '';
+    /** The dealer group, by name; a new name starts a new group. */
+    public string $groupName = '';
     /**
      * The franchise brand — its CPO checklist and offers follow automatically.
      * Chosen when the dealer is created. After that save() never touches it:
@@ -104,6 +110,12 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
 
     public string $statusMessage = '';
 
+    // The add / edit form for a rooftop other than the main store.
+    public bool $rooftopFormOpen = false;
+    #[Locked]
+    public ?int $editingRooftopId = null;
+    public array $rooftopForm = [];
+
     // Invite form for the dealer users card.
     public string $inviteName = '';
     public string $inviteEmail = '';
@@ -126,6 +138,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
 
         $this->name = $dealer->name;
         $this->registrationNumber = (string) $dealer->registration_number;
+        $this->groupName = (string) $dealer->group?->name;
         $this->brandId = $dealer->brand_id ? (string) $dealer->brand_id : null;
         $this->savedBrandId = $dealer->brand_id;
         $this->streetAddress = (string) $dealer->street_address;
@@ -160,6 +173,115 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         }
 
         $this->provinceAtLastSuggestion = $value;
+    }
+
+    /* ---------------------------------------------------------------------
+       Rooftops — the dealer's physical stores beyond the main one
+       --------------------------------------------------------------------- */
+    public function rooftops(): Collection
+    {
+        return $this->dealerId === null ? collect() : $this->dealerOrFail()->rooftops()->withCount('vehicles')->get();
+    }
+
+    /** Group names already in use, for the field's suggestions. */
+    public function groupNames(): Collection
+    {
+        return DealerGroup::orderBy('name')->pluck('name');
+    }
+
+    public function startRooftop(?int $rooftopId = null): void
+    {
+        Gate::authorize(Permission::DEALERS_MANAGE);
+
+        $rooftop = $rooftopId === null ? null : $this->dealerOrFail()->rooftops()->where('is_primary', false)->findOrFail($rooftopId);
+
+        $this->resetValidation();
+        $this->editingRooftopId = $rooftop?->id;
+        $this->rooftopForm = collect(['name', 'feed_rooftop_id', ...Rooftop::LOCATION_FIELDS])
+            ->mapWithKeys(fn (string $field) => [$field => (string) ($rooftop?->{$field} ?? '')])
+            ->all();
+        $this->rooftopFormOpen = true;
+    }
+
+    public function cancelRooftop(): void
+    {
+        $this->rooftopFormOpen = false;
+        $this->editingRooftopId = null;
+    }
+
+    public function saveRooftop(): void
+    {
+        Gate::authorize(Permission::DEALERS_MANAGE);
+        $dealer = $this->dealerOrFail();
+
+        $form = array_map(fn ($value) => trim((string) $value), $this->rooftopForm);
+        $form['province'] = CanadianAddress::normalizeProvince($form['province'] ?? '') ?? ($form['province'] ?? '');
+        $form['postal_code'] = CanadianAddress::normalizePostalCode($form['postal_code'] ?? '') ?? strtoupper($form['postal_code'] ?? '');
+        $form['country'] = CanadianAddress::COUNTRY;
+        $form['timezone'] = ($form['timezone'] ?? '') ?: (string) CanadianAddress::defaultTimezoneFor($form['province']);
+        $this->rooftopForm = $form;
+
+        $this->validate([
+            'rooftopForm.name'            => ['required', 'string', 'max:120'],
+            'rooftopForm.feed_rooftop_id' => ['nullable', 'string', 'max:64', Rule::unique('rooftops', 'feed_rooftop_id')->ignore($this->editingRooftopId)],
+            'rooftopForm.street_address'  => ['required', 'string', 'max:160'],
+            'rooftopForm.unit'            => ['nullable', 'string', 'max:30'],
+            'rooftopForm.city'            => ['required', 'string', 'max:80'],
+            'rooftopForm.province'        => ['required', Rule::in(array_keys(CanadianAddress::PROVINCES))],
+            'rooftopForm.postal_code'     => ['required', 'regex:/^[A-Z]\d[A-Z] \d[A-Z]\d$/'],
+            'rooftopForm.latitude'        => ['nullable', 'required_with:rooftopForm.longitude', 'numeric', 'between:-90,90'],
+            'rooftopForm.longitude'       => ['nullable', 'required_with:rooftopForm.latitude', 'numeric', 'between:-180,180'],
+            'rooftopForm.timezone'        => ['required', Rule::in(CanadianAddress::timezones())],
+            'rooftopForm.phone'           => ['nullable', 'string', 'max:30', 'regex:/^[0-9+().\s-]{7,30}$/'],
+            'rooftopForm.email'           => ['nullable', 'email', 'max:160'],
+        ], [
+            'rooftopForm.postal_code.regex'      => 'Enter a Canadian postal code like V2P 2M9.',
+            'rooftopForm.phone.regex'            => 'Enter a phone number using digits, spaces, dashes or brackets.',
+            'rooftopForm.feed_rooftop_id.unique' => 'Another rooftop already uses that feed id.',
+        ], [
+            'rooftopForm.name' => 'store name', 'rooftopForm.feed_rooftop_id' => 'feed id', 'rooftopForm.street_address' => 'street address',
+            'rooftopForm.city' => 'city', 'rooftopForm.province' => 'province', 'rooftopForm.postal_code' => 'postal code',
+            'rooftopForm.latitude' => 'latitude', 'rooftopForm.longitude' => 'longitude', 'rooftopForm.timezone' => 'timezone',
+            'rooftopForm.phone' => 'phone', 'rooftopForm.email' => 'email',
+        ]);
+
+        $postalProvince = CanadianAddress::provinceForPostalCode($form['postal_code']);
+
+        if ($postalProvince !== null && $postalProvince !== $form['province']) {
+            $this->addError('rooftopForm.postal_code', "That postal code is in {$postalProvince}, not {$form['province']}.");
+
+            return;
+        }
+
+        $rooftop = $this->editingRooftopId === null
+            ? new Rooftop(['dealer_id' => $dealer->id])
+            : $dealer->rooftops()->where('is_primary', false)->findOrFail($this->editingRooftopId);
+
+        $rooftop->fill(array_map(fn (string $value) => $value === '' ? null : $value, $form));
+
+        $changes = $rooftop->getDirty();
+        $before = array_intersect_key($rooftop->getOriginal(), $changes);
+        $wasNew = ! $rooftop->exists;
+        $rooftop->save();
+
+        if ($wasNew || $changes !== []) {
+            AuditLog::record($wasNew ? 'rooftop.created' : 'rooftop.updated', $rooftop, $wasNew ? null : $before, $changes);
+        }
+
+        $this->cancelRooftop();
+        $this->statusMessage = $wasNew ? "Added {$rooftop->name}. Import its feed with --dealer={$dealer->id} --new-rooftop, or match it by feed id." : "Saved {$rooftop->name}.";
+    }
+
+    /** Close or reopen a store. A closed store's cars come off the marketplace; the main store follows the dealer's status instead. */
+    public function toggleRooftop(int $rooftopId): void
+    {
+        Gate::authorize(Permission::DEALERS_MANAGE);
+        $rooftop = $this->dealerOrFail()->rooftops()->where('is_primary', false)->findOrFail($rooftopId);
+
+        $rooftop->update(['is_active' => ! $rooftop->is_active]);
+        AuditLog::record($rooftop->is_active ? 'rooftop.reopened' : 'rooftop.closed', $rooftop, ['is_active' => ! $rooftop->is_active], ['is_active' => $rooftop->is_active]);
+
+        $this->statusMessage = $rooftop->is_active ? "{$rooftop->name} is open again." : "{$rooftop->name} is closed. Its cars are off the marketplace.";
     }
 
     public function brands()
@@ -296,6 +418,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         $this->validate([
             'name'               => ['required', 'string', 'max:120'],
             'registrationNumber' => ['nullable', 'string', 'max:40'],
+            'groupName'          => ['nullable', 'string', 'max:120'],
             // Chosen once, at creation. An existing dealer's brand changes only
             // through confirmBrandChange(), never through this form.
             'brandId'            => [$this->dealerId === null ? 'required' : 'nullable', 'integer', Rule::exists('brands', 'id')],
@@ -320,6 +443,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
             'timezone.required'      => 'Choose the dealer’s timezone before it goes live.',
         ], [
             'registrationNumber' => 'registration number',
+            'groupName'          => 'dealer group',
             'brandId'            => 'brand',
             'streetAddress'      => 'street address',
             'postalCode'         => 'postal code',
@@ -338,8 +462,13 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         $wasNew = ! $dealer->exists;
         $previousStatus = $dealer->status;
 
+        $groupName = trim($this->groupName);
+        $group = $groupName === '' ? null
+            : (DealerGroup::whereRaw('lower(name) = ?', [mb_strtolower($groupName)])->first() ?? DealerGroup::create(['name' => $groupName]));
+
         $dealer->fill([
             'name'                => trim($this->name),
+            'dealer_group_id'     => $group?->id,
             'registration_number' => trim($this->registrationNumber) ?: null,
             'street_address'      => trim($this->streetAddress) ?: null,
             'unit'                => trim($this->unit) ?: null,
@@ -1028,6 +1157,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
                                 <div><span>Province</span><b>{{ \App\Support\CanadianAddress::PROVINCES[$dealer->province] ?? ($dealer->province ?: '—') }}</b></div>
                                 <div><span>Coordinates</span><b>{{ $dealer->hasCoordinates() ? number_format($dealer->latitude, 6) . ', ' . number_format($dealer->longitude, 6) : '—' }}</b></div>
                                 <div><span>Postal code</span><b>{{ $dealer->postal_code ?: '—' }}</b></div>
+                                <div><span>Rooftops</span><b>{{ $this->rooftops()->count() }}</b></div>
                             </div>
                         </div>
 
@@ -1097,6 +1227,113 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
                         @if ($canManage) <div class="form-end"><button type="submit" class="btn btn-primary">Save changes</button></div> @endif
                     </form>
 
+                    <div class="pcard" style="margin-top:16px">
+                        <div class="pcard-head">
+                            <span class="pic">{!! $icon($paths['pin'], 20) !!}</span>
+                            <div><div class="t">Rooftops</div><div class="s">Each physical store. Every car sits at one; the dealer stays the seller.</div></div>
+                            @if ($canManage && ! $rooftopFormOpen) <button type="button" class="ebtn" wire:click="startRooftop">+ Add rooftop</button> @endif
+                        </div>
+                        <div class="people">
+                            @foreach ($this->rooftops() as $rooftop)
+                                <div class="person">
+                                    <span class="grow">
+                                        <b>{{ $rooftop->display_name }} @if ($rooftop->is_primary) · <span style="color:var(--ink-3)">Main store</span> @endif</b>
+                                        <small>{{ implode(' · ', $rooftop->address_lines) ?: 'No address yet' }} · {{ $rooftop->vehicles_count }} {{ $rooftop->vehicles_count === 1 ? 'car' : 'cars' }} · feed {{ $rooftop->feed_rooftop_id ?? 'not linked' }}</small>
+                                    </span>
+                                    @if ($rooftop->is_primary)
+                                        <small style="color:var(--ink-3)">Edited above</small>
+                                    @else
+                                        <span class="dot-st {{ $rooftop->is_active ? 'on' : 'off' }}">{{ $rooftop->is_active ? 'Open' : 'Closed' }}</span>
+                                        @if ($canManage)
+                                            <button type="button" class="ebtn" wire:click="startRooftop({{ $rooftop->id }})">Edit</button>
+                                            <button type="button" class="ebtn" wire:click="toggleRooftop({{ $rooftop->id }})" wire:confirm="{{ $rooftop->is_active ? 'Close this store? Its cars come off the marketplace.' : 'Reopen this store?' }}">{{ $rooftop->is_active ? 'Close' : 'Reopen' }}</button>
+                                        @endif
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+
+                        @if ($rooftopFormOpen)
+                            <form wire:submit="saveRooftop">
+                                <div class="fields">
+                                    <div class="field w4">
+                                        <label for="rt-name">Store name</label>
+                                        <input id="rt-name" type="text" wire:model="rooftopForm.name" maxlength="120">
+                                        @error('rooftopForm.name') <span class="err">{{ $message }}</span> @enderror
+                                    </div>
+                                    <div class="field w2">
+                                        <label for="rt-feed">Feed rooftop id <span class="opt">(optional)</span></label>
+                                        <input id="rt-feed" type="text" wire:model="rooftopForm.feed_rooftop_id" maxlength="64">
+                                        @error('rooftopForm.feed_rooftop_id') <span class="err">{{ $message }}</span> @enderror
+                                    </div>
+                                    <div class="field w4">
+                                        <label for="rt-street">Street address</label>
+                                        <input id="rt-street" type="text" wire:model="rooftopForm.street_address" maxlength="160">
+                                        @error('rooftopForm.street_address') <span class="err">{{ $message }}</span> @enderror
+                                    </div>
+                                    <div class="field w2">
+                                        <label for="rt-unit">Unit <span class="opt">(optional)</span></label>
+                                        <input id="rt-unit" type="text" wire:model="rooftopForm.unit" maxlength="30">
+                                    </div>
+                                    <div class="field w2">
+                                        <label for="rt-city">City</label>
+                                        <input id="rt-city" type="text" wire:model="rooftopForm.city" maxlength="80">
+                                        @error('rooftopForm.city') <span class="err">{{ $message }}</span> @enderror
+                                    </div>
+                                    <div class="field w2">
+                                        <label for="rt-province">Province / territory</label>
+                                        <select id="rt-province" wire:model="rooftopForm.province">
+                                            <option value="">Choose…</option>
+                                            @foreach (\App\Support\CanadianAddress::PROVINCES as $code => $provinceName)
+                                                <option value="{{ $code }}">{{ $provinceName }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('rooftopForm.province') <span class="err">{{ $message }}</span> @enderror
+                                    </div>
+                                    <div class="field w2">
+                                        <label for="rt-postal">Postal code</label>
+                                        <input id="rt-postal" type="text" wire:model="rooftopForm.postal_code" maxlength="7">
+                                        @error('rooftopForm.postal_code') <span class="err">{{ $message }}</span> @enderror
+                                    </div>
+                                    <div class="field w2">
+                                        <label for="rt-tz">Timezone</label>
+                                        <select id="rt-tz" wire:model="rooftopForm.timezone">
+                                            <option value="">From the province</option>
+                                            @foreach ($this->timezoneOptions() as $zone)
+                                                <option value="{{ $zone }}">{{ $zone }}</option>
+                                            @endforeach
+                                        </select>
+                                        @error('rooftopForm.timezone') <span class="err">{{ $message }}</span> @enderror
+                                    </div>
+                                    <div class="field w2">
+                                        <label for="rt-lat">Latitude <span class="opt">(optional)</span></label>
+                                        <input id="rt-lat" type="text" inputmode="decimal" wire:model="rooftopForm.latitude">
+                                        @error('rooftopForm.latitude') <span class="err">{{ $message }}</span> @enderror
+                                    </div>
+                                    <div class="field w2">
+                                        <label for="rt-lng">Longitude <span class="opt">(optional)</span></label>
+                                        <input id="rt-lng" type="text" inputmode="decimal" wire:model="rooftopForm.longitude">
+                                        @error('rooftopForm.longitude') <span class="err">{{ $message }}</span> @enderror
+                                    </div>
+                                    <div class="field w2">
+                                        <label for="rt-phone">Store phone <span class="opt">(optional)</span></label>
+                                        <input id="rt-phone" type="tel" wire:model="rooftopForm.phone" maxlength="30">
+                                        @error('rooftopForm.phone') <span class="err">{{ $message }}</span> @enderror
+                                    </div>
+                                    <div class="field w2">
+                                        <label for="rt-email">Store email <span class="opt">(optional)</span></label>
+                                        <input id="rt-email" type="email" wire:model="rooftopForm.email" maxlength="160">
+                                        @error('rooftopForm.email') <span class="err">{{ $message }}</span> @enderror
+                                    </div>
+                                </div>
+                                <div class="form-end" style="gap:8px">
+                                    <button type="button" class="btn btn-ghost" wire:click="cancelRooftop">Cancel</button>
+                                    <button type="submit" class="btn btn-primary">{{ $editingRooftopId ? 'Save rooftop' : 'Add rooftop' }}</button>
+                                </div>
+                            </form>
+                        @endif
+                    </div>
+
                 @elseif ($tab === 'team')
                     @if ($this->canManageUsers())
                         @include('partials.dealer.users')
@@ -1155,7 +1392,9 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
                         </div>
                         <div class="kv">
                             <div class="row"><span>Status</span><b class="{{ $dealer->feed_rooftop_id ? 'ok' : 'warn' }}">{{ $dealer->feed_rooftop_id ? 'Connected' : 'Not connected yet' }}</b></div>
-                            <div class="row"><span>Rooftop id</span><b class="mono">{{ $dealer->feed_rooftop_id ?? 'Set by the first import' }}</b></div>
+                            @foreach ($this->rooftops() as $rooftop)
+                                <div class="row"><span>{{ $rooftop->is_primary ? 'Rooftop id' : $rooftop->display_name }}</span><b class="mono">{{ $rooftop->feed_rooftop_id ?? ($rooftop->is_primary ? 'Set by the first import' : 'Not linked') }}</b></div>
+                            @endforeach
                             <div class="row"><span>Last import</span><b>{{ $import ? $import->created_at->diffForHumans() . ' by ' . ($import->actor_email ?? 'console') : 'Never' }}</b></div>
                             <div class="row"><span>Vehicles</span><b>{{ $stats['live'] }} live of {{ $stats['vehicles'] }}</b></div>
                         </div>

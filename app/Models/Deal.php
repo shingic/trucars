@@ -44,8 +44,8 @@ class Deal extends Model
     ];
 
     protected $fillable = [
-        'dealer_id', 'user_id', 'vehicle_id', 'campaign_id', 'attribution', 'stage',
-        'purchase_type', 'term_months', 'down_payment_in_cents', 'warranty_plan', 'extras_interest', 'fees_snapshot', 'offers_snapshot', 'dealer_snapshot',
+        'dealer_id', 'rooftop_id', 'user_id', 'vehicle_id', 'campaign_id', 'attribution', 'stage',
+        'purchase_type', 'term_months', 'down_payment_in_cents', 'warranty_plan', 'extras_interest', 'fees_snapshot', 'offers_snapshot', 'dealer_snapshot', 'rooftop_snapshot',
         'deposit_in_cents', 'deposit_status',
         'first_name', 'last_name', 'email', 'phone',
         'street_address', 'city', 'province', 'postal_code',
@@ -74,6 +74,7 @@ class Deal extends Model
             'fees_snapshot'              => 'array',
             'offers_snapshot'            => 'array',
             'dealer_snapshot'            => 'array',
+            'rooftop_snapshot'           => 'array',
         ];
     }
 
@@ -85,6 +86,16 @@ class Deal extends Model
             // Freeze the seller as it is right now — name, address, registration,
             // timezone — so later dealer-profile edits never rewrite this record.
             $deal->dealer_snapshot ??= Dealer::find($deal->dealer_id)?->toSnapshot();
+
+            // And the store the car is at, which must be one of the seller's.
+            $deal->rooftop_id ??= Vehicle::withoutGlobalScopes()->whereKey($deal->vehicle_id)->value('rooftop_id');
+            $rooftop = $deal->rooftop_id ? Rooftop::find($deal->rooftop_id) : null;
+
+            if ($rooftop !== null && (int) $rooftop->dealer_id !== (int) $deal->dealer_id) {
+                throw new \DomainException("Rooftop #{$rooftop->id} doesn't belong to dealer #{$deal->dealer_id}.");
+            }
+
+            $deal->rooftop_snapshot ??= $rooftop?->toSnapshot();
         });
 
         // A cancelled reservation puts the car back on sale: ring the bell for
@@ -137,6 +148,25 @@ class Deal extends Model
     public function dealer(): BelongsTo
     {
         return $this->belongsTo(Dealer::class);
+    }
+
+    /** The store the car is collected from. dealer stays the seller. */
+    public function rooftop(): BelongsTo
+    {
+        return $this->belongsTo(Rooftop::class);
+    }
+
+    /** "Downtown store · Kelowna, BC" as frozen at reserve; null before rooftops existed. */
+    public function getRooftopLabelAttribute(): ?string
+    {
+        $store = $this->rooftop_snapshot ?? null;
+
+        if ($store === null) {
+            return null;
+        }
+
+        return collect([$store['name'] ?? null, collect([$store['city'] ?? null, $store['province'] ?? null])->filter()->implode(', ')])
+            ->filter()->implode(' · ') ?: null;
     }
 
     /** The buyer account that placed this reservation. */
@@ -273,12 +303,14 @@ class Deal extends Model
     }
 
     /**
-     * The zone handover windows were offered in: the dealer's at reserve time,
-     * else the dealer's current one. pickup_at itself is stored in UTC.
+     * The zone handover windows were offered in: the rooftop's at reserve time,
+     * else the seller's, else today's. pickup_at itself is stored in UTC.
      */
     public function dealerTimezone(): string
     {
-        return ($this->dealer_snapshot['timezone'] ?? null)
+        return ($this->rooftop_snapshot['timezone'] ?? null)
+            ?: ($this->dealer_snapshot['timezone'] ?? null)
+            ?: $this->rooftop?->timezone
             ?: $this->dealer?->localTimezone()
             ?: config('app.timezone');
     }

@@ -133,6 +133,10 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
                 <span class="k">Seller</span><span>{{ $deal->seller_name }}</span>
                 <span class="k">Seller address</span>
                 <span>{{ collect([$seller['street_address'] ?? null, $seller['city'] ?? null, $seller['province'] ?? null, $seller['postal_code'] ?? null])->filter()->implode(', ') ?: '—' }}</span>
+                @if ($store = $deal->rooftop_snapshot)
+                    <span class="k">Store</span>
+                    <span>{{ collect([$store['name'] ?? null, $store['street_address'] ?? null, $store['city'] ?? null, $store['province'] ?? null, $store['postal_code'] ?? null])->filter()->implode(', ') }}</span>
+                @endif
             </div>
         </div>
 

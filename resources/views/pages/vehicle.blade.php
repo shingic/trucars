@@ -559,9 +559,11 @@ new class extends Component {
                         <span class="dealer-logo">{{ strtoupper(substr($vehicle->dealer->name, 0, 1)) }}</span>
                         <div>
                             <div class="dealer-name">{{ ucwords(strtolower($vehicle->dealer->name)) }}</div>
-                            {{-- The car is at its dealer's rooftop — the address is the dealer's. --}}
+                            {{-- The dealer sells it; the address is the rooftop the car sits at. --}}
+                            @php $store = $vehicle->locatedAt(); @endphp
                             <div class="dealer-sub">
-                                {{ implode(' · ', $vehicle->dealer->address_lines) ?: $vehicle->dealer->display_location }}
+                                @if ($store instanceof \App\Models\Rooftop && $store->name) {{ $store->name }} · @endif
+                                {{ implode(' · ', $store->address_lines) ?: $store->display_location }}
                                 @if ($vehicle->dealer->registration_number)
                                     <span class="dot-sep"></span> {{ $vehicle->dealer->regulator ?? 'Dealer reg.' }}&nbsp;#{{ $vehicle->dealer->registration_number }}
                                 @endif

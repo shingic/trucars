@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Models\Dealer;
+use App\Models\Rooftop;
 use App\Models\Vehicle;
 use App\Support\CanadianAddress;
 use App\Support\FeedText;
@@ -16,6 +17,7 @@ class ImportDealerInventory extends Command
         {path : Path to the dealer inventory CSV}
         {--dealer= : Link the feed to this existing dealer id (e.g. one created before rooftop ids were stored)}
         {--new-dealer : Create a new dealer even though one with the same name already exists}
+        {--new-rooftop : With --dealer, add the feed as another rooftop of that dealer}
         {--keep-missing : Leave cars that are no longer in the feed as they are (default: unpublish them)}';
 
     protected $description = 'Import a dealer inventory CSV into the dealers and vehicles tables';
@@ -40,13 +42,14 @@ class ImportDealerInventory extends Command
         $headerColumns = array_map(fn ($column) => FeedText::clean($column), fgetcsv($fileHandle, separator: $delimiter, escape: "\\") ?: []);
 
         $dealer = null;
+        $rooftop = null;
         $feedRooftopId = null;
         $importedCount = 0;
         $newCount = 0;
         $skippedForNoPrice = 0;
         $skippedForNotACar = 0;
         $skippedForOtherRooftop = 0;
-        $skippedForVinOnOtherDealer = 0;
+        $skippedForVinOnOtherRooftop = 0;
 
         /** @var array<string, true> every VIN this rooftop's rows mention, imported or not */
         $vinsInFeed = [];
@@ -60,16 +63,18 @@ class ImportDealerInventory extends Command
             // UTF-8 before anything reads it ("4Ã—4" → "4×4").
             $row = array_combine($headerColumns, array_map(fn ($value) => FeedText::clean($value), $rowValues));
 
-            // Resolve the dealership once, from the dealer columns in the file.
-            if ($dealer === null) {
+            // Resolve the rooftop (and so its dealer) once, from the dealer columns in the file.
+            if ($rooftop === null) {
                 $feedRooftopId = trim($row['rooftop_id'] ?? '') ?: null;
-                $dealer = $this->resolveDealer($row, $feedRooftopId);
+                $rooftop = $this->resolveRooftop($row, $feedRooftopId);
 
-                if ($dealer === null) {
+                if ($rooftop === null) {
                     fclose($fileHandle);
 
                     return self::FAILURE;
                 }
+
+                $dealer = $rooftop->dealer;
             }
 
             // One file, one rooftop. A row from another rooftop isn't this
@@ -81,10 +86,12 @@ class ImportDealerInventory extends Command
 
             $vinsInFeed[strtoupper(trim($row['vin']))] = true;
 
-            // A VIN already on another dealer's lot is left there — never moved
-            // between rooftops by an import.
-            if (Vehicle::where('vin', $row['vin'])->where('dealer_id', '!=', $dealer->id)->exists()) {
-                $skippedForVinOnOtherDealer++;
+            // A VIN already at another rooftop — this dealer's or anyone's — is
+            // left there. An import never moves a car between stores.
+            $existing = Vehicle::where('vin', $row['vin'])->first();
+
+            if ($existing !== null && ((int) $existing->dealer_id !== $dealer->id || ($existing->rooftop_id !== null && (int) $existing->rooftop_id !== $rooftop->id))) {
+                $skippedForVinOnOtherRooftop++;
                 continue;
             }
 
@@ -103,9 +110,11 @@ class ImportDealerInventory extends Command
             $modelYear = (int) $row['year'];
             $kilometres = (int) $row['mileage'];
 
-            $vehicle = $dealer->vehicles()->firstOrNew(['vin' => $row['vin']]);
+            $vehicle = $existing ?? new Vehicle(['vin' => $row['vin']]);
 
             $vehicle->fill([
+                'dealer_id'      => $dealer->id,
+                'rooftop_id'     => $rooftop->id,
                 'stock_number'   => $row['stockNumber'] ?: null,
                 'condition'      => $condition,
                 'model_year'     => $modelYear,
@@ -139,38 +148,43 @@ class ImportDealerInventory extends Command
 
         fclose($fileHandle);
 
-        if ($dealer === null) {
+        if ($rooftop === null) {
             $this->warn('The file had no inventory rows.');
 
             return self::SUCCESS;
         }
 
-        $this->info("Dealer: {$dealer->name} (#{$dealer->id}" . ($dealer->feed_rooftop_id ? ", rooftop {$dealer->feed_rooftop_id}" : '') . ')');
+        $this->info("Dealer: {$dealer->name} (#{$dealer->id}" . ($rooftop->feed_rooftop_id ? ", rooftop {$rooftop->feed_rooftop_id}" : '') . ')');
 
-        if (! $dealer->hasCompleteAddress()) {
-            $this->warn('Dealer address incomplete (missing: ' . implode(', ', $dealer->missingAddressFields()) . ') — its vehicles can’t be published until an admin completes it.');
+        if (! $rooftop->is_primary) {
+            $this->info("Store: {$rooftop->display_name}");
+        }
+
+        if (! $rooftop->hasCompleteAddress()) {
+            $this->warn('Dealer address incomplete (missing: ' . implode(', ', $rooftop->missingAddressFields()) . ') — its vehicles can’t be published until an admin completes it.');
         }
 
         $this->info("Imported / updated: {$importedCount} vehicles ({$newCount} new, unpublished until reviewed)");
         $this->line("Skipped (no price): {$skippedForNoPrice}");
         $this->line("Skipped (not a car): {$skippedForNotACar}");
         $this->line("Skipped (another rooftop in the file): {$skippedForOtherRooftop}");
-        $this->line("Skipped (VIN belongs to another dealer): {$skippedForVinOnOtherDealer}");
-        $this->info('Marked certified (dev stand-in): ' . $dealer->vehicles()->where('is_certified', true)->count());
-        $this->info('Manufacturer CPO (feed-flagged, franchise brand): ' . $dealer->vehicles()->where('is_manufacturer_certified', true)->count());
+        $this->line("Skipped (VIN belongs to another rooftop): {$skippedForVinOnOtherRooftop}");
+        $this->info('Marked certified (dev stand-in): ' . $rooftop->vehicles()->where('is_certified', true)->count());
+        $this->info('Manufacturer CPO (feed-flagged, franchise brand): ' . $rooftop->vehicles()->where('is_manufacturer_certified', true)->count());
 
         if (blank($dealer->franchise_make)) {
             $this->warn('No franchise brand confirmed for this dealer — none of its stock can qualify as manufacturer CPO.');
         }
 
-        $this->unpublishCarsMissingFromFeed($dealer, $vinsInFeed);
+        $this->unpublishCarsMissingFromFeed($rooftop, $vinsInFeed);
 
         return self::SUCCESS;
     }
 
     /**
-     * The feed is the dealer's current stock, so a published car that isn't in
-     * it any more has been sold or pulled — take it off the marketplace.
+     * The feed is this rooftop's current stock, so a published car of this
+     * rooftop that isn't in it any more has been sold or pulled — take it off
+     * the marketplace. Cars at the dealer's other rooftops are never touched.
      * Unpublished, never deleted: reservations and history stay intact, and
      * it's back the moment it reappears in a feed and someone republishes it.
      *
@@ -179,7 +193,7 @@ class ImportDealerInventory extends Command
      *
      * @param  array<string, true>  $vinsInFeed
      */
-    private function unpublishCarsMissingFromFeed(Dealer $dealer, array $vinsInFeed): void
+    private function unpublishCarsMissingFromFeed(Rooftop $rooftop, array $vinsInFeed): void
     {
         if ($this->option('keep-missing')) {
             $this->line('Cars no longer in the feed: left as they are (--keep-missing).');
@@ -193,7 +207,7 @@ class ImportDealerInventory extends Command
             return;
         }
 
-        $missing = $dealer->vehicles()
+        $missing = $rooftop->vehicles()
             ->where('is_published', true)
             ->get()
             ->reject(fn (Vehicle $vehicle) => isset($vinsInFeed[strtoupper(trim($vehicle->vin))]));
@@ -204,18 +218,21 @@ class ImportDealerInventory extends Command
     }
 
     /**
-     * Find or create the dealer this feed belongs to.
+     * Find or create the rooftop this feed belongs to, and with it the dealer.
      *
      * The feed's rooftop id is the identity. Display names are not: two rooftops
      * can share one, so a name match alone never merges dealers when the feed
      * gives us an id. A dealer created before ids were stored is linked
-     * explicitly with --dealer. Only a feed without a rooftop id falls back to
-     * the old name match.
+     * explicitly with --dealer, and a dealer's second store is added with
+     * --dealer and --new-rooftop. Only a feed without a rooftop id falls back
+     * to the old name match, onto that dealer's main store.
      *
      * @param  array<string, string>  $row
      */
-    private function resolveDealer(array $row, ?string $feedRooftopId): ?Dealer
+    private function resolveRooftop(array $row, ?string $feedRooftopId): ?Rooftop
     {
+        $known = $feedRooftopId === null ? null : Rooftop::where('feed_rooftop_id', $feedRooftopId)->first();
+
         if ($this->option('dealer') !== null) {
             $dealer = Dealer::find($this->option('dealer'));
 
@@ -225,35 +242,40 @@ class ImportDealerInventory extends Command
                 return null;
             }
 
-            if ($feedRooftopId !== null) {
-                $linkedElsewhere = Dealer::where('feed_rooftop_id', $feedRooftopId)->whereKeyNot($dealer->id)->first();
-
-                if ($dealer->feed_rooftop_id !== null && $dealer->feed_rooftop_id !== $feedRooftopId) {
-                    $this->error("Dealer #{$dealer->id} is already linked to rooftop {$dealer->feed_rooftop_id}, not {$feedRooftopId}.");
+            if ($known !== null) {
+                if ((int) $known->dealer_id !== $dealer->id) {
+                    $this->error("Rooftop {$feedRooftopId} is already linked to dealer #{$known->dealer_id} ({$known->dealer->name}).");
 
                     return null;
                 }
 
-                if ($linkedElsewhere !== null) {
-                    $this->error("Rooftop {$feedRooftopId} is already linked to dealer #{$linkedElsewhere->id} ({$linkedElsewhere->name}).");
-
-                    return null;
-                }
-
-                $dealer->feed_rooftop_id = $feedRooftopId;
+                return $this->fillBlanksFromFeed($known, $row);
             }
 
-            return $this->fillBlanksFromFeed($dealer, $row);
+            $main = $dealer->primaryRooftop ?? $dealer->syncPrimaryRooftop();
+
+            if ($feedRooftopId === null || $main->feed_rooftop_id === null) {
+                $dealer->feed_rooftop_id ??= $feedRooftopId;
+
+                return $this->fillBlanksFromFeed($dealer, $row);
+            }
+
+            if (! $this->option('new-rooftop')) {
+                $this->error("Dealer #{$dealer->id} is already linked to rooftop {$main->feed_rooftop_id}, not {$feedRooftopId}.");
+                $this->line("  Another store of this dealer: php artisan vehicles:import {$this->argument('path')} --dealer={$dealer->id} --new-rooftop");
+
+                return null;
+            }
+
+            return $this->fillBlanksFromFeed(new Rooftop(['dealer_id' => $dealer->id, 'feed_rooftop_id' => $feedRooftopId]), $row);
+        }
+
+        if ($known !== null) {
+            return $this->fillBlanksFromFeed($known, $row);
         }
 
         if ($feedRooftopId === null) {
             return $this->fillBlanksFromFeed(Dealer::firstOrNew(['name' => $row['dealer_name']]), $row);
-        }
-
-        $dealer = Dealer::where('feed_rooftop_id', $feedRooftopId)->first();
-
-        if ($dealer !== null) {
-            return $this->fillBlanksFromFeed($dealer, $row);
         }
 
         $sameName = Dealer::whereNull('feed_rooftop_id')->where('name', $row['dealer_name'])->first();
@@ -274,10 +296,17 @@ class ImportDealerInventory extends Command
      * admin has already set or corrected are never overwritten by a re-import.
      * A new dealer starts as a draft for an admin to review and activate.
      *
+     * A dealer is filled for its main store (mirrored onto the primary
+     * rooftop); any other rooftop is filled directly.
+     *
      * @param  array<string, string>  $row
      */
-    private function fillBlanksFromFeed(Dealer $dealer, array $row): Dealer
+    private function fillBlanksFromFeed(Dealer|Rooftop $dealer, array $row): Rooftop
     {
+        if ($dealer instanceof Rooftop && $dealer->is_primary) {
+            return $this->fillBlanksFromFeed($dealer->dealer, $row);
+        }
+
         $province = CanadianAddress::normalizeProvince($row['dealer_region_code'] ?? null);
         $postalCode = CanadianAddress::normalizePostalCode($row['dealer_postal_code'] ?? null);
         $latitude = is_numeric($row['dealer_latitude'] ?? null) ? (float) $row['dealer_latitude'] : null;
@@ -314,7 +343,7 @@ class ImportDealerInventory extends Command
 
         $dealer->save();
 
-        return $dealer;
+        return $dealer instanceof Dealer ? $dealer->syncPrimaryRooftop() : $dealer;
     }
 
     /**

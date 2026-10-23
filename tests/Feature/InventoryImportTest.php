@@ -137,7 +137,7 @@ class InventoryImportTest extends TestCase
         ]);
 
         $this->import([$this->row('ROOF-A', 'VIN00000000000001')])
-            ->expectsOutputToContain('Skipped (VIN belongs to another dealer): 1')
+            ->expectsOutputToContain('Skipped (VIN belongs to another rooftop): 1')
             ->assertSuccessful();
 
         $this->assertSame($other->id, Vehicle::where('vin', 'VIN00000000000001')->value('dealer_id'));

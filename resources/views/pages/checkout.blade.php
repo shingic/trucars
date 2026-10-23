@@ -208,13 +208,6 @@ new #[Layout('layouts.checkout')] class extends Component {
     public ?string $handoverDate = null;     // 'Y-m-d' from handoverDateOptions()
     public string $handoverTimeSlot = '10:00';
 
-    // The hubs a buyer can collect from. Distance is illustrative copy, matching
-    // the prototype — the dealership confirms the exact address when they reach out.
-    public array $pickupSpots = [
-        ['name' => 'Mississauga hub',  'distance' => '55 km'],
-        ['name' => 'Downtown Toronto', 'distance' => '38 km'],
-    ];
-
     // Two-hour collection/delivery windows. The key is the window's start time
     // (24h) so it slots straight into the pickup_at timestamp.
     public array $handoverTimeSlots = [
@@ -682,7 +675,7 @@ new #[Layout('layouts.checkout')] class extends Component {
 
     public function setPickupSpot(int $spotIndex): void
     {
-        if (array_key_exists($spotIndex, $this->pickupSpots)) {
+        if (array_key_exists($spotIndex, $this->pickupSpots())) {
             $this->pickupSpotIndex = $spotIndex;
         }
     }
@@ -800,7 +793,7 @@ new #[Layout('layouts.checkout')] class extends Component {
             'handoverDate.in'       => 'Pick a day that works for you.',
         ]);
 
-        if ($this->handoverMode === 'pickup' && ! array_key_exists($this->pickupSpotIndex, $this->pickupSpots)) {
+        if ($this->handoverMode === 'pickup' && ! array_key_exists($this->pickupSpotIndex, $this->pickupSpots())) {
             $this->pickupSpotIndex = 0;
         }
 
@@ -1018,12 +1011,29 @@ new #[Layout('layouts.checkout')] class extends Component {
         return $options;
     }
 
-    public function selectedPickupSpotName(): string
+    /**
+     * Where a buyer can collect the car: the rooftop it sits at.
+     *
+     * @return array<int, array{name: string, address: string}>
+     */
+    public function pickupSpots(): array
     {
-        return $this->pickupSpots[$this->pickupSpotIndex]['name'] ?? $this->pickupSpots[0]['name'];
+        $store = $this->vehicle->locatedAt();
+
+        return [[
+            'name'    => ucwords(strtolower($store instanceof \App\Models\Rooftop ? $store->display_name : (string) $store?->name)),
+            'address' => implode(', ', $store?->address_lines ?? []),
+        ]];
     }
 
-    /** Where the car changes hands — a named hub for pickup, the buyer's city for delivery. */
+    public function selectedPickupSpotName(): string
+    {
+        $spots = $this->pickupSpots();
+
+        return ($spots[$this->pickupSpotIndex] ?? $spots[0])['name'];
+    }
+
+    /** Where the car changes hands — the store for pickup, the buyer's city for delivery. */
     public function handoverLocationLabel(): string
     {
         if ($this->handoverMode === 'pickup') {
@@ -1035,10 +1045,10 @@ new #[Layout('layouts.checkout')] class extends Component {
         return 'Home delivery' . ($cityProvince !== '' ? ' · ' . $cityProvince : '');
     }
 
-    /** The dealer's IANA zone — handover windows are dealer-local times. */
+    /** The car's rooftop's IANA zone — handover windows are store-local times. */
     public function dealerTimezone(): string
     {
-        return $this->vehicle->dealer->localTimezone();
+        return $this->vehicle->locatedAt()?->localTimezone() ?? config('app.timezone');
     }
 
     /**
@@ -1155,6 +1165,7 @@ new #[Layout('layouts.checkout')] class extends Component {
 
             $deal = Deal::create([
                 'dealer_id'             => $this->vehicle->dealer_id,
+                'rooftop_id'            => $this->vehicle->rooftop_id,
                 'vehicle_id'            => $this->vehicle->id,
                 'user_id'               => auth()->id(),
                 'purchase_type'         => $this->purchaseType,
@@ -1985,13 +1996,13 @@ new #[Layout('layouts.checkout')] class extends Component {
             @elseif ($this->stepKey() === 'handover')
                 <div class="step-meta">Step 5 · Handover</div>
                 <h1 class="h1">How should we get it to you?</h1>
-                <p class="lede">Both options are on us. Collect it yourself from a nearby hub, or we'll bring it to your door — keys in hand, paperwork done on the spot.</p>
+                <p class="lede">Both options are on us. Collect it yourself from the dealership, or we'll bring it to your door — keys in hand, paperwork done on the spot.</p>
 
                 <button type="button" class="choice {{ $handoverMode === 'pickup' ? 'is-on' : '' }}" wire:click="setHandoverMode('pickup')">
                     <span class="radio"></span>
                     <div>
                         <div class="choice-title">I'll pick it up <span class="tag-free">FREE</span></div>
-                        <div class="choice-sub">{{ count($pickupSpots) }} hubs near you · closest {{ $pickupSpots[0]['distance'] }} · we cover up to $100 of your ride there</div>
+                        <div class="choice-sub">At {{ $this->pickupSpots()[0]['name'] }}{{ $this->vehicle->display_location ? ', ' . $this->vehicle->display_location : '' }} · we cover up to $100 of your ride there</div>
                     </div>
                 </button>
                 <button type="button" class="choice {{ $handoverMode === 'delivery' ? 'is-on' : '' }}" wire:click="setHandoverMode('delivery')">
@@ -2003,12 +2014,12 @@ new #[Layout('layouts.checkout')] class extends Component {
                 </button>
 
                 @if ($handoverMode === 'pickup')
-                    <div class="section-label">Which hub?</div>
+                    <div class="section-label">Where you'll collect it</div>
                     <div class="spot-grid">
-                        @foreach ($pickupSpots as $spotIndex => $spot)
+                        @foreach ($this->pickupSpots() as $spotIndex => $spot)
                             <button type="button" class="spot {{ $pickupSpotIndex === $spotIndex ? 'is-on' : '' }}" wire:click="setPickupSpot({{ $spotIndex }})">
                                 <span class="spot-name">{{ $spot['name'] }}</span>
-                                <span class="spot-distance">{{ $spot['distance'] }} away</span>
+                                @if ($spot['address'] !== '') <span class="spot-distance">{{ $spot['address'] }}</span> @endif
                             </button>
                         @endforeach
                     </div>

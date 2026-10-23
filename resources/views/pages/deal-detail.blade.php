@@ -976,6 +976,10 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
                         @if ($deal->vehicle->stock_number)
                             <div class="row"><span class="k">Stock #</span><span class="v">{{ $deal->vehicle->stock_number }}</span></div>
                         @endif
+                        {{-- Only worth a line when the dealer has more than one store. --}}
+                        @if ($deal->rooftop_label && $deal->dealer?->rooftops()->count() > 1)
+                            <div class="row"><span class="k">Store</span><span class="v">{{ $deal->rooftop_label }}</span></div>
+                        @endif
                     </div>
                 </div>
             </div>

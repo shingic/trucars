@@ -58,7 +58,7 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
         }
 
         // A few candidates, in case a feed sent some cars with an empty photo list.
-        return (clone $withPhotos)->where('vehicles.dealer_id', $dealerId)->with('dealer')
+        return (clone $withPhotos)->where('vehicles.dealer_id', $dealerId)->with(['dealer', 'rooftop'])
             ->inRandomOrder()->limit(5)->get()
             ->first(fn (Vehicle $vehicle) => $vehicle->primary_photo_url !== null);
     }
@@ -73,7 +73,7 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
         $withPhotos = (clone $listed)->whereNotNull('photos');
 
         $hands = (clone $withPhotos)->distinct()->pluck('vehicles.dealer_id')->shuffle()->take($count)
-            ->map(fn ($dealerId) => (clone $withPhotos)->where('vehicles.dealer_id', $dealerId)->with('dealer')->withReservedFlag()
+            ->map(fn ($dealerId) => (clone $withPhotos)->where('vehicles.dealer_id', $dealerId)->with(['dealer', 'rooftop'])->withReservedFlag()
                 ->inRandomOrder()->limit($count + 2)->get()
                 ->filter(fn (Vehicle $vehicle) => $vehicle->primary_photo_url !== null)->values());
 

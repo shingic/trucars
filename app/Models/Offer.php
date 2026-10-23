@@ -111,7 +111,7 @@ class Offer extends Model
             return false;
         }
 
-        if ($this->provinces && ! in_array($vehicle->dealer?->province, $this->provinces, true)) {
+        if ($this->provinces && ! in_array($vehicle->locatedAt()?->province, $this->provinces, true)) {
             return false;
         }
 

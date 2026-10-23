@@ -281,8 +281,8 @@ new class extends Component {
 
         return $vehicles
             ->sortBy(fn (Vehicle $vehicle) => [
-                ShopperLocation::distanceKm($location, $vehicle->dealer) ?? PHP_INT_MAX,
-                ShopperLocation::proximityRank($location, $vehicle->dealer),
+                ShopperLocation::distanceKm($location, $vehicle->locatedAt()) ?? PHP_INT_MAX,
+                ShopperLocation::proximityRank($location, $vehicle->locatedAt()),
             ])
             ->values();
     }
@@ -416,7 +416,7 @@ new class extends Component {
             'shopperLocation' => $shopperLocation,
             // km per vehicle id, only where both ends have coordinates.
             'distancesKm' => $this->publishedVehicles
-                ->mapWithKeys(fn (Vehicle $vehicle) => [$vehicle->id => ShopperLocation::distanceKm($shopperLocation, $vehicle->dealer)])
+                ->mapWithKeys(fn (Vehicle $vehicle) => [$vehicle->id => ShopperLocation::distanceKm($shopperLocation, $vehicle->locatedAt())])
                 ->filter(fn (?float $km) => $km !== null)
                 ->all(),
         ];

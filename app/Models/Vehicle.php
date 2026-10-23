@@ -24,6 +24,7 @@ class Vehicle extends Model
 
     protected $fillable = [
         'dealer_id',
+        'rooftop_id',
         'vin',
         'model_year',
         'make',
@@ -58,27 +59,52 @@ class Vehicle extends Model
     }
 
     /**
-     * A car can't go live until its dealer has an address — every car is at its
-     * dealer's rooftop, so without one there's no honest answer to "where is it?".
-     * Checked on publish and on a move to another dealer. (Bulk query-builder
-     * updates skip model events; publish through the model.)
+     * Every car sits at one of its dealer's rooftops — the main store unless
+     * told otherwise — and never at another dealer's. A car can't go live
+     * until that rooftop has an address: without one there's no honest answer
+     * to "where is it?". Checked on publish and on a move to another dealer or
+     * rooftop. (Bulk query-builder updates skip model events; publish through
+     * the model.)
      */
     protected static function booted(): void
     {
         static::saving(function (Vehicle $vehicle) {
-            if (! $vehicle->is_published || ! $vehicle->isDirty(['is_published', 'dealer_id'])) {
+            $vehicle->placeAtRooftop();
+
+            if (! $vehicle->is_published || ! $vehicle->isDirty(['is_published', 'dealer_id', 'rooftop_id'])) {
                 return;
             }
 
-            $dealer = $vehicle->dealer()->first();
+            $rooftop = $vehicle->rooftop()->first();
 
-            if ($dealer === null || ! $dealer->hasCompleteAddress()) {
+            if ($rooftop === null || ! $rooftop->hasCompleteAddress()) {
                 throw ValidationException::withMessages([
                     'is_published' => 'This vehicle can’t be published until its dealer has a complete address (missing: '
-                        . implode(', ', $dealer?->missingAddressFields() ?? ['dealer']) . ').',
+                        . implode(', ', $rooftop?->missingAddressFields() ?? ['dealer']) . ').',
                 ]);
             }
         });
+    }
+
+    private function placeAtRooftop(): void
+    {
+        if ($this->dealer_id === null || ($this->rooftop_id !== null && ! $this->isDirty(['dealer_id', 'rooftop_id']))) {
+            return;
+        }
+
+        $rooftop = $this->rooftop_id ? Rooftop::find($this->rooftop_id) : null;
+
+        if ($rooftop !== null && (int) $rooftop->dealer_id !== (int) $this->dealer_id) {
+            // Moved to another dealer: the old store goes with the old dealer.
+            if ($this->isDirty('dealer_id') && ! $this->isDirty('rooftop_id')) {
+                $rooftop = null;
+            } else {
+                throw ValidationException::withMessages(['rooftop_id' => 'That rooftop belongs to another dealer.']);
+            }
+        }
+
+        $this->rooftop_id = ($rooftop ?? Dealer::find($this->dealer_id)?->primaryRooftop)?->id;
+        $this->unsetRelation('rooftop');
     }
 
     public function dealer(): BelongsTo
@@ -86,16 +112,33 @@ class Vehicle extends Model
         return $this->belongsTo(Dealer::class);
     }
 
+    /** The store the car physically sits at. The dealer is still the seller. */
+    public function rooftop(): BelongsTo
+    {
+        return $this->belongsTo(Rooftop::class);
+    }
+
+    /**
+     * Where the car is: its rooftop, or the dealer's own address for a car not
+     * yet placed at one. Address, coordinates and timezone all come from here.
+     */
+    public function locatedAt(): Rooftop|Dealer|null
+    {
+        return $this->rooftop ?? $this->dealer;
+    }
+
     /**
      * What shoppers may see on the open marketplace: published cars from active
-     * dealers. A dealer switched back to draft drops off without anyone having
-     * to unpublish each car. Reserved cars stay listed — shown as reserved,
-     * with a bell to hear if the deal falls through.
+     * dealers, at open rooftops. A dealer switched back to draft, or a store
+     * marked closed, drops off without anyone having to unpublish each car.
+     * Reserved cars stay listed — shown as reserved, with a bell to hear if
+     * the deal falls through.
      */
     public function scopeListed(Builder $query): void
     {
         $query->where('vehicles.is_published', true)
-            ->whereHas('dealer', fn (Builder $dealer) => $dealer->where('status', Dealer::STATUS_ACTIVE));
+            ->whereHas('dealer', fn (Builder $dealer) => $dealer->where('status', Dealer::STATUS_ACTIVE))
+            ->whereDoesntHave('rooftop', fn (Builder $rooftop) => $rooftop->where('is_active', false));
     }
 
     /** Adds is_reserved to each car, for the "Reserved" tag on cards. */
@@ -125,13 +168,13 @@ class Vehicle extends Model
 
     public function isListed(): bool
     {
-        return $this->is_published && $this->dealer?->isActive();
+        return $this->is_published && $this->dealer?->isActive() && $this->rooftop?->is_active !== false;
     }
 
-    /** Where the car is — always its dealer's address, e.g. "Chilliwack, BC". */
+    /** Where the car is — its rooftop's city, e.g. "Chilliwack, BC". */
     protected function displayLocation(): Attribute
     {
-        return Attribute::get(fn (): ?string => $this->dealer?->display_location);
+        return Attribute::get(fn (): ?string => $this->locatedAt()?->display_location);
     }
 
     /**

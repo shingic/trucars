@@ -17,8 +17,8 @@ use Illuminate\Support\Collection;
  */
 final class VehicleCertification
 {
-    /** Relations to eager-load before calling for() on a list of cars. */
-    public const EAGER = ['dealer'];
+    /** Relations to eager-load before calling for() on a list of cars (rooftop for its location). */
+    public const EAGER = ['dealer', 'rooftop'];
 
     /** @param  array<string, array<int, string>>  $sections  section → point labels */
     private function __construct(

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use App\Models\Dealer;
+use App\Models\Rooftop;
 
 /**
  * Where a shopper says they are, for distances and "nearest first" — held in
@@ -80,8 +81,8 @@ class ShopperLocation
         session()->forget(self::SESSION_KEY);
     }
 
-    /** Straight-line km from the shopper to the dealer, when both have coordinates. */
-    public static function distanceKm(?array $location, ?Dealer $dealer): ?float
+    /** Straight-line km from the shopper to the car's rooftop, when both have coordinates. */
+    public static function distanceKm(?array $location, Rooftop|Dealer|null $dealer): ?float
     {
         if (! isset($location['latitude'], $location['longitude']) || $dealer === null || ! $dealer->hasCoordinates()) {
             return null;
@@ -101,7 +102,7 @@ class ShopperLocation
      * Coarse closeness for typed locations: 0 same city, 1 same province,
      * 2 anywhere else. Used for "nearest first" when there are no coordinates.
      */
-    public static function proximityRank(?array $location, ?Dealer $dealer): int
+    public static function proximityRank(?array $location, Rooftop|Dealer|null $dealer): int
     {
         if ($location === null || $dealer === null) {
             return 2;

@@ -47,7 +47,14 @@
         @error('registrationNumber') <span class="err">{{ $message }}</span> @enderror
     </div>
     <div class="field">
-        <label for="feedRooftopId">Inventory feed rooftop id</label>
+        <label for="groupName">Dealer group <span class="opt">(optional)</span></label>
+        <input id="groupName" type="text" wire:model="groupName" maxlength="120" list="dealer-groups" autocomplete="off">
+        <datalist id="dealer-groups">@foreach ($this->groupNames() as $existingGroup)<option value="{{ $existingGroup }}"></option>@endforeach</datalist>
+        @error('groupName') <span class="err">{{ $message }}</span> @enderror
+        <span class="hint">The organization that owns this dealer. It doesn't give anyone access to it.</span>
+    </div>
+    <div class="field">
+        <label for="feedRooftopId">Main store feed rooftop id</label>
         <input id="feedRooftopId" type="text" value="{{ $feedRooftopId ?? 'Set by the first inventory import' }}" readonly>
     </div>
     <div class="field w2">
