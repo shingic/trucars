@@ -531,14 +531,6 @@ new class extends Component {
                     <input type="text" placeholder="Make, model or keyword" wire:model.live.debounce.300ms="search">
                 </div>
 
-                <div class="cert-promise">
-                    <span class="ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>
-                    <div>
-                        <div class="t">See what was inspected</div>
-                        <div class="s">Certified cars list every inspection point.</div>
-                    </div>
-                </div>
-
                 <div class="fgroup" wire:key="group-price" x-data="{ open: false }">
                     <button type="button" class="fgroup-head" x-on:click="open = !open">
                         Price
@@ -794,10 +786,6 @@ new class extends Component {
         .filter-search { display:flex; align-items:center; gap:9px; background:#fff; border:1.5px solid var(--ink); border-radius:3px; padding:10px 12px; margin-bottom:14px; }
         .filter-search svg { color:var(--ink-3); flex-shrink:0; }
         .filter-search input { border:none; outline:none; background:transparent; font-size:14.5px; width:100%; color:var(--ink); }
-        .cert-promise { display:flex; align-items:flex-start; gap:10px; padding:4px 0 14px; }
-        .cert-promise .ic { color:var(--good); flex-shrink:0; margin-top:2px; }
-        .cert-promise .t { font-size:14px; font-weight:700; color:var(--ink); }
-        .cert-promise .s { font-size:13px; color:var(--ink-3); margin-top:1px; line-height:1.4; }
 
         .fgroup { border-top:1px solid var(--line-strong); }
         .fgroup:last-child { border-bottom:1px solid var(--line-strong); }
