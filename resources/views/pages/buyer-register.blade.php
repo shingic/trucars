@@ -96,7 +96,7 @@ new #[Layout('layouts.checkout')] class extends Component {
         .auth-top-inner { max-width:1080px; margin:0 auto; padding:0 26px; display:flex; align-items:center; height:64px; }
         .auth-wrap { max-width:440px; margin:0 auto; padding:56px 26px 90px; }
         .auth-card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-md); padding:32px 30px; }
-        .auth-h1 { font-size:26px; font-weight:800; letter-spacing:-.025em; margin:0 0 6px; }
+        .auth-h1 { font-size:26px; font-weight:800; letter-spacing:0; margin:0 0 6px; }
         .auth-lede { font-size:14px; color:var(--ink-2); margin:0 0 24px; line-height:1.55; }
         .auth-form { display:flex; flex-direction:column; gap:16px; }
         .auth-swap { text-align:center; font-size:13.5px; color:var(--ink-2); margin-top:18px; }

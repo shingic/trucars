@@ -60,7 +60,7 @@ new #[Layout('layouts.dealer')] #[Title('All stores')] class extends Component {
 
 @push('styles')
     <style>
-        .dg-head h1 { font-size:24px; font-weight:800; letter-spacing:-.02em; margin:0 0 6px; }
+        .dg-head h1 { font-size:24px; font-weight:800; letter-spacing:0; margin:0 0 6px; }
         .dg-head p { margin:0 0 20px; font-size:14px; color:var(--ink-2); max-width:680px; }
         .dg-table { width:100%; border-collapse:collapse; background:var(--card); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow-sm); }
         .dg-table th { text-align:left; font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3); padding:12px 16px; border-bottom:1px solid var(--line); }

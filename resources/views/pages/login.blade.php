@@ -125,22 +125,22 @@ new #[Layout('layouts.auth')] class extends Component {
         }
         .auth-brand > * { position:relative; z-index:1; }
 
-        .auth-brand-mark { display:inline-flex; align-items:center; gap:11px; font-weight:800; font-size:18px; letter-spacing:-.02em; }
+        .auth-brand-mark { display:inline-flex; align-items:center; gap:11px; font-weight:800; font-size:18px; letter-spacing:0; }
         .auth-brand-glyph { width:30px; height:30px; border-radius:9px; background:var(--primary); display:grid; place-items:center; font-size:15px; color:#fff; box-shadow:0 8px 22px rgba(245,99,31,.4); }
 
         .auth-brand-body { margin:auto 0; max-width:430px; }
-        .auth-brand-headline { font-size:42px; line-height:1.08; font-weight:800; letter-spacing:-.035em; margin:0 0 18px; }
+        .auth-brand-headline { font-size:42px; line-height:1.08; font-weight:800; letter-spacing:0; margin:0 0 18px; }
         .auth-brand-sub { font-size:16px; line-height:1.6; color:#B9BEC6; margin:0; max-width:400px; }
 
         .auth-brand-foot { display:inline-flex; align-items:center; gap:9px; font-size:12.5px; font-weight:600; color:#8A9098; }
         .auth-brand-foot-dot { width:7px; height:7px; border-radius:50%; background:var(--good); box-shadow:0 0 0 4px rgba(18,184,134,.18); }
 
         .auth-form-panel { display:flex; flex-direction:column; justify-content:center; align-items:center; padding:46px; position:relative; }
-        .auth-mobile-brand { display:none; align-items:center; gap:10px; font-weight:800; font-size:17px; letter-spacing:-.02em; color:var(--ink); margin-bottom:26px; }
+        .auth-mobile-brand { display:none; align-items:center; gap:10px; font-weight:800; font-size:17px; letter-spacing:0; color:var(--ink); margin-bottom:26px; }
         .auth-form { width:100%; max-width:372px; }
 
         .auth-kicker { display:inline-block; font-size:11.5px; font-weight:700; letter-spacing:.13em; text-transform:uppercase; color:var(--primary); margin-bottom:14px; }
-        .auth-title { font-size:30px; font-weight:800; letter-spacing:-.03em; margin:0 0 7px; }
+        .auth-title { font-size:30px; font-weight:800; letter-spacing:0; margin:0 0 7px; }
         .auth-lead { font-size:14.5px; color:var(--ink-2); margin:0 0 30px; }
 
         .auth-fields { display:flex; flex-direction:column; gap:18px; }

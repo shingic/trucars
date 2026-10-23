@@ -70,7 +70,7 @@ new #[Layout('layouts.dealer')] #[Title('Customers')] class extends Component {
 
 @push('styles')
     <style>
-        .cu-head h1 { font-size:24px; font-weight:800; letter-spacing:-.02em; margin:0 0 6px; }
+        .cu-head h1 { font-size:24px; font-weight:800; letter-spacing:0; margin:0 0 6px; }
         .cu-head p { margin:0 0 20px; font-size:14px; color:var(--ink-2); max-width:640px; }
         .cu-search { display:flex; gap:10px; max-width:640px; margin-bottom:6px; }
         .cu-search input { flex:1; border:1px solid var(--line-strong); border-radius:var(--radius-pill); padding:10px 16px; font-size:14px; font-family:inherit; }

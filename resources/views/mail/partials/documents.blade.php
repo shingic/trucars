@@ -1,5 +1,5 @@
 {{-- A checklist of documents for a buyer email. Takes $documents (DealDocument rows). --}}
-@php($font = "font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;")
+@php($font = "font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;")
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4F4F2; border-radius:12px;">
     @foreach ($documents as $document)
         <tr>

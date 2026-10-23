@@ -49,7 +49,7 @@ new #[Layout('layouts.dealer')] #[Title('Audit log')] class extends Component {
 @push('styles')
     <style>
         .al-head { display:flex; align-items:flex-end; gap:16px; margin-bottom:18px; }
-        .al-head h1 { font-size:24px; font-weight:800; letter-spacing:-.02em; margin:0; flex:1; }
+        .al-head h1 { font-size:24px; font-weight:800; letter-spacing:0; margin:0; flex:1; }
         .al-head select { border:1px solid var(--line-strong); border-radius:var(--radius-sm); padding:8px 12px; font-family:inherit; font-size:13.5px; background:var(--card); }
         .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-sm); overflow:hidden; }
         .al-row { display:grid; grid-template-columns:150px 200px minmax(0, 1fr); gap:14px; padding:12px 18px; border-bottom:1px solid var(--line); font-size:13px; }

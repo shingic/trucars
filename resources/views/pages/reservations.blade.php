@@ -149,7 +149,7 @@ new #[Layout('layouts.dealer')] class extends Component {
         .inbox { max-width:1180px; }
 
         .page-head { margin-bottom:18px; }
-        .page-head h1 { font-size:25px; font-weight:800; letter-spacing:-.025em; margin:0; }
+        .page-head h1 { font-size:25px; font-weight:800; letter-spacing:0; margin:0; }
         .page-sub { color:var(--ink-2); font-size:14px; margin:5px 0 0; }
 
         .inbox-tabs { display:flex; gap:4px; border-bottom:1.5px solid var(--line); margin-bottom:18px; }
@@ -174,7 +174,7 @@ new #[Layout('layouts.dealer')] class extends Component {
         .dr-cust { display:flex; flex-direction:column; gap:2px; }
         .dr-name { font-weight:700; font-size:14.5px; }
         .dr-meta { font-size:12px; color:var(--ink-3); }
-        .dr-ref { font-family:'Geist Mono', monospace; font-size:11.5px; color:var(--ink-2); font-weight:600; }
+        .dr-ref { font-family:var(--mono); font-size:11.5px; color:var(--ink-2); font-weight:600; }
 
         .dr-veh { display:flex; align-items:center; gap:11px; }
         .dr-thumb { width:46px; height:36px; border-radius:8px; background:linear-gradient(155deg,#FF8A3D,#F5631F 70%); display:grid; place-items:center; flex-shrink:0; }

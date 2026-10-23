@@ -1,5 +1,5 @@
 @php
-    $font = "font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;";
+    $font = "font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;";
     $car = $vehicle->model_year . ' ' . $vehicle->make . ' ' . $vehicle->model;
 @endphp
 <!DOCTYPE html>

@@ -8,7 +8,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Barlow+Semi+Condensed:wght@500;600;700;800&display=swap" rel="stylesheet">
 
     @livewireStyles
 
@@ -38,12 +38,13 @@
             --shadow-primary:0 12px 28px rgba(245,99,31,.30);
             --hero-grad:linear-gradient(155deg,#FF8A3D,#F5631F 65%,#EC4E0C);
             --radius:24px; --radius-sm:16px; --radius-pill:999px;
-            --font-ui:"Geist",-apple-system,BlinkMacSystemFont,sans-serif;
-            --font-mono:"Geist Mono",ui-monospace,monospace;
+            --font-ui:"Barlow",-apple-system,BlinkMacSystemFont,sans-serif; --font-display:"Barlow Semi Condensed","Barlow",sans-serif;
+            --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
         }
 
         * { box-sizing:border-box; }
         body { margin:0; font-family:var(--font-ui); color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; line-height:1.45; padding-bottom:96px; }
+        h1, h2, h3, h4 { font-family:var(--font-display); }
         button { font-family:inherit; cursor:pointer; border:none; background:none; color:inherit; }
         input, select, textarea { font-family:inherit; }
         a { color:inherit; }
@@ -54,7 +55,7 @@
         /* ===== top: brand + vehicle chip + named stepper ===== */
         .top { position:sticky; top:0; z-index:40; background:rgba(255,255,255,.9); backdrop-filter:saturate(160%) blur(14px); border-bottom:1px solid var(--line); }
         .top-inner { max-width:1220px; margin:0 auto; display:flex; align-items:center; gap:16px; height:64px; padding:0 26px; }
-        .brand { display:flex; align-items:center; gap:10px; font-weight:800; font-size:18px; letter-spacing:-.02em; text-decoration:none; }
+        .brand { display:flex; align-items:center; gap:10px; font-weight:800; font-size:18px; letter-spacing:0; text-decoration:none; }
         .brand .glyph { width:28px; height:28px; border-radius:9px; background:var(--primary); color:#fff; display:grid; place-items:center; font-weight:800; font-size:15px; box-shadow:var(--shadow-primary); }
         .veh-chip { margin-left:auto; display:flex; align-items:center; gap:11px; background:var(--card); border:1px solid var(--line); border-radius:var(--radius-pill); padding:6px 16px 6px 8px; box-shadow:var(--shadow-sm); }
         .veh-chip .thumb { width:38px; height:26px; border-radius:7px; background:linear-gradient(135deg,#FFE2CE,#FFD0B3); background-size:cover; background-position:center; display:grid; place-items:center; overflow:hidden; }
@@ -94,7 +95,7 @@
         .layout-solo { grid-template-columns:1fr; max-width:760px; }
         .content { min-width:0; }
         .step-meta { font-size:13px; font-weight:600; color:var(--primary); letter-spacing:.02em; margin-bottom:10px; }
-        .h1 { font-size:36px; font-weight:800; letter-spacing:-.03em; line-height:1.06; margin:0 0 12px; }
+        .h1 { font-size:36px; font-weight:800; letter-spacing:0; line-height:1.06; margin:0 0 12px; }
         .lede { font-size:16.5px; color:var(--ink-2); margin:0 0 30px; }
 
         /* summary rail */
@@ -113,7 +114,7 @@
         .rail-line.credit { color:var(--good); font-weight:600; }
         .rail-total { display:flex; justify-content:space-between; align-items:baseline; margin-top:14px; padding-top:14px; border-top:1.5px solid var(--line-strong); }
         .rail-total .lbl { font-weight:700; font-size:14.5px; }
-        .rail-total .amt { font-family:var(--font-mono); font-weight:700; font-size:23px; letter-spacing:-.02em; }
+        .rail-total .amt { font-family:var(--font-mono); font-weight:700; font-size:23px; letter-spacing:0; }
         .rail-total .amt .per { font-size:12.5px; color:var(--ink-3); font-weight:500; }
         .rail-due { display:flex; align-items:center; gap:8px; margin-top:14px; padding:11px 13px; background:var(--primary-soft); border-radius:12px; font-size:12.5px; color:var(--ink-2); }
         .rail-due b { color:var(--ink); }
@@ -167,7 +168,7 @@
         .paybar-back:hover { color:var(--primary); }
         .paybar-price { display:none; flex-direction:column; }
         .paybar-price .lbl { font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); }
-        .paybar-price .amt { font-size:20px; font-weight:800; letter-spacing:-.02em; }
+        .paybar-price .amt { font-size:20px; font-weight:800; letter-spacing:0; }
         .paybar-price .amt .per { font-size:12.5px; color:var(--ink-3); font-weight:500; }
         .paybar-cta { margin-left:auto; }
 

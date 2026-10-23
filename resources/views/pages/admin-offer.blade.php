@@ -135,7 +135,7 @@ new #[Layout('layouts.dealer')] #[Title('Offer')] class extends Component {
 @push('styles')
     <style>
         .oe-head { display:flex; align-items:center; gap:12px; margin-bottom:6px; flex-wrap:wrap; }
-        .oe-head h1 { font-size:24px; font-weight:800; letter-spacing:-.02em; margin:0; }
+        .oe-head h1 { font-size:24px; font-weight:800; letter-spacing:0; margin:0; }
         .oe-sub { font-size:14px; color:var(--ink-2); margin:0 0 18px; }
         .state { font-size:10.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; padding:4px 10px; border-radius:var(--radius-pill); background:var(--bg); border:1px solid var(--line); color:var(--ink-2); }
         .state.live { background:var(--good-soft); color:var(--good-ink); border-color:transparent; }

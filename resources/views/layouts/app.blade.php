@@ -6,7 +6,7 @@
     <title>TruCars — Certified used cars</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Barlow+Semi+Condensed:wght@500;600;700;800&display=swap" rel="stylesheet">
     @livewireStyles
     <style>
         :root {
@@ -20,19 +20,20 @@
             --shadow-primary:0 12px 28px rgba(245,99,31,.30);
             --hero-grad:linear-gradient(155deg,#FF8A3D,#F5631F 65%,#EC4E0C);
             --radius:24px; --radius-sm:16px; --radius-pill:999px;
-            --font-ui:"Geist",-apple-system,BlinkMacSystemFont,sans-serif;
-            --font-mono:"Geist Mono",ui-monospace,monospace;
+            --font-ui:"Barlow",-apple-system,BlinkMacSystemFont,sans-serif; --font-display:"Barlow Semi Condensed","Barlow",sans-serif;
+            --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
         }
         * { box-sizing:border-box; }
         [x-cloak] { display:none !important; }
         body { margin:0; font-family:var(--font-ui); color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; line-height:1.45; }
+        h1, h2, h3, h4 { font-family:var(--font-display); }
         button { font-family:inherit; cursor:pointer; border:none; background:none; }
         input { font-family:inherit; }
         a { color:inherit; }
 
         .nav { position:sticky; top:0; z-index:40; background:rgba(255,255,255,.9); backdrop-filter:saturate(160%) blur(14px); border-bottom:1px solid var(--line); }
         .nav-inner { max-width:1600px; margin:0 auto; padding:14px 24px; display:flex; align-items:center; gap:28px; }
-        .brand { display:flex; align-items:center; gap:9px; font-weight:800; font-size:17px; letter-spacing:-.02em; text-decoration:none; }
+        .brand { display:flex; align-items:center; gap:9px; font-weight:800; font-size:17px; letter-spacing:0; text-decoration:none; }
         .brand .glyph { width:28px; height:28px; border-radius:9px; background:var(--primary); color:#fff; display:grid; place-items:center; font-weight:800; font-size:15px; box-shadow:var(--shadow-primary); }
         .nav-links { display:flex; align-items:center; gap:22px; }
         .nav-links a { font-size:14.5px; font-weight:600; color:var(--ink-2); text-decoration:none; }

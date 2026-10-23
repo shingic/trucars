@@ -76,7 +76,7 @@ new #[Layout('layouts.dealer')] #[Title('Reservations')] class extends Component
 
 @push('styles')
     <style>
-        .rv-head h1 { font-size:24px; font-weight:800; letter-spacing:-.02em; margin:0 0 6px; }
+        .rv-head h1 { font-size:24px; font-weight:800; letter-spacing:0; margin:0 0 6px; }
         .rv-head p { margin:0 0 18px; font-size:14px; color:var(--ink-2); }
         .rv-filters { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:16px; }
         .rv-filters input, .rv-filters select { border:1px solid var(--line-strong); border-radius:var(--radius-sm); padding:9px 12px; font-size:13.5px; font-family:inherit; background:var(--card); }

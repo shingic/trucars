@@ -160,7 +160,7 @@ new #[Layout('layouts.dealer')] #[Title('Fee schedule')] class extends Component
 @push('styles')
     <style>
         .fees-head { display:flex; align-items:flex-start; gap:20px; margin-bottom:22px; }
-        .fees-head h1 { font-size:24px; font-weight:800; letter-spacing:-.02em; margin:0 0 6px; }
+        .fees-head h1 { font-size:24px; font-weight:800; letter-spacing:0; margin:0 0 6px; }
         .fees-head p { margin:0; font-size:14px; color:var(--ink-2); max-width:620px; }
         .fees-head .spacer { flex:1; }
 

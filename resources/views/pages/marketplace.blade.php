@@ -761,7 +761,7 @@ new class extends Component {
         [x-cloak] { display:none !important; }
 
         .srp-head { margin-bottom:22px; }
-        .srp-title { font-size:30px; font-weight:800; letter-spacing:-.025em; margin:0; }
+        .srp-title { font-size:30px; font-weight:800; letter-spacing:0; margin:0; }
         .srp-sub { color:var(--ink-2); font-size:15px; margin:6px 0 0; }
         .srp-notice { background:var(--primary-soft); border:1px solid var(--primary-line); color:var(--ink); border-radius:var(--radius-sm); padding:10px 14px; font-size:14px; font-weight:600; margin-bottom:16px; }
 
@@ -872,7 +872,7 @@ new class extends Component {
         .vcard-title { font-weight:700; font-size:15.5px; letter-spacing:-.01em; line-height:1.3; }
         .vcard-trim { font-size:12.5px; color:var(--ink-3); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .vcard-priceline { display:flex; align-items:baseline; gap:8px; margin-top:10px; }
-        .vcard-price { font-weight:800; font-size:19px; letter-spacing:-.02em; }
+        .vcard-price { font-weight:800; font-size:19px; letter-spacing:0; }
         .vcard-was { font-size:12.5px; color:var(--ink-3); text-decoration:line-through; }
         .vcard-pay { font-size:12px; color:var(--ink-3); margin-left:auto; white-space:nowrap; }
         .vcard-pay b { color:var(--good); font-weight:700; }

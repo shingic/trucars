@@ -96,7 +96,7 @@ new #[Layout('layouts.dealer')] class extends Component {
         .crumb a:hover { color:var(--ink); }
 
         .lead-head { display:flex; align-items:flex-start; justify-content:space-between; gap:18px; margin-bottom:22px; }
-        .lead-head h1 { font-size:25px; font-weight:800; letter-spacing:-.025em; margin:0 0 5px; }
+        .lead-head h1 { font-size:25px; font-weight:800; letter-spacing:0; margin:0 0 5px; }
         .lead-head-meta { font-size:13px; font-weight:600; color:var(--ink-3); }
 
         .stage { display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:700; padding:5px 11px; border-radius:var(--radius-pill); white-space:nowrap; }

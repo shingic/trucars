@@ -105,7 +105,7 @@ new #[Layout('layouts.dealer')] #[Title('Platform settings')] class extends Comp
 
 @push('styles')
     <style>
-        .ps-head h1 { font-size:24px; font-weight:800; letter-spacing:-.02em; margin:0 0 6px; }
+        .ps-head h1 { font-size:24px; font-weight:800; letter-spacing:0; margin:0 0 6px; }
         .ps-head p { margin:0 0 20px; font-size:14px; color:var(--ink-2); }
         .ps-status { background:var(--good-soft); color:var(--good-ink); border:1px solid rgba(18,184,134,.25); border-radius:var(--radius-sm); padding:11px 15px; font-size:13.5px; font-weight:600; margin-bottom:18px; max-width:760px; }
         .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-sm); max-width:760px; padding:20px; display:grid; gap:18px; }

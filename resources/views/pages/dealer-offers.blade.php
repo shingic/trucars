@@ -45,13 +45,13 @@ new #[Layout('layouts.dealer')] #[Title('Offers')] class extends Component {
 
 @push('styles')
     <style>
-        .do-head h1 { font-size:24px; font-weight:800; letter-spacing:-.02em; margin:0 0 6px; }
+        .do-head h1 { font-size:24px; font-weight:800; letter-spacing:0; margin:0 0 6px; }
         .do-head p { margin:0 0 20px; font-size:14px; color:var(--ink-2); max-width:680px; }
         .offers { display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:14px; }
         .oc { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-sm); overflow:hidden; display:flex; flex-direction:column; }
         .oc-top { padding:18px 18px 12px; }
         .oc-k { display:flex; align-items:center; gap:8px; font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3); }
-        .oc-big { font-size:28px; font-weight:800; letter-spacing:-.03em; margin-top:6px; }
+        .oc-big { font-size:28px; font-weight:800; letter-spacing:0; margin-top:6px; }
         .oc-t { font-size:14px; font-weight:700; margin-top:2px; }
         .oc-m { font-size:12.5px; color:var(--ink-3); margin-top:6px; line-height:1.5; }
         .oc-fine { font-size:12px; color:var(--ink-2); background:var(--bg); padding:10px 18px; border-top:1px solid var(--line); margin-top:auto; }

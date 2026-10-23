@@ -317,7 +317,7 @@ new #[Layout('layouts.dealer')] #[Title('Campaigns')] class extends Component {
 @push('styles')
     <style>
         .cmp-head { display:flex; align-items:flex-start; gap:20px; margin-bottom:22px; }
-        .cmp-head h1 { font-size:24px; font-weight:800; letter-spacing:-.02em; margin:0 0 6px; }
+        .cmp-head h1 { font-size:24px; font-weight:800; letter-spacing:0; margin:0 0 6px; }
         .cmp-head p { margin:0; font-size:14px; color:var(--ink-2); max-width:640px; }
         .cmp-head .spacer { flex:1; }
 
@@ -374,7 +374,7 @@ new #[Layout('layouts.dealer')] #[Title('Campaigns')] class extends Component {
         /* preview */
         .pv { padding:18px; }
         .pv-eyebrow { display:inline-flex; font-size:11px; font-weight:700; color:var(--primary-press); background:var(--primary-soft); border-radius:var(--radius-pill); padding:3px 10px; }
-        .pv-dealer { font-size:17px; font-weight:800; letter-spacing:-.02em; margin-top:8px; }
+        .pv-dealer { font-size:17px; font-weight:800; letter-spacing:0; margin-top:8px; }
         .pv-count { font-size:12.5px; color:var(--ink-3); margin-top:2px; }
         .pv-list { margin-top:14px; display:flex; flex-direction:column; gap:10px; }
         .pv-car { display:flex; gap:11px; align-items:center; border:1px solid var(--line); border-radius:var(--radius-sm); padding:8px; }

@@ -293,7 +293,7 @@ new #[Layout('layouts.dealer')] #[Title('CPO checklist')] class extends Componen
         .tabs { display:flex; gap:6px; margin-bottom:18px; border-bottom:1px solid var(--line); }
         .tabs a { padding:9px 14px; font-size:14px; font-weight:600; color:var(--ink-2); border-bottom:2px solid transparent; margin-bottom:-1px; }
         .tabs a.on { color:var(--ink); border-bottom-color:var(--primary); }
-        .ip-head h1 { font-size:24px; font-weight:800; letter-spacing:-.02em; margin:0 0 6px; }
+        .ip-head h1 { font-size:24px; font-weight:800; letter-spacing:0; margin:0 0 6px; }
         .ip-head p { margin:0 0 20px; font-size:14px; color:var(--ink-2); max-width:680px; }
         .msg { background:var(--good-soft); color:var(--good-ink); border:1px solid rgba(18,184,134,.25); border-radius:var(--radius-sm); padding:10px 14px; font-size:13.5px; font-weight:600; margin-bottom:16px; }
 
@@ -319,7 +319,7 @@ new #[Layout('layouts.dealer')] #[Title('CPO checklist')] class extends Componen
 
         .ed-top { display:flex; align-items:center; gap:14px; padding:18px 20px; border-bottom:1px solid var(--line); }
         .ed-count { display:flex; flex-direction:column; align-items:center; justify-content:center; width:74px; height:74px; border-radius:16px; background:var(--hero-grad); color:#fff; flex-shrink:0; }
-        .ed-count b { font-size:26px; font-weight:800; line-height:1; letter-spacing:-.02em; }
+        .ed-count b { font-size:26px; font-weight:800; line-height:1; letter-spacing:0; }
         .ed-count span { font-size:10px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; opacity:.85; margin-top:3px; }
         .ed-top .ttl { font-size:17px; font-weight:800; }
         .ed-top .sub { font-size:12.5px; color:var(--ink-3); margin-top:2px; }

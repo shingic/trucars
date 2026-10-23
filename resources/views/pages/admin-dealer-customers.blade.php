@@ -89,7 +89,7 @@ new #[Layout('layouts.dealer')] #[Title('Customers')] class extends Component {
 @push('styles')
     <style>
         .dc-head { display:flex; align-items:flex-end; gap:16px; margin-bottom:16px; flex-wrap:wrap; }
-        .dc-head h1 { font-size:24px; font-weight:800; letter-spacing:-.02em; margin:0 0 6px; }
+        .dc-head h1 { font-size:24px; font-weight:800; letter-spacing:0; margin:0 0 6px; }
         .dc-head p { margin:0; font-size:14px; color:var(--ink-2); max-width:620px; }
         .dc-head .spacer { flex:1; }
         .dc-search { position:relative; }

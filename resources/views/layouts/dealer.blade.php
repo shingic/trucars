@@ -8,7 +8,7 @@
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Barlow+Semi+Condensed:wght@500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
         [x-cloak] { display:none !important; }
@@ -28,11 +28,12 @@
             --shadow-lg:0 30px 70px rgba(22,24,29,.18);
             --radius:16px; --radius-sm:12px; --radius-pill:999px;
             --sidebar-w:268px;
-            --font:"Geist",-apple-system,sans-serif; --mono:"Geist Mono",monospace;
+            --font:"Barlow",-apple-system,sans-serif; --font-display:"Barlow Semi Condensed","Barlow",sans-serif; --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
         }
 
         * { box-sizing:border-box; }
         body { margin:0; font-family:var(--font); color:var(--ink); background:var(--bg); -webkit-font-smoothing:antialiased; line-height:1.5; }
+        h1, h2, h3, h4 { font-family:var(--font-display); }
         button { font-family:inherit; cursor:pointer; border:none; background:none; }
         input { font-family:inherit; }
         a { color:inherit; text-decoration:none; }
@@ -43,7 +44,7 @@
 
         .sb-brand { display:flex; align-items:center; gap:11px; padding:18px 20px 16px; }
         .sb-brand .glyph { width:34px; height:34px; border-radius:10px; background:var(--hero-grad); color:#fff; display:grid; place-items:center; font-weight:800; font-size:16px; box-shadow:0 6px 16px rgba(245,99,31,.30); flex-shrink:0; }
-        .sb-brand .nm { font-weight:800; font-size:16px; letter-spacing:-.02em; }
+        .sb-brand .nm { font-weight:800; font-size:16px; letter-spacing:0; }
 
         .sb-scroll { flex:1; overflow-y:auto; padding:6px 12px 22px; }
         .sb-group { margin-top:13px; }

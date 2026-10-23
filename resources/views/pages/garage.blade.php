@@ -365,7 +365,7 @@ new #[Layout('layouts.checkout')] class extends Component {
         .g-top { border-bottom:1px solid var(--line); background:var(--card); position:sticky; top:0; z-index:20; }
         .g-top-inner { max-width:1080px; margin:0 auto; padding:0 26px; display:flex; align-items:center; gap:16px; height:64px; }
         .g-top .sep { color:var(--ink-3); font-weight:400; margin:0 2px; }
-        .g-top .garage-word { font-size:18px; font-weight:800; letter-spacing:-.02em; }
+        .g-top .garage-word { font-size:18px; font-weight:800; letter-spacing:0; }
         .g-account { margin-left:auto; display:flex; align-items:center; gap:14px; }
         .g-avatar { width:34px; height:34px; border-radius:50%; background:var(--hero-grad); color:#fff; display:grid; place-items:center; font-weight:700; font-size:13px; }
         .g-signout { font-size:13px; font-weight:600; color:var(--ink-2); background:none; border:none; cursor:pointer; }
@@ -385,14 +385,14 @@ new #[Layout('layouts.checkout')] class extends Component {
         .g-hero-art { width:100%; position:relative; z-index:1; filter:drop-shadow(0 22px 26px rgba(0,0,0,.4)); display:flex; justify-content:center; }
         .g-hero-info { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-sm); padding:26px; display:flex; flex-direction:column; }
         .g-welcome { font-size:13px; color:var(--ink-3); font-weight:600; }
-        .g-veh-name { font-size:27px; font-weight:800; letter-spacing:-.02em; margin:4px 0 2px; }
+        .g-veh-name { font-size:27px; font-weight:800; letter-spacing:0; margin:4px 0 2px; }
         .g-veh-trim { font-size:14px; color:var(--ink-2); }
         .g-facts { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--line); border-radius:var(--radius-sm); overflow:hidden; margin-top:20px; }
         .g-fact { background:var(--card); padding:13px 15px; }
         .g-fact .k { font-size:11px; text-transform:uppercase; letter-spacing:.07em; color:var(--ink-3); }
         .g-fact .v { font-weight:600; font-size:14.5px; margin-top:2px; }
         .g-hero-pay { margin-top:auto; padding-top:18px; display:flex; align-items:baseline; justify-content:space-between; }
-        .g-hero-pay .amt { font-family:var(--font-mono); font-weight:700; font-size:24px; letter-spacing:-.02em; }
+        .g-hero-pay .amt { font-family:var(--font-mono); font-weight:700; font-size:24px; letter-spacing:0; }
         .g-hero-pay .amt .per { font-size:13px; color:var(--ink-3); font-weight:500; }
 
         .g-card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:24px 26px; box-shadow:var(--shadow-sm); margin-bottom:22px; }
@@ -473,7 +473,7 @@ new #[Layout('layouts.checkout')] class extends Component {
 
         .g-empty { max-width:480px; margin:60px auto 0; text-align:center; }
         .g-empty-badge { width:94px; height:94px; border-radius:50%; background:var(--primary-soft); display:grid; place-items:center; margin:0 auto 22px; }
-        .g-empty h1 { font-size:30px; font-weight:800; letter-spacing:-.025em; margin:0 0 10px; }
+        .g-empty h1 { font-size:30px; font-weight:800; letter-spacing:0; margin:0 0 10px; }
         .g-empty p { font-size:15px; color:var(--ink-2); line-height:1.6; margin:0 0 26px; }
     </style>
 @endpush

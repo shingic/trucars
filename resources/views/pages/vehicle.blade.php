@@ -789,7 +789,7 @@ new class extends Component {
         .gfs-thumb.on { border-color:#fff; }
 
         .vdp-titlerow { margin-top:26px; padding-bottom:22px; border-bottom:1px solid var(--line); }
-        .vdp-h1 { font-size:30px; font-weight:800; letter-spacing:-.025em; margin:0; }
+        .vdp-h1 { font-size:30px; font-weight:800; letter-spacing:0; margin:0; }
         .vdp-trim { color:var(--ink-2); font-size:16px; margin:4px 0 0; }
         .vdp-quickmeta { display:flex; flex-wrap:wrap; gap:10px; margin-top:16px; }
         .qm { display:inline-flex; align-items:center; gap:7px; background:var(--bg-2); border-radius:10px; padding:9px 13px; font-size:13px; color:var(--ink); font-weight:500; }
@@ -819,7 +819,7 @@ new class extends Component {
         .cert-warranty { margin:0 24px 20px; display:flex; align-items:center; gap:15px; padding:18px 20px; border-radius:14px; background:#F5FBF8; border:1px solid rgba(18,184,134,.16); box-shadow:0 1px 2px rgba(16,24,40,.04); }
         .cw-ic { width:40px; height:40px; border-radius:11px; background:var(--good); color:#fff; display:grid; place-items:center; flex-shrink:0; }
         .cw-body { flex:1; min-width:0; }
-        .cw-value { font-size:23px; font-weight:800; letter-spacing:-.02em; color:var(--ink); line-height:1.1; }
+        .cw-value { font-size:23px; font-weight:800; letter-spacing:0; color:var(--ink); line-height:1.1; }
         .cw-value span { color:var(--ink-3); font-weight:600; margin:0 2px; }
         .cw-label { font-size:12.5px; color:var(--ink-2); margin-top:4px; line-height:1.4; }
         .cw-stat { display:inline-flex; align-items:center; gap:6px; margin-top:9px; font-size:12.5px; font-weight:700; color:#0E5A43; }
@@ -862,14 +862,14 @@ new class extends Component {
         .buy-card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-md); overflow:hidden; }
         .buy-top { padding:22px 22px 18px; }
         .buy-pricelabel { font-size:12px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-3); }
-        .buy-price { font-size:34px; font-weight:800; letter-spacing:-.03em; margin-top:2px; }
+        .buy-price { font-size:34px; font-weight:800; letter-spacing:0; margin-top:2px; }
         .price-disclosure { margin-top:14px; }
         .pd-row { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--ink-2); font-weight:500; }
         .pd-row svg { color:var(--ink-3); flex-shrink:0; }
         .pd-note { margin-top:11px; padding-top:11px; border-top:1px solid var(--line); font-size:11.5px; color:var(--ink-3); line-height:1.5; }
         .pd-note b { color:var(--ink-2); font-weight:700; }
         .buy-pay { margin-top:16px; padding:14px 16px; background:var(--bg-2); border-radius:14px; }
-        .buy-pay .big { font-size:20px; font-weight:800; letter-spacing:-.02em; }
+        .buy-pay .big { font-size:20px; font-weight:800; letter-spacing:0; }
         .buy-pay .big .per { font-size:13px; color:var(--ink-3); font-weight:500; }
         .buy-pay .sub { font-size:12px; color:var(--ink-2); margin-top:3px; }
         .buy-offers { margin-top:14px; display:grid; gap:10px; }
@@ -902,7 +902,7 @@ new class extends Component {
             padding:12px 16px calc(12px + env(safe-area-inset-bottom));
         }
         .vdp-stickybar .sb-line { display:flex; align-items:baseline; flex-wrap:wrap; gap:5px 9px; }
-        .vdp-stickybar .sb-amount { font-size:20px; font-weight:800; letter-spacing:-.025em; }
+        .vdp-stickybar .sb-amount { font-size:20px; font-weight:800; letter-spacing:0; }
         .vdp-stickybar .sb-bw { font-size:13px; color:var(--ink-2); font-weight:500; }
         .vdp-stickybar .sb-bw b { color:var(--ink); font-weight:700; }
         .vdp-stickybar .sb-allin { margin-left:auto; font-size:11px; color:var(--ink-3); font-weight:600; white-space:nowrap; }

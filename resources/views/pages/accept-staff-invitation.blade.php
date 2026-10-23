@@ -112,7 +112,7 @@ new #[Layout('layouts.auth')] class extends Component {
         .inv-wrap { max-width:440px; margin:0 auto; padding:64px 24px 90px; }
         .inv-brand { display:flex; align-items:center; gap:9px; font-weight:800; font-size:17px; margin-bottom:36px; }
         .inv-brand .glyph { width:28px; height:28px; border-radius:9px; background:var(--primary); color:#fff; display:grid; place-items:center; font-size:15px; }
-        .inv-title { font-size:26px; font-weight:800; letter-spacing:-.02em; margin:0 0 8px; }
+        .inv-title { font-size:26px; font-weight:800; letter-spacing:0; margin:0 0 8px; }
         .inv-lead { font-size:15px; color:var(--ink-2); margin:0 0 26px; }
         .inv-field { display:flex; flex-direction:column; gap:6px; margin-bottom:16px; }
         .inv-field label { font-size:13px; font-weight:700; color:var(--ink-2); }

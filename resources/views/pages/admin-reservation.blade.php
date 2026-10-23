@@ -74,7 +74,7 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
 
 @push('styles')
     <style>
-        .rd-head h1 { font-size:24px; font-weight:800; letter-spacing:-.02em; margin:0 0 4px; font-family:var(--mono); }
+        .rd-head h1 { font-size:24px; font-weight:800; letter-spacing:0; margin:0 0 4px; font-family:var(--mono); }
         .rd-head p { margin:0 0 20px; font-size:14px; color:var(--ink-2); }
         .rd-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; max-width:980px; }
         .card { background:var(--card); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-sm); overflow:hidden; }

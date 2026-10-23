@@ -514,7 +514,7 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
         .detail-back svg { width:16px; height:16px; }
 
         .detail-head { display:flex; align-items:flex-start; justify-content:space-between; gap:18px; margin-bottom:22px; flex-wrap:wrap; }
-        .detail-title h1 { font-size:25px; font-weight:800; letter-spacing:-.025em; margin:0; }
+        .detail-title h1 { font-size:25px; font-weight:800; letter-spacing:0; margin:0; }
         .detail-title .sub { font-size:13.5px; color:var(--ink-2); margin-top:5px; }
         .detail-head-right { display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
 
@@ -567,7 +567,7 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
 
         .estimate-line { display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-top:14px; padding-top:14px; border-top:1px solid var(--line); }
         .estimate-line .lbl { font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; color:var(--ink-3); }
-        .estimate-line .amt { font-size:20px; font-weight:800; letter-spacing:-.02em; }
+        .estimate-line .amt { font-size:20px; font-weight:800; letter-spacing:0; }
 
         .chips { display:flex; flex-wrap:wrap; gap:8px; }
         .chip { font-size:12px; font-weight:600; padding:6px 11px; border-radius:var(--radius-pill); background:var(--active); color:var(--ink-2); }

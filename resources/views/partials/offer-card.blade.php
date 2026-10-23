@@ -8,7 +8,7 @@
         .offer-card::after { content:""; position:absolute; right:-40px; top:-60px; width:160px; height:160px; border-radius:50%; background:radial-gradient(circle, rgba(245,99,31,.45), transparent 70%); }
         .offer-card .oc-kicker { position:relative; z-index:1; display:flex; align-items:center; gap:7px; font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:#FFB98A; }
         .offer-card .oc-kicker svg { width:13px; height:13px; }
-        .offer-card .oc-head { position:relative; z-index:1; font-size:30px; font-weight:800; letter-spacing:-.03em; line-height:1.05; margin-top:8px; }
+        .offer-card .oc-head { position:relative; z-index:1; font-size:30px; font-weight:800; letter-spacing:0; line-height:1.05; margin-top:8px; }
         .offer-card .oc-detail { position:relative; z-index:1; font-size:13.5px; color:rgba(255,255,255,.82); margin-top:4px; }
         .offer-card .oc-fine { position:relative; z-index:1; font-size:11.5px; color:rgba(255,255,255,.55); margin-top:10px; line-height:1.45; }
     </style>

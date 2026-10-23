@@ -1,5 +1,5 @@
 {{-- The approved financing terms as a two-column table. Takes $deal. --}}
-@php($font = "font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;")
+@php($font = "font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;")
 @php($rows = array_filter([
     'Lender'          => $deal->financing_lender,
     'Payment'         => '$' . number_format($deal->financing_payment_in_cents / 100, 2) . ' ' . strtolower($deal->financing_frequency_label),

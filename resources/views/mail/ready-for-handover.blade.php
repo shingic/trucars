@@ -15,19 +15,19 @@
 @section('body')
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4F4F2; border-radius:12px;">
         <tr>
-            <td style="padding:16px 20px; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+            <td style="padding:16px 20px; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
                 <p style="margin:0 0 3px; font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:#9AA0A6;">When and where</p>
                 <p style="margin:0; font-size:14px; font-weight:600; color:#16181D;">{{ $deal->handover_summary }}</p>
             </td>
         </tr>
     </table>
     @if ($documents->isNotEmpty())
-        <p style="margin:20px 0 10px; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:14px; line-height:1.6; color:#3A3F46;">
+        <p style="margin:20px 0 10px; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:14px; line-height:1.6; color:#3A3F46;">
             Before the handover, the dealership still needs:
         </p>
         @include('mail.partials.documents')
     @endif
-    <p style="margin:20px 0 0; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:14px; line-height:1.6; color:#3A3F46;">
+    <p style="margin:20px 0 0; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:14px; line-height:1.6; color:#3A3F46;">
         Bring your driver's licence. Your ${{ number_format($deal->deposit_in_cents / 100) }} deposit comes off what you owe.
     </p>
 @endsection

@@ -68,7 +68,7 @@ new #[Layout('layouts.dealer')] #[Title('Brands')] class extends Component {
 @push('styles')
     <style>
         .br-head { display:flex; align-items:flex-end; gap:16px; margin-bottom:18px; flex-wrap:wrap; }
-        .br-head h1 { font-size:24px; font-weight:800; letter-spacing:-.02em; margin:0 0 6px; }
+        .br-head h1 { font-size:24px; font-weight:800; letter-spacing:0; margin:0 0 6px; }
         .br-head p { margin:0; font-size:14px; color:var(--ink-2); max-width:620px; }
         .br-head .spacer { flex:1; }
         .br-tools { display:flex; gap:8px; flex-wrap:wrap; }

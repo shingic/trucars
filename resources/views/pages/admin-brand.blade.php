@@ -71,7 +71,7 @@ new #[Layout('layouts.dealer')] #[Title('Brand')] class extends Component {
         .card-head .spacer { flex:1; }
         .card-head a { font-size:12.5px; font-weight:700; color:var(--primary-press); }
         .big { display:flex; align-items:baseline; gap:10px; padding:4px 20px 18px; }
-        .big b { font-size:40px; font-weight:800; letter-spacing:-.03em; }
+        .big b { font-size:40px; font-weight:800; letter-spacing:0; }
         .big span { font-size:13.5px; color:var(--ink-2); }
         .row { display:flex; align-items:center; gap:12px; padding:12px 20px; border-top:1px solid var(--line); font-size:13.5px; text-decoration:none; }
         a.row:hover { background:var(--bg); }
@@ -81,7 +81,7 @@ new #[Layout('layouts.dealer')] #[Title('Brand')] class extends Component {
         .pill { font-size:10.5px; font-weight:800; letter-spacing:.05em; text-transform:uppercase; padding:3px 9px; border-radius:var(--radius-pill); background:var(--bg); border:1px solid var(--line); color:var(--ink-2); white-space:nowrap; }
         .pill.live { background:var(--good-soft); color:var(--good-ink); border-color:transparent; }
         .pill.scheduled { background:#E3EDFB; color:#2E5FA3; border-color:transparent; }
-        .offer-big { font-size:18px; font-weight:800; letter-spacing:-.02em; color:var(--primary-press); min-width:96px; }
+        .offer-big { font-size:18px; font-weight:800; letter-spacing:0; color:var(--primary-press); min-width:96px; }
         .empty { padding:14px 20px 20px; font-size:13.5px; color:var(--ink-3); }
         .cta { display:inline-flex; align-items:center; gap:7px; margin:0 20px 18px; font-size:13.5px; font-weight:700; border-radius:var(--radius-pill); padding:9px 16px; background:var(--primary); color:#fff; }
         .wide { grid-column:1 / -1; }

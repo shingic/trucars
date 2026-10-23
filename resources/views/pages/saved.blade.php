@@ -136,7 +136,7 @@ new class extends Component {
         .saved-head { margin-bottom:22px; }
         .saved-back { display:inline-flex; align-items:center; gap:7px; font-size:13.5px; font-weight:600; color:var(--ink-2); text-decoration:none; margin-bottom:18px; }
         .saved-back:hover { color:var(--primary); }
-        .saved-title { font-size:30px; font-weight:800; letter-spacing:-.025em; margin:0; }
+        .saved-title { font-size:30px; font-weight:800; letter-spacing:0; margin:0; }
         .saved-sub { color:var(--ink-2); font-size:15px; margin:6px 0 0; }
 
         /* Same floor grid so a saved car reads exactly as it does on the floor. */
@@ -163,7 +163,7 @@ new class extends Component {
         .vcard-title { font-weight:700; font-size:15.5px; letter-spacing:-.01em; line-height:1.3; }
         .vcard-trim { font-size:12.5px; color:var(--ink-3); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .vcard-priceline { display:flex; align-items:baseline; gap:8px; margin-top:10px; }
-        .vcard-price { font-weight:800; font-size:19px; letter-spacing:-.02em; }
+        .vcard-price { font-weight:800; font-size:19px; letter-spacing:0; }
         .vcard-pay { font-size:12px; color:var(--ink-3); margin-left:auto; white-space:nowrap; }
         .vcard-pay b { color:var(--good); font-weight:700; }
         .vcard-spec-row { display:flex; flex-wrap:wrap; gap:13px; margin-top:12px; font-size:12px; color:var(--ink-2); }
@@ -178,7 +178,7 @@ new class extends Component {
 
         .saved-empty { max-width:440px; margin:40px auto 20px; text-align:center; padding:20px; }
         .saved-empty-icon { display:inline-grid; place-items:center; width:66px; height:66px; border-radius:50%; background:var(--primary-soft); color:var(--primary); margin-bottom:18px; }
-        .saved-empty-title { font-size:20px; font-weight:800; letter-spacing:-.02em; }
+        .saved-empty-title { font-size:20px; font-weight:800; letter-spacing:0; }
         .saved-empty-text { font-size:14.5px; color:var(--ink-2); line-height:1.55; margin:8px 0 22px; }
         .saved-empty-cta { display:inline-flex; align-items:center; gap:8px; font-size:15px; font-weight:700; color:#fff; text-decoration:none; background:var(--primary); border-radius:var(--radius-pill); padding:13px 24px; box-shadow:var(--shadow-primary); transition:background .16s ease, transform .16s ease; }
         .saved-empty-cta:hover { background:var(--primary-press); transform:translateY(-1px); }

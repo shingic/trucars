@@ -68,7 +68,7 @@ new #[Layout('layouts.dealer')] #[Title('Offers & incentives')] class extends Co
         .of-row { display:grid; grid-template-columns:120px minmax(0, 1.6fr) 190px 100px 20px; gap:16px; align-items:center; padding:14px 20px; border-bottom:1px solid var(--line); text-decoration:none; }
         .of-row:last-child { border-bottom:none; }
         .of-row:hover { background:var(--bg); }
-        .big { font-size:19px; font-weight:800; letter-spacing:-.02em; color:var(--primary-press); }
+        .big { font-size:19px; font-weight:800; letter-spacing:0; color:var(--primary-press); }
         .nm { font-size:14px; font-weight:700; }
         .meta { font-size:12px; color:var(--ink-3); margin-top:2px; }
         .dates { font-size:12.5px; font-weight:600; }

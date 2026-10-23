@@ -24,10 +24,10 @@
                     <td style="background-color:#F5631F; padding:26px 36px;">
                         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                             <tr>
-                                <td style="font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:20px; font-weight:800; letter-spacing:-0.02em; color:#FFFFFF;">
+                                <td style="font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:20px; font-weight:800; letter-spacing:-0.02em; color:#FFFFFF;">
                                     TruCars
                                 </td>
-                                <td align="right" style="font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:12px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:#FFE2D2;">
+                                <td align="right" style="font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:12px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:#FFE2D2;">
                                     Reservation confirmed
                                 </td>
                             </tr>
@@ -47,10 +47,10 @@
                 {{-- Hero --}}
                 <tr>
                     <td style="padding:38px 36px 8px;">
-                        <h1 style="margin:0 0 10px; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:26px; line-height:1.2; font-weight:800; letter-spacing:-0.025em; color:#16181D;">
+                        <h1 style="margin:0 0 10px; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:26px; line-height:1.2; font-weight:800; letter-spacing:-0.025em; color:#16181D;">
                             You're reserved, {{ $deal->first_name }}.
                         </h1>
-                        <p style="margin:0; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:15px; line-height:1.6; color:#5B6068;">
+                        <p style="margin:0; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:15px; line-height:1.6; color:#5B6068;">
                             Your car is locked in. Here's your full reservation, what's in your price, and what happens next.
                         </p>
                     </td>
@@ -61,7 +61,7 @@
                     <td style="padding:18px 36px 0;">
                         <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                             <tr>
-                                <td style="background-color:#F4F4F2; border-radius:999px; padding:8px 16px; font-family:'Geist Mono', 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; font-size:13px; font-weight:700; letter-spacing:0.02em; color:#16181D;">
+                                <td style="background-color:#F4F4F2; border-radius:999px; padding:8px 16px; font-family:'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; font-size:13px; font-weight:700; letter-spacing:0.02em; color:#16181D;">
                                     Reference&nbsp;&nbsp;{{ $deal->reference }}
                                 </td>
                             </tr>
@@ -75,14 +75,14 @@
                         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #ECECEA; border-radius:12px;">
                             <tr>
                                 <td style="padding:20px 22px;">
-                                    <p style="margin:0 0 4px; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:#9AA0A6;">
+                                    <p style="margin:0 0 4px; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:#9AA0A6;">
                                         Your vehicle
                                     </p>
-                                    <p style="margin:0; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:18px; font-weight:700; letter-spacing:-0.01em; color:#16181D;">
+                                    <p style="margin:0; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:18px; font-weight:700; letter-spacing:-0.01em; color:#16181D;">
                                         {{ $deal->vehicle->model_year }} {{ $deal->vehicle->make }} {{ $deal->vehicle->model }}
                                     </p>
                                     @if ($deal->vehicle->trim)
-                                        <p style="margin:5px 0 0; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:14px; color:#5B6068;">
+                                        <p style="margin:5px 0 0; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:14px; color:#5B6068;">
                                             {{ $deal->vehicle->trim }}
                                         </p>
                                     @endif
@@ -98,15 +98,15 @@
                         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #ECECEA; border-radius:12px;">
                             <tr>
                                 <td style="padding:20px 22px;">
-                                    <p style="margin:0 0 8px; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:#9AA0A6;">
+                                    <p style="margin:0 0 8px; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:#9AA0A6;">
                                         Your all-in price
                                     </p>
                                     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                                         <tr>
-                                            <td style="font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:22px; font-weight:800; letter-spacing:-0.02em; color:#16181D;">
+                                            <td style="font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:22px; font-weight:800; letter-spacing:-0.02em; color:#16181D;">
                                                 {{ $deal->vehicle->display_price }}
                                             </td>
-                                            <td align="right" style="font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:13px; color:#9AA0A6;">
+                                            <td align="right" style="font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:13px; color:#9AA0A6;">
                                                 @if ($deal->purchase_type === 'finance' && $deal->term_months)
                                                     {{ $deal->term_months }}-month finance estimate
                                                 @elseif ($deal->purchase_type === 'lease')
@@ -117,22 +117,22 @@
                                             </td>
                                         </tr>
                                     </table>
-                                    <p style="margin:10px 0 0; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:13px; line-height:1.55; color:#5B6068;">
+                                    <p style="margin:10px 0 0; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:13px; line-height:1.55; color:#5B6068;">
                                         Freight, PDI, admin and the OMVIC fee are already inside this price — no surprise add-ons. Only HST and licensing are added on top.
                                     </p>
 
                                     @if (count($deal->fees_by_kind['included']))
                                         <div style="border-top:1px solid #ECECEA; margin-top:16px; padding-top:14px;"></div>
-                                        <p style="margin:0 0 8px; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:#9AA0A6;">
+                                        <p style="margin:0 0 8px; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:#9AA0A6;">
                                             Already included in this price
                                         </p>
                                         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                                             @foreach ($deal->fees_by_kind['included'] as $includedFee)
                                                 <tr>
-                                                    <td style="padding:3px 0; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:13.5px; color:#5B6068;">
+                                                    <td style="padding:3px 0; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:13.5px; color:#5B6068;">
                                                         {{ $includedFee['label'] }}
                                                     </td>
-                                                    <td align="right" style="padding:3px 0; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:13.5px; color:#9AA0A6;">
+                                                    <td align="right" style="padding:3px 0; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:13.5px; color:#9AA0A6;">
                                                         ${{ number_format($includedFee['amount_in_cents'] / 100, 2) }} included
                                                     </td>
                                                 </tr>
@@ -142,25 +142,25 @@
 
                                     @if ($deal->fees_by_kind['passThroughTotalInCents'] > 0)
                                         <div style="border-top:1px solid #ECECEA; margin-top:16px; padding-top:14px;"></div>
-                                        <p style="margin:0 0 8px; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:#9AA0A6;">
+                                        <p style="margin:0 0 8px; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:#9AA0A6;">
                                             Added at delivery · never financed
                                         </p>
                                         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                                             @foreach ($deal->fees_by_kind['passThrough'] as $passThroughFee)
                                                 <tr>
-                                                    <td style="padding:3px 0; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:13.5px; color:#3A3F46;">
+                                                    <td style="padding:3px 0; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:13.5px; color:#3A3F46;">
                                                         {{ $passThroughFee['label'] }}
                                                     </td>
-                                                    <td align="right" style="padding:3px 0; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:13.5px; font-weight:600; color:#16181D;">
+                                                    <td align="right" style="padding:3px 0; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:13.5px; font-weight:600; color:#16181D;">
                                                         ${{ number_format($passThroughFee['amount_in_cents'] / 100, 2) }}
                                                     </td>
                                                 </tr>
                                             @endforeach
                                             <tr>
-                                                <td style="padding:3px 0; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:13.5px; color:#3A3F46;">
+                                                <td style="padding:3px 0; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:13.5px; color:#3A3F46;">
                                                     HST
                                                 </td>
-                                                <td align="right" style="padding:3px 0; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:13.5px; color:#9AA0A6;">
+                                                <td align="right" style="padding:3px 0; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:13.5px; color:#9AA0A6;">
                                                     calculated at delivery
                                                 </td>
                                             </tr>
@@ -179,16 +179,16 @@
                             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #ECECEA; border-radius:12px;">
                                 <tr>
                                     <td style="padding:20px 22px;">
-                                        <p style="margin:0 0 4px; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:#9AA0A6;">
+                                        <p style="margin:0 0 4px; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:#9AA0A6;">
                                             Your trade-in
                                         </p>
-                                        <p style="margin:0; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:16px; font-weight:700; color:#16181D;">
+                                        <p style="margin:0; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:16px; font-weight:700; color:#16181D;">
                                             {{ $deal->tradeIn->model_year }} {{ $deal->tradeIn->make }} {{ $deal->tradeIn->model }}
                                         </p>
-                                        <p style="margin:5px 0 0; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:14px; color:#5B6068;">
+                                        <p style="margin:5px 0 0; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:14px; color:#5B6068;">
                                             Preliminary estimate ${{ number_format($deal->tradeIn->estimated_value_low_in_cents / 100) }}&ndash;${{ number_format($deal->tradeIn->estimated_value_high_in_cents / 100) }}
                                         </p>
-                                        <p style="margin:8px 0 0; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:13px; line-height:1.55; color:#9AA0A6;">
+                                        <p style="margin:8px 0 0; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:13px; line-height:1.55; color:#9AA0A6;">
                                             Non-binding and self-reported — the dealership confirms your final value after a quick inspection, and can meet or beat it.@if ($deal->tradeIn->lien_owing_in_cents > 0) They'll also pay off your remaining balance.@endif
                                         </p>
                                     </td>
@@ -204,10 +204,10 @@
                         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#E7F8F1; border-radius:12px;">
                             <tr>
                                 <td style="padding:18px 22px;">
-                                    <p style="margin:0 0 3px; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:15px; font-weight:700; color:#0B7355;">
+                                    <p style="margin:0 0 3px; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:15px; font-weight:700; color:#0B7355;">
                                         ${{ number_format($deal->deposit_in_cents / 100) }} deposit held
                                     </p>
-                                    <p style="margin:0; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:14px; line-height:1.55; color:#1B6B53;">
+                                    <p style="margin:0; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:14px; line-height:1.55; color:#1B6B53;">
                                         It's fully refundable, and it comes straight off your purchase price — it isn't an extra charge.
                                     </p>
                                 </td>
@@ -219,26 +219,26 @@
                 {{-- What happens next --}}
                 <tr>
                     <td style="padding:28px 36px 0;">
-                        <p style="margin:0 0 14px; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:#9AA0A6;">
+                        <p style="margin:0 0 14px; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:#9AA0A6;">
                             What happens next
                         </p>
 
                         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                             <tr>
-                                <td width="28" valign="top" style="font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:15px; font-weight:800; color:#F5631F; line-height:1.5;">1.</td>
-                                <td style="padding-bottom:12px; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:14px; line-height:1.55; color:#3A3F46;">
+                                <td width="28" valign="top" style="font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:15px; font-weight:800; color:#F5631F; line-height:1.5;">1.</td>
+                                <td style="padding-bottom:12px; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:14px; line-height:1.55; color:#3A3F46;">
                                     {{ $deal->seller_name }}'s finance office reaches out shortly to confirm your real financing terms. Every payment figure you've seen is an estimate until they confirm it.
                                 </td>
                             </tr>
                             <tr>
-                                <td width="28" valign="top" style="font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:15px; font-weight:800; color:#F5631F; line-height:1.5;">2.</td>
-                                <td style="padding-bottom:12px; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:14px; line-height:1.55; color:#3A3F46;">
+                                <td width="28" valign="top" style="font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:15px; font-weight:800; color:#F5631F; line-height:1.5;">2.</td>
+                                <td style="padding-bottom:12px; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:14px; line-height:1.55; color:#3A3F46;">
                                     Your identity is already verified — one less thing to sort out at delivery.
                                 </td>
                             </tr>
                             <tr>
-                                <td width="28" valign="top" style="font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:15px; font-weight:800; color:#F5631F; line-height:1.5;">3.</td>
-                                <td style="padding-bottom:12px; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:14px; line-height:1.55; color:#3A3F46;">
+                                <td width="28" valign="top" style="font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:15px; font-weight:800; color:#F5631F; line-height:1.5;">3.</td>
+                                <td style="padding-bottom:12px; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:14px; line-height:1.55; color:#3A3F46;">
                                     @if ($deal->purchase_type === 'cash')
                                         Once the deal is finalized, we'll email you to upload proof of insurance in My Garage.
                                     @else
@@ -247,14 +247,14 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td width="28" valign="top" style="font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:15px; font-weight:800; color:#F5631F; line-height:1.5;">4.</td>
-                                <td style="padding-bottom:12px; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:14px; line-height:1.55; color:#3A3F46;">
+                                <td width="28" valign="top" style="font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:15px; font-weight:800; color:#F5631F; line-height:1.5;">4.</td>
+                                <td style="padding-bottom:12px; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:14px; line-height:1.55; color:#3A3F46;">
                                     Once your terms are confirmed, you review and e-sign your paperwork.
                                 </td>
                             </tr>
                             <tr>
-                                <td width="28" valign="top" style="font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:15px; font-weight:800; color:#F5631F; line-height:1.5;">5.</td>
-                                <td style="font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:14px; line-height:1.55; color:#3A3F46;">
+                                <td width="28" valign="top" style="font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:15px; font-weight:800; color:#F5631F; line-height:1.5;">5.</td>
+                                <td style="font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:14px; line-height:1.55; color:#3A3F46;">
                                     You confirm the handover together and drive off — everything stays tracked in your My Garage.
                                 </td>
                             </tr>
@@ -268,13 +268,13 @@
                         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F4F4F2; border-radius:12px;">
                             <tr>
                                 <td style="padding:16px 20px;">
-                                    <p style="margin:0 0 3px; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:#9AA0A6;">
+                                    <p style="margin:0 0 3px; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:11px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; color:#9AA0A6;">
                                         Handover
                                     </p>
-                                    <p style="margin:0; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:14px; font-weight:600; color:#16181D;">
+                                    <p style="margin:0; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:14px; font-weight:600; color:#16181D;">
                                         {{ $deal->handover_summary }}
                                     </p>
-                                    <p style="margin:4px 0 0; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:12px; color:#9AA0A6;">
+                                    <p style="margin:4px 0 0; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:12px; color:#9AA0A6;">
                                         The dealership confirms the exact time with you.
                                     </p>
                                 </td>
@@ -289,7 +289,7 @@
                         <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                             <tr>
                                 <td align="center" bgcolor="#F5631F" style="border-radius:10px;">
-                                    <a href="{{ route('garage') }}" target="_blank" style="display:inline-block; padding:14px 30px; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:15px; font-weight:700; color:#FFFFFF; text-decoration:none; border-radius:10px;">
+                                    <a href="{{ route('garage') }}" target="_blank" style="display:inline-block; padding:14px 30px; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:15px; font-weight:700; color:#FFFFFF; text-decoration:none; border-radius:10px;">
                                         Open My Garage →
                                     </a>
                                 </td>
@@ -304,10 +304,10 @@
                         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                             <tr>
                                 <td style="border-top:1px solid #ECECEA; padding-top:20px;">
-                                    <p style="margin:0; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:12px; line-height:1.6; color:#9AA0A6;">
+                                    <p style="margin:0; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:12px; line-height:1.6; color:#9AA0A6;">
                                         TruCars handles your reservation and checkout. {{ $deal->seller_name }} owns the vehicle, the financing and the delivery, and confirms all final figures with you before anything is signed.
                                     </p>
-                                    <p style="margin:10px 0 0; font-family:'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:12px; line-height:1.6; color:#C2C6CB;">
+                                    <p style="margin:10px 0 0; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:12px; line-height:1.6; color:#C2C6CB;">
                                         Sent because you placed a reservation at TruCars.
                                     </p>
                                 </td>

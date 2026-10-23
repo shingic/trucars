@@ -193,7 +193,7 @@ new #[Layout('layouts.dealer')] #[Title('Command Centre')] class extends Compone
 @push('styles')
     <style>
         .cc-top { display:flex; align-items:flex-end; gap:16px; margin-bottom:22px; flex-wrap:wrap; }
-        .cc-top h1 { font-size:26px; font-weight:800; letter-spacing:-.02em; margin:0 0 4px; }
+        .cc-top h1 { font-size:26px; font-weight:800; letter-spacing:0; margin:0 0 4px; }
         .cc-top p { margin:0; font-size:14px; color:var(--ink-2); }
         .cc-top .spacer { flex:1; }
         .cc-actions { display:flex; gap:8px; flex-wrap:wrap; }
@@ -209,7 +209,7 @@ new #[Layout('layouts.dealer')] #[Title('Command Centre')] class extends Compone
         .kpi .lbl { display:flex; align-items:center; gap:8px; font-size:12.5px; font-weight:700; color:var(--ink-2); }
         .kpi .ic { width:28px; height:28px; border-radius:8px; background:var(--primary-soft); color:var(--primary-press); display:grid; place-items:center; }
         .kpi .ic svg { width:15px; height:15px; }
-        .kpi .val { font-size:28px; font-weight:800; letter-spacing:-.02em; margin:10px 0 2px; font-variant-numeric:tabular-nums; }
+        .kpi .val { font-size:28px; font-weight:800; letter-spacing:0; margin:10px 0 2px; font-variant-numeric:tabular-nums; }
         .kpi .sub { font-size:12px; color:var(--ink-3); display:flex; align-items:center; gap:6px; }
         .delta { font-size:11px; font-weight:800; padding:2px 7px; border-radius:var(--radius-pill); }
         .delta.up { background:var(--good-soft); color:var(--good-ink); }

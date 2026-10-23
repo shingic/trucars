@@ -48,7 +48,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealers')] class extends Component {
 @push('styles')
     <style>
         .ad-head { display:flex; align-items:flex-start; gap:20px; margin-bottom:22px; }
-        .ad-head h1 { font-size:24px; font-weight:800; letter-spacing:-.02em; margin:0 0 6px; }
+        .ad-head h1 { font-size:24px; font-weight:800; letter-spacing:0; margin:0 0 6px; }
         .ad-head p { margin:0; font-size:14px; color:var(--ink-2); max-width:640px; }
         .ad-head .spacer { flex:1; }
 

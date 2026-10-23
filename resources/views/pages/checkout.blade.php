@@ -1461,7 +1461,7 @@ new #[Layout('layouts.checkout')] class extends Component {
         .chip.is-on { border-color:var(--primary); background:var(--primary-soft); color:var(--primary); }
 
         .offer-reveal { text-align:center; padding:34px 24px 26px; border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-md); background:var(--card); margin-bottom:14px; }
-        .offer-amount { font-size:44px; font-weight:800; letter-spacing:-.03em; line-height:1.05; }
+        .offer-amount { font-size:44px; font-weight:800; letter-spacing:0; line-height:1.05; }
         @media (max-width:560px){ .offer-amount { font-size:34px; } }
         .offer-pill { display:inline-block; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-2); background:var(--bg-2); border:1px solid var(--line); padding:5px 13px; border-radius:var(--radius-pill); margin-bottom:14px; }
 
@@ -1567,7 +1567,7 @@ new #[Layout('layouts.checkout')] class extends Component {
 
         .done { max-width:620px; margin:0 auto; text-align:center; }
         .done-badge { width:94px; height:94px; border-radius:50%; background:var(--good-soft); display:grid; place-items:center; margin:10px auto 22px; }
-        .done h1 { font-size:40px; font-weight:800; letter-spacing:-.03em; margin:0 0 12px; }
+        .done h1 { font-size:40px; font-weight:800; letter-spacing:0; margin:0 0 12px; }
         .ref-chip { display:inline-block; font-family:var(--font-mono); font-size:14px; font-weight:600; background:var(--bg-2); border:1px solid var(--line); padding:9px 18px; border-radius:var(--radius-pill); margin:6px 0 26px; }
         .ref-chip b { color:var(--primary); }
         .timeline-next { text-align:left; max-width:460px; margin:0 auto; padding:22px 24px; border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow-sm); background:var(--card); }
@@ -1583,7 +1583,7 @@ new #[Layout('layouts.checkout')] class extends Component {
         .rail-breakdown-toggle { display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%; padding:0; background:none; border:none; cursor:pointer; text-align:left; }
         .rbt-head { display:flex; flex-direction:column; gap:2px; }
         .rbt-label { font-size:12.5px; color:var(--ink-3); font-weight:600; }
-        .rbt-amt { font-family:var(--font-mono); font-weight:700; font-size:22px; letter-spacing:-.02em; }
+        .rbt-amt { font-family:var(--font-mono); font-weight:700; font-size:22px; letter-spacing:0; }
         .rbt-amt .per { font-size:12.5px; color:var(--ink-3); font-weight:500; }
         .rbt-chevron { color:var(--ink-3); flex-shrink:0; transition:transform .2s ease; }
         .rbt-chevron.is-open { transform:rotate(180deg); }

@@ -242,7 +242,7 @@ new #[Layout('layouts.dealer')] #[Title('TruCars staff')] class extends Componen
 
 @push('styles')
     <style>
-        .st-head h1 { font-size:24px; font-weight:800; letter-spacing:-.02em; margin:0 0 6px; }
+        .st-head h1 { font-size:24px; font-weight:800; letter-spacing:0; margin:0 0 6px; }
         .st-head p { margin:0 0 22px; font-size:14px; color:var(--ink-2); max-width:660px; }
         .btn { font-size:14px; font-weight:700; border-radius:var(--radius-pill); padding:10px 18px; transition:all .15s ease; white-space:nowrap; }
         .btn-primary { background:var(--primary); color:#fff; box-shadow:0 8px 20px rgba(245,99,31,.24); }

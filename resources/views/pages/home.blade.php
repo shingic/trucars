@@ -158,7 +158,7 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
             min-width:0; }
         .home > * { min-width:0; }
         .home section { margin-top:96px; }
-        .home h2 { font-size:clamp(28px, 3vw, 38px); font-weight:700; letter-spacing:-.03em; line-height:1.1; margin:0; }
+        .home h2 { font-size:clamp(28px, 3vw, 38px); font-weight:700; letter-spacing:0; line-height:1.1; margin:0; }
         .sec-head { display:flex; align-items:flex-end; justify-content:space-between; gap:20px; flex-wrap:wrap; margin-bottom:28px; }
         .sec-head p { margin:8px 0 0; color:var(--ink-2); font-size:16px; }
         .sec-head > a { font-size:15px; font-weight:600; color:var(--ink); text-decoration:none; border-bottom:1.5px solid var(--ink); padding-bottom:1px; }
@@ -185,7 +185,7 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
         .stage { position:relative; min-height:600px; border-radius:28px; overflow:hidden; background:#1b1d22 center/cover; display:flex; align-items:flex-end; }
         .stage::before { content:""; position:absolute; inset:0; background:linear-gradient(90deg, rgba(12,13,16,.82) 0%, rgba(12,13,16,.55) 42%, rgba(12,13,16,0) 75%), linear-gradient(0deg, rgba(12,13,16,.55), rgba(12,13,16,0) 45%); }
         .stage-inner { position:relative; padding:56px; width:100%; display:flex; align-items:flex-end; justify-content:space-between; gap:32px; flex-wrap:wrap; }
-        .stage h1 { color:#fff; font-size:clamp(42px, 5.4vw, 76px); font-weight:700; letter-spacing:-.045em; line-height:1; margin:0; max-width:11ch; }
+        .stage h1 { color:#fff; font-size:clamp(42px, 5.4vw, 76px); font-weight:700; letter-spacing:0; line-height:1; margin:0; max-width:11ch; }
         .stage p { color:rgba(255,255,255,.82); font-size:18px; margin:18px 0 0; max-width:460px; }
         .hero-search { margin-top:30px; display:flex; align-items:center; gap:8px; background:#fff; border-radius:999px; padding:7px 7px 7px 22px; max-width:560px; box-shadow:0 20px 50px rgba(0,0,0,.3); }
         .hero-search svg { color:var(--ink-3); flex-shrink:0; }

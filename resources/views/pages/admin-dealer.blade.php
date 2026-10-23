@@ -902,7 +902,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         .tabs a { padding:9px 14px; font-size:14px; font-weight:600; color:var(--ink-2); border-bottom:2px solid transparent; margin-bottom:-1px; }
         .tabs a.on { color:var(--ink); border-bottom-color:var(--primary); }
         .dl-head { margin-bottom:22px; }
-        .dl-head h1 { font-size:24px; font-weight:800; letter-spacing:-.02em; margin:0 0 6px; }
+        .dl-head h1 { font-size:24px; font-weight:800; letter-spacing:0; margin:0 0 6px; }
         .dl-head p { margin:0; font-size:14px; color:var(--ink-2); max-width:640px; }
 
         .btn { font-size:14px; font-weight:700; border-radius:var(--radius-pill); padding:10px 18px; transition:all .15s ease; white-space:nowrap; }
@@ -929,7 +929,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         .bc { width:min(560px, 100%); max-height:calc(100vh - 40px); overflow:auto; background:var(--card); border-radius:22px; box-shadow:0 30px 80px rgba(22,24,29,.3); }
         .bc-head { padding:22px 24px 6px; }
         .bc-head .warn { display:inline-flex; align-items:center; gap:7px; font-size:11.5px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--primary-press); }
-        .bc-head h2 { font-size:21px; font-weight:800; letter-spacing:-.02em; margin:8px 0 4px; }
+        .bc-head h2 { font-size:21px; font-weight:800; letter-spacing:0; margin:8px 0 4px; }
         .bc-head p { margin:0; font-size:13.5px; color:var(--ink-2); }
         .bc-body { padding:14px 24px 6px; display:grid; gap:14px; }
         .bc-body label { font-size:12.5px; font-weight:700; color:var(--ink-2); display:block; margin-bottom:6px; }
@@ -1002,12 +1002,12 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         .hero-fade { position:absolute; inset:0; background:linear-gradient(90deg, #FAFAFA 0%, #FAFAFA 34%, rgba(250,250,250,.85) 46%, rgba(250,250,250,0) 66%); }
         .hero-body { position:relative; display:flex; align-items:center; gap:26px; padding:28px 30px; min-height:200px; }
         .hero-brand { display:flex; flex-direction:column; align-items:center; gap:6px; flex-shrink:0; width:96px; }
-        .mark { width:72px; height:72px; border-radius:20px; background:#14161B; color:#fff; display:grid; place-items:center; font-size:24px; font-weight:800; letter-spacing:-.02em; box-shadow:0 10px 26px rgba(22,24,29,.18); }
+        .mark { width:72px; height:72px; border-radius:20px; background:#14161B; color:#fff; display:grid; place-items:center; font-size:24px; font-weight:800; letter-spacing:0; box-shadow:0 10px 26px rgba(22,24,29,.18); }
         .mark.big { width:58px; height:58px; font-size:19px; border-radius:17px; box-shadow:none; }
         .mark-name { font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-2); text-align:center; }
         .hero-main { flex:1; min-width:0; }
         .hero-title { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
-        .hero-title h1 { font-size:30px; font-weight:800; letter-spacing:-.03em; margin:0; }
+        .hero-title h1 { font-size:30px; font-weight:800; letter-spacing:0; margin:0; }
         .st { display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:700; padding:5px 11px; border-radius:var(--radius-pill); background:var(--bg); color:var(--ink-2); }
         .st i, .st-dot { width:8px; height:8px; border-radius:50%; background:var(--ink-3); display:inline-block; }
         .st-active, .st.st-active { background:var(--good-soft); color:var(--good-ink); }
@@ -1032,7 +1032,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         .stat { position:relative; display:flex; align-items:center; gap:14px; padding:16px; background:var(--card); border:1px solid var(--line); border-radius:18px; box-shadow:var(--shadow-sm); text-align:left; transition:border-color .15s ease, transform .15s ease; }
         a.stat:hover, button.stat:hover { border-color:var(--primary-line); transform:translateY(-1px); }
         .stat .ic { width:44px; height:44px; border-radius:13px; background:var(--primary-soft); color:var(--primary-press); display:grid; place-items:center; flex-shrink:0; }
-        .stat b { display:block; font-size:24px; font-weight:800; letter-spacing:-.02em; line-height:1.1; font-variant-numeric:tabular-nums; }
+        .stat b { display:block; font-size:24px; font-weight:800; letter-spacing:0; line-height:1.1; font-variant-numeric:tabular-nums; }
         .stat small { font-size:12.5px; color:var(--ink-2); }
         .stat .go { position:absolute; right:12px; top:14px; color:var(--ink-3); }
         .delta { position:absolute; right:12px; top:12px; font-size:11px; font-weight:800; padding:2px 7px; border-radius:var(--radius-pill); }

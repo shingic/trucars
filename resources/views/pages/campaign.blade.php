@@ -219,7 +219,7 @@ new class extends Component {
 
         .cs-head { margin-bottom:22px; }
         .cs-eyebrow { display:inline-flex; align-items:center; gap:7px; font-size:12.5px; font-weight:700; color:var(--primary); background:var(--primary-soft); border-radius:var(--radius-pill); padding:5px 12px; margin-bottom:12px; }
-        .cs-title { font-size:30px; font-weight:800; letter-spacing:-.025em; margin:0; }
+        .cs-title { font-size:30px; font-weight:800; letter-spacing:0; margin:0; }
         .cs-sub { color:var(--ink-2); font-size:15px; margin:6px 0 0; }
 
         .cs-unavailable { display:flex; gap:12px; align-items:flex-start; border:1px solid var(--primary-line); background:var(--primary-soft); border-radius:var(--radius-sm); padding:14px 16px; margin-bottom:22px; font-size:14px; }
@@ -234,7 +234,7 @@ new class extends Component {
         .cs-sort { border:1px solid var(--line-strong); border-radius:var(--radius-pill); padding:0 14px; font-size:14px; font-family:inherit; color:var(--ink); background:var(--card); }
 
         .cs-empty { max-width:440px; margin:40px auto 20px; text-align:center; padding:20px; color:var(--ink-2); font-size:14.5px; }
-        .cs-empty-title { font-size:20px; font-weight:800; letter-spacing:-.02em; color:var(--ink); margin-bottom:8px; }
+        .cs-empty-title { font-size:20px; font-weight:800; letter-spacing:0; color:var(--ink); margin-bottom:8px; }
 
         /* Same floor grid and card styles as the marketplace and Saved cars. */
         .grid { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:24px; }
@@ -260,7 +260,7 @@ new class extends Component {
         .vcard-title { font-weight:700; font-size:15.5px; letter-spacing:-.01em; line-height:1.3; }
         .vcard-trim { font-size:12.5px; color:var(--ink-3); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .vcard-priceline { display:flex; align-items:baseline; gap:8px; margin-top:10px; }
-        .vcard-price { font-weight:800; font-size:19px; letter-spacing:-.02em; }
+        .vcard-price { font-weight:800; font-size:19px; letter-spacing:0; }
         .vcard-pay { font-size:12px; color:var(--ink-3); margin-left:auto; white-space:nowrap; }
         .vcard-pay b { color:var(--good); font-weight:700; }
         .vcard-spec-row { display:flex; flex-wrap:wrap; gap:13px; margin-top:12px; font-size:12px; color:var(--ink-2); }
