@@ -54,7 +54,7 @@ new #[Layout('layouts.dealer')] #[Title('Protection & add-ons')] class extends C
 <div>
     <div class="pm-intro">
         <h1>Protection &amp; add-ons</h1>
-        <p>What your buyers can ask about at checkout. Nothing is sold or charged online: buyers tick what interests them, and your F&amp;I office quotes the real price after they reserve. The prices here are the estimates buyers see.</p>
+        <p>What your buyers can add at checkout. Whatever they tick is added to their payment estimate at the prices you set here. Nothing is charged online; your F&amp;I office confirms the final numbers after they reserve.</p>
     </div>
 
     @include('partials.protection-manager')

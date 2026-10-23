@@ -11,9 +11,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 
 /**
- * Something a buyer can flag interest in at checkout: a coverage plan, GAP,
- * a protection add-on or an accessory. Nothing is sold or charged online — the
- * dealership's F&I office quotes the real price after the reservation.
+ * Something a buyer can add at checkout: a coverage plan, GAP, a protection
+ * add-on or an accessory. Its price counts in the buyer's payment estimate
+ * (PaymentEstimate); nothing is charged online, and the dealership's F&I
+ * office confirms the final numbers after the reservation.
  *
  * No dealer_id = a TruCars default, offered at every dealership. A dealership
  * can hide a default or set its own price for it (DealerProtectionSetting),

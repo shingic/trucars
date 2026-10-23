@@ -12,6 +12,7 @@ use App\Services\Valuation\TradeValuation;
 use App\Support\AddressLookup;
 use App\Support\CampaignAttribution;
 use App\Support\Deposits;
+use App\Support\PaymentEstimate;
 use Livewire\Component;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -118,10 +119,10 @@ new #[Layout('layouts.checkout')] class extends Component {
     public ?string $warrantyPlan = null;
 
     // What this dealership offers (ProtectionProduct::menuFor): coverage plans,
-    // GAP, add-ons and accessories, loaded once in mount and locked. The buyer
-    // only flags interest; the dealership's F&I office confirms availability and
-    // prices it later. Nothing here is binding, tied to the sale, or added to the
-    // reservation. Keys are "p{id}"; prices are the dealership's estimates.
+    // GAP, add-ons and accessories, loaded once in mount and locked. What the
+    // buyer adds counts in the payment estimate at the dealership's prices; the
+    // F&I office confirms the final numbers. Nothing extra is due today — only
+    // the deposit. Keys are "p{id}".
     #[Locked]
     public array $warrantyOptions = [];
 
@@ -131,8 +132,8 @@ new #[Layout('layouts.checkout')] class extends Component {
     public array $comparisonRows = [];
 
     // ----- Extras (GAP, add-ons, accessories) -----
-    // Every figure is the dealership's estimate, confirmed by its F&I office.
-    // Ticking one flags interest only: nothing is priced into the reservation or due today.
+    // Every figure is the dealership's price, added to the estimate when ticked
+    // and confirmed by its F&I office. Nothing extra is due today.
     public bool $wantsGap = false;
     public array $selectedExtras = [];
 
@@ -781,26 +782,33 @@ new #[Layout('layouts.checkout')] class extends Component {
         return $this->vehicle->price_in_cents / 100;
     }
 
+    /** What the added plan, GAP, add-ons and accessories come to, at the dealership's prices. */
+    #[Computed]
+    public function protectionTotals(): array
+    {
+        return PaymentEstimate::protectionTotals($this->protectionSnapshot());
+    }
+
+    /** The car plus any one-time items, less the down payment. */
     #[Computed]
     public function financedDollars(): float
     {
-        return max(0, $this->priceDollars - (float) $this->downPayment);
+        return max(0, $this->priceDollars + $this->protectionTotals['oneTime'] - (float) $this->downPayment);
     }
 
     #[Computed]
     public function estimatedBiweekly(): float
     {
-        // Same shape as the Vehicle::estimatedBiweekly accessor, but responsive to the
-        // term and down payment the buyer picks here. Illustrative only.
-        $taxedPrincipal = $this->financedDollars * 1.13;
-        $biweeklyRate = 0.075 / 26;
-        $periods = ($this->termMonths / 12) * 26;
+        // Responsive to the term, down payment and added items the buyer picks
+        // here (PaymentEstimate). Illustrative only.
+        return PaymentEstimate::loanBiweekly($this->financedDollars, $this->termMonths) + $this->protectionTotals['biweekly'];
+    }
 
-        if ($periods <= 0) {
-            return 0;
-        }
-
-        return $taxedPrincipal * $biweeklyRate / (1 - pow(1 + $biweeklyRate, -$periods));
+    /** Paying in full: the car plus any one-time items. Biweekly-priced items need financing. */
+    #[Computed]
+    public function cashTotalDollars(): float
+    {
+        return $this->priceDollars + $this->protectionTotals['oneTime'];
     }
 
     /**
@@ -826,14 +834,15 @@ new #[Layout('layouts.checkout')] class extends Component {
      *                      delivery. Shown separately with their dollar amounts;
      *                      never financed, never folded into the headline.
      *
-     * vehicleBiweekly + taxesBiweekly still sum to estimatedBiweekly (finance).
+     * vehicleBiweekly + taxesBiweekly + the biweekly-priced items sum to estimatedBiweekly (finance).
      */
     #[Computed]
     public function paymentBreakdown(): array
     {
         $total = $this->estimatedBiweekly;
-        $vehicleBiweekly = $total / 1.13;
-        $taxesBiweekly = $total - $vehicleBiweekly;
+        $loanBiweekly = $total - $this->protectionTotals['biweekly'];
+        $vehicleBiweekly = $loanBiweekly / 1.13;
+        $taxesBiweekly = $loanBiweekly - $vehicleBiweekly;
 
         $includedFees = [];
         $passThroughFees = [];
@@ -944,9 +953,9 @@ new #[Layout('layouts.checkout')] class extends Component {
     }
 
     /**
-     * Every item the buyer flagged: the plan, GAP, add-ons and accessories, each
-     * with the dealership's estimate at this moment. Persisted on the Deal so
-     * the F&I office can pick up the conversation. Nothing here is priced or binding.
+     * Every item the buyer added: the plan, GAP, add-ons and accessories, each
+     * at the dealership's price at this moment. Persisted on the Deal so the
+     * F&I office sees what the estimate included and can confirm it with the buyer.
      *
      * @return array<int, array<string, mixed>>
      */
@@ -971,7 +980,7 @@ new #[Layout('layouts.checkout')] class extends Component {
         return $items;
     }
 
-    /** The deal's frozen record of what was flagged, with the estimate shown at the time. */
+    /** The deal's frozen record of what was added, at the prices shown at the time. */
     public function protectionSnapshot(): array
     {
         return array_map(fn (array $item) => [
@@ -982,7 +991,7 @@ new #[Layout('layouts.checkout')] class extends Component {
         ], $this->flaggedProtection());
     }
 
-    /** Human-readable names for the same flagged items, for the activity trail and review step. */
+    /** Human-readable names for the same items, for the activity trail and review step. */
     public function coverageInterestLabels(): array
     {
         return array_map(fn (array $item) => $item['kind'] === ProtectionProduct::KIND_PLAN ? $item['name'] . ' plan' : $item['name'], $this->flaggedProtection());
@@ -1289,9 +1298,9 @@ new #[Layout('layouts.checkout')] class extends Component {
             if ($this->hasCoverageInterest()) {
                 $deal->recordActivity(
                     'system',
-                    'Customer flagged coverage interest (non-binding, for F&I review): '
-                    . implode(', ', $this->coverageInterestLabels())
-                    . '. No coverage has been priced or added — the dealership confirms availability and pricing with the customer.',
+                    'Customer added to their estimate: '
+                    . collect($this->flaggedProtection())->map(fn ($item) => $item['name'] . ($item['kind'] === ProtectionProduct::KIND_PLAN ? ' plan' : '') . ' (' . ($item['price'] ?? 'price to be quoted') . ')')->join(', ')
+                    . '. These are the listed prices — the dealership confirms availability and final pricing with the customer.',
                 );
             }
 
@@ -1984,7 +1993,7 @@ new #[Layout('layouts.checkout')] class extends Component {
 
                 @if (count($warrantyOptions) > 0)
                 <div class="section-label">{!! $icon('shield', 24) !!} Pick your safety net</div>
-                <p class="section-note">Every plan starts with your fully refundable deposit and the dealership's certified warranty. Step up for longer cover and fewer surprise bills. Extended coverage is optional and never required to buy — pick a tier to flag your interest, and the dealership's F&amp;I office reviews availability and pricing with you later. Nothing is added to your reservation today.</p>
+                <p class="section-note">Every plan starts with your fully refundable deposit and the dealership's certified warranty. Step up for longer cover and fewer surprise bills. Extended coverage is optional and never required to buy. Pick a tier and its price is added to your estimate; the dealership's F&amp;I office confirms the final numbers with you. Nothing extra is due today.</p>
 
                 <div class="plan-grid">
                     @foreach ($warrantyOptions as $key => $option)
@@ -2052,7 +2061,7 @@ new #[Layout('layouts.checkout')] class extends Component {
             @elseif ($this->stepKey() === 'extras')
                 <div class="step-meta">Step 4 · Extras</div>
                 <h1 class="h1">Want a little extra armour?</h1>
-                <p class="lede">All optional. Flag what gives you peace of mind, skip the rest. Every figure here is the dealership's estimate — its F&amp;I office confirms what's available and the real price. Nothing is added to your reservation today.</p>
+                <p class="lede">All optional. Add what gives you peace of mind, skip the rest. Anything you tick is added to your estimate at the dealership's price; its F&amp;I office confirms the final numbers. Nothing extra is due today.</p>
 
                 @if ($gapOption)
                 <div class="gap-hero">
@@ -2084,7 +2093,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                         @else
                             <span class="price"></span>
                         @endif
-                        <button type="button" class="btn {{ $wantsGap ? 'btn-soft' : 'btn-primary' }}" wire:click="toggleGap">{{ $wantsGap ? 'Added to my list ✓ — remove' : 'I’m interested in GAP' }}</button>
+                        <button type="button" class="btn {{ $wantsGap ? 'btn-soft' : 'btn-primary' }}" wire:click="toggleGap">{{ $wantsGap ? 'Added ✓ — remove' : 'Add GAP' }}</button>
                     </div>
                 </div>
                 @endif
@@ -2133,7 +2142,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                     <p class="section-note no-extras">This dealership hasn't listed any extras. Carry on to the next step.</p>
                 @endif
 
-                <p class="section-note" style="margin-top:18px;">These are estimates to help you weigh your options — they're not priced into your reservation and you're never required to take any of them. The dealership's F&amp;I office confirms what's available and the actual cost with you before anything is final.</p>
+                <p class="section-note" style="margin-top:18px;">Prices are the dealership's, so your estimate shows what you'd really pay. You're never required to take any of them, and the dealership's F&amp;I office confirms what's available and the final cost with you before anything is final. Biweekly prices apply when you finance.</p>
 
             @elseif ($this->stepKey() === 'handover')
                 <div class="step-meta">Step 5 · Handover</div>
@@ -2234,7 +2243,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                 <div class="rev-card">
                     <div>
                         <div class="rev-label">{!! $icon('shield', 18) !!} Extras</div>
-                        <div class="rev-value">{{ ($wantsGap || count($selectedExtras) > 0) ? collect($this->coverageInterestLabels())->reject(fn ($label) => str_ends_with($label, ' plan'))->join(', ') . ' · the dealer will quote these' : 'None' }}</div>
+                        <div class="rev-value">{{ ($wantsGap || count($selectedExtras) > 0) ? collect($this->flaggedProtection())->reject(fn ($item) => $item['kind'] === 'plan')->map(fn ($item) => $item['name'] . ($item['price'] ? ' ' . $item['price'] : ''))->join(' · ') . ' · in your estimate' : 'None' }}</div>
                     </div>
                     <button type="button" class="text-link" wire:click="jumpTo(3)">Edit</button>
                 </div>
@@ -2338,7 +2347,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                                         @if ($purchaseType === 'finance')
                                             {{ $this->asMoney($this->estimatedBiweekly) }}<span class="per"> /biweekly</span>
                                         @else
-                                            {{ $this->asMoney($this->priceDollars) }}
+                                            {{ $this->asMoney($this->cashTotalDollars) }}
                                         @endif
                                     </span>
                                 </span>
@@ -2368,6 +2377,8 @@ new #[Layout('layouts.checkout')] class extends Component {
                                     <div class="rail-group">
                                         <div class="rail-line head"><span>HST (13%)</span><span>{{ $this->asMoney($this->paymentBreakdown['taxesBiweekly']) }}</span></div>
                                     </div>
+
+                                    @include('partials.checkout-protection-lines', ['items' => $this->flaggedProtection(), 'financing' => true])
 
                                     @if (count($this->paymentBreakdown['passThroughFees']) > 0)
                                         <div class="rail-group">
@@ -2402,9 +2413,11 @@ new #[Layout('layouts.checkout')] class extends Component {
                                         </div>
                                     @endif
 
+                                    @include('partials.checkout-protection-lines', ['items' => $this->flaggedProtection(), 'financing' => false])
+
                                     <div class="rail-total">
                                         <span class="lbl">Total</span>
-                                        <span class="amt">{{ $this->asMoney($this->priceDollars) }}</span>
+                                        <span class="amt">{{ $this->asMoney($this->cashTotalDollars) }}</span>
                                     </div>
                                 @endif
                             </div>
@@ -2415,15 +2428,9 @@ new #[Layout('layouts.checkout')] class extends Component {
                                 @if ($wantsTrade === true)
                                     <div class="rail-line sub"><span>Trade-in (preliminary)</span><span>{{ $this->tradeEstimateRangeLabel() ?? 'Appraised by dealer' }}</span></div>
                                 @endif
-                                @if ($warrantyPlan)
-                                    <div class="rail-line sub"><span>{{ $warrantyOptions[$warrantyPlan]['name'] ?? '' }} plan</span><span>Dealer will quote</span></div>
+                                @if ($warrantyPlan || $wantsGap || count($selectedExtras) > 0)
+                                    <div class="rail-line sub"><span>Protection &amp; add-ons</span><span>{{ count($this->flaggedProtection()) }} in your estimate</span></div>
                                 @endif
-                                @if ($wantsGap)
-                                    <div class="rail-line sub"><span>{{ $gapOption['name'] ?? 'GAP protection' }}</span><span>Dealer will quote</span></div>
-                                @endif
-                                @foreach ($selectedExtras as $extraKey)
-                                    <div class="rail-line sub"><span>{{ ($extrasCatalog[$extraKey] ?? $accessoryCatalog[$extraKey] ?? ['name' => ''])['name'] }}</span><span>Dealer will quote</span></div>
-                                @endforeach
                             </div>
                         @endif
 
@@ -2457,7 +2464,7 @@ new #[Layout('layouts.checkout')] class extends Component {
             @if ($this->stepKey() !== 'done')
                 <div class="paybar-price">
                     <span class="lbl">{{ $purchaseType === 'cash' ? 'Total' : 'Est. payment' }}</span>
-                    <span class="amt">{{ $purchaseType === 'cash' ? $this->asMoney($this->priceDollars) : $this->asMoney($this->estimatedBiweekly) }}<span class="per">{{ $purchaseType === 'cash' ? '' : ' /biweekly' }}</span></span>
+                    <span class="amt">{{ $purchaseType === 'cash' ? $this->asMoney($this->cashTotalDollars) : $this->asMoney($this->estimatedBiweekly) }}<span class="per">{{ $purchaseType === 'cash' ? '' : ' /biweekly' }}</span></span>
                 </div>
             @endif
 

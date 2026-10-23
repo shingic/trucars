@@ -61,7 +61,7 @@ new #[Layout('layouts.dealer')] #[Title('Protection & add-ons')] class extends C
 
     <div class="pm-intro">
         <h1>{{ $dealer->name }} — protection &amp; add-ons</h1>
-        <p>What this dealership's buyers can ask about at checkout: the TruCars defaults it shows, at its own price where it set one, and the items it added. Changes here are the same as the dealership making them in its portal.</p>
+        <p>What this dealership's buyers can add to their estimate at checkout: the TruCars defaults it shows, at its own price where it set one, and the items it added. Changes here are the same as the dealership making them in its portal.</p>
     </div>
 
     @include('partials.protection-manager')

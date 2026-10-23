@@ -1053,12 +1053,12 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
                 </div>
             </div>
 
-            {{-- Coverage interest (non-binding) --}}
+            {{-- Protection & add-ons the buyer added to their estimate --}}
             @if ($this->hasCoverageInterest())
                 <div class="panel">
                     <div class="panel-head">
-                        <h3>Coverage interest</h3>
-                        <span class="ph-right">Non-binding · for F&amp;I review</span>
+                        <h3>Protection &amp; add-ons</h3>
+                        <span class="ph-right">In the buyer's estimate · confirm with them</span>
                     </div>
                     <div class="panel-body">
                         @if (! empty($deal->protection_snapshot))
@@ -1067,7 +1067,7 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
                             @foreach ($deal->protection_snapshot as $flagged)
                                 <div class="row">
                                     <span class="k">{{ \App\Models\ProtectionProduct::KINDS[$flagged['kind']] ?? 'Coverage' }}</span>
-                                    <span class="v">{{ $flagged['name'] }}@if ($shown = \App\Models\ProtectionProduct::priceLabel($flagged['amount_in_cents'] ?? null, $flagged['price_basis'] ?? 'biweekly')) <small class="est">· shown at {{ $shown }}</small>@endif</span>
+                                    <span class="v">{{ $flagged['name'] }}@if ($shown = \App\Models\ProtectionProduct::priceLabel($flagged['amount_in_cents'] ?? null, $flagged['price_basis'] ?? 'biweekly')) <small class="est">· {{ $shown }}</small>@endif</span>
                                 </div>
                             @endforeach
                             </div>
@@ -1081,7 +1081,7 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
                                 @endforeach
                             </div>
                         @endif
-                        <p class="note">The buyer flagged interest in these at checkout. Nothing has been priced, added or tied to the sale — the F&amp;I office confirms availability and pricing directly with the buyer.</p>
+                        <p class="note">The buyer added these at checkout, and their payment estimate included them at the prices shown. Nothing was charged for them; confirm availability and final pricing with the buyer.</p>
                     </div>
                 </div>
             @endif

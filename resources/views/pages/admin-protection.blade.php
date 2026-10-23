@@ -120,7 +120,7 @@ new #[Layout('layouts.dealer')] #[Title('Protection & add-ons')] class extends C
 
     <div class="pm-intro">
         <h1>Protection &amp; add-ons</h1>
-        <p>The default list every dealership offers at checkout. Each dealership can hide an item or set its own price, and add items of its own. Buyers only flag interest; nothing is sold or charged online.</p>
+        <p>The default list every dealership offers at checkout. Each dealership can hide an item or set its own price, and add items of its own. What buyers tick is added to their payment estimate at the dealership's price; nothing is charged online.</p>
     </div>
 
     @foreach (\App\Models\ProtectionProduct::KINDS as $kind => $kindLabel)

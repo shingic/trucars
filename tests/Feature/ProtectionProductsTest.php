@@ -2,13 +2,17 @@
 
 namespace Tests\Feature;
 
+use App\Models\Deal;
 use App\Models\Dealer;
 use App\Models\ProtectionProduct;
 use App\Models\User;
 use App\Models\Vehicle;
+use App\Support\PaymentEstimate;
 use App\Support\Permission;
+use App\Support\PlatformSettings;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Livewire\Livewire;
 use Tests\Concerns\CreatesDealers;
@@ -123,6 +127,49 @@ class ProtectionProductsTest extends TestCase
             ['kind' => 'gap', 'name' => 'GAP protection', 'amount_in_cents' => 1800, 'price_basis' => 'biweekly'],
             ['kind' => 'addon', 'name' => 'Tire & rim cover', 'amount_in_cents' => 1100, 'price_basis' => 'biweekly'],
         ], $checkout->instance()->protectionSnapshot());
+    }
+
+    public function test_reserving_with_coverage_flagged_saves_it_on_the_deal(): void
+    {
+        Mail::fake();
+        PlatformSettings::put('payments_mode', 'demo', null);
+        $this->actingAs(User::factory()->create());
+        $plan = 'p' . ProtectionProduct::defaults()->where('name', 'Safe Bet')->value('id');
+        $tires = 'p' . ProtectionProduct::defaults()->where('name', 'Tire & rim cover')->value('id');
+
+        Livewire::test('pages::checkout', ['vehicle' => $this->car($this->dealer)])
+            ->set('firstName', 'Sam')->set('lastName', 'Rivera')->set('phone', '6045550100')
+            ->call('selectWarranty', $plan)->call('toggleGap')->call('toggleExtra', $tires)
+            ->call('preparePayment')->call('reserve');
+
+        $deal = Deal::withoutGlobalScopes()->sole();
+        $this->assertSame('Safe Bet', $deal->warranty_plan);
+        $this->assertSame(['GAP protection', 'Tire & rim cover'], $deal->extras_interest);
+        $this->assertSame(['Safe Bet', 'GAP protection', 'Tire & rim cover'], array_column($deal->protection_snapshot, 'name'));
+    }
+
+    public function test_what_the_buyer_adds_is_counted_in_the_estimate_at_the_dealerships_prices(): void
+    {
+        $mats = $this->dealer->protectionProducts()->create(['kind' => 'accessory', 'name' => 'Floor mats', 'amount_in_cents' => 24900, 'price_basis' => 'one_time']);
+        $this->actingAs(User::factory()->create());
+
+        $checkout = Livewire::test('pages::checkout', ['vehicle' => $this->car($this->dealer)]);
+        $base = $checkout->instance()->estimatedBiweekly;
+
+        $checkout->call('toggleGap')->call('toggleExtra', 'p' . $mats->id);
+        $financing = $checkout->instance();
+
+        // GAP adds its $18 biweekly price; the $249 mats are financed with the car.
+        $this->assertEqualsWithDelta(
+            PaymentEstimate::loanBiweekly(29990 + 249, 72) + 18,
+            $financing->estimatedBiweekly,
+            0.001,
+        );
+        $this->assertGreaterThan($base + 18, $financing->estimatedBiweekly);
+
+        // Paying in full: the one-time mats add to the total; biweekly GAP needs financing.
+        $checkout->call('setPurchaseType', 'cash');
+        $this->assertEqualsWithDelta(29990 + 249, $checkout->instance()->cashTotalDollars, 0.001);
     }
 
     public function test_the_command_centre_manages_the_defaults_with_settings_access(): void

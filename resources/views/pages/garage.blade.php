@@ -194,19 +194,14 @@ new #[Layout('layouts.checkout')] class extends Component {
 
     public function estimatedBiweeklyFor(Deal $deal): float
     {
-        // Same illustrative math as the checkout — the dealership's finance
-        // office sets the real number; we never show a fabricated rate.
-        $vehiclePriceDollars = $deal->vehicle->price_in_cents / 100;
-        $downPaymentDollars = ($deal->down_payment_in_cents ?? 0) / 100;
-        $taxedPrincipal = max(0, $vehiclePriceDollars - $downPaymentDollars) * 1.13;
-        $biweeklyRate = 0.075 / 26;
-        $periods = (($deal->term_months ?? 72) / 12) * 26;
-
-        if ($periods <= 0) {
-            return 0;
-        }
-
-        return $taxedPrincipal * $biweeklyRate / (1 - pow(1 + $biweeklyRate, -$periods));
+        // Same illustrative math as the checkout, including what the buyer
+        // added there — the dealership's finance office sets the real number.
+        return \App\Support\PaymentEstimate::biweekly(
+            $deal->vehicle->price_in_cents / 100,
+            ($deal->down_payment_in_cents ?? 0) / 100,
+            $deal->term_months ?? 72,
+            $deal->protection_snapshot ?? [],
+        );
     }
 
     /**
