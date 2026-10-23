@@ -38,9 +38,9 @@
         /* a car on the lot: a trimmed photo, plain facts, the price on a rule */
         .vcard { position:relative; display:flex; flex-direction:column; min-width:0; }
         .vcard-link { position:absolute; inset:0; z-index:1; }
-        .vcard-photo { position:relative; overflow:hidden; aspect-ratio:4/3; border-radius:3px; background:var(--bg-2); }
-        /* dealer photos carry a vendor badge along the bottom edge; the frame trims it off */
-        .vcard-photo img { position:absolute; top:0; left:0; width:100%; height:110%; object-fit:cover; object-position:center top; display:block; }
+        .vcard-photo { position:relative; overflow:hidden; aspect-ratio:4/2.8; border-radius:3px; background:var(--bg-2); }
+        /* dealer photos are 4:3 with a vendor badge along the bottom edge; the frame is 4:3 less that strip, so the whole car shows and only the badge is trimmed */
+        .vcard-photo img { position:absolute; top:0; left:0; width:100%; height:107%; object-fit:cover; object-position:center 40%; display:block; }
         .vcard-tags { position:absolute; top:0; left:0; z-index:2; display:flex; flex-direction:column; align-items:flex-start; max-width:calc(100% - 52px); }
         .vcard-tags > span { font-family:var(--font-display); font-size:13.5px; font-weight:600; text-transform:uppercase; padding:3px 9px; max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .vcard-reserved { background:var(--ink); color:#fff; }

@@ -45,8 +45,8 @@ new #[Title('How it works — TruCars')] class extends Component {
 
         .hw-example { border:1px solid var(--line-strong); border-radius:6px; overflow:hidden; background:#fff; }
         /* dealer photos carry a vendor badge along the bottom edge; the frame trims it off */
-        .hw-ex-photo { position:relative; overflow:hidden; aspect-ratio:16/10; background:var(--bg-2); }
-        .hw-ex-photo img { position:absolute; top:0; left:0; width:100%; height:110%; object-fit:cover; object-position:center top; }
+        .hw-ex-photo { position:relative; overflow:hidden; aspect-ratio:4/2.8; background:var(--bg-2); }
+        .hw-ex-photo img { position:absolute; top:0; left:0; width:100%; height:107%; object-fit:cover; object-position:center 40%; }
         .hw-ex-head { padding:16px 20px 14px; border-bottom:2px solid var(--ink); }
         .hw-ex-head small { display:block; font-family:var(--font-display); font-size:14px; font-weight:600; text-transform:uppercase; color:var(--ink-3); }
         .hw-ex-head a { display:block; font-family:var(--font-display); font-size:22px; font-weight:700; color:var(--ink); text-decoration:none; margin-top:2px; }

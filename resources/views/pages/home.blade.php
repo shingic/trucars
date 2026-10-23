@@ -186,7 +186,7 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
         .stage figure { margin:0; position:relative; min-height:560px; background:var(--primary-press); }
         /* dealer photos carry a vendor badge along the bottom edge; the frame trims it off */
         .shot { position:relative; overflow:hidden; }
-        .shot > img { position:absolute; top:0; left:0; width:100%; height:110%; object-fit:cover; object-position:center top; }
+        .shot > img { position:absolute; top:0; left:0; width:100%; height:107%; object-fit:cover; object-position:center 40%; }
 
         .pictured { position:absolute; z-index:1; left:0; bottom:0; background:var(--ink); color:#fff; text-decoration:none; font-size:14px; padding:10px 14px; }
         .pictured span { display:block; font-size:12px; color:rgba(255,255,255,.65); }
@@ -204,7 +204,7 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
         /* cars */
         .cars { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:34px 22px; }
         .car { display:block; text-decoration:none; color:var(--ink); }
-        .car-photo { aspect-ratio:4/3; border-radius:3px; background:var(--bg-2); }
+        .car-photo { aspect-ratio:4/2.8; border-radius:3px; background:var(--bg-2); }
         .car:hover .car-name { color:var(--primary-press); }
         .car-photo .reserved { position:absolute; z-index:1; top:0; left:0; background:var(--ink); color:#fff; font-family:var(--font-display); font-size:14px; font-weight:600; text-transform:uppercase; padding:4px 10px; }
         .car-photo .cert { position:absolute; z-index:1; left:0; bottom:0; max-width:100%; background:var(--primary); color:#fff; font-family:var(--font-display); font-size:14px; font-weight:600; text-transform:uppercase; padding:4px 10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -276,7 +276,7 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
             .home section { margin-top:60px; }
             .stage, .close { grid-template-columns:minmax(0, 1fr); }
             .stage-copy { padding:30px 16px 26px; }
-            .stage figure { min-height:260px; order:-1; }
+            .stage figure { min-height:0; aspect-ratio:4/2.8; order:-1; }
             .facts { grid-template-columns:minmax(0, 1fr); }
             .fact + .fact { border-left:none; border-top:1px solid rgba(255,255,255,.16); }
             .fact, .fact:first-child { padding:14px 16px; }

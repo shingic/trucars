@@ -706,9 +706,9 @@ new class extends Component {
         .gpill-count { font-size:12.5px; color:var(--ink-3); }
         .gpill.on .gpill-count { color:rgba(255,255,255,.7); }
 
-        .gallery-hero { height:480px; border-radius:3px; background:var(--bg-2); position:relative; overflow:hidden; touch-action:pan-y; user-select:none; }
-        /* dealer photos carry a vendor badge along the bottom edge; the frame trims it off (fullscreen shows the whole photo) */
-        .gallery-img { position:absolute; top:0; left:0; width:100%; height:110%; object-fit:cover; object-position:center top; display:block; -webkit-user-drag:none; }
+        .gallery-hero { aspect-ratio:4/2.8; border-radius:3px; background:var(--bg-2); position:relative; overflow:hidden; touch-action:pan-y; user-select:none; }
+        /* dealer photos are 4:3 with a vendor badge along the bottom edge; the frame is 4:3 less that strip, so the whole car shows and only the badge is trimmed (fullscreen shows the whole photo) */
+        .gallery-img { position:absolute; top:0; left:0; width:100%; height:107%; object-fit:cover; object-position:center 40%; display:block; -webkit-user-drag:none; }
         .gallery-badges { position:absolute; top:0; left:0; z-index:2; display:flex; flex-direction:column; align-items:flex-start; pointer-events:none; }
         .gallery-badge { display:inline-flex; align-items:center; gap:7px; background:#fff; padding:6px 12px 6px 10px; font-family:var(--font-display); font-size:16px; font-weight:600; text-transform:uppercase; color:var(--ink); }
         .gallery-badge .dot { width:16px; height:16px; border-radius:2px; background:var(--good); display:grid; place-items:center; }
@@ -874,14 +874,12 @@ new class extends Component {
         @media (max-width:1000px) {
             .vdp-grid { grid-template-columns:minmax(0, 1fr); gap:30px; }
             .buy-rail { position:static; }
-            .gallery-hero { height:400px; }
             .vdp { padding-bottom:calc(124px + env(safe-area-inset-bottom)); }
             .vdp-stickybar { display:flex; }
         }
 
         @media (max-width:860px) {
             .vdp-back { margin-bottom:12px; }
-            .gallery-hero { height:280px; }
             .gallery-badge { padding:5px 10px 5px 8px; font-size:14.5px; }
             .ghero-arrow { display:none; }
             .gthumb-nav { display:none; }
