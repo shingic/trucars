@@ -19,6 +19,12 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // A first run on MySQL could stop partway (an index name over MySQL's
+        // 64-character limit) and leave these two tables behind, empty and
+        // unrecorded. Clear any such leftovers so this run starts clean.
+        Schema::dropIfExists('dealer_protection_settings');
+        Schema::dropIfExists('protection_products');
+
         Schema::create('protection_products', function (Blueprint $table) {
             $table->id();
             $table->foreignId('dealer_id')->nullable()->constrained()->cascadeOnDelete();
@@ -44,12 +50,14 @@ return new class extends Migration
             $table->unsignedInteger('amount_in_cents')->nullable();
             $table->timestamps();
 
-            $table->unique(['dealer_id', 'protection_product_id']);
+            $table->unique(['dealer_id', 'protection_product_id'], 'dealer_protection_unique');
         });
 
-        Schema::table('deals', function (Blueprint $table) {
-            $table->json('protection_snapshot')->nullable()->after('extras_interest');
-        });
+        if (! Schema::hasColumn('deals', 'protection_snapshot')) {
+            Schema::table('deals', function (Blueprint $table) {
+                $table->json('protection_snapshot')->nullable()->after('extras_interest');
+            });
+        }
 
         $now = now();
         $row = fn (string $kind, int $position, string $name, ?string $description, ?int $cents, array $extra = []) => $extra + [
