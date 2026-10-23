@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Vehicle;
+use App\Support\Deposits;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
@@ -10,8 +11,8 @@ use Livewire\Component;
 | documents and the dealer's call → financing approval → insurance → pickup
 | or delivery. The deposit wording mirrors checkout; change both together.
 |
-| The hero photo is a real car on the marketplace right now, captioned with
-| its real details. With nothing listed, the hero simply has no photo.
+| The worked example at the top is a real car on the marketplace right now,
+| with its real price. With nothing listed, it is simply left out.
 */
 new #[Title('How it works — TruCars')] class extends Component {
     public function featuredCar(): ?Vehicle
@@ -30,23 +31,33 @@ new #[Title('How it works — TruCars')] class extends Component {
         .hw p { margin:0 0 12px; max-width:620px; }
         .hw .muted { color:var(--ink-2); }
 
-        /* hero: a flat blue sign with a real car from the lot, edge to edge under the top bar like the homepage */
-        html { overflow-x:clip; }
-        .hw-hero { --gut:max(24px, calc((100vw - 1600px) / 2 + 24px)); margin:-32px calc(50% - 50vw) 0; background:var(--primary); color:#fff; overflow:hidden; display:grid; grid-template-columns:minmax(0, 1.1fr) minmax(0, 1fr); }
-        .hw-hero.no-photo { grid-template-columns:1fr; }
-        .hw-hero-copy { padding:64px 48px 56px var(--gut); }
-        .hw-hero h1 { font-size:clamp(44px, 6vw, 78px); font-weight:700; line-height:.95; text-transform:uppercase; margin:0; color:#fff; }
-        .hw-hero p { font-size:18px; margin:20px 0 0; max-width:440px; color:#fff; }
-        .hw-hero figure { margin:0; position:relative; overflow:hidden; background:var(--primary-press); min-height:420px; }
+        /* top: what happens and when you pay, worked through on a real car from the lot */
+        .hw-top { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 420px); gap:56px; align-items:start; padding:28px 0 8px; }
+        .hw-top.no-car { grid-template-columns:minmax(0, 1fr); }
+        .hw-top h1 { font-size:clamp(40px, 5vw, 64px); font-weight:700; line-height:.95; text-transform:uppercase; margin:0; max-width:16ch; }
+        .hw-top-copy > p { font-size:18px; margin:18px 0 0; max-width:500px; color:var(--ink-2); }
+        .hw-jump { list-style:none; margin:30px 0 0; padding:0; border-top:2px solid var(--ink); max-width:560px; }
+        .hw-jump a { display:grid; grid-template-columns:34px minmax(0, 1fr) auto; gap:14px; align-items:baseline; padding:13px 0; border-bottom:1px solid var(--line-strong); color:var(--ink); text-decoration:none; }
+        .hw-jump b { font-family:var(--font-display); font-size:24px; font-weight:700; color:var(--primary); }
+        .hw-jump span { font-family:var(--font-display); font-size:22px; font-weight:600; }
+        .hw-jump small { font-size:14px; color:var(--ink-3); text-align:right; }
+        .hw-jump a:hover span { color:var(--primary-press); }
+
+        .hw-example { border:1px solid var(--line-strong); border-radius:6px; overflow:hidden; background:#fff; }
         /* dealer photos carry a vendor badge along the bottom edge; the frame trims it off */
-        .hw-hero img { position:absolute; top:0; left:0; width:100%; height:110%; object-fit:cover; object-position:center top; }
-        .hw-hero figcaption { position:absolute; z-index:1; left:0; bottom:0; background:var(--ink); color:#fff; font-size:13px; padding:8px 12px; }
-        .hw-hero figcaption a { color:#fff; text-decoration:none; } .hw-hero figcaption a:hover { text-decoration:underline; }
-        .hw-route { grid-column:1 / -1; display:flex; background:var(--ink); }
-        .hw-route a { flex:1; display:flex; align-items:baseline; gap:10px; padding:14px 20px; color:#fff; text-decoration:none; font-family:var(--font-display); font-size:19px; font-weight:600; text-transform:uppercase; border-left:1px solid rgba(255,255,255,.18); }
-        .hw-route a:first-child { border-left:none; padding-left:var(--gut); }
-        .hw-route a span { color:var(--primary-bright); font-size:15px; }
-        .hw-route a:hover { background:#12224D; }
+        .hw-ex-photo { position:relative; overflow:hidden; aspect-ratio:16/10; background:var(--bg-2); }
+        .hw-ex-photo img { position:absolute; top:0; left:0; width:100%; height:110%; object-fit:cover; object-position:center top; }
+        .hw-ex-head { padding:16px 20px 14px; border-bottom:2px solid var(--ink); }
+        .hw-ex-head small { display:block; font-family:var(--font-display); font-size:14px; font-weight:600; text-transform:uppercase; color:var(--ink-3); }
+        .hw-ex-head a { display:block; font-family:var(--font-display); font-size:22px; font-weight:700; color:var(--ink); text-decoration:none; margin-top:2px; }
+        .hw-ex-head a:hover { color:var(--primary-press); }
+        .hw-ex-head span { font-size:13.5px; color:var(--ink-3); }
+        .hw-example dl { margin:0; }
+        .hw-example dl > div { display:flex; justify-content:space-between; align-items:baseline; gap:16px; padding:13px 20px; border-bottom:1px dashed var(--line-strong); }
+        .hw-example dl > div:last-child { border-bottom:none; background:var(--bg-2); }
+        .hw-example dt { font-weight:700; } .hw-example dt small { display:block; font-weight:400; font-size:13.5px; color:var(--ink-3); }
+        .hw-example dd { margin:0; font-family:var(--font-display); font-size:24px; font-weight:700; white-space:nowrap; }
+        .hw-example .today dd { color:var(--primary); }
 
         /* steps: a big numeral, then what happens */
         .hw-steps { list-style:none; margin:24px 0 0; padding:0; }
@@ -90,12 +101,8 @@ new #[Title('How it works — TruCars')] class extends Component {
         .hw-btn:hover { background:#fff; color:var(--ink); }
 
         @media (max-width:860px) {
-            .hw-hero { grid-template-columns:1fr; --gut:16px; margin-top:-18px; }
-            .hw-hero.no-photo { grid-template-columns:1fr; }
-            .hw-hero-copy { padding:32px 16px 28px; }
-            .hw-hero figure { min-height:220px; }
-            .hw-route { flex-wrap:wrap; }
-            .hw-route a { flex:1 1 50%; padding:12px 16px; font-size:17px; border-top:1px solid rgba(255,255,255,.18); }
+            .hw-top { grid-template-columns:minmax(0, 1fr); gap:28px; padding-top:8px; }
+            .hw-jump small { display:none; }
             .hw-step { grid-template-columns:72px minmax(0, 1fr); gap:8px 18px; }
             .hw-num { font-size:68px; grid-row:span 2; }
             .hw-step > div:last-child { grid-column:2; }
@@ -106,24 +113,33 @@ new #[Title('How it works — TruCars')] class extends Component {
         }
     </style>
 
-    <div class="hw-hero {{ $car ? '' : 'no-photo' }}">
-        <div class="hw-hero-copy">
+    <header class="hw-top {{ $car ? '' : 'no-car' }}">
+        <div class="hw-top-copy">
             <h1>How buying a car on TruCars works</h1>
             <p>Every car here is sold by a licensed dealership at the price on the listing. You reserve it online, the dealership finishes the deal with you, and you drive away.</p>
+            <ol class="hw-jump" aria-label="Steps">
+                <li><a href="#find"><b>1</b><span>Find a car</span><small>No account needed</small></a></li>
+                <li><a href="#reserve"><b>2</b><span>Reserve it for $150</span><small>About five minutes</small></a></li>
+                <li><a href="#paperwork"><b>3</b><span>Finish the paperwork</span><small>Usually within a day</small></a></li>
+                <li><a href="#pickup"><b>4</b><span>Pick it up</span><small>On the day you chose</small></a></li>
+            </ol>
         </div>
         @if ($car)
-            <figure>
-                <img src="{{ $car->primary_photo_url }}" alt="{{ $car->model_year }} {{ $car->make }} {{ $car->model }}">
-                <figcaption><a href="{{ url('/cars/' . $car->id) }}" wire:navigate>{{ $car->model_year }} {{ $car->make }} {{ $car->model }}, {{ $car->display_price }} at {{ ucwords(strtolower($car->dealer->name)) }}{{ $car->display_location ? ', ' . $car->display_location : '' }}</a></figcaption>
-            </figure>
+            <aside class="hw-example" aria-label="Worked example">
+                <div class="hw-ex-photo"><img src="{{ $car->primary_photo_url }}" alt=""></div>
+                <div class="hw-ex-head">
+                    <small>What you’d pay, and when</small>
+                    <a href="{{ url('/cars/' . $car->id) }}" wire:navigate>{{ $car->model_year }} {{ $car->make }} {{ $car->model }}</a>
+                    <span>{{ ucwords(strtolower($car->dealer->name)) }}{{ $car->display_location ? ', ' . $car->display_location : '' }}</span>
+                </div>
+                <dl>
+                    <div><dt>Listed price<small>The price on the listing</small></dt><dd>{{ $car->display_price }}</dd></div>
+                    <div class="today"><dt>Today, to reserve it<small>Refundable any time before delivery</small></dt><dd>${{ number_format(Deposits::AMOUNT_IN_CENTS / 100) }}</dd></div>
+                    <div><dt>At pickup<small>Plus tax and licensing</small></dt><dd>${{ number_format(max(0, $car->price_in_cents - Deposits::AMOUNT_IN_CENTS) / 100) }}</dd></div>
+                </dl>
+            </aside>
         @endif
-        <nav class="hw-route" aria-label="Steps">
-            <a href="#find"><span>1</span> Find</a>
-            <a href="#reserve"><span>2</span> Reserve</a>
-            <a href="#paperwork"><span>3</span> Paperwork</a>
-            <a href="#pickup"><span>4</span> Pick up</a>
-        </nav>
-    </div>
+    </header>
 
     <ol class="hw-steps">
         <li class="hw-step" id="find">
