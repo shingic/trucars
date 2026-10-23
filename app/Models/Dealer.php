@@ -221,6 +221,18 @@ class Dealer extends Model
      * scope still guards top-level DealerFee queries (e.g. editing a fee by id
      * in settings), which is where cross-dealer protection actually matters.
      */
+    /** Protection products this dealership added itself (TruCars defaults have no dealer). */
+    public function protectionProducts(): HasMany
+    {
+        return $this->hasMany(ProtectionProduct::class);
+    }
+
+    /** This dealership's choices about the TruCars default protection products. */
+    public function protectionSettings(): HasMany
+    {
+        return $this->hasMany(DealerProtectionSetting::class);
+    }
+
     public function fees(): HasMany
     {
         return $this->hasMany(DealerFee::class)

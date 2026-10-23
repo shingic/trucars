@@ -168,6 +168,11 @@ Route::domain($staffDomain)->group(function () {
         ->middleware(EnsureUserIsStaff::class)
         ->name('dealer.fees');
 
+    // The coverage plans, GAP, add-ons and accessories this dealership's buyers can flag at checkout.
+    Route::livewire('/protection', 'pages::dealer-protection')
+        ->middleware(EnsureUserIsStaff::class)
+        ->name('dealer.protection');
+
     // Manufacturer offers to opt in to, and the dealer's own promotions.
     Route::livewire('/offers', 'pages::dealer-offers')
         ->middleware(EnsureUserIsStaff::class)
@@ -256,6 +261,12 @@ Route::domain($adminDomain)->group(function () {
         ->middleware([EnsureCommandCentreAccess::class, 'can:customers.view'])
         ->name('admin.dealers.customers');
 
+    // A dealer's protection & add-ons: view with dealers.view, change with dealers.manage.
+    Route::livewire('/dealers/{dealer}/protection', 'pages::admin-dealer-protection')
+        ->whereNumber('dealer')
+        ->middleware([EnsureCommandCentreAccess::class, 'can:dealers.view'])
+        ->name('admin.dealers.protection');
+
 
 
 
@@ -284,6 +295,8 @@ Route::domain($adminDomain)->group(function () {
     // Brands: every dealer belongs to one; each brand's CPO checklist and
     // offers apply to all of its dealers (settings.manage).
     Route::middleware([EnsureCommandCentreAccess::class, 'can:settings.manage'])->group(function () {
+        // The default protection & add-ons list every dealership offers at checkout.
+        Route::livewire('/settings/protection', 'pages::admin-protection')->name('admin.settings.protection');
         Route::livewire('/settings/brands', 'pages::admin-brands')->name('admin.brands');
         Route::livewire('/settings/brands/{brand}', 'pages::admin-brand')->whereNumber('brand')->name('admin.brands.show');
         Route::livewire('/settings/brands/{brand}/checklist', 'pages::admin-brand-checklist')->whereNumber('brand')->name('admin.brands.checklist');

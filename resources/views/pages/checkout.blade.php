@@ -4,6 +4,7 @@ use App\Mail\ReservationConfirmed;
 use App\Mail\ReservationSubmitted;
 use App\Models\Deal;
 use App\Models\DepositPayment;
+use App\Models\ProtectionProduct;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Services\Valuation\Data\TradeInput;
@@ -116,68 +117,28 @@ new #[Layout('layouts.checkout')] class extends Component {
     public $downPayment = 0;
     public ?string $warrantyPlan = null;
 
-    // Coverage tiers the buyer can flag interest in. The dealership's F&I office
-    // confirms what's available and prices it later — nothing here is binding,
-    // tied to the sale, or added to the reservation. The feature list and the
-    // "popular" flag are presentation only.
-    public array $warrantyOptions = [
-        'openroad' => [
-            'name'    => 'Open Road',
-            'tag'     => 'Get rolling with the must-haves covered.',
-            'popular' => false,
-            'feats'   => [
-                ['label' => 'Refundable deposit',           'included' => true],
-                ['label' => '3-month / 5,000 km warranty',  'included' => true],
-                ['label' => 'Roadside assistance',          'included' => true],
-                ['label' => 'Tire & rim cover',             'included' => false],
-                ['label' => 'Rust & paint shield',          'included' => false],
-            ],
-        ],
-        'safebet'  => [
-            'name'    => 'Safe Bet',
-            'tag'     => 'Our pick — longer cover, no surprise bills.',
-            'popular' => true,
-            'feats'   => [
-                ['label' => 'Refundable deposit',           'included' => true],
-                ['label' => '3-year / 60,000 km warranty',  'included' => true],
-                ['label' => 'Roadside assistance',          'included' => true],
-                ['label' => 'Free delivery or pickup',      'included' => true],
-                ['label' => 'Rust & paint shield',          'included' => false],
-            ],
-        ],
-        'bumper'   => [
-            'name'    => 'Bumper-to-Bumper',
-            'tag'     => 'Everything in. Drive without a second thought.',
-            'popular' => false,
-            'feats'   => [
-                ['label' => 'Refundable deposit',           'included' => true],
-                ['label' => '3-year / 60,000 km warranty',  'included' => true],
-                ['label' => 'Roadside + tire & rim',        'included' => true],
-                ['label' => 'Rust & paint shield',          'included' => true],
-                ['label' => 'Free delivery or pickup',      'included' => true],
-            ],
-        ],
-    ];
+    // What this dealership offers (ProtectionProduct::menuFor): coverage plans,
+    // GAP, add-ons and accessories, loaded once in mount and locked. The buyer
+    // only flags interest; the dealership's F&I office confirms availability and
+    // prices it later. Nothing here is binding, tied to the sale, or added to the
+    // reservation. Keys are "p{id}"; prices are the dealership's estimates.
+    #[Locked]
+    public array $warrantyOptions = [];
 
-    // Rows for the "full feature comparison" table. A value is either a boolean
-    // (renders a tick/cross) or a short string (renders as-is). Column order
-    // matches the $warrantyOptions order: Open Road, Safe Bet, Bumper-to-Bumper.
-    public array $comparisonRows = [
-        ['label' => 'Refundable deposit', 'values' => [true,  true,  true]],
-        ['label' => 'Warranty',           'values' => ['3 mo', '3 yr', '3 yr']],
-        ['label' => 'Roadside',           'values' => [true,  true,  true]],
-        ['label' => 'Tire & rim',         'values' => [false, false, true]],
-        ['label' => 'Rust & paint',       'values' => [false, false, true]],
-    ];
+    // Rows for the "full feature comparison" table: every feature any plan
+    // lists, with a tick or cross per plan in $warrantyOptions order.
+    #[Locked]
+    public array $comparisonRows = [];
 
-    // ----- Extras (GAP + stackable add-ons) -----
-    // Same education and menu as the mockup, but every figure here is an
-    // illustrative biweekly estimate the dealer's F&I office confirms. Toggling
-    // flags interest only — nothing is priced into the reservation or due today.
+    // ----- Extras (GAP, add-ons, accessories) -----
+    // Every figure is the dealership's estimate, confirmed by its F&I office.
+    // Ticking one flags interest only: nothing is priced into the reservation or due today.
     public bool $wantsGap = false;
     public array $selectedExtras = [];
 
-    public int $gapBiweekly = 18;
+    // The first GAP product gets the explainer; any others sit with the add-ons.
+    #[Locked]
+    public ?array $gapOption = null;
 
     // The write-off scenario the GAP explainer illustrates (all figures fixed —
     // this is an educational example, not the buyer's own numbers).
@@ -189,13 +150,11 @@ new #[Layout('layouts.checkout')] class extends Component {
         'gapWidth'        => 22,
     ];
 
-    public array $extrasCatalog = [
-        'theft'   => ['name' => 'Theft recovery & tracking', 'desc' => "Hidden device + recovery service if it's ever taken",   'biweekly' => 7],
-        'tirerim' => ['name' => 'Tire & rim cover',          'desc' => 'Pothole and curb damage, repaired or replaced',         'biweekly' => 9],
-        'shield'  => ['name' => 'Paint & interior shield',   'desc' => 'Stains, scuffs, and fade protection inside and out',     'biweekly' => 6],
-        'maint'   => ['name' => 'Prepaid maintenance',       'desc' => 'Oil, filters, and scheduled service at a locked rate',   'biweekly' => 12],
-        'keys'    => ['name' => 'Lost key cover',            'desc' => 'Replacement smart keys without the dealer markup',       'biweekly' => 4],
-    ];
+    #[Locked]
+    public array $extrasCatalog = [];
+
+    #[Locked]
+    public array $accessoryCatalog = [];
 
     public array $provinceOptions = ['Ontario', 'Alberta', 'British Columbia', 'Manitoba', 'Quebec', 'Saskatchewan'];
 
@@ -239,6 +198,7 @@ new #[Layout('layouts.checkout')] class extends Component {
         abort_unless($vehicle->isListed(), 404);
 
         $this->vehicle = $vehicle;
+        $this->loadProtectionMenu();
 
         // Account-first: the buyer signs in (or registers) before the journey
         // begins, so every Deal is born with an owner. A guest who lands here
@@ -636,18 +596,22 @@ new #[Layout('layouts.checkout')] class extends Component {
 
     public function selectWarranty(?string $planKey): void
     {
+        if ($planKey !== null && ! array_key_exists($planKey, $this->warrantyOptions)) {
+            return;
+        }
+
         // Tapping the selected tier again clears it back to no added coverage.
         $this->warrantyPlan = ($this->warrantyPlan === $planKey) ? null : $planKey;
     }
 
     public function toggleGap(): void
     {
-        $this->wantsGap = ! $this->wantsGap;
+        $this->wantsGap = $this->gapOption !== null && ! $this->wantsGap;
     }
 
     public function toggleExtra(string $extraKey): void
     {
-        if (! array_key_exists($extraKey, $this->extrasCatalog)) {
+        if (! array_key_exists($extraKey, $this->extrasCatalog) && ! array_key_exists($extraKey, $this->accessoryCatalog)) {
             return;
         }
 
@@ -905,6 +869,38 @@ new #[Layout('layouts.checkout')] class extends Component {
         return is_array($photos) && count($photos) > 0 ? $photos[0] : null;
     }
 
+    /** Fill the plan, GAP, add-on and accessory choices from this dealership's menu. */
+    protected function loadProtectionMenu(): void
+    {
+        $menu = ProtectionProduct::menuFor($this->vehicle->dealer);
+        $entry = fn (ProtectionProduct $product) => [
+            'kind'   => $product->kind,
+            'name'   => $product->name,
+            'desc'   => (string) $product->description,
+            'amount' => $product->offered_amount_in_cents,
+            'basis'  => $product->price_basis,
+            'price'  => ProtectionProduct::priceLabel($product->offered_amount_in_cents, $product->price_basis),
+        ];
+        $keyed = fn ($products) => $products->mapWithKeys(fn (ProtectionProduct $product) => ['p' . $product->id => $entry($product)])->all();
+
+        $plans = $menu->where('kind', ProtectionProduct::KIND_PLAN)->values();
+        $features = $plans->flatMap(fn ($plan) => $plan->features ?? [])->unique()->values();
+        $this->warrantyOptions = $plans->mapWithKeys(fn (ProtectionProduct $plan) => ['p' . $plan->id => $entry($plan) + [
+            'tag'     => (string) $plan->description,
+            'popular' => $plan->is_featured,
+            'feats'   => $features->map(fn ($feature) => ['label' => $feature, 'included' => in_array($feature, $plan->features ?? [], true)])->all(),
+        ]])->all();
+        $this->comparisonRows = $features->map(fn ($feature) => [
+            'label'  => $feature,
+            'values' => $plans->map(fn ($plan) => in_array($feature, $plan->features ?? [], true))->all(),
+        ])->all();
+
+        $gaps = $menu->where('kind', ProtectionProduct::KIND_GAP)->values();
+        $this->gapOption = $gaps->isEmpty() ? null : ['key' => 'p' . $gaps->first()->id] + $entry($gaps->first());
+        $this->extrasCatalog = $keyed($gaps->slice(1)->concat($menu->where('kind', ProtectionProduct::KIND_ADDON)));
+        $this->accessoryCatalog = $keyed($menu->where('kind', ProtectionProduct::KIND_ACCESSORY));
+    }
+
     public function asMoney($amount): string
     {
         return '$' . number_format((float) $amount, 0);
@@ -948,47 +944,48 @@ new #[Layout('layouts.checkout')] class extends Component {
     }
 
     /**
-     * Keys for every coverage item the buyer flagged interest in — the warranty
-     * tier, GAP, and any add-ons. Persisted on the Deal so the dealer's F&I
-     * office can pick up the conversation. Nothing here is priced or binding.
+     * Every item the buyer flagged: the plan, GAP, add-ons and accessories, each
+     * with the dealership's estimate at this moment. Persisted on the Deal so
+     * the F&I office can pick up the conversation. Nothing here is priced or binding.
+     *
+     * @return array<int, array<string, mixed>>
      */
-    public function coverageInterestKeys(): array
+    public function flaggedProtection(): array
     {
-        $keys = [];
+        $items = [];
 
-        if ($this->warrantyPlan !== null) {
-            $keys[] = $this->warrantyPlan;
+        if ($this->warrantyPlan !== null && isset($this->warrantyOptions[$this->warrantyPlan])) {
+            $items[] = $this->warrantyOptions[$this->warrantyPlan];
         }
 
-        if ($this->wantsGap) {
-            $keys[] = 'gap';
+        if ($this->wantsGap && $this->gapOption !== null) {
+            $items[] = $this->gapOption;
         }
 
         foreach ($this->selectedExtras as $extraKey) {
-            $keys[] = $extraKey;
+            if ($item = $this->extrasCatalog[$extraKey] ?? $this->accessoryCatalog[$extraKey] ?? null) {
+                $items[] = $item;
+            }
         }
 
-        return $keys;
+        return $items;
     }
 
-    /** Human-readable names for the same flagged coverage, for the activity trail. */
+    /** The deal's frozen record of what was flagged, with the estimate shown at the time. */
+    public function protectionSnapshot(): array
+    {
+        return array_map(fn (array $item) => [
+            'kind'            => $item['kind'],
+            'name'            => $item['name'],
+            'amount_in_cents' => $item['amount'],
+            'price_basis'     => $item['basis'],
+        ], $this->flaggedProtection());
+    }
+
+    /** Human-readable names for the same flagged items, for the activity trail and review step. */
     public function coverageInterestLabels(): array
     {
-        $labels = [];
-
-        if ($this->warrantyPlan !== null) {
-            $labels[] = $this->warrantyOptions[$this->warrantyPlan]['name'] . ' plan';
-        }
-
-        if ($this->wantsGap) {
-            $labels[] = 'GAP protection';
-        }
-
-        foreach ($this->selectedExtras as $extraKey) {
-            $labels[] = $this->extrasCatalog[$extraKey]['name'];
-        }
-
-        return $labels;
+        return array_map(fn (array $item) => $item['kind'] === ProtectionProduct::KIND_PLAN ? $item['name'] . ' plan' : $item['name'], $this->flaggedProtection());
     }
 
     public function hasCoverageInterest(): bool
@@ -1221,8 +1218,9 @@ new #[Layout('layouts.checkout')] class extends Component {
                 'purchase_type'         => $this->purchaseType,
                 'term_months'           => $this->purchaseType === 'finance' ? $this->termMonths : null,
                 'down_payment_in_cents' => $this->purchaseType === 'finance' ? (int) round((float) $this->downPayment * 100) : null,
-                'warranty_plan'         => $this->warrantyPlan,
-                'extras_interest'       => $this->coverageInterestKeys(),
+                'warranty_plan'         => $this->warrantyPlan !== null ? ($this->warrantyOptions[$this->warrantyPlan]['name'] ?? null) : null,
+                'extras_interest'       => collect($this->flaggedProtection())->reject(fn ($item) => $item['kind'] === ProtectionProduct::KIND_PLAN)->pluck('name')->values()->all(),
+                'protection_snapshot'   => $this->protectionSnapshot(),
                 'fees_snapshot'         => $this->dealerFees()->map->toSnapshotEntry()->values()->all(),
                 // Re-checked at the moment of reserving: only offers live and valid right now.
                 'offers_snapshot'       => $this->vehicle->offers()->map->toSnapshot()->values()->all(),
@@ -1464,6 +1462,7 @@ new #[Layout('layouts.checkout')] class extends Component {
         'gauge'    => '<path d="M4 18a9 9 0 1 1 16 0"/><path d="m12 13 4-4"/><circle cx="12" cy="14" r="1.2"/>',
         'file'     => '<path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6"/><path d="M9 13h7M9 17h7"/>',
         'dollar'   => '<path d="M12 2v20"/><path d="M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>',
+        'bag'      => '<path d="M5 8h14l-1 13H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>',
         'alert'    => '<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/>',
     ];
     $icon = fn (string $name, int $size = 24) => '<svg class="ic-line" width="' . $size . '" height="' . $size . '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' . ($iconPaths[$name] ?? '') . '</svg>';
@@ -1983,13 +1982,14 @@ new #[Layout('layouts.checkout')] class extends Component {
                     </div>
                 @endif
 
+                @if (count($warrantyOptions) > 0)
                 <div class="section-label">{!! $icon('shield', 24) !!} Pick your safety net</div>
                 <p class="section-note">Every plan starts with your fully refundable deposit and the dealership's certified warranty. Step up for longer cover and fewer surprise bills. Extended coverage is optional and never required to buy — pick a tier to flag your interest, and the dealership's F&amp;I office reviews availability and pricing with you later. Nothing is added to your reservation today.</p>
 
                 <div class="plan-grid">
                     @foreach ($warrantyOptions as $key => $option)
                         <button type="button" class="plan {{ $warrantyPlan === $key ? 'is-on' : '' }}" wire:click="selectWarranty('{{ $key }}')">
-                            @if ($option['popular'])<span class="plan-badge">★ Most chosen</span>@endif
+                            @if ($option['popular'])<span class="plan-badge">★ Recommended</span>@endif
                             <div class="plan-name">{!! $icon('shield', 24) !!} {{ $option['name'] }}</div>
                             <div class="plan-tag">{{ $option['tag'] }}</div>
                             <ul class="plan-feats">
@@ -2047,12 +2047,14 @@ new #[Layout('layouts.checkout')] class extends Component {
                     <span class="choice-ic">{!! $icon('none', 30) !!}</span>
                     <div><div class="choice-title">No added coverage</div></div>
                 </button>
+                @endif
 
             @elseif ($this->stepKey() === 'extras')
                 <div class="step-meta">Step 4 · Extras</div>
                 <h1 class="h1">Want a little extra armour?</h1>
-                <p class="lede">All optional. Flag what gives you peace of mind, skip the rest. Every figure here is an illustrative biweekly estimate — the dealership's F&amp;I office confirms what's available and the real price. Nothing is added to your reservation today.</p>
+                <p class="lede">All optional. Flag what gives you peace of mind, skip the rest. Every figure here is the dealership's estimate — its F&amp;I office confirms what's available and the real price. Nothing is added to your reservation today.</p>
 
+                @if ($gapOption)
                 <div class="gap-hero">
                     <div class="gap-hero-top">
                         <div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 4 6v6c0 5 8 9 8 9s8-4 8-9V6Z"/></svg></div>
@@ -2077,11 +2079,17 @@ new #[Layout('layouts.checkout')] class extends Component {
                         <div class="gap-scenario-foot"><span class="hatch-dot"></span> GAP pays the <b>{{ $gapScenario['gapCovers'] }}</b> shortfall — you walk away owing nothing.</div>
                     </div>
                     <div class="gap-cta">
-                        <span class="price">{{ $this->asMoney($gapBiweekly) }}<span class="per"> /biweekly · est.</span></span>
-                        <button type="button" class="btn {{ $wantsGap ? 'btn-soft' : 'btn-primary' }}" wire:click="toggleGap">{{ $wantsGap ? 'Interest flagged ✓ — remove' : 'I’m interested in GAP' }}</button>
+                        @if ($gapOption['amount'] !== null)
+                            <span class="price">{{ $this->asMoney($gapOption['amount'] / 100) }}<span class="per"> {{ $gapOption['basis'] === 'biweekly' ? '/biweekly · est.' : '· est.' }}</span></span>
+                        @else
+                            <span class="price"></span>
+                        @endif
+                        <button type="button" class="btn {{ $wantsGap ? 'btn-soft' : 'btn-primary' }}" wire:click="toggleGap">{{ $wantsGap ? 'Added to my list ✓ — remove' : 'I’m interested in GAP' }}</button>
                     </div>
                 </div>
+                @endif
 
+                @if (count($extrasCatalog) > 0)
                 <div class="section-label">{!! $icon('plus', 24) !!} More you can stack on</div>
                 <div class="extras-grid">
                     @foreach ($extrasCatalog as $key => $extra)
@@ -2095,10 +2103,36 @@ new #[Layout('layouts.checkout')] class extends Component {
                                 <div class="extra-name">{{ $extra['name'] }}</div>
                                 <div class="extra-desc">{{ $extra['desc'] }}</div>
                             </div>
-                            <span class="extra-price">+{{ $this->asMoney($extra['biweekly']) }}</span>
+                            <span class="extra-price">{{ $extra['price'] ? '+' . $extra['price'] : '' }}</span>
                         </button>
                     @endforeach
                 </div>
+                @endif
+
+                @if (count($accessoryCatalog) > 0)
+                <div class="section-label">{!! $icon('bag', 24) !!} Accessories</div>
+                <div class="extras-grid">
+                    @foreach ($accessoryCatalog as $key => $extra)
+                        <button type="button" class="extra {{ in_array($key, $selectedExtras, true) ? 'is-on' : '' }}" wire:click="toggleExtra('{{ $key }}')">
+                            <span class="check">
+                                @if (in_array($key, $selectedExtras, true))
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 4.5 4.5L19 7"/></svg>
+                                @endif
+                            </span>
+                            <div>
+                                <div class="extra-name">{{ $extra['name'] }}</div>
+                                <div class="extra-desc">{{ $extra['desc'] }}</div>
+                            </div>
+                            <span class="extra-price">{{ $extra['price'] ? '+' . $extra['price'] : '' }}</span>
+                        </button>
+                    @endforeach
+                </div>
+                @endif
+
+                @if (! $gapOption && count($extrasCatalog) === 0 && count($accessoryCatalog) === 0)
+                    <p class="section-note no-extras">This dealership hasn't listed any extras. Carry on to the next step.</p>
+                @endif
+
                 <p class="section-note" style="margin-top:18px;">These are estimates to help you weigh your options — they're not priced into your reservation and you're never required to take any of them. The dealership's F&amp;I office confirms what's available and the actual cost with you before anything is final.</p>
 
             @elseif ($this->stepKey() === 'handover')
@@ -2200,7 +2234,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                 <div class="rev-card">
                     <div>
                         <div class="rev-label">{!! $icon('shield', 18) !!} Extras</div>
-                        <div class="rev-value">{{ ($wantsGap || count($selectedExtras) > 0) ? collect($this->coverageInterestLabels())->reject(fn ($label) => str_ends_with($label, ' plan'))->join(', ') . ' · interest only' : 'None' }}</div>
+                        <div class="rev-value">{{ ($wantsGap || count($selectedExtras) > 0) ? collect($this->coverageInterestLabels())->reject(fn ($label) => str_ends_with($label, ' plan'))->join(', ') . ' · the dealer will quote these' : 'None' }}</div>
                     </div>
                     <button type="button" class="text-link" wire:click="jumpTo(3)">Edit</button>
                 </div>
@@ -2382,13 +2416,13 @@ new #[Layout('layouts.checkout')] class extends Component {
                                     <div class="rail-line sub"><span>Trade-in (preliminary)</span><span>{{ $this->tradeEstimateRangeLabel() ?? 'Appraised by dealer' }}</span></div>
                                 @endif
                                 @if ($warrantyPlan)
-                                    <div class="rail-line sub"><span>Coverage interest</span><span>{{ $warrantyOptions[$warrantyPlan]['name'] }}</span></div>
+                                    <div class="rail-line sub"><span>{{ $warrantyOptions[$warrantyPlan]['name'] ?? '' }} plan</span><span>Dealer will quote</span></div>
                                 @endif
                                 @if ($wantsGap)
-                                    <div class="rail-line sub"><span>GAP protection</span><span>Interest only</span></div>
+                                    <div class="rail-line sub"><span>{{ $gapOption['name'] ?? 'GAP protection' }}</span><span>Dealer will quote</span></div>
                                 @endif
                                 @foreach ($selectedExtras as $extraKey)
-                                    <div class="rail-line sub"><span>{{ $extrasCatalog[$extraKey]['name'] }}</span><span>Interest only</span></div>
+                                    <div class="rail-line sub"><span>{{ ($extrasCatalog[$extraKey] ?? $accessoryCatalog[$extraKey] ?? ['name' => ''])['name'] }}</span><span>Dealer will quote</span></div>
                                 @endforeach
                             </div>
                         @endif

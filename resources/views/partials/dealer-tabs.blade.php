@@ -1,6 +1,6 @@
 {{--
     The tabs across one dealer's Command Centre pages. Expects $tabDealer (a
-    Dealer or its id) and $activeTab: profile | inventory | customers.
+    Dealer or its id) and $activeTab: profile | inventory | protection | customers.
 --}}
 <style>
     .tabs { display:flex; gap:4px; margin-bottom:20px; border-bottom:1px solid var(--line-strong); overflow-x:auto; }
@@ -12,6 +12,7 @@
     @can('dealers.view')
         <a href="{{ route('admin.dealers.edit', $tabDealer) }}" wire:navigate class="{{ $activeTab === 'profile' ? 'on' : '' }}">Profile &amp; users</a>
         <a href="{{ route('admin.dealers.inventory', $tabDealer) }}" wire:navigate class="{{ $activeTab === 'inventory' ? 'on' : '' }}">Inventory</a>
+        <a href="{{ route('admin.dealers.protection', $tabDealer) }}" wire:navigate class="{{ $activeTab === 'protection' ? 'on' : '' }}">Protection &amp; add-ons</a>
     @endcan
     @can('customers.view')
         <a href="{{ route('admin.dealers.customers', $tabDealer) }}" wire:navigate class="{{ $activeTab === 'customers' ? 'on' : '' }}">Customers</a>

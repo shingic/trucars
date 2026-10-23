@@ -553,6 +553,7 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
         .kv .row { display:flex; align-items:baseline; justify-content:space-between; gap:16px; padding:9px 0; border-bottom:1px solid var(--line-strong); font-size:14px; }
         .kv .k { color:var(--ink-3); font-weight:600; flex-shrink:0; }
         .kv .v { color:var(--ink); font-weight:600; text-align:right; min-width:0; overflow-wrap:anywhere; }
+        .kv .v .est { font-weight:500; color:var(--ink-3); }
         .kv .v a { text-decoration:underline; text-underline-offset:3px; text-decoration-color:var(--line-strong); }
         .kv .v a:hover { color:var(--primary-press); text-decoration-color:currentColor; }
         .kv .v.mono { font-family:var(--mono); font-size:13px; letter-spacing:-.01em; }
@@ -1060,14 +1061,26 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
                         <span class="ph-right">Non-binding · for F&amp;I review</span>
                     </div>
                     <div class="panel-body">
-                        <div class="chips">
-                            @if ($deal->warranty_plan)
-                                <span class="chip warranty">Warranty: {{ ucwords(str_replace(['_', '-'], ' ', $deal->warranty_plan)) }}</span>
-                            @endif
-                            @foreach ($deal->extras_interest ?? [] as $coverageKey)
-                                <span class="chip">{{ ucwords(str_replace(['_', '-'], ' ', $coverageKey)) }}</span>
+                        @if (! empty($deal->protection_snapshot))
+                            {{-- What the buyer flagged, with the estimate they saw at checkout. --}}
+                            <div class="kv">
+                            @foreach ($deal->protection_snapshot as $flagged)
+                                <div class="row">
+                                    <span class="k">{{ \App\Models\ProtectionProduct::KINDS[$flagged['kind']] ?? 'Coverage' }}</span>
+                                    <span class="v">{{ $flagged['name'] }}@if ($shown = \App\Models\ProtectionProduct::priceLabel($flagged['amount_in_cents'] ?? null, $flagged['price_basis'] ?? 'biweekly')) <small class="est">· shown at {{ $shown }}</small>@endif</span>
+                                </div>
                             @endforeach
-                        </div>
+                            </div>
+                        @else
+                            <div class="chips">
+                                @if ($deal->warranty_plan)
+                                    <span class="chip warranty">Warranty: {{ ucwords(str_replace(['_', '-'], ' ', $deal->warranty_plan)) }}</span>
+                                @endif
+                                @foreach ($deal->extras_interest ?? [] as $coverageKey)
+                                    <span class="chip">{{ ucwords(str_replace(['_', '-'], ' ', $coverageKey)) }}</span>
+                                @endforeach
+                            </div>
+                        @endif
                         <p class="note">The buyer flagged interest in these at checkout. Nothing has been priced, added or tied to the sale — the F&amp;I office confirms availability and pricing directly with the buyer.</p>
                     </div>
                 </div>

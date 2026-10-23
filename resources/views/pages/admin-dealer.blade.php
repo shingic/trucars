@@ -1674,6 +1674,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
                     <div class="side-t">Quick actions</div>
                     <a class="qa primary" href="{{ $publicUrl }}" target="_blank" rel="noopener">{!! $icon($paths['car'], 16) !!} View public page {!! $icon($paths['ext'], 13) !!}</a>
                     <a class="qa" href="{{ route('admin.dealers.inventory', $dealer) }}" wire:navigate>{!! $icon($paths['inbox'], 16) !!} Manage inventory</a>
+                    <a class="qa" href="{{ route('admin.dealers.protection', $dealer) }}" wire:navigate>{!! $icon($paths['shield'], 16) !!} Protection &amp; add-ons</a>
                     @if ($this->canManageUsers())
                         <button type="button" class="qa" wire:click="$set('tab', 'team')">{!! $icon($paths['send'], 16) !!} Send login invite</button>
                     @endif

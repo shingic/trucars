@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\ProtectionProduct;
 use App\Models\User;
 use App\Models\Vehicle;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -31,11 +32,12 @@ class CheckoutCoverageTest extends TestCase
     public function test_no_added_coverage_is_a_choice_that_shows_as_selected(): void
     {
         $checkout = Livewire::test('pages::checkout', ['vehicle' => $this->car]);
+        $safeBet = 'p' . ProtectionProduct::defaults()->where('name', 'Safe Bet')->value('id');
 
         $checkout->set('stepIndex', $checkout->instance()->indexOfStep('plan'))
             ->assertSeeHtml('class="choice no-cover is-on"')
-            ->call('selectWarranty', 'safebet')
-            ->assertSet('warrantyPlan', 'safebet')
+            ->call('selectWarranty', $safeBet)
+            ->assertSet('warrantyPlan', $safeBet)
             ->assertDontSeeHtml('class="choice no-cover is-on"')
             ->call('selectWarranty', null)
             ->assertSet('warrantyPlan', null)
