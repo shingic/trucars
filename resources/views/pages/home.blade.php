@@ -171,7 +171,8 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
         .stage { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1.15fr); background:var(--primary); overflow:hidden; }
         .stage.no-photo { grid-template-columns:1fr; }
         .stage-copy { padding:64px 48px 52px var(--gut); color:#fff; }
-        .stage h1 { font-family:var(--font-display); font-size:clamp(46px, 5.8vw, 84px); font-weight:700; line-height:.92; text-transform:uppercase; margin:0; max-width:9ch; color:#fff; }
+        .stage h1 { font-family:var(--font-display); font-size:clamp(42px, 4.9vw, 74px); font-weight:700; line-height:.94; text-transform:uppercase; margin:0; max-width:13ch; color:#fff; }
+        .stage h1 span { display:block; }
         .stage p { font-size:18px; color:#fff; margin:20px 0 0; max-width:440px; line-height:1.55; }
         .hero-search { margin-top:28px; display:flex; max-width:520px; background:#fff; border:2px solid var(--ink); }
         .hero-search svg { align-self:center; margin-left:14px; color:var(--ink-3); flex-shrink:0; }
@@ -296,8 +297,8 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
     <div class="hero-band">
     <div class="stage {{ $featured ? '' : 'no-photo' }}">
         <div class="stage-copy">
-            <h1>Your next car, at the real price.</h1>
-            <p>Certified pre-owned and used cars from licensed dealerships, with freight, prep and fees already in the price. Just add HST and licensing.</p>
+            <h1><span>Skip the haggle.</span> <span>Skip the day at the dealership.</span></h1>
+            <p>Reserve online, send your documents from home, and get your financing approved before you go. When you arrive, you sign and drive.</p>
 
             <form class="hero-search" wire:submit="search" role="search">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
