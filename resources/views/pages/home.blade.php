@@ -198,7 +198,7 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
         .chips .ico { width:19px; height:19px; stroke-width:2; }
         .stage figure { margin:0; position:relative; min-height:620px; background:var(--primary-press); }
         .stage .feature-photo { position:absolute; inset:0; }
-        .feature-cert { display:none; }
+        .feature-cert, .shop-all { display:none; }
         .fact em { display:none; }
         /* dealer photos carry a vendor badge along the bottom edge; the frame trims it off */
         .shot { position:relative; overflow:hidden; }
@@ -316,6 +316,10 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
             .hero-search button { padding:0; width:54px; height:48px; justify-content:center; border-radius:9px; }
             .hero-search button span { display:none; }
             .hero-search button svg { width:22px; height:22px; }
+            .wide-only, .chips { display:none !important; }
+            .shop-all { display:flex; align-items:center; justify-content:center; gap:10px; margin-top:12px; height:52px; border-radius:12px; background:var(--ink); color:#fff; font-size:17px; font-weight:700; text-decoration:none; }
+            .shop-all:active { background:var(--primary-press); }
+            .stage figure { margin-top:22px !important; }
             .chips { flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none; margin:14px -16px 0; padding:2px 16px 10px; }
             .chips::-webkit-scrollbar { display:none; }
             .chips a { flex-shrink:0; height:46px; font-size:15px; padding:0 14px; color:var(--ink); background:#fff; border:1px solid #EEF0F5; box-shadow:0 3px 10px rgba(7,20,55,.06); }
@@ -345,7 +349,7 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
             .fact b { font-family:var(--font-ui); font-size:14px; font-weight:700; text-transform:none; color:var(--ink); line-height:1.25; }
             .fact div span { display:none; }
             .fact em { display:block; font-style:normal; font-size:13px; color:var(--ink-2); margin-top:3px; line-height:1.4; }
-            .home section:first-child { margin-top:30px; }
+            .home section.calm { margin-top:36px; }
             .cars { display:flex; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none; gap:12px; margin:0 -16px; padding:0 16px 4px; }
             .cars::-webkit-scrollbar { display:none; }
             .car { flex:0 0 68%; scroll-snap-align:start; scroll-margin-left:16px; }
@@ -373,6 +377,8 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
                 <input type="search" wire:model="q" placeholder="Search by make, model or keyword" aria-label="Search cars">
                 <button type="submit" aria-label="Search"><span>Search</span> <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
             </form>
+
+            <a class="shop-all" href="{{ route('shop') }}" wire:navigate>Shop all cars <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
 
             <div class="chips">
                 @foreach ($bodyTypes->keys() as $body)
@@ -414,7 +420,7 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
     <div class="home-body">
     {{-- ON THE LOT NOW --}}
     @if ($mix->isNotEmpty())
-        <section>
+        <section class="wide-only">
             <div class="sec-head">
                 <div><h2>On the lot now</h2><p>A mix from our dealers. It changes every visit.</p></div>
                 <a href="{{ route('shop') }}" wire:navigate>See all {{ number_format($carCount) }} {{ $carCount === 1 ? 'car' : 'cars' }} →</a>
@@ -454,7 +460,7 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
 
     {{-- SHOP BY --}}
     @if ($bodyTypes->isNotEmpty())
-        <section>
+        <section class="wide-only">
             <div class="sec-head"><div><h2>What are you after?</h2><p>Pick a type and we'll show you what's on the lot.</p></div></div>
             <div class="garage">
                 @foreach ($bodyTypes as $body => $total)
