@@ -22,7 +22,7 @@
             --shadow-sm:0 1px 3px rgba(7,20,55,.06);
             --shadow-md:0 8px 24px rgba(7,20,55,.10);
             --shadow-lg:0 30px 70px rgba(7,20,55,.18);
-            --radius:12px; --radius-sm:8px; --radius-pill:999px;
+            --radius:12px; --radius-sm:8px; --radius-pill:8px;
             --font:"Barlow",-apple-system,sans-serif; --font-display:"Barlow Semi Condensed","Barlow",sans-serif; --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
         }
 

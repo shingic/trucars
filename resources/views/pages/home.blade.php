@@ -186,12 +186,16 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
         .hero-search button { display:inline-flex; align-items:center; gap:10px; background:var(--primary); color:#fff; font-size:18px; font-weight:700; padding:15px 28px; border-radius:7px; white-space:nowrap; }
         .hero-search button:hover { background:var(--primary-press); }
         .chips { display:flex; gap:8px; flex-wrap:wrap; margin-top:18px; }
-        .chips a { display:inline-flex; align-items:center; gap:8px; font-size:14.5px; font-weight:600; color:#fff; text-decoration:none; padding:9px 15px; border:1.5px solid rgba(255,255,255,.55); border-radius:999px; }
-        .chips a:hover, .chips a:first-child { background:#fff; color:var(--primary-press); border-color:#fff; }
-        .chips .ride { width:24px; height:12px; }
-        .chips .ride .paint, .chips .ride .glass { fill:none; stroke:currentColor; stroke-width:2.4; }
-        .chips .ride .tyre { fill:currentColor; } .chips .ride .hub { fill:none; }
-        .chips .ico { width:17px; height:17px; stroke-width:2; }
+        .chips a { display:inline-flex; align-items:center; gap:9px; height:44px; font-size:15px; font-weight:600; color:#fff; text-decoration:none; padding:0 15px; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.28); border-radius:10px; }
+        .chips a:hover { background:rgba(255,255,255,.16); }
+        .chips a:first-child { background:#fff; color:var(--primary-press); border-color:#fff; }
+        .chips .ride { width:28px; height:14px; }
+        /* solid car icons: the body in the button's text colour, windows cut out in its background */
+        .chips .ride .paint { fill:currentColor; stroke:none; }
+        .chips .ride .glass { fill:var(--primary); stroke:none; }
+        .chips a:first-child .ride .glass { fill:#fff; }
+        .chips .ride .tyre { fill:currentColor; } .chips .ride .hub { fill:var(--primary); } .chips a:first-child .ride .hub { fill:#fff; }
+        .chips .ico { width:19px; height:19px; stroke-width:2; }
         .stage figure { margin:0; position:relative; min-height:620px; background:var(--primary-press); }
         /* dealer photos carry a vendor badge along the bottom edge; the frame trims it off */
         .shot { position:relative; overflow:hidden; }
@@ -297,6 +301,7 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
             .hero-search { padding:6px 6px 6px 14px; gap:6px; }
             .hero-search input { font-size:16px; padding:12px 2px; }
             .hero-search button { padding:13px 16px; font-size:16px; }
+            .chips a { height:40px; font-size:14px; padding:0 12px; }
             .stage figure { min-height:0; aspect-ratio:4/2.8; order:-1; }
             .pictured { top:auto; bottom:12px; right:12px; left:12px; width:auto; padding:12px 14px; gap:10px; }
             .pictured strong { font-size:19px; }

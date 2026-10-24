@@ -97,6 +97,55 @@ class AddressLookup
     }
 
     /** Send one request to Google; problems are logged and come back empty. */
+    /**
+     * The city and province at a point, for "cars for sale in Chilliwack".
+     * Google Geocoding API, same key; null when it's off, fails or finds no town.
+     *
+     * @return array{city: string, province: ?string}|null
+     */
+    public function cityAt(float $latitude, float $longitude): ?array
+    {
+        return $this->geocodeCity(['latlng' => $latitude . ',' . $longitude, 'result_type' => 'locality']);
+    }
+
+    /** @return array{city: string, province: ?string}|null the town a Canadian postal code belongs to */
+    public function cityForPostalCode(string $postalCode): ?array
+    {
+        return $this->geocodeCity(['address' => $postalCode, 'components' => 'country:CA']);
+    }
+
+    /** @param  array<string, string>  $query */
+    private function geocodeCity(array $query): ?array
+    {
+        if (! $this->enabled()) {
+            return null;
+        }
+
+        try {
+            $response = Http::timeout(4)->get('https://maps.googleapis.com/maps/api/geocode/json', $query + [
+                'language' => 'en',
+                'key'      => (string) config('services.google_places.key'),
+            ])->throw()->json();
+        } catch (Throwable $e) {
+            Log::warning('City lookup failed', ['error' => $e->getMessage()]);
+
+            return null;
+        }
+
+        foreach ($response['results'] ?? [] as $result) {
+            $components = collect($result['address_components'] ?? []);
+            $city = $components->first(fn ($part) => in_array('locality', $part['types'] ?? [], true))['long_name'] ?? null;
+
+            if (filled($city)) {
+                $province = $components->first(fn ($part) => in_array('administrative_area_level_1', $part['types'] ?? [], true))['short_name'] ?? null;
+
+                return ['city' => (string) $city, 'province' => CanadianAddress::normalizeProvince($province)];
+            }
+        }
+
+        return null;
+    }
+
     private function call(\Closure $send): array
     {
         try {

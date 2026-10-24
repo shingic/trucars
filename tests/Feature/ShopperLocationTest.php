@@ -7,6 +7,7 @@ use App\Models\Vehicle;
 use App\Support\ShopperLocation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Http;
 use Livewire\Livewire;
 use Tests\Concerns\CreatesDealers;
 use Tests\TestCase;
@@ -53,7 +54,7 @@ class ShopperLocationTest extends TestCase
             ->call('useBrowserLocation', 49.0504, -122.3045)
             ->assertSet('sort', 'nearest')
             ->assertSeeInOrder(['Chilliwack Outlander', 'Toronto Corolla'])
-            ->assertSee('Showing distance from')
+            ->assertSee('Near you')
             ->assertSee(' km');
 
         // Rounded to ~1 km before it's kept; session only.
@@ -68,9 +69,31 @@ class ShopperLocationTest extends TestCase
             ->call('setManualLocation')
             ->assertHasNoErrors()
             ->assertSet('sort', 'nearest')
-            ->assertSee('Nearest to')
+            ->assertSee('Nearest first to')
             ->assertSee('M5V 2T6')
             ->assertSeeInOrder(['Toronto Corolla', 'Chilliwack Outlander']);
+    }
+
+    public function test_the_shoppers_town_is_named_in_the_headline(): void
+    {
+        config(['services.google_places.key' => 'AIza-test']);
+        Http::fake(['maps.googleapis.com/maps/api/geocode/*' => Http::response(['results' => [[
+            'address_components' => [
+                ['long_name' => 'Abbotsford', 'short_name' => 'Abbotsford', 'types' => ['locality', 'political']],
+                ['long_name' => 'British Columbia', 'short_name' => 'BC', 'types' => ['administrative_area_level_1', 'political']],
+            ],
+        ]]])]);
+
+        Livewire::test('pages::marketplace')
+            ->call('useBrowserLocation', 49.0504, -122.3045)
+            ->assertSee('Certified Pre-owned Cars for Sale in Abbotsford')
+            ->assertSee('Abbotsford, BC')
+            ->assertSeeInOrder(['Chilliwack Outlander', 'Toronto Corolla']);
+
+        Livewire::test('pages::marketplace')
+            ->set('locationInput', 'chilliwack')
+            ->call('setManualLocation')
+            ->assertSee('Certified Pre-owned Cars for Sale in Chilliwack');
     }
 
     public function test_typed_city_ranks_that_city_first(): void

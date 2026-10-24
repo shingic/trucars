@@ -14,8 +14,9 @@ use App\Models\Rooftop;
  *
  * Two ways in: the browser's location (after the shopper taps "Use my
  * location"), rounded to ~1 km before it's kept; or a typed city or postal
- * code. Typed input isn't geocoded (no provider yet), so it gives a city /
- * province match rather than kilometres.
+ * code. The town is looked up for the browser's point and for a postal code
+ * (AddressLookup), so the shop can say "for sale in Chilliwack"; typed input
+ * still gives a city / province match rather than kilometres.
  */
 class ShopperLocation
 {
@@ -31,12 +32,21 @@ class ShopperLocation
 
     public static function setFromBrowser(float $latitude, float $longitude): void
     {
-        session()->put(self::SESSION_KEY, [
+        $place = app(AddressLookup::class)->cityAt(round($latitude, 2), round($longitude, 2));
+
+        session()->put(self::SESSION_KEY, array_filter([
             'source'    => 'browser',
-            'label'     => 'your location',
+            'label'     => $place ? self::placeLabel($place['city'], $place['province']) : 'your location',
             'latitude'  => round($latitude, 2),
             'longitude' => round($longitude, 2),
-        ]);
+            'city'      => $place['city'] ?? null,
+            'province'  => $place['province'] ?? null,
+        ], fn ($value) => $value !== null));
+    }
+
+    private static function placeLabel(string $city, ?string $province): string
+    {
+        return $province ? "{$city}, {$province}" : $city;
     }
 
     /**
@@ -49,12 +59,15 @@ class ShopperLocation
         $postalCode = CanadianAddress::normalizePostalCode($input);
 
         if ($postalCode !== null) {
-            session()->put(self::SESSION_KEY, [
+            $place = app(AddressLookup::class)->cityForPostalCode($postalCode);
+
+            session()->put(self::SESSION_KEY, array_filter([
                 'source'      => 'manual',
-                'label'       => $postalCode,
+                'label'       => $place ? self::placeLabel($place['city'], $place['province'] ?? CanadianAddress::provinceForPostalCode($postalCode)) : $postalCode,
                 'postal_code' => $postalCode,
-                'province'    => CanadianAddress::provinceForPostalCode($postalCode),
-            ]);
+                'city'        => $place['city'] ?? null,
+                'province'    => $place['province'] ?? CanadianAddress::provinceForPostalCode($postalCode),
+            ], fn ($value) => $value !== null));
 
             return true;
         }
@@ -63,7 +76,7 @@ class ShopperLocation
             return false;
         }
 
-        $city = trim($parts[1]);
+        $city = mb_convert_case(trim($parts[1]), MB_CASE_TITLE); // "chilliwack" → "Chilliwack"
         $province = isset($parts[2]) ? CanadianAddress::normalizeProvince($parts[2]) : null;
 
         session()->put(self::SESSION_KEY, array_filter([

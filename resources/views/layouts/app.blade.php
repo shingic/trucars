@@ -19,7 +19,7 @@
             --shadow-md:0 8px 24px rgba(7,20,55,.10);
             --shadow-primary:none;
             --hero-grad:#DDE3EE;
-            --radius:12px; --radius-sm:8px; --radius-pill:999px;
+            --radius:12px; --radius-sm:8px; --radius-pill:8px;
             --font-ui:"Barlow",-apple-system,BlinkMacSystemFont,sans-serif; --font-display:"Barlow Semi Condensed","Barlow",sans-serif;
             --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
         }

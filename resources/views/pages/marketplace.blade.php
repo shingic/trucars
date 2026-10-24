@@ -433,7 +433,8 @@ new class extends Component {
         @if (\App\Support\PlatformSettings::get('marketplace_notice') !== '')
             <div class="srp-notice" role="status">{{ \App\Support\PlatformSettings::get('marketplace_notice') }}</div>
         @endif
-        <h1 class="srp-title">{{ \App\Support\PlatformSettings::get('marketplace_headline') }}</h1>
+        {{-- With the shopper's town known, the headline names it; otherwise it's the one set in Platform settings. --}}
+        <h1 class="srp-title">{{ isset($shopperLocation['city']) ? 'Certified Pre-owned Cars for Sale in ' . $shopperLocation['city'] : \App\Support\PlatformSettings::get('marketplace_headline') }}</h1>
         <p class="srp-sub">{{ \App\Support\PlatformSettings::get('marketplace_subheadline') }}</p>
 
         <div class="loc-bar"
@@ -462,8 +463,11 @@ new class extends Component {
             <svg class="loc-pin" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
             @if ($shopperLocation)
                 <span class="loc-current">
-                    {{ isset($shopperLocation['latitude']) ? 'Showing distance from' : 'Nearest to' }}
-                    <b>{{ $shopperLocation['label'] }}</b>
+                    @if ($shopperLocation['label'] === 'your location')
+                        <b>Near you</b>
+                    @else
+                        Nearest first to <b>{{ $shopperLocation['label'] }}</b>
+                    @endif
                 </span>
                 <button type="button" class="loc-link" wire:click="clearLocation">Change</button>
             @else
