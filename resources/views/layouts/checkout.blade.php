@@ -37,7 +37,7 @@
             --shadow-md:0 8px 24px rgba(7,20,55,.10);
             --shadow-primary:none;
             --hero-grad:#DDE3EE;
-            --radius:4px; --radius-sm:3px; --radius-pill:3px;
+            --radius:12px; --radius-sm:8px; --radius-pill:999px;
             --font-ui:"Barlow",-apple-system,BlinkMacSystemFont,sans-serif; --font-display:"Barlow Semi Condensed","Barlow",sans-serif;
             --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
         }
@@ -56,9 +56,9 @@
         .top { position:sticky; top:0; z-index:40; background:#fff; border-bottom:1px solid var(--line-strong); }
         .top-inner { max-width:1220px; margin:0 auto; display:flex; align-items:center; gap:16px; height:64px; padding:0 26px; }
         .brand { display:flex; align-items:center; gap:10px; font-weight:800; font-size:18px; letter-spacing:0; text-decoration:none; }
-        .brand .glyph { width:28px; height:28px; border-radius:3px; background:var(--primary); color:#fff; display:grid; place-items:center; font-weight:800; font-size:15px; }
-        .veh-chip { margin-left:auto; display:flex; align-items:center; gap:11px; background:#fff; border:1px solid var(--line-strong); border-radius:3px; padding:5px 14px 5px 5px; }
-        .veh-chip .thumb { width:44px; height:30px; border-radius:2px; background:var(--bg-2); background-size:cover; background-position:center 40%; display:grid; place-items:center; overflow:hidden; }
+        .brand .glyph { width:28px; height:28px; border-radius:8px; background:var(--primary); color:#fff; display:grid; place-items:center; font-weight:800; font-size:15px; }
+        .veh-chip { margin-left:auto; display:flex; align-items:center; gap:11px; background:#fff; border:1px solid var(--line-strong); border-radius:8px; padding:5px 14px 5px 5px; }
+        .veh-chip .thumb { width:44px; height:30px; border-radius:5px; background:var(--bg-2); background-size:cover; background-position:center 40%; display:grid; place-items:center; overflow:hidden; }
         .veh-chip .vt { font-size:14px; font-weight:600; }
         .veh-chip .vp { font-family:var(--font-display); font-size:16px; font-weight:700; color:var(--ink); }
 
@@ -100,7 +100,7 @@
 
         /* summary rail: the window sticker — heavy frame, the figure, then ruled lines */
         .rail { position:sticky; top:140px; }
-        .rail-card { background:#fff; border:3px solid var(--ink); }
+        .rail-card { background:#fff; border:3px solid var(--ink); border-radius:14px; overflow:hidden; }
         .rail-photo { aspect-ratio:4/2.8; overflow:hidden; background:var(--hero-grad); display:grid; place-items:center; position:relative; border-bottom:3px solid var(--ink); }
         .rail-photo img { position:absolute; top:0; left:0; display:block; width:100%; height:107%; object-fit:cover; object-position:center 40%; }
         .rail-photo .art { position:relative; z-index:1; }
@@ -122,7 +122,7 @@
         .rail-cash { font-size:13px; color:var(--ink-3); margin-top:10px; line-height:1.45; }
 
         /* ===== buttons ===== */
-        .btn { display:inline-flex; align-items:center; justify-content:center; gap:9px; font-size:15px; font-weight:700; padding:14px 26px; border-radius:3px; text-decoration:none; transition:background .15s ease, border-color .15s ease, color .15s ease; }
+        .btn { display:inline-flex; align-items:center; justify-content:center; gap:9px; font-size:15px; font-weight:700; padding:14px 26px; border-radius:8px; text-decoration:none; transition:background .15s ease, border-color .15s ease, color .15s ease; }
         .btn-primary { background:var(--primary); color:#fff; font-family:var(--font-display); font-size:18px; text-transform:uppercase; }
         .btn-primary:hover { background:var(--primary-press); }
         .btn-soft { background:#fff; color:var(--primary-press); border:1.5px solid var(--primary-press); }
@@ -139,22 +139,22 @@
         .text-link.subtle { color:var(--ink-2); }
 
         /* ===== choice cards ===== */
-        .choice { display:flex; align-items:center; gap:16px; width:100%; text-align:left; padding:20px 22px; border:1.5px solid var(--line-strong); border-radius:4px; margin-bottom:12px; cursor:pointer; transition:border-color .15s ease, box-shadow .15s ease; background:#fff; }
+        .choice { display:flex; align-items:center; gap:16px; width:100%; text-align:left; padding:20px 22px; border:1.5px solid var(--line-strong); border-radius:10px; margin-bottom:12px; cursor:pointer; transition:border-color .15s ease, box-shadow .15s ease; background:#fff; }
         .choice:hover { border-color:var(--ink); }
         .choice.is-on { border-color:var(--primary); box-shadow:inset 0 0 0 1.5px var(--primary); }
         .choice:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
-        .radio { width:22px; height:22px; border-radius:3px; border:2px solid var(--line-strong); display:grid; place-items:center; flex-shrink:0; background:#fff; }
+        .radio { width:22px; height:22px; border-radius:8px; border:2px solid var(--line-strong); display:grid; place-items:center; flex-shrink:0; background:#fff; }
         .choice.is-on .radio { border-color:var(--primary); background:var(--primary); }
         .choice.is-on .radio::after { content:""; width:8px; height:8px; border-radius:1px; background:#fff; }
         .choice-title { font-weight:700; font-size:16px; }
         .choice-sub { font-size:14px; color:var(--ink-2); margin-top:2px; }
-        .tag-free { display:inline-block; vertical-align:2px; margin-left:6px; padding:2px 6px; border-radius:2px; background:rgba(23,198,83,.14); color:#0B7355; font-family:var(--font-display); font-size:13px; font-weight:700; line-height:1.2; }
+        .tag-free { display:inline-block; vertical-align:2px; margin-left:6px; padding:2px 6px; border-radius:5px; background:rgba(23,198,83,.14); color:#0B7355; font-family:var(--font-display); font-size:13px; font-weight:700; line-height:1.2; }
 
         /* ===== fields ===== */
-        .card { background:#fff; border:1px solid var(--line-strong); border-radius:4px; }
+        .card { background:#fff; border:1px solid var(--line-strong); border-radius:10px; }
         .field { margin-bottom:20px; }
         .field-label { display:block; font-size:14px; font-weight:600; color:var(--ink-2); margin-bottom:7px; }
-        .field-input, .field-select { width:100%; padding:13px 15px; border:1.5px solid var(--line-strong); border-radius:3px; font-size:15px; outline:none; background:#fff; color:var(--ink); transition:border-color .15s ease, box-shadow .15s ease; }
+        .field-input, .field-select { width:100%; padding:13px 15px; border:1.5px solid var(--line-strong); border-radius:8px; font-size:15px; outline:none; background:#fff; color:var(--ink); transition:border-color .15s ease, box-shadow .15s ease; }
         .field-input:focus, .field-select:focus { border-color:var(--ink); box-shadow:0 0 0 1px var(--ink); }
         textarea.field-input { resize:vertical; }
         .field-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
@@ -162,8 +162,8 @@
         .seg { display:inline-flex; padding:0; gap:0; background:none; border:none; }
         .seg.seg-wrap { display:flex; flex-wrap:wrap; row-gap:6px; }
         .seg-btn { padding:10px 20px; margin-left:-1.5px; border:1.5px solid var(--ink); border-radius:0; background:#fff; font-size:14.5px; font-weight:600; color:var(--ink); transition:background .15s ease, color .15s ease; }
-        .seg-btn:first-child { margin-left:0; border-radius:3px 0 0 3px; }
-        .seg-btn:last-child { border-radius:0 3px 3px 0; }
+        .seg-btn:first-child { margin-left:0; border-radius:8px 0 0 8px; }
+        .seg-btn:last-child { border-radius:0 8px 8px 0; }
         .seg-btn:hover { background:var(--bg-2); }
         .seg-btn.is-active { background:var(--ink); color:#fff; }
         .seg-btn:focus-visible { outline:2px solid var(--primary); outline-offset:2px; position:relative; z-index:1; }
@@ -202,7 +202,7 @@
            :where() keeps these at zero specificity, so any page's own field styles still win. */
         :where(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):not([type=hidden]):not([type=submit]):not([type=button]), select, textarea) {
             font:inherit; color:var(--ink); background-color:#fff;
-            border:1.5px solid var(--line-strong); border-radius:3px;
+            border:1.5px solid var(--line-strong); border-radius:8px;
             -webkit-appearance:none; appearance:none;
         }
         :where(input:not([type=checkbox]):not([type=radio]):not([type=range]), select, textarea):focus { outline:none; border-color:var(--ink); }

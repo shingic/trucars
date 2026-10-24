@@ -115,16 +115,16 @@ new #[Layout('layouts.auth')] class extends Component {
         .inv-lead { font-size:15px; color:var(--ink-2); margin:0 0 26px; }
         .inv-field { display:flex; flex-direction:column; gap:6px; margin-bottom:16px; }
         .inv-field label { font-size:14px; font-weight:700; color:var(--ink); }
-        .inv-field input { border:1.5px solid var(--line-strong); border-radius:3px; padding:12px 14px; font-size:15px; font-family:inherit; color:var(--ink); background:#fff; }
+        .inv-field input { border:1.5px solid var(--line-strong); border-radius:8px; padding:12px 14px; font-size:15px; font-family:inherit; color:var(--ink); background:#fff; }
         .inv-field input:focus { outline:none; border-color:var(--ink); }
         .inv-field input:focus-visible { box-shadow:0 0 0 2px var(--primary-soft); }
         .inv-field input[readonly] { background:var(--bg-2, #F9F9F9); color:var(--ink-3); }
         .inv-err { font-size:13px; color:#D81A48; font-weight:600; }
-        .inv-btn { width:100%; margin-top:8px; background:var(--primary); color:#fff; font-family:var(--font-display); font-size:17px; font-weight:700; text-transform:uppercase; letter-spacing:.02em; border:none; border-radius:3px; padding:14px; cursor:pointer; }
+        .inv-btn { width:100%; margin-top:8px; background:var(--primary); color:#fff; font-family:var(--font-display); font-size:17px; font-weight:700; text-transform:uppercase; letter-spacing:.02em; border:none; border-radius:8px; padding:14px; cursor:pointer; }
         .inv-btn:hover { background:var(--primary-press); }
         .inv-btn:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
         .inv-btn[disabled] { opacity:.65; cursor:wait; }
-        .inv-note { background:#fff; border:1px solid var(--line-strong); border-top:2px solid var(--ink); border-radius:3px; padding:22px; font-size:15px; color:var(--ink-2); }
+        .inv-note { background:#fff; border:1px solid var(--line-strong); border-top:2px solid var(--ink); border-radius:8px; padding:22px; font-size:15px; color:var(--ink-2); }
         .inv-note a { color:var(--primary); font-weight:600; text-decoration:underline; text-underline-offset:3px; }
     </style>
 @endpush

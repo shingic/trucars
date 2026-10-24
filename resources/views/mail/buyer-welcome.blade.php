@@ -17,7 +17,7 @@
     <tr>
         <td align="center" style="padding:32px 16px;">
 
-            <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px; max-width:600px; background-color:#FFFFFF; border:1px solid #D5D7DD; border-radius:4px; overflow:hidden;">
+            <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px; max-width:600px; background-color:#FFFFFF; border:1px solid #D5D7DD; border-radius:10px; overflow:hidden;">
 
                 {{-- Header band --}}
                 <tr>
@@ -98,8 +98,8 @@
                     <td style="padding:30px 36px 6px;">
                         <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                             <tr>
-                                <td align="center" bgcolor="#1B84FF" style="border-radius:3px;">
-                                    <a href="{{ route('shop') }}" target="_blank" style="display:inline-block; padding:14px 28px; font-family:'Barlow Semi Condensed','Barlow',Arial,sans-serif; font-size:17px; font-weight:700; letter-spacing:0.02em; text-transform:uppercase; color:#FFFFFF; text-decoration:none; border-radius:3px;">
+                                <td align="center" bgcolor="#1B84FF" style="border-radius:8px;">
+                                    <a href="{{ route('shop') }}" target="_blank" style="display:inline-block; padding:14px 28px; font-family:'Barlow Semi Condensed','Barlow',Arial,sans-serif; font-size:17px; font-weight:700; letter-spacing:0.02em; text-transform:uppercase; color:#FFFFFF; text-decoration:none; border-radius:8px;">
                                         Browse certified cars →
                                     </a>
                                 </td>

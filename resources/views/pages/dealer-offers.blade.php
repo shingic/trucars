@@ -56,10 +56,10 @@ new #[Layout('layouts.dealer')] #[Title('Offers')] class extends Component {
         .oc-m { font-size:13.5px; color:var(--ink-3); margin-top:6px; line-height:1.5; }
         .oc-fine { font-size:13px; color:var(--ink-2); padding:10px 0; border-top:1px solid var(--line-strong); margin-top:auto; }
         .oc-foot { display:flex; align-items:center; padding:10px 0; border-top:1px solid var(--line-strong); border-bottom:1px solid var(--line-strong); font-family:var(--font-display); font-size:15px; font-weight:700; text-transform:uppercase; color:var(--ink); }
-        .pill { font-family:var(--font-display); font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.02em; padding:1px 8px; border-radius:2px; background:var(--bg-2); border:1px solid var(--line-strong); color:var(--ink-2); }
+        .pill { font-family:var(--font-display); font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.02em; padding:1px 8px; border-radius:5px; background:var(--bg-2); border:1px solid var(--line-strong); color:var(--ink-2); }
         .pill.live { background:#E5F8EC; color:#0B7355; border-color:transparent; }
         .pill.scheduled { background:var(--primary-soft); color:var(--primary-press); border-color:transparent; }
-        .empty { border:1.5px dashed var(--line-strong); border-radius:3px; padding:18px 20px; font-size:14.5px; color:var(--ink-2); }
+        .empty { border:1.5px dashed var(--line-strong); border-radius:8px; padding:18px 20px; font-size:14.5px; color:var(--ink-2); }
     </style>
 @endpush
 

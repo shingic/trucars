@@ -19,7 +19,7 @@
             --shadow-md:0 8px 24px rgba(7,20,55,.10);
             --shadow-primary:none;
             --hero-grad:#DDE3EE;
-            --radius:4px; --radius-sm:3px; --radius-pill:3px;
+            --radius:12px; --radius-sm:8px; --radius-pill:999px;
             --font-ui:"Barlow",-apple-system,BlinkMacSystemFont,sans-serif; --font-display:"Barlow Semi Condensed","Barlow",sans-serif;
             --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
         }
@@ -44,18 +44,18 @@
         .nav-right { margin-left:auto; display:flex; align-items:center; gap:16px; }
         .nav-loc { display:flex; align-items:center; gap:7px; font-size:13.5px; color:var(--ink-2); font-weight:500; }
         .nav-loc svg { color:var(--primary); }
-        .nav-acct { width:36px; height:36px; border-radius:3px; background:#fff; border:1.5px solid var(--ink); display:grid; place-items:center; font-weight:700; font-size:13px; color:var(--ink-2); text-decoration:none; transition:border-color .15s ease, color .15s ease; }
+        .nav-acct { width:36px; height:36px; border-radius:8px; background:#fff; border:1.5px solid var(--ink); display:grid; place-items:center; font-weight:700; font-size:13px; color:var(--ink-2); text-decoration:none; transition:border-color .15s ease, color .15s ease; }
         .nav-acct:hover { background:var(--ink); color:#fff; }
 
         /* desktop account dropdown */
         .acct { position:relative; display:inline-flex; }
         .acct-badge { position:absolute; top:-4px; right:-4px; min-width:18px; height:18px; padding:0 5px; border-radius:var(--radius-pill); background:var(--primary); color:#fff; font-size:10.5px; font-weight:700; display:grid; place-items:center; border:2px solid var(--bg); box-shadow:var(--shadow-sm); }
-        .acct-menu { position:absolute; top:calc(100% + 10px); right:0; width:252px; background:var(--card); border:1.5px solid var(--ink); border-radius:3px; box-shadow:var(--shadow-md); padding:8px; z-index:50; }
+        .acct-menu { position:absolute; top:calc(100% + 10px); right:0; width:252px; background:var(--card); border:1.5px solid var(--ink); border-radius:8px; box-shadow:var(--shadow-md); padding:8px; z-index:50; }
         .acct-menu-head { padding:10px 12px 12px; border-bottom:1px solid var(--line); margin-bottom:6px; }
         .acct-menu-name { display:block; font-size:14.5px; font-weight:700; letter-spacing:-.01em; }
         .acct-menu-email { display:block; font-size:12.5px; color:var(--ink-3); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .acct-menu form { margin:0; }
-        .acct-menu-item { display:flex; align-items:center; gap:11px; width:100%; padding:10px 12px; border-radius:4px; font-size:14px; font-weight:600; color:var(--ink); text-decoration:none; text-align:left; background:none; transition:background .14s ease, color .14s ease; }
+        .acct-menu-item { display:flex; align-items:center; gap:11px; width:100%; padding:10px 12px; border-radius:10px; font-size:14px; font-weight:600; color:var(--ink); text-decoration:none; text-align:left; background:none; transition:background .14s ease, color .14s ease; }
         .acct-menu-item:hover { background:var(--bg-2); }
         .acct-menu-item svg { color:var(--ink-3); flex-shrink:0; }
         .acct-menu-item:hover svg { color:var(--primary); }
@@ -66,11 +66,11 @@
         .acct-menu-signout:hover { background:var(--primary-soft); color:var(--primary); }
         .nav-saved { display:inline-flex; align-items:center; gap:8px; font-size:14.5px; font-weight:600; color:var(--ink); text-decoration:none; }
         .nav-saved:hover { color:var(--primary-press); }
-        .nav-signin { display:inline-flex; align-items:center; font-size:14.5px; font-weight:700; color:var(--ink); text-decoration:none; border:1.5px solid var(--ink); border-radius:3px; padding:7px 16px; }
+        .nav-signin { display:inline-flex; align-items:center; font-size:14.5px; font-weight:700; color:var(--ink); text-decoration:none; border:1.5px solid var(--ink); border-radius:8px; padding:7px 16px; }
         .nav-signin:hover { background:var(--ink); color:#fff; }
 
         /* hamburger — hidden on desktop, shown under 860px */
-        .nav-burger { display:none; margin-left:auto; width:42px; height:42px; border-radius:4px; align-items:center; justify-content:center; color:var(--ink); }
+        .nav-burger { display:none; margin-left:auto; width:42px; height:42px; border-radius:10px; align-items:center; justify-content:center; color:var(--ink); }
         .nav-burger:active { background:var(--bg-2); }
 
         /* slide-out drawer + scrim (mobile) */
@@ -88,7 +88,7 @@
         }
         .nav-drawer.is-open { transform:translateX(0); }
         .drawer-top { display:flex; align-items:center; justify-content:space-between; padding:16px 18px; border-bottom:1px solid var(--line); }
-        .drawer-close { width:40px; height:40px; border-radius:3px; border:1.5px solid var(--ink); background:#fff; display:grid; place-items:center; color:var(--ink-2); }
+        .drawer-close { width:40px; height:40px; border-radius:8px; border:1.5px solid var(--ink); background:#fff; display:grid; place-items:center; color:var(--ink-2); }
         .drawer-close:active { color:var(--ink); }
         .drawer-auth { padding:16px 18px; border-bottom:1px solid var(--line); }
         .drawer-signin { display:flex; align-items:center; justify-content:center; width:100%; font-size:15px; font-weight:700; color:#fff; text-decoration:none; background:var(--ink); border-radius:var(--radius-pill); padding:13px 18px; }
@@ -135,7 +135,7 @@
            :where() keeps these at zero specificity, so any page's own field styles still win. */
         :where(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):not([type=hidden]):not([type=submit]):not([type=button]), select, textarea) {
             font:inherit; color:var(--ink); background-color:#fff;
-            border:1.5px solid var(--line-strong); border-radius:3px;
+            border:1.5px solid var(--line-strong); border-radius:8px;
             -webkit-appearance:none; appearance:none;
         }
         :where(input:not([type=checkbox]):not([type=radio]):not([type=range]), select, textarea):focus { outline:none; border-color:var(--ink); }

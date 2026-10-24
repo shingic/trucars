@@ -114,14 +114,14 @@ new #[Layout('layouts.dealer')] #[Title('Customer')] class extends Component {
     <style>
         .cx-head h1 { font-family:var(--font-display); font-size:36px; font-weight:700; line-height:1; text-transform:uppercase; margin:0 0 10px; overflow-wrap:anywhere; }
         .cx-head p { margin:0 0 22px; font-size:15px; color:var(--ink-2); }
-        .cx-status { background:var(--good-soft); color:#0B7355; border-left:3px solid var(--good); border-radius:2px; padding:11px 15px; font-size:14px; font-weight:600; margin-bottom:20px; max-width:880px; }
+        .cx-status { background:var(--good-soft); color:#0B7355; border-left:3px solid var(--good); border-radius:5px; padding:11px 15px; font-size:14px; font-weight:600; margin-bottom:20px; max-width:880px; }
         .card { max-width:880px; margin-bottom:32px; border-top:2px solid var(--ink); }
         .card-head { padding:12px 0; border-bottom:1px solid var(--line-strong); display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
         .card-head .ttl { font-family:var(--font-display); font-size:22px; font-weight:700; line-height:1.05; text-transform:uppercase; flex:1; }
         .kv { display:grid; grid-template-columns:180px 1fr; font-size:15px; }
         .kv > span { padding:11px 0; border-bottom:1px solid var(--line-strong); overflow-wrap:anywhere; }
         .kv .k { color:var(--ink-3); font-size:14px; padding-right:16px; }
-        .pill { display:inline-block; font-family:var(--font-display); font-size:13px; font-weight:600; text-transform:uppercase; padding:1px 7px; border-radius:2px; background:var(--good-soft); color:#0B7355; margin-left:4px; vertical-align:1px; }
+        .pill { display:inline-block; font-family:var(--font-display); font-size:13px; font-weight:600; text-transform:uppercase; padding:1px 7px; border-radius:5px; background:var(--good-soft); color:#0B7355; margin-left:4px; vertical-align:1px; }
         .pill.warn { background:#FFF8DD; color:#7A4E00; }
         .kv .pill:first-child { margin-left:0; }
         .row { display:flex; align-items:center; gap:14px; padding:12px 0; border-bottom:1px solid var(--line-strong); font-size:15px; }
@@ -130,13 +130,13 @@ new #[Layout('layouts.dealer')] #[Title('Customer')] class extends Component {
         .row a { font-weight:700; color:var(--primary-press); font-size:14px; text-decoration:underline; text-underline-offset:3px; white-space:nowrap; }
         .row a:hover { color:var(--ink); }
         .empty { padding:14px 0; border-bottom:1px solid var(--line-strong); font-size:15px; color:var(--ink-3); }
-        .btn { font-size:14px; font-weight:700; border-radius:3px; padding:8px 15px; white-space:nowrap; border:1.5px solid transparent; transition:background .15s ease, color .15s ease; }
+        .btn { font-size:14px; font-weight:700; border-radius:8px; padding:8px 15px; white-space:nowrap; border:1.5px solid transparent; transition:background .15s ease, color .15s ease; }
         .btn-primary { background:var(--primary); border-color:var(--primary); color:#fff; font-family:var(--font-display); font-size:16px; text-transform:uppercase; }
         .btn-primary:hover { background:var(--primary-press); border-color:var(--primary-press); }
         .btn-ghost { background:#fff; border-color:var(--ink); color:var(--ink); }
         .btn-ghost:hover { background:var(--ink); color:#fff; }
         .note-form { padding:16px 0 0; display:flex; flex-direction:column; gap:8px; }
-        .note-form textarea { background:#fff; border:1.5px solid var(--line-strong); border-radius:3px; padding:10px 13px; font-size:15px; font-family:inherit; color:var(--ink); min-height:80px; }
+        .note-form textarea { background:#fff; border:1.5px solid var(--line-strong); border-radius:8px; padding:10px 13px; font-size:15px; font-family:inherit; color:var(--ink); min-height:80px; }
         .note-form textarea:focus { outline:none; border-color:var(--ink); box-shadow:0 0 0 3px var(--primary-soft); }
         .note-form .end { display:flex; justify-content:flex-end; }
         .err { font-size:13px; color:#D81A48; font-weight:600; }

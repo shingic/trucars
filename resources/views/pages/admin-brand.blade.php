@@ -80,12 +80,12 @@ new #[Layout('layouts.dealer')] #[Title('Brand')] class extends Component {
         .row .grow { flex:1; min-width:0; }
         .row .nm { font-weight:700; }
         .meta { font-size:13px; color:var(--ink-3); margin-top:1px; }
-        .pill { font-family:var(--font-display); font-size:13px; font-weight:600; text-transform:uppercase; padding:2px 8px; border-radius:2px; background:#fff; border:1px solid var(--line-strong); color:var(--ink-2); white-space:nowrap; }
+        .pill { font-family:var(--font-display); font-size:13px; font-weight:600; text-transform:uppercase; padding:2px 8px; border-radius:5px; background:#fff; border:1px solid var(--line-strong); color:var(--ink-2); white-space:nowrap; }
         .pill.live { background:#E6F8EC; color:#0B7355; border-color:transparent; }
         .pill.scheduled { background:var(--primary-soft); color:var(--primary-press); border-color:transparent; }
         .offer-big { font-family:var(--font-display); font-size:22px; font-weight:700; line-height:1; color:var(--ink); min-width:96px; }
-        .empty { margin:0 0 14px; padding:14px 16px; border:1.5px dashed var(--line-strong); border-radius:3px; font-size:14px; color:var(--ink-2); }
-        .cta { display:inline-flex; align-items:center; gap:7px; font-family:var(--font-display); font-size:15px; font-weight:700; text-transform:uppercase; border-radius:3px; padding:9px 18px; background:var(--primary); color:#fff; }
+        .empty { margin:0 0 14px; padding:14px 16px; border:1.5px dashed var(--line-strong); border-radius:8px; font-size:14px; color:var(--ink-2); }
+        .cta { display:inline-flex; align-items:center; gap:7px; font-family:var(--font-display); font-size:15px; font-weight:700; text-transform:uppercase; border-radius:8px; padding:9px 18px; background:var(--primary); color:#fff; }
         .cta:hover { background:var(--primary-press); }
         .wide { grid-column:1 / -1; }
         .danger { margin-top:28px; padding-top:14px; border-top:1px solid var(--line-strong); font-size:14px; color:var(--ink-3); }

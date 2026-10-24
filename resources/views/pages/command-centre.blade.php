@@ -197,7 +197,7 @@ new #[Layout('layouts.dealer')] #[Title('Command Centre')] class extends Compone
         .cc-top p { margin:0; font-size:15px; color:var(--ink-2); }
         .cc-top .spacer { flex:1; }
         .cc-actions { display:flex; gap:8px; flex-wrap:wrap; }
-        .qa { display:inline-flex; align-items:center; gap:7px; font-size:14px; font-weight:700; padding:9px 15px; border-radius:3px; border:1.5px solid var(--ink); background:#fff; color:var(--ink); transition:background .15s ease, color .15s ease; }
+        .qa { display:inline-flex; align-items:center; gap:7px; font-size:14px; font-weight:700; padding:9px 15px; border-radius:8px; border:1.5px solid var(--ink); background:#fff; color:var(--ink); transition:background .15s ease, color .15s ease; }
         .qa:hover { background:var(--ink); color:#fff; }
         .qa.primary { background:var(--primary); border-color:var(--primary); color:#fff; font-family:var(--font-display); font-size:16px; text-transform:uppercase; }
         .qa.primary:hover { background:var(--primary-press); border-color:var(--primary-press); color:#fff; }
@@ -211,7 +211,7 @@ new #[Layout('layouts.dealer')] #[Title('Command Centre')] class extends Compone
         .kpi .lbl { font-family:var(--font-display); font-size:15px; font-weight:600; text-transform:uppercase; color:var(--ink-2); }
         .kpi .val { font-family:var(--font-display); font-size:44px; font-weight:700; line-height:1; color:var(--ink); margin:8px 0 6px; font-variant-numeric:tabular-nums; }
         .kpi .sub { font-size:13px; color:var(--ink-3); display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
-        .delta { font-size:13px; font-weight:700; padding:1px 6px; border-radius:2px; }
+        .delta { font-size:13px; font-weight:700; padding:1px 6px; border-radius:5px; }
         .delta.up { background:var(--good-soft); color:#0B7355; }
         .delta.down { background:#FFEEF3; color:#D81A48; }
 
@@ -229,7 +229,7 @@ new #[Layout('layouts.dealer')] #[Title('Command Centre')] class extends Compone
         .bar { flex:1; min-width:3px; border-radius:0; background:var(--line-strong); position:relative; transition:background .12s ease; }
         .bar.has { background:var(--primary); }
         .bar:hover { background:var(--ink); }
-        .bar .tip { display:none; position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%); background:var(--ink); color:#fff; font-size:13px; font-weight:700; padding:4px 8px; border-radius:3px; white-space:nowrap; z-index:2; box-shadow:var(--shadow-md); }
+        .bar .tip { display:none; position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%); background:var(--ink); color:#fff; font-size:13px; font-weight:700; padding:4px 8px; border-radius:8px; white-space:nowrap; z-index:2; box-shadow:var(--shadow-md); }
         .bar:hover .tip { display:block; }
         .axis { display:flex; justify-content:space-between; font-size:13px; color:var(--ink-3); padding:6px 0 4px; }
 
@@ -257,7 +257,7 @@ new #[Layout('layouts.dealer')] #[Title('Command Centre')] class extends Compone
         a.res-row:hover { background:#fff; }
         .res-row .who { font-weight:700; }
         .meta { font-size:13px; color:var(--ink-3); margin-top:1px; }
-        .stage { justify-self:end; font-family:var(--font-display); font-size:13px; font-weight:600; text-transform:uppercase; padding:2px 8px; border-radius:2px; background:var(--bg-2, #F9F9F9); border:1px solid var(--line-strong); color:var(--ink-2); white-space:nowrap; }
+        .stage { justify-self:end; font-family:var(--font-display); font-size:13px; font-weight:600; text-transform:uppercase; padding:2px 8px; border-radius:5px; background:var(--bg-2, #F9F9F9); border:1px solid var(--line-strong); color:var(--ink-2); white-space:nowrap; }
         .stage.reserved { background:var(--primary-soft); border-color:transparent; color:var(--primary-press); }
         .stage.delivered { background:var(--good-soft); border-color:transparent; color:#0B7355; }
 
@@ -269,7 +269,7 @@ new #[Layout('layouts.dealer')] #[Title('Command Centre')] class extends Compone
         .rank .num { text-align:right; font-family:var(--font-display); font-size:22px; font-weight:700; line-height:1; font-variant-numeric:tabular-nums; }
 
         .act { display:flex; gap:11px; padding:10px 6px; border-top:1px solid var(--line-strong); font-size:14px; }
-        .act .av { width:30px; height:30px; border-radius:3px; background:var(--ink); color:#fff; display:grid; place-items:center; font-size:12px; font-weight:700; flex-shrink:0; }
+        .act .av { width:30px; height:30px; border-radius:8px; background:var(--ink); color:#fff; display:grid; place-items:center; font-size:12px; font-weight:700; flex-shrink:0; }
         .act b { font-weight:700; }
         .empty { padding:16px 6px; border-top:1px solid var(--line-strong); font-size:14px; color:var(--ink-3); }
 

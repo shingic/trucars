@@ -17,7 +17,7 @@
     <tr>
         <td align="center" style="padding:32px 16px;">
 
-            <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px; max-width:600px; background-color:#FFFFFF; border:1px solid #D5D7DD; border-radius:4px; overflow:hidden;">
+            <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px; max-width:600px; background-color:#FFFFFF; border:1px solid #D5D7DD; border-radius:10px; overflow:hidden;">
 
                 {{-- Header band --}}
                 <tr>
@@ -48,7 +48,7 @@
                 {{-- Code box --}}
                 <tr>
                     <td style="padding:24px 36px 0;">
-                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:2px solid #071437; border-radius:4px; background-color:#FFFFFF;">
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="border:2px solid #071437; border-radius:10px; background-color:#FFFFFF;">
                             <tr>
                                 <td align="center" style="padding:26px 22px; font-family:'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; font-size:38px; font-weight:700; letter-spacing:0.18em; color:#071437;">
                                     {{ $code }}

@@ -89,13 +89,13 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
         .kv a:hover { color:var(--ink); }
         .meta-line { font-size:13px; color:var(--ink-3); margin-top:3px; }
         .mono { font-family:var(--mono); overflow-wrap:anywhere; }
-        .rd-msg { background:var(--good-soft); color:#0B7355; border-left:3px solid var(--good); border-radius:2px; padding:11px 15px; font-size:14px; font-weight:600; margin-bottom:20px; max-width:980px; }
+        .rd-msg { background:var(--good-soft); color:#0B7355; border-left:3px solid var(--good); border-radius:5px; padding:11px 15px; font-size:14px; font-weight:600; margin-bottom:20px; max-width:980px; }
         .refund { padding:14px 0 0; font-size:15px; color:var(--ink-2); }
         .refund p { margin:0 0 12px; max-width:720px; }
-        .refund textarea { width:100%; background:#fff; border:1.5px solid var(--line-strong); border-radius:3px; padding:9px 12px; font:inherit; font-size:15px; resize:vertical; color:var(--ink); }
+        .refund textarea { width:100%; background:#fff; border:1.5px solid var(--line-strong); border-radius:8px; padding:9px 12px; font:inherit; font-size:15px; resize:vertical; color:var(--ink); }
         .refund textarea:focus { outline:none; border-color:var(--ink); box-shadow:0 0 0 3px var(--primary-soft); }
         .refund .err { color:#D81A48; font-size:13px; font-weight:600; margin-top:6px; }
-        .btn-danger { margin-top:12px; border-radius:3px; padding:9px 16px; font-size:14px; font-weight:700; background:#fff; color:#D81A48; border:1.5px solid #D81A48; transition:background .15s ease, color .15s ease; }
+        .btn-danger { margin-top:12px; border-radius:8px; padding:9px 16px; font-size:14px; font-weight:700; background:#fff; color:#D81A48; border:1.5px solid #D81A48; transition:background .15s ease, color .15s ease; }
         .btn-danger:hover:not(:disabled) { background:#D81A48; color:#fff; }
         .btn-danger:disabled { opacity:.6; }
         @media (max-width:860px){ .rd-grid { grid-template-columns:1fr; } }

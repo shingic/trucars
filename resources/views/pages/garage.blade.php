@@ -362,7 +362,7 @@ new #[Layout('layouts.checkout')] class extends Component {
         .g-top .sep { color:var(--ink-3); font-weight:400; margin:0 2px; }
         .g-top .garage-word { font-family:var(--font-display); font-size:20px; font-weight:600; text-transform:uppercase; line-height:1; color:var(--ink-2); white-space:nowrap; }
         .g-account { margin-left:auto; display:flex; align-items:center; gap:14px; }
-        .g-avatar { width:34px; height:34px; border-radius:3px; background:var(--ink); color:#fff; display:grid; place-items:center; font-family:var(--font-display); font-weight:700; font-size:15px; }
+        .g-avatar { width:34px; height:34px; border-radius:8px; background:var(--ink); color:#fff; display:grid; place-items:center; font-family:var(--font-display); font-weight:700; font-size:15px; }
         .g-signout { font-size:14px; font-weight:600; color:var(--ink-2); background:none; border:none; cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
         .g-signout:hover { color:var(--ink); }
 
@@ -371,7 +371,7 @@ new #[Layout('layouts.checkout')] class extends Component {
         /* the car up top: a trimmed photo beside the plain facts */
         .g-hero { display:grid; grid-template-columns:1.1fr 1fr; gap:32px; align-items:start; margin-bottom:44px; }
         @media (max-width:880px){ .g-hero { grid-template-columns:1fr; gap:22px; } }
-        .g-hero-car { border-radius:3px; background:var(--hero-grad); position:relative; overflow:hidden; aspect-ratio:4/2.8; display:flex; align-items:flex-end; justify-content:center; padding:26px; }
+        .g-hero-car { border-radius:8px; background:var(--hero-grad); position:relative; overflow:hidden; aspect-ratio:4/2.8; display:flex; align-items:flex-end; justify-content:center; padding:26px; }
         /* dealer photos are 4:3 with a vendor badge along the bottom edge; the 4:2.8 frame, pinned to the top, trims just that strip */
         .g-hero-car.has-photo { background-color:var(--bg-2); background-size:cover; background-position:center top; background-repeat:no-repeat; }
         .g-hero-badge { position:absolute; top:0; left:0; z-index:2; display:inline-flex; align-items:center; gap:6px; background:var(--ink); color:#fff; font-family:var(--font-display); font-size:14px; font-weight:600; text-transform:uppercase; line-height:1.2; padding:5px 11px; }
@@ -396,7 +396,7 @@ new #[Layout('layouts.checkout')] class extends Component {
         .g-card-head { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:16px; }
         .g-card-head h3 { margin:0; font-family:var(--font-display); font-size:24px; font-weight:700; text-transform:uppercase; line-height:1; letter-spacing:0; }
         .g-card-sub { display:block; font-size:14px; color:var(--ink-2); margin-top:6px; }
-        .g-status { font-family:var(--font-display); font-size:14px; font-weight:600; text-transform:uppercase; line-height:1.2; padding:4px 10px; border-radius:2px; white-space:nowrap; }
+        .g-status { font-family:var(--font-display); font-size:14px; font-weight:600; text-transform:uppercase; line-height:1.2; padding:4px 10px; border-radius:5px; white-space:nowrap; }
         .g-status.pending { background:#E6F1FF; color:var(--primary-press); }
         .g-status.confirmed { background:#E3F7EA; color:#0B7355; }
         .g-fin-pending { display:flex; gap:14px; align-items:center; }
@@ -442,23 +442,23 @@ new #[Layout('layouts.checkout')] class extends Component {
         .g-doc-action { margin-left:auto; flex-shrink:0; }
         .g-doc-done { font-size:14px; font-weight:600; color:#0B7355; }
         .g-doc-later { font-size:14px; font-weight:600; color:var(--ink-3); }
-        .g-doc-upload { padding:8px 16px; font-size:14px; border-radius:3px; }
+        .g-doc-upload { padding:8px 16px; font-size:14px; border-radius:8px; }
         .g-doc-input { display:none; }
         .g-doc-done-wrap { display:flex; align-items:center; gap:14px; }
         .g-doc-replace { font-size:13.5px; font-weight:600; color:var(--ink-2); cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
         .g-doc-replace:hover { color:var(--ink); }
         .g-doc-error { font-size:13px; font-weight:600; color:#D81A48; margin:8px 0 0 42px; }
 
-        .g-cancelled-note { display:flex; gap:12px; align-items:flex-start; padding:16px 18px; border:1px solid var(--line-strong); border-radius:3px; background:var(--card); font-size:15px; color:var(--ink-2); line-height:1.55; }
+        .g-cancelled-note { display:flex; gap:12px; align-items:flex-start; padding:16px 18px; border:1px solid var(--line-strong); border-radius:8px; background:var(--card); font-size:15px; color:var(--ink-2); line-height:1.55; }
         .g-cancelled-note svg { flex-shrink:0; color:var(--ink-3); margin-top:3px; }
 
         .g-others .g-other-row { display:flex; align-items:center; gap:15px; padding:12px 0; border-bottom:1px solid var(--line-strong); width:100%; background:none; border-left:none; border-right:none; border-top:none; cursor:pointer; text-align:left; }
         .g-others .g-card-head + .g-other-row { border-top:1px solid var(--line-strong); }
         /* same trim as the hero: 4:2.8, pinned to the top, so the badge strip is cut */
-        .g-other-thumb { width:72px; aspect-ratio:4/2.8; border-radius:2px; background-color:var(--hero-grad); background-size:cover; background-position:center top; background-repeat:no-repeat; flex-shrink:0; }
+        .g-other-thumb { width:72px; aspect-ratio:4/2.8; border-radius:5px; background-color:var(--hero-grad); background-size:cover; background-position:center top; background-repeat:no-repeat; flex-shrink:0; }
         .g-other-name { font-weight:700; font-size:15px; }
         .g-other-sub { font-size:13.5px; color:var(--ink-3); margin-top:2px; }
-        .g-other-stage { margin-left:auto; font-family:var(--font-display); font-size:14px; font-weight:600; text-transform:uppercase; line-height:1.2; padding:4px 10px; border-radius:2px; background:var(--bg-2); border:1px solid var(--line-strong); color:var(--ink-2); white-space:nowrap; }
+        .g-other-stage { margin-left:auto; font-family:var(--font-display); font-size:14px; font-weight:600; text-transform:uppercase; line-height:1.2; padding:4px 10px; border-radius:5px; background:var(--bg-2); border:1px solid var(--line-strong); color:var(--ink-2); white-space:nowrap; }
         .g-other-row:hover .g-other-name { color:var(--primary-press); }
 
         .g-lifecycle { margin-top:12px; border-top:2px solid var(--ink); padding-top:16px; }
@@ -475,10 +475,10 @@ new #[Layout('layouts.checkout')] class extends Component {
         .g-foot { border-top:1px solid var(--line-strong); margin-top:50px; padding:26px 0; }
         .g-foot-note { max-width:1080px; margin:0 auto; padding:0 26px; font-size:13px; color:var(--ink-3); line-height:1.6; }
 
-        .g-empty { max-width:620px; margin:40px 0 0; padding:28px 28px 30px; border:1.5px dashed var(--line-strong); border-radius:3px; }
+        .g-empty { max-width:620px; margin:40px 0 0; padding:28px 28px 30px; border:1.5px dashed var(--line-strong); border-radius:8px; }
         .g-empty h1 { font-family:var(--font-display); font-size:40px; font-weight:700; text-transform:uppercase; line-height:1; letter-spacing:0; margin:0 0 12px; }
         .g-empty p { font-size:16px; color:var(--ink-2); line-height:1.6; margin:0 0 24px; }
-        .g-empty .btn { font-family:var(--font-display); font-size:18px; font-weight:600; text-transform:uppercase; border-radius:3px; }
+        .g-empty .btn { font-family:var(--font-display); font-size:18px; font-weight:600; text-transform:uppercase; border-radius:8px; }
 
         @media (max-width:560px) {
             .g-top-inner, .g-wrap, .g-foot-note { padding-left:16px; padding-right:16px; }

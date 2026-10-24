@@ -518,17 +518,17 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
         .detail-title .sub { font-size:14.5px; color:var(--ink-2); margin-top:9px; }
         .detail-head-right { display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end; }
 
-        .deposit-chip { display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:700; padding:4px 9px; border-radius:2px; background:#DDF5EB; color:#0B7355; white-space:nowrap; line-height:1.4; }
+        .deposit-chip { display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:700; padding:4px 9px; border-radius:5px; background:#DDF5EB; color:#0B7355; white-space:nowrap; line-height:1.4; }
         .deposit-chip svg { width:13px; height:13px; }
 
-        .adv-btn { font-family:var(--font-display); font-size:16px; font-weight:700; text-transform:uppercase; color:#fff; background:var(--primary); padding:8px 16px; border-radius:3px; white-space:nowrap; transition:background .15s ease; }
+        .adv-btn { font-family:var(--font-display); font-size:16px; font-weight:700; text-transform:uppercase; color:#fff; background:var(--primary); padding:8px 16px; border-radius:8px; white-space:nowrap; transition:background .15s ease; }
         .adv-btn:hover { background:var(--primary-press); }
         .adv-btn[disabled] { opacity:.55; cursor:wait; }
         .adv-done { font-size:13px; font-weight:700; color:var(--ink-3); }
         .adv-note { font-size:13px; color:var(--ink-3); }
 
         /* Stage chip (shared vocabulary with the inbox): flat rectangles, colour carries meaning */
-        .stage { display:inline-flex; align-items:center; font-size:13px; font-weight:700; padding:4px 9px; border-radius:2px; white-space:nowrap; line-height:1.4; }
+        .stage { display:inline-flex; align-items:center; font-size:13px; font-weight:700; padding:4px 9px; border-radius:5px; white-space:nowrap; line-height:1.4; }
         .stage.reserved { background:#E9F3FF; color:#056EE9; }
         .stage.contacted { background:#FFF8DD; color:#7A4E00; }
         .stage.appointment_set { background:#E3EDFB; color:#2E5FA3; }
@@ -558,12 +558,12 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
         .kv .v a:hover { color:var(--primary-press); text-decoration-color:currentColor; }
         .kv .v.mono { font-family:var(--mono); font-size:13px; letter-spacing:-.01em; }
 
-        .id-badge { display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:700; padding:3px 8px; border-radius:2px; line-height:1.4; }
+        .id-badge { display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:700; padding:3px 8px; border-radius:5px; line-height:1.4; }
         .id-badge svg { width:12px; height:12px; }
         .id-badge.ok { background:#DDF5EB; color:#0B7355; }
         .id-badge.no { background:#FFF8DD; color:#7A4E00; }
 
-        .pill-status { font-size:13px; font-weight:700; padding:3px 8px; border-radius:2px; white-space:nowrap; line-height:1.4; }
+        .pill-status { font-size:13px; font-weight:700; padding:3px 8px; border-radius:5px; white-space:nowrap; line-height:1.4; }
         .pill-status.preliminary { background:#E9F3FF; color:#056EE9; }
 
         .estimate-line { display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-top:14px; padding-top:12px; border-top:2px solid var(--ink); flex-wrap:wrap; }
@@ -571,7 +571,7 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
         .estimate-line .amt { font-family:var(--font-display); font-size:26px; font-weight:700; line-height:1; color:var(--ink); letter-spacing:0; }
 
         .chips { display:flex; flex-wrap:wrap; gap:6px; }
-        .chip { font-size:13px; font-weight:600; padding:4px 9px; border-radius:2px; background:rgba(7,20,55,.06); color:var(--ink-2); }
+        .chip { font-size:13px; font-weight:600; padding:4px 9px; border-radius:5px; background:rgba(7,20,55,.06); color:var(--ink-2); }
         .chip.warranty { background:#E9F3FF; color:var(--primary-press); }
 
         .note { font-size:13px; color:var(--ink-3); line-height:1.55; margin:14px 0 0; }
@@ -603,7 +603,7 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
         .fin-form { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px; }
         .fin-form label { display:flex; flex-direction:column; gap:5px; font-size:13px; font-weight:600; color:var(--ink-2); min-width:0; }
         .fin-form label.wide, .fin-actions { grid-column:1 / -1; }
-        .fin-form input, .fin-form select { width:100%; border:1.5px solid var(--line-strong); border-radius:3px; padding:9px 11px; font-size:14.5px; font-family:inherit; color:var(--ink); background:#fff; outline:none; }
+        .fin-form input, .fin-form select { width:100%; border:1.5px solid var(--line-strong); border-radius:8px; padding:9px 11px; font-size:14.5px; font-family:inherit; color:var(--ink); background:#fff; outline:none; }
         .fin-form input:focus, .fin-form select:focus { border-color:var(--ink); box-shadow:0 0 0 3px var(--primary-soft); }
         .fin-err { font-size:13px; color:#D81A48; font-weight:600; }
         .fin-actions { display:flex; gap:9px; justify-content:flex-end; flex-wrap:wrap; }
@@ -611,12 +611,12 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
         .ask { margin-top:14px; padding-top:14px; border-top:1px solid var(--line-strong); }
         .ask-label { font-size:14px; font-weight:700; color:var(--ink-2); margin-bottom:9px; }
         .ask-chips { display:flex; flex-wrap:wrap; gap:6px; }
-        .ask-chip { font-size:13px; font-weight:600; color:var(--ink); background:#fff; border:1.5px solid var(--line-strong); border-radius:3px; padding:6px 11px; transition:border-color .15s ease, background .15s ease; }
+        .ask-chip { font-size:13px; font-weight:600; color:var(--ink); background:#fff; border:1.5px solid var(--line-strong); border-radius:8px; padding:6px 11px; transition:border-color .15s ease, background .15s ease; }
         .ask-chip:hover { border-color:var(--ink); }
         .ask-chip.on { border-color:var(--ink); color:#fff; background:var(--ink); }
-        .ask-box { display:grid; gap:12px; margin-top:12px; background:#fff; border:1px solid var(--line-strong); border-radius:3px; padding:13px; }
+        .ask-box { display:grid; gap:12px; margin-top:12px; background:#fff; border:1px solid var(--line-strong); border-radius:8px; padding:13px; }
         .ask-box label, .decline-form label { display:flex; flex-direction:column; gap:5px; font-size:13px; font-weight:600; color:var(--ink-2); }
-        .ask-box input, .decline-form textarea { width:100%; border:1.5px solid var(--line-strong); border-radius:3px; padding:9px 11px; font-size:14px; font-family:inherit; color:var(--ink); background:#fff; outline:none; resize:vertical; }
+        .ask-box input, .decline-form textarea { width:100%; border:1.5px solid var(--line-strong); border-radius:8px; padding:9px 11px; font-size:14px; font-family:inherit; color:var(--ink); background:#fff; outline:none; resize:vertical; }
         .ask-box input:focus, .decline-form textarea:focus { border-color:var(--ink); box-shadow:0 0 0 3px var(--primary-soft); }
 
         .decline-form { display:grid; gap:12px; }
@@ -629,7 +629,7 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
         .decline-done b { color:#D81A48; }
         @media (max-width:560px) { .fin-form { grid-template-columns:1fr; } }
 
-        .mini-btn { font-size:13px; font-weight:700; padding:7px 12px; border-radius:3px; white-space:nowrap; transition:background .15s ease, color .15s ease, border-color .15s ease; border:1.5px solid transparent; }
+        .mini-btn { font-size:13px; font-weight:700; padding:7px 12px; border-radius:8px; white-space:nowrap; transition:background .15s ease, color .15s ease, border-color .15s ease; border:1.5px solid transparent; }
         .mini-btn[disabled] { opacity:.55; cursor:wait; }
         .mini-btn.approve { background:var(--primary); border-color:var(--primary); color:#fff; }
         .mini-btn.approve:hover { background:var(--primary-press); border-color:var(--primary-press); }
@@ -638,15 +638,15 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
         .mini-btn.flag { color:#7A4E00; background:#fff; border-color:#C59A00; }
         .mini-btn.flag:hover { background:#FFF8DD; }
 
-        .doc-state { font-size:13px; font-weight:700; padding:3px 8px; border-radius:2px; white-space:nowrap; line-height:1.4; }
+        .doc-state { font-size:13px; font-weight:700; padding:3px 8px; border-radius:5px; white-space:nowrap; line-height:1.4; }
         .doc-state.approved { background:#DDF5EB; color:#0B7355; }
         .doc-state.cleared { background:#DDF5EB; color:#0B7355; }
         .doc-state.waiting { background:rgba(7,20,55,.07); color:var(--ink-2); }
         .doc-state.rejected { background:#FFF8DD; color:#7A4E00; }
 
-        .reject-box { margin-top:12px; margin-left:34px; background:#fff; border:1px solid var(--line-strong); border-radius:3px; padding:13px; }
+        .reject-box { margin-top:12px; margin-left:34px; background:#fff; border:1px solid var(--line-strong); border-radius:8px; padding:13px; }
         .reject-box label { font-size:13px; font-weight:600; color:var(--ink-2); display:block; margin-bottom:7px; }
-        .reject-box textarea { width:100%; border:1.5px solid var(--line-strong); border-radius:3px; padding:10px 12px; font-size:14px; font-family:inherit; color:var(--ink); outline:none; resize:vertical; min-height:62px; background:#fff; }
+        .reject-box textarea { width:100%; border:1.5px solid var(--line-strong); border-radius:8px; padding:10px 12px; font-size:14px; font-family:inherit; color:var(--ink); outline:none; resize:vertical; min-height:62px; background:#fff; }
         .reject-box textarea:focus { border-color:var(--ink); box-shadow:0 0 0 3px var(--primary-soft); }
         .reject-box-actions { display:flex; gap:9px; justify-content:flex-end; margin-top:11px; flex-wrap:wrap; }
         .reject-err { font-size:13px; color:#D81A48; font-weight:600; margin-top:7px; }
@@ -663,7 +663,7 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
         .act-body { font-size:14px; line-height:1.5; color:var(--ink); }
         .act-meta { font-size:13px; color:var(--ink-3); margin-top:3px; }
 
-        .empty-line { font-size:14px; color:var(--ink-2); padding:14px; margin:0; border:1.5px dashed var(--line-strong); border-radius:3px; }
+        .empty-line { font-size:14px; color:var(--ink-2); padding:14px; margin:0; border:1.5px dashed var(--line-strong); border-radius:8px; }
 
         @media (max-width:600px){
             .reject-box { margin-left:0; }

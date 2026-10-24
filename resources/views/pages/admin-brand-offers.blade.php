@@ -57,7 +57,7 @@ new #[Layout('layouts.dealer')] #[Title('Offers & incentives')] class extends Co
     <style>
         .ob-top { display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
         .ob-top .spacer { flex:1; }
-        .seg { display:inline-flex; flex-wrap:wrap; border:1.5px solid var(--ink); border-radius:3px; overflow:hidden; background:#fff; }
+        .seg { display:inline-flex; flex-wrap:wrap; border:1.5px solid var(--ink); border-radius:8px; overflow:hidden; background:#fff; }
         .seg button { display:inline-flex; align-items:center; gap:6px; padding:8px 14px; font-size:14px; font-weight:700; color:var(--ink); border-right:1.5px solid var(--ink); }
         .seg button:last-child { border-right:none; }
         .seg button:hover { background:var(--bg); }
@@ -65,7 +65,7 @@ new #[Layout('layouts.dealer')] #[Title('Offers & incentives')] class extends Co
         .seg button:focus-visible { outline:2px solid var(--primary); outline-offset:-3px; }
         .seg .n { font-family:var(--font-display); font-size:14px; font-weight:600; color:var(--ink-3); }
         .seg button.on .n { color:var(--primary-bright); }
-        .btn { display:inline-flex; align-items:center; gap:7px; font-family:var(--font-display); font-size:15px; font-weight:700; text-transform:uppercase; border-radius:3px; padding:10px 18px; background:var(--primary); color:#fff; }
+        .btn { display:inline-flex; align-items:center; gap:7px; font-family:var(--font-display); font-size:15px; font-weight:700; text-transform:uppercase; border-radius:8px; padding:10px 18px; background:var(--primary); color:#fff; }
         .btn:hover { background:var(--primary-press); }
         .btn svg { width:15px; height:15px; }
         .card { border-top:2px solid var(--ink); }
@@ -76,11 +76,11 @@ new #[Layout('layouts.dealer')] #[Title('Offers & incentives')] class extends Co
         .nm { font-size:15px; font-weight:700; }
         .meta { font-size:13px; color:var(--ink-3); margin-top:2px; }
         .dates { font-size:14px; font-weight:600; color:var(--ink-2); }
-        .pill { justify-self:start; font-family:var(--font-display); font-size:13px; font-weight:600; text-transform:uppercase; padding:2px 8px; border-radius:2px; background:#fff; border:1px solid var(--line-strong); color:var(--ink-2); }
+        .pill { justify-self:start; font-family:var(--font-display); font-size:13px; font-weight:600; text-transform:uppercase; padding:2px 8px; border-radius:5px; background:#fff; border:1px solid var(--line-strong); color:var(--ink-2); }
         .pill.live { background:#E6F8EC; color:#0B7355; border-color:transparent; }
         .pill.scheduled { background:var(--primary-soft); color:var(--primary-press); border-color:transparent; }
         .go { width:16px; height:16px; color:var(--ink-3); }
-        .empty { margin-top:14px; padding:22px 20px; border:1.5px dashed var(--line-strong); border-radius:3px; color:var(--ink-2); font-size:14px; }
+        .empty { margin-top:14px; padding:22px 20px; border:1.5px dashed var(--line-strong); border-radius:8px; color:var(--ink-2); font-size:14px; }
         @media (max-width:860px) { .of-row { grid-template-columns:96px minmax(0, 1fr) 16px; } .of-row .hide-sm { display:none; } }
     </style>
 @endpush

@@ -295,10 +295,10 @@ new #[Layout('layouts.dealer')] #[Title('CPO checklist')] class extends Componen
         .tabs a.on { color:var(--ink); border-bottom-color:var(--primary); }
         .ip-head h1 { font-family:var(--font-display); font-size:32px; font-weight:700; text-transform:uppercase; line-height:1; margin:0 0 8px; }
         .ip-head p { margin:0 0 20px; font-size:15px; color:var(--ink-2); max-width:680px; }
-        .msg { background:#E6F8EC; color:#0B7355; border-left:4px solid var(--good); border-radius:2px; padding:10px 14px; font-size:14px; font-weight:600; margin-bottom:16px; }
+        .msg { background:#E6F8EC; color:#0B7355; border-left:4px solid var(--good); border-radius:5px; padding:10px 14px; font-size:14px; font-weight:600; margin-bottom:16px; }
 
         .ip { display:grid; grid-template-columns:260px minmax(0, 1fr); gap:24px; align-items:start; }
-        .card { background:#fff; border:1px solid var(--line-strong); border-top:2px solid var(--ink); border-radius:3px; }
+        .card { background:#fff; border:1px solid var(--line-strong); border-top:2px solid var(--ink); border-radius:8px; }
 
         /* checklist picker: a ruled list */
         .plist { display:flex; flex-direction:column; }
@@ -309,12 +309,12 @@ new #[Layout('layouts.dealer')] #[Title('CPO checklist')] class extends Componen
         .pitem .nm { font-family:var(--font-display); font-size:17px; font-weight:700; text-transform:uppercase; line-height:1.1; color:var(--ink); }
         .pitem .sub { font-size:13px; color:var(--ink-3); }
         .pitem.off .nm { color:var(--ink-3); }
-        .padd { margin:12px; width:calc(100% - 24px); display:flex; align-items:center; justify-content:center; gap:7px; padding:9px; border-radius:3px; border:1.5px dashed var(--line-strong); font-size:14px; font-weight:700; color:var(--ink); }
+        .padd { margin:12px; width:calc(100% - 24px); display:flex; align-items:center; justify-content:center; gap:7px; padding:9px; border-radius:8px; border:1.5px dashed var(--line-strong); font-size:14px; font-weight:700; color:var(--ink); }
         .padd:hover { border-color:var(--ink); border-style:solid; }
         .padd svg { width:15px; height:15px; }
         .pcopy { border-top:1px solid var(--line-strong); padding:12px; display:flex; flex-direction:column; gap:8px; }
         .pcopy label { font-size:13px; font-weight:700; color:var(--ink-2); }
-        .pcopy select { border:1.5px solid var(--line-strong); border-radius:3px; padding:8px 10px; font-size:14px; font-family:inherit; color:var(--ink); background:#fff; width:100%; }
+        .pcopy select { border:1.5px solid var(--line-strong); border-radius:8px; padding:8px 10px; font-size:14px; font-family:inherit; color:var(--ink); background:#fff; width:100%; }
         .pcopy select:focus { outline:none; border-color:var(--ink); }
 
         /* editor head: count as a stat cell */
@@ -329,10 +329,10 @@ new #[Layout('layouts.dealer')] #[Title('CPO checklist')] class extends Componen
         .field.w2 { grid-column:span 2; } .field.w4 { grid-column:span 4; } .field.w6 { grid-column:1 / -1; }
         .field label { font-size:13px; font-weight:700; color:var(--ink-2); }
         .field label .opt { font-weight:500; color:var(--ink-3); }
-        .field input, .field textarea { border:1.5px solid var(--line-strong); border-radius:3px; padding:9px 12px; font-size:14px; font-family:inherit; color:var(--ink); background:#fff; width:100%; }
+        .field input, .field textarea { border:1.5px solid var(--line-strong); border-radius:8px; padding:9px 12px; font-size:14px; font-family:inherit; color:var(--ink); background:#fff; width:100%; }
         .field input:focus, .field textarea:focus { outline:none; border-color:var(--ink); }
         .err { font-size:13px; color:#D81A48; font-weight:600; }
-        .seg { display:inline-flex; flex-wrap:wrap; border:1.5px solid var(--ink); border-radius:3px; background:#fff; overflow:hidden; align-self:flex-start; }
+        .seg { display:inline-flex; flex-wrap:wrap; border:1.5px solid var(--ink); border-radius:8px; background:#fff; overflow:hidden; align-self:flex-start; }
         .seg button { padding:8px 14px; font-size:14px; font-weight:700; color:var(--ink); border-right:1.5px solid var(--ink); }
         .seg button:last-child { border-right:none; }
         .seg button:hover { background:var(--bg); }
@@ -340,20 +340,20 @@ new #[Layout('layouts.dealer')] #[Title('CPO checklist')] class extends Componen
         .seg button:focus-visible { outline:2px solid var(--primary); outline-offset:-3px; }
         .switch { margin-left:auto; display:inline-flex; align-items:center; gap:9px; cursor:pointer; user-select:none; }
         .switch input { position:absolute; opacity:0; pointer-events:none; }
-        .switch .track { width:40px; height:22px; border-radius:3px; background:var(--line-strong); position:relative; transition:background .15s ease; }
-        .switch .knob { position:absolute; top:3px; left:3px; width:16px; height:16px; border-radius:2px; background:#fff; transition:transform .15s ease; }
+        .switch .track { width:40px; height:22px; border-radius:8px; background:var(--line-strong); position:relative; transition:background .15s ease; }
+        .switch .knob { position:absolute; top:3px; left:3px; width:16px; height:16px; border-radius:5px; background:#fff; transition:transform .15s ease; }
         .switch input:checked + .track { background:#0B7355; }
         .switch input:checked + .track .knob { transform:translateX(18px); }
         .switch input:focus-visible + .track { outline:2px solid var(--primary); outline-offset:2px; }
         .switch-lbl { font-family:var(--font-display); font-size:15px; font-weight:700; text-transform:uppercase; color:var(--ink); min-width:50px; }
-        .inherit { display:flex; align-items:center; gap:13px; padding:13px 16px; margin-bottom:18px; border-radius:2px; background:#E6F8EC; color:#0B7355; border-left:4px solid var(--good); font-size:14px; line-height:1.45; }
+        .inherit { display:flex; align-items:center; gap:13px; padding:13px 16px; margin-bottom:18px; border-radius:5px; background:#E6F8EC; color:#0B7355; border-left:4px solid var(--good); font-size:14px; line-height:1.45; }
         .inherit b { display:block; font-size:15px; }
         .inherit .ic { color:#0B7355; display:grid; place-items:center; flex-shrink:0; }
         .inherit .ic svg { width:18px; height:18px; }
         .inherit .go { width:18px; height:18px; margin-left:auto; flex-shrink:0; }
         .pempty { padding:14px 14px 4px; font-size:14px; color:var(--ink-2); line-height:1.5; }
         .ed-actions { display:flex; gap:8px; padding:14px 20px; border-bottom:2px solid var(--ink); justify-content:flex-end; flex-wrap:wrap; }
-        .btn { display:inline-flex; align-items:center; gap:7px; font-size:14px; font-weight:700; border-radius:3px; padding:9px 17px; white-space:nowrap; border:1.5px solid transparent; }
+        .btn { display:inline-flex; align-items:center; gap:7px; font-size:14px; font-weight:700; border-radius:8px; padding:9px 17px; white-space:nowrap; border:1.5px solid transparent; }
         .btn svg { width:15px; height:15px; }
         .btn:focus-visible { outline:2px solid var(--primary); outline-offset:2px; }
         .btn-primary { background:var(--primary); border-color:var(--primary); color:#fff; font-family:var(--font-display); font-size:15px; text-transform:uppercase; }
@@ -371,14 +371,14 @@ new #[Layout('layouts.dealer')] #[Title('CPO checklist')] class extends Componen
         .pt .lb { flex:1; min-width:0; }
         .pt .tools { display:flex; gap:4px; opacity:0; transition:opacity .12s ease; }
         .pt:hover .tools, .pt:focus-within .tools { opacity:1; }
-        .icon-btn { width:30px; height:30px; display:grid; place-items:center; border-radius:3px; border:1.5px solid transparent; color:var(--ink-3); }
+        .icon-btn { width:30px; height:30px; display:grid; place-items:center; border-radius:8px; border:1.5px solid transparent; color:var(--ink-3); }
         .icon-btn:hover { border-color:var(--ink); color:var(--ink); background:#fff; }
         .icon-btn:focus-visible { outline:2px solid var(--primary); outline-offset:1px; }
         .icon-btn svg { width:15px; height:15px; }
-        .empty { margin:16px 20px; padding:16px; border:1.5px dashed var(--line-strong); border-radius:3px; font-size:14px; color:var(--ink-2); }
+        .empty { margin:16px 20px; padding:16px; border:1.5px dashed var(--line-strong); border-radius:8px; font-size:14px; color:var(--ink-2); }
 
         .adder { display:grid; grid-template-columns:180px minmax(0, 1fr) auto; gap:8px; padding:16px 20px; background:var(--bg); border-top:2px solid var(--ink); margin-top:-1px; }
-        .adder input, .adder textarea { border:1.5px solid var(--line-strong); border-radius:3px; padding:9px 12px; font-size:14px; font-family:inherit; color:var(--ink); background:#fff; width:100%; }
+        .adder input, .adder textarea { border:1.5px solid var(--line-strong); border-radius:8px; padding:9px 12px; font-size:14px; font-family:inherit; color:var(--ink); background:#fff; width:100%; }
         .adder input:focus, .adder textarea:focus { outline:none; border-color:var(--ink); }
         .adder .full { grid-column:1 / -1; }
         .adder .swap { grid-column:1 / -1; justify-self:start; font-size:14px; font-weight:700; color:var(--primary-press); text-decoration:underline; text-underline-offset:3px; }

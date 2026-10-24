@@ -137,22 +137,22 @@ new #[Layout('layouts.dealer')] #[Title('Offer')] class extends Component {
         .oe-head { display:flex; align-items:center; gap:12px; margin-bottom:8px; flex-wrap:wrap; }
         .oe-head h1 { font-family:var(--font-display); font-size:34px; font-weight:700; text-transform:uppercase; line-height:1; letter-spacing:0; margin:0; }
         .oe-sub { font-size:15px; color:var(--ink-2); margin:0 0 20px; }
-        .state { font-family:var(--font-display); font-size:14px; font-weight:600; text-transform:uppercase; padding:3px 9px; border-radius:2px; background:#fff; border:1px solid var(--line-strong); color:var(--ink-2); }
+        .state { font-family:var(--font-display); font-size:14px; font-weight:600; text-transform:uppercase; padding:3px 9px; border-radius:5px; background:#fff; border:1px solid var(--line-strong); color:var(--ink-2); }
         .state.live { background:#E6F8EC; color:#0B7355; border-color:transparent; }
         .state.scheduled { background:var(--primary-soft); color:var(--primary-press); border-color:transparent; }
-        .msg { background:#E6F8EC; color:#0B7355; border-left:4px solid var(--good); border-radius:2px; padding:11px 15px; font-size:14px; font-weight:600; margin-bottom:16px; }
+        .msg { background:#E6F8EC; color:#0B7355; border-left:4px solid var(--good); border-radius:5px; padding:11px 15px; font-size:14px; font-weight:600; margin-bottom:16px; }
         .oe { display:grid; grid-template-columns:minmax(0, 1fr) 360px; gap:24px; align-items:start; }
-        .card { background:#fff; border:1px solid var(--line-strong); border-top:2px solid var(--ink); border-radius:3px; }
+        .card { background:#fff; border:1px solid var(--line-strong); border-top:2px solid var(--ink); border-radius:8px; }
         .side { position:sticky; top:84px; }
         .preview { padding:16px; }
         .pv-label { font-family:var(--font-display); font-size:18px; font-weight:700; text-transform:uppercase; line-height:1; color:var(--ink); margin-bottom:12px; }
-        .pv-car { border:1px solid var(--line-strong); border-radius:3px; padding:14px; margin-bottom:12px; }
+        .pv-car { border:1px solid var(--line-strong); border-radius:8px; padding:14px; margin-bottom:12px; }
         .pv-car .t { font-family:var(--font-display); font-size:18px; font-weight:700; text-transform:uppercase; line-height:1.1; }
         .pv-car .s { font-size:13px; color:var(--ink-3); margin-top:2px; }
         .pv-car .p { font-family:var(--font-display); font-size:28px; font-weight:700; line-height:1; color:var(--ink); margin-top:8px; }
         .reach { font-size:13px; color:var(--ink-2); margin-top:12px; line-height:1.5; }
         .actions { display:flex; gap:8px; padding:16px 20px; flex-wrap:wrap; border-top:2px solid var(--ink); }
-        .btn { display:inline-flex; align-items:center; justify-content:center; gap:7px; font-size:14px; font-weight:700; border-radius:3px; padding:9px 17px; white-space:nowrap; border:1.5px solid transparent; }
+        .btn { display:inline-flex; align-items:center; justify-content:center; gap:7px; font-size:14px; font-weight:700; border-radius:8px; padding:9px 17px; white-space:nowrap; border:1.5px solid transparent; }
         .btn:focus-visible { outline:2px solid var(--primary); outline-offset:2px; }
         .btn-primary { background:var(--primary); border-color:var(--primary); color:#fff; font-family:var(--font-display); font-size:15px; text-transform:uppercase; }
         .btn-primary:hover { background:var(--primary-press); border-color:var(--primary-press); }

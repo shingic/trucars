@@ -4,7 +4,7 @@
 --}}
 <div class="offer-card offer-{{ $offer->type }}">
     <style>
-        .offer-card { border-radius:3px; padding:14px 16px 15px; background:var(--ink); color:#fff; border-left:5px solid var(--primary); }
+        .offer-card { border-radius:8px; padding:14px 16px 15px; background:var(--ink); color:#fff; border-left:5px solid var(--primary); }
         .offer-card .oc-kicker { display:flex; align-items:center; gap:7px; font-family:var(--font-display); font-size:15px; font-weight:600; text-transform:uppercase; color:var(--primary-bright, #6CB0FF); }
         .offer-card .oc-kicker svg { width:14px; height:14px; flex-shrink:0; }
         .offer-card .oc-head { font-family:var(--font-display); font-size:34px; font-weight:700; line-height:1; margin-top:6px; }

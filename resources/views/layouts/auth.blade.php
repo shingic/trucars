@@ -22,7 +22,7 @@
             --shadow-sm:0 1px 3px rgba(7,20,55,.06);
             --shadow-md:0 8px 24px rgba(7,20,55,.10);
             --shadow-lg:0 30px 70px rgba(7,20,55,.18);
-            --radius:4px; --radius-sm:3px; --radius-pill:3px;
+            --radius:12px; --radius-sm:8px; --radius-pill:999px;
             --font:"Barlow",-apple-system,sans-serif; --font-display:"Barlow Semi Condensed","Barlow",sans-serif; --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
         }
 
@@ -40,7 +40,7 @@
            :where() keeps these at zero specificity, so any page's own field styles still win. */
         :where(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):not([type=hidden]):not([type=submit]):not([type=button]), select, textarea) {
             font:inherit; color:var(--ink); background-color:#fff;
-            border:1.5px solid var(--line-strong); border-radius:3px;
+            border:1.5px solid var(--line-strong); border-radius:8px;
             -webkit-appearance:none; appearance:none;
         }
         :where(input:not([type=checkbox]):not([type=radio]):not([type=range]), select, textarea):focus { outline:none; border-color:var(--ink); }

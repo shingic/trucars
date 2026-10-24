@@ -43,7 +43,7 @@ new #[Title('How it works — TruCars')] class extends Component {
         .hw-jump small { font-size:14px; color:var(--ink-3); text-align:right; }
         .hw-jump a:hover span { color:var(--primary-press); }
 
-        .hw-example { border:1px solid var(--line-strong); border-radius:4px; overflow:hidden; background:#fff; }
+        .hw-example { border:1px solid var(--line-strong); border-radius:10px; overflow:hidden; background:#fff; }
         /* dealer photos carry a vendor badge along the bottom edge; the frame trims it off */
         .hw-ex-photo { position:relative; overflow:hidden; aspect-ratio:4/2.8; background:var(--bg-2); }
         .hw-ex-photo img { position:absolute; top:0; left:0; width:100%; height:107%; object-fit:cover; object-position:center 40%; }
@@ -79,7 +79,7 @@ new #[Title('How it works — TruCars')] class extends Component {
         .hw-when { font-family:var(--font-display); font-size:15px; font-weight:600; text-transform:uppercase; color:var(--primary-press); }
 
         /* price: laid out like a window sticker */
-        .hw-sticker { max-width:560px; border:3px solid var(--ink); margin-top:18px; background:#fff; }
+        .hw-sticker { max-width:560px; border:3px solid var(--ink); border-radius:14px; overflow:hidden; margin-top:18px; background:#fff; }
         .hw-sticker header { background:var(--ink); color:#fff; display:flex; justify-content:space-between; padding:10px 16px; font-family:var(--font-display); font-size:18px; font-weight:600; text-transform:uppercase; }
         .hw-sticker .grp { padding:12px 16px 4px; font-family:var(--font-display); font-weight:700; font-size:15px; text-transform:uppercase; }
         .hw-sticker .line { display:flex; justify-content:space-between; gap:16px; padding:9px 16px; border-top:1px dashed var(--line-strong); font-size:15px; }
@@ -95,9 +95,9 @@ new #[Title('How it works — TruCars')] class extends Component {
         .hw-two dt { font-weight:700; margin-top:10px; }
         .hw-two dd { margin:2px 0 0; color:var(--ink-2); }
 
-        .hw-end { margin-top:60px; background:var(--ink); color:#fff; border-radius:4px; padding:30px 32px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; }
+        .hw-end { margin-top:60px; background:var(--ink); color:#fff; border-radius:10px; padding:30px 32px; display:flex; align-items:center; justify-content:space-between; gap:20px; flex-wrap:wrap; }
         .hw-end h2 { color:#fff; font-size:32px; font-weight:700; text-transform:uppercase; margin:0; }
-        .hw-btn { display:inline-block; padding:13px 24px; border-radius:4px; background:var(--primary); color:#fff; font-family:var(--font-display); font-size:18px; font-weight:700; text-transform:uppercase; text-decoration:none; }
+        .hw-btn { display:inline-block; padding:13px 24px; border-radius:10px; background:var(--primary); color:#fff; font-family:var(--font-display); font-size:18px; font-weight:700; text-transform:uppercase; text-decoration:none; }
         .hw-btn:hover { background:#fff; color:var(--ink); }
 
         @media (max-width:860px) {

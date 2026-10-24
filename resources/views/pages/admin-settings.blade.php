@@ -107,26 +107,26 @@ new #[Layout('layouts.dealer')] #[Title('Platform settings')] class extends Comp
     <style>
         .ps-head h1 { font-family:var(--font-display); font-size:36px; font-weight:700; line-height:1; text-transform:uppercase; margin:0 0 10px; }
         .ps-head p { margin:0 0 22px; font-size:15px; color:var(--ink-2); }
-        .ps-status { background:var(--good-soft); color:#0B7355; border-left:3px solid var(--good); border-radius:2px; padding:11px 15px; font-size:14px; font-weight:600; margin-bottom:20px; max-width:760px; }
-        .card { background:#fff; border:1px solid var(--line-strong); border-radius:4px; max-width:760px; padding:20px; display:grid; gap:18px; }
+        .ps-status { background:var(--good-soft); color:#0B7355; border-left:3px solid var(--good); border-radius:5px; padding:11px 15px; font-size:14px; font-weight:600; margin-bottom:20px; max-width:760px; }
+        .card { background:#fff; border:1px solid var(--line-strong); border-radius:10px; max-width:760px; padding:20px; display:grid; gap:18px; }
         .field { display:flex; flex-direction:column; gap:6px; }
         .field label { font-size:14px; font-weight:700; color:var(--ink); }
         .field .hint { font-size:13px; color:var(--ink-3); }
-        .field input, .field textarea { background:#fff; border:1.5px solid var(--line-strong); border-radius:3px; padding:10px 13px; font-size:15px; font-family:inherit; color:var(--ink); }
+        .field input, .field textarea { background:#fff; border:1.5px solid var(--line-strong); border-radius:8px; padding:10px 13px; font-size:15px; font-family:inherit; color:var(--ink); }
         .field input:focus, .field textarea:focus { outline:none; border-color:var(--ink); box-shadow:0 0 0 3px var(--primary-soft); }
         .err { font-size:13px; color:#D81A48; font-weight:600; }
         .end { display:flex; justify-content:flex-end; }
-        .btn { font-family:var(--font-display); font-size:16px; font-weight:700; text-transform:uppercase; border-radius:3px; padding:10px 20px; background:var(--primary); color:#fff; transition:background .15s ease; }
+        .btn { font-family:var(--font-display); font-size:16px; font-weight:700; text-transform:uppercase; border-radius:8px; padding:10px 20px; background:var(--primary); color:#fff; transition:background .15s ease; }
         .btn:hover { background:var(--primary-press); }
         .pay-card { margin-bottom:22px; border:1.5px solid var(--ink); }
         .pay-head { display:flex; align-items:center; gap:10px; padding-bottom:14px; border-bottom:1px solid var(--line-strong); }
         .pay-head h2 { margin:0; font-family:var(--font-display); font-size:22px; font-weight:700; line-height:1.05; text-transform:uppercase; }
         .pay-head p { margin:4px 0 0; font-size:14px; color:var(--ink-3); }
-        .mode-pill { margin-left:auto; font-family:var(--font-display); font-size:14px; font-weight:600; text-transform:uppercase; padding:2px 9px; border-radius:2px; }
+        .mode-pill { margin-left:auto; font-family:var(--font-display); font-size:14px; font-weight:600; text-transform:uppercase; padding:2px 9px; border-radius:5px; }
         .mode-pill.demo { background:#FFF8DD; color:#7A4E00; }
         .mode-pill.live { background:var(--good-soft); color:#0B7355; }
         .modes { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-        .mode { text-align:left; border:1.5px solid var(--line-strong); border-radius:3px; padding:14px 16px; background:#fff; transition:border-color .15s ease; }
+        .mode { text-align:left; border:1.5px solid var(--line-strong); border-radius:8px; padding:14px 16px; background:#fff; transition:border-color .15s ease; }
         .mode:hover:not(:disabled) { border-color:var(--ink); }
         .mode b { display:block; font-family:var(--font-display); font-size:18px; font-weight:700; text-transform:uppercase; margin-bottom:3px; }
         .mode span { font-size:14px; color:var(--ink-2); line-height:1.45; }
@@ -136,7 +136,7 @@ new #[Layout('layouts.dealer')] #[Title('Platform settings')] class extends Comp
         .keys-note { font-size:13px; color:var(--ink-3); }
         .conn { border-top:1px solid var(--line-strong); padding-top:14px; display:grid; gap:8px; }
         .conn-head { display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:15px; }
-        .btn-ghost { font-size:14px; font-weight:700; border:1.5px solid var(--ink); border-radius:3px; padding:7px 14px; background:#fff; color:var(--ink); transition:background .15s ease, color .15s ease; }
+        .btn-ghost { font-size:14px; font-weight:700; border:1.5px solid var(--ink); border-radius:8px; padding:7px 14px; background:#fff; color:var(--ink); transition:background .15s ease, color .15s ease; }
         .btn-ghost:hover { background:var(--ink); color:#fff; }
         .conn-row { display:grid; grid-template-columns:22px 130px 1fr; gap:8px; align-items:start; font-size:14px; }
         .conn-icon { width:20px; text-align:center; font-size:15px; font-weight:800; line-height:1.4; }

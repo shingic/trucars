@@ -9,7 +9,7 @@
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F9F9F9; padding:32px 16px;">
         <tr>
             <td align="center">
-                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px; background:#FFFFFF; border:1px solid #D5D7DD; border-radius:4px; overflow:hidden;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px; background:#FFFFFF; border:1px solid #D5D7DD; border-radius:10px; overflow:hidden;">
                     <tr>
                         <td style="background-color:#071437; padding:22px 28px; font-family:'Barlow Semi Condensed','Barlow',Arial,sans-serif; font-size:24px; font-weight:800; line-height:1; letter-spacing:0.01em; text-transform:uppercase; color:#FFFFFF;">Tru<span style="color:#6CB0FF;">Cars</span></td>
                     </tr>
@@ -20,7 +20,7 @@
                                 You've been invited to join the <b style="color:#071437;">TruCars Command Centre</b>,
                                 TruCars' internal workspace. Set your password to finish creating your account.
                             </p>
-                            <a href="{{ $acceptUrl }}" style="display:inline-block; background:#1B84FF; color:#FFFFFF; text-decoration:none; font-family:'Barlow Semi Condensed','Barlow',Arial,sans-serif; font-weight:700; font-size:17px; letter-spacing:0.02em; text-transform:uppercase; padding:13px 24px; border-radius:3px;">Set up my account</a>
+                            <a href="{{ $acceptUrl }}" style="display:inline-block; background:#1B84FF; color:#FFFFFF; text-decoration:none; font-family:'Barlow Semi Condensed','Barlow',Arial,sans-serif; font-weight:700; font-size:17px; letter-spacing:0.02em; text-transform:uppercase; padding:13px 24px; border-radius:8px;">Set up my account</a>
                             <p style="font-size:13px; line-height:1.55; color:#78829D; margin:22px 0 0;">
                                 This link works once and expires {{ $invitation->expires_at->format('F j, Y') }}. If you weren't expecting it, you can ignore this email — no account is created until you set a password.
                             </p>

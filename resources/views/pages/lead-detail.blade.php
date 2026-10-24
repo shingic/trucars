@@ -100,7 +100,7 @@ new #[Layout('layouts.dealer')] class extends Component {
         .lead-head-meta { font-size:14px; font-weight:600; color:var(--ink-3); }
 
         /* Flat rectangular status chips */
-        .stage { display:inline-flex; align-items:center; font-size:13px; font-weight:700; padding:4px 9px; border-radius:2px; white-space:nowrap; line-height:1.4; }
+        .stage { display:inline-flex; align-items:center; font-size:13px; font-weight:700; padding:4px 9px; border-radius:5px; white-space:nowrap; line-height:1.4; }
         .stage.reservation { background:#E9F3FF; color:#056EE9; }
         .stage.new { background:#E9F3FF; color:#056EE9; }
         .stage.contacted { background:#FFF8DD; color:#7A4E00; }
@@ -117,22 +117,22 @@ new #[Layout('layouts.dealer')] class extends Component {
         .lead-message { font-size:15px; line-height:1.65; color:var(--ink); white-space:pre-line; margin:0; }
         .lead-message.empty { color:var(--ink-3); font-style:italic; }
 
-        .note-form textarea { width:100%; min-height:86px; resize:vertical; font:inherit; font-size:14.5px; line-height:1.55; color:var(--ink); padding:11px 13px; border:1.5px solid var(--line-strong); border-radius:3px; background:#fff; }
+        .note-form textarea { width:100%; min-height:86px; resize:vertical; font:inherit; font-size:14.5px; line-height:1.55; color:var(--ink); padding:11px 13px; border:1.5px solid var(--line-strong); border-radius:8px; background:#fff; }
         .note-form textarea:focus { outline:none; border-color:var(--ink); }
         .note-form textarea:focus-visible { box-shadow:0 0 0 3px var(--primary-soft); }
         .note-form-foot { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:10px; }
         .note-error { font-size:13px; font-weight:600; color:#D81A48; }
-        .note-submit { margin-left:auto; font-size:14px; font-weight:700; color:#fff; background:var(--primary); padding:9px 18px; border-radius:3px; transition:background .15s ease; }
+        .note-submit { margin-left:auto; font-size:14px; font-weight:700; color:#fff; background:var(--primary); padding:9px 18px; border-radius:8px; transition:background .15s ease; }
         .note-submit:hover { background:var(--primary-press); }
         .note-submit[disabled] { opacity:.6; cursor:wait; }
 
         .note-list { margin-top:18px; border-bottom:1px solid var(--line-strong); }
         .note { display:flex; gap:12px; padding:14px 0; border-top:1px solid var(--line-strong); }
-        .note-av { width:32px; height:32px; flex:0 0 32px; border-radius:3px; background:var(--ink); color:#fff; font-family:var(--font-display); font-size:13px; font-weight:700; display:grid; place-items:center; }
+        .note-av { width:32px; height:32px; flex:0 0 32px; border-radius:8px; background:var(--ink); color:#fff; font-family:var(--font-display); font-size:13px; font-weight:700; display:grid; place-items:center; }
         .note-head { font-size:14px; font-weight:700; color:var(--ink); }
         .note-when { font-size:13px; font-weight:600; color:var(--ink-3); margin-left:7px; }
         .note-body { font-size:14.5px; line-height:1.6; color:var(--ink-2); margin:3px 0 0; white-space:pre-line; }
-        .notes-empty { font-size:14px; color:var(--ink-2); margin-top:18px; padding:16px; border:1.5px dashed var(--line-strong); border-radius:3px; }
+        .notes-empty { font-size:14px; color:var(--ink-2); margin-top:18px; padding:16px; border:1.5px dashed var(--line-strong); border-radius:8px; }
 
         .fact { padding:10px 0; }
         .fact + .fact { border-top:1px solid var(--line-strong); }
@@ -152,14 +152,14 @@ new #[Layout('layouts.dealer')] class extends Component {
         .ladder { display:flex; flex-direction:column; }
         .ladder-step { position:relative; display:flex; align-items:center; gap:12px; padding:9px 0; }
         .ladder-step + .ladder-step::before { content:""; position:absolute; left:5px; top:-9px; height:18px; width:2px; background:var(--line-strong); }
-        .ladder-dot { width:12px; height:12px; flex:0 0 12px; border-radius:2px; border:2px solid var(--line-strong); background:#fff; }
+        .ladder-dot { width:12px; height:12px; flex:0 0 12px; border-radius:5px; border:2px solid var(--line-strong); background:#fff; }
         .ladder-step.done .ladder-dot { background:var(--ink); border-color:var(--ink); }
         .ladder-step.now .ladder-dot { background:var(--primary); border-color:var(--primary); }
         .ladder-label { font-size:14px; font-weight:600; color:var(--ink-3); }
         .ladder-step.done .ladder-label { color:var(--ink-2); }
         .ladder-step.now .ladder-label { color:var(--ink); font-weight:800; }
 
-        .advance-full { width:100%; margin-top:16px; font-family:var(--font-display); font-size:17px; font-weight:700; text-transform:uppercase; color:#fff; background:var(--primary); padding:11px 16px; border-radius:3px; transition:background .15s ease; }
+        .advance-full { width:100%; margin-top:16px; font-family:var(--font-display); font-size:17px; font-weight:700; text-transform:uppercase; color:#fff; background:var(--primary); padding:11px 16px; border-radius:8px; transition:background .15s ease; }
         .advance-full:hover { background:var(--primary-press); }
         .advance-full[disabled] { opacity:.6; cursor:wait; }
         .ladder-closed { margin-top:16px; font-size:14px; font-weight:600; color:var(--ink-3); text-align:center; }

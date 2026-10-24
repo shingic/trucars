@@ -221,7 +221,7 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
         /* cars */
         .cars { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:34px 22px; }
         .car { display:block; text-decoration:none; color:var(--ink); }
-        .car-photo { aspect-ratio:4/2.8; border-radius:3px; background:var(--bg-2); }
+        .car-photo { aspect-ratio:4/2.8; border-radius:8px; background:var(--bg-2); }
         .car:hover .car-name { color:var(--primary-press); }
         .car-photo .reserved { position:absolute; z-index:1; top:0; left:0; background:var(--ink); color:#fff; font-family:var(--font-display); font-size:14px; font-weight:600; text-transform:uppercase; padding:4px 10px; }
         .car-photo .cert { position:absolute; z-index:1; left:0; bottom:0; max-width:100%; background:var(--primary); color:#fff; font-family:var(--font-display); font-size:14px; font-weight:600; text-transform:uppercase; padding:4px 10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -272,13 +272,13 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
         .faq summary::after { content:"+"; font-family:var(--font-display); font-size:26px; line-height:.8; color:var(--ink-3); }
         .faq details[open] summary::after { content:"–"; }
         .faq p { margin:0 0 20px; font-size:15.5px; color:var(--ink-2); max-width:620px; line-height:1.55; }
-        .close { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); background:var(--ink); border-radius:4px; overflow:hidden; }
+        .close { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); background:var(--ink); border-radius:10px; overflow:hidden; }
         .close.no-photo { grid-template-columns:1fr; }
         .close > div { padding:48px 44px; color:#fff; }
         .close h2 { color:#fff; font-size:clamp(34px, 4.4vw, 60px); line-height:.95; }
         .close p { color:rgba(255,255,255,.75); font-size:17px; margin:14px 0 26px; }
         .close figure { margin:0; min-height:320px; background:#12224D; }
-        .btn-go { display:inline-block; background:var(--primary); color:#fff; font-family:var(--font-display); font-size:20px; font-weight:700; text-transform:uppercase; padding:13px 26px; border-radius:4px; text-decoration:none; }
+        .btn-go { display:inline-block; background:var(--primary); color:#fff; font-family:var(--font-display); font-size:20px; font-weight:700; text-transform:uppercase; padding:13px 26px; border-radius:10px; text-decoration:none; }
         .btn-go:hover { background:#fff; color:var(--ink); }
 
         @media (max-width:1100px) {

@@ -142,10 +142,10 @@ new class extends Component {
         @media (max-width:1000px) { .grid { grid-template-columns:repeat(2, minmax(0, 1fr)); } }
 
         /* empty: a plain note in a dashed box */
-        .saved-empty { max-width:560px; margin:8px 0 20px; padding:24px 26px; border:1.5px dashed var(--line-strong); border-radius:3px; }
+        .saved-empty { max-width:560px; margin:8px 0 20px; padding:24px 26px; border:1.5px dashed var(--line-strong); border-radius:8px; }
         .saved-empty-title { font-family:var(--font-display); font-size:24px; font-weight:700; text-transform:uppercase; line-height:1; letter-spacing:0; }
         .saved-empty-text { font-size:15px; color:var(--ink-2); line-height:1.55; margin:10px 0 20px; }
-        .saved-empty-cta { display:inline-flex; align-items:center; gap:8px; font-family:var(--font-display); font-size:18px; font-weight:600; text-transform:uppercase; color:#fff; text-decoration:none; background:var(--primary); border-radius:3px; padding:11px 22px; transition:background .16s ease; }
+        .saved-empty-cta { display:inline-flex; align-items:center; gap:8px; font-family:var(--font-display); font-size:18px; font-weight:600; text-transform:uppercase; color:#fff; text-decoration:none; background:var(--primary); border-radius:8px; padding:11px 22px; transition:background .16s ease; }
         .saved-empty-cta:hover { background:var(--primary-press); }
 
         @media (max-width:860px) {

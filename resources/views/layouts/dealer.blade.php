@@ -26,7 +26,7 @@
             --shadow-sm:0 1px 3px rgba(7,20,55,.06);
             --shadow-md:0 8px 24px rgba(7,20,55,.10);
             --shadow-lg:0 30px 70px rgba(7,20,55,.18);
-            --radius:4px; --radius-sm:3px; --radius-pill:3px;
+            --radius:12px; --radius-sm:8px; --radius-pill:999px;
             --sidebar-w:268px;
             --font:"Barlow",-apple-system,sans-serif; --font-display:"Barlow Semi Condensed","Barlow",sans-serif; --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
         }
@@ -59,13 +59,13 @@
         .nav-item.on svg { color:var(--primary-bright); }
         .sb-switch { padding:0 12px; }
         .sb-switch .sb-group-label { display:block; padding-left:0; }
-        .sb-switch select { width:100%; margin-top:6px; border:1px solid rgba(255,255,255,.25); border-radius:3px; padding:8px 10px; font:inherit; font-size:13.5px; font-weight:600; color:#fff; background:rgba(255,255,255,.06); }
+        .sb-switch select { width:100%; margin-top:6px; border:1px solid rgba(255,255,255,.25); border-radius:8px; padding:8px 10px; font:inherit; font-size:13.5px; font-weight:600; color:#fff; background:rgba(255,255,255,.06); }
         .sb-switch select option { color:var(--ink); }
         .sidebar .sb-switch select:not(.bare) { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23FFFFFF' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important; }
-        .nav-badge { margin-left:auto; font-size:11px; font-weight:700; padding:2px 7px; border-radius:2px; background:var(--primary); color:#fff; }
+        .nav-badge { margin-left:auto; font-size:11px; font-weight:700; padding:2px 7px; border-radius:5px; background:var(--primary); color:#fff; }
 
         .sb-foot { border-top:1px solid rgba(255,255,255,.12); padding:13px 14px; display:flex; align-items:center; gap:10px; }
-        .sb-foot .av { width:34px; height:34px; border-radius:3px; background:rgba(255,255,255,.12); color:#fff; display:grid; place-items:center; font-weight:700; font-size:12px; flex-shrink:0; }
+        .sb-foot .av { width:34px; height:34px; border-radius:8px; background:rgba(255,255,255,.12); color:#fff; display:grid; place-items:center; font-weight:700; font-size:12px; flex-shrink:0; }
         .sb-foot .nm { font-size:13px; font-weight:700; line-height:1.2; }
         .sb-foot .rl { font-size:12px; color:rgba(255,255,255,.5); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:150px; }
 
@@ -74,7 +74,7 @@
         .crumb { font-size:14px; font-weight:600; color:var(--ink-3); display:flex; align-items:center; gap:8px; }
         .crumb .cur { color:var(--ink); font-weight:700; }
         .appbar-right { margin-left:auto; display:flex; align-items:center; gap:12px; }
-        .appbar-signout { font-size:14px; font-weight:600; color:var(--ink); padding:7px 14px; border-radius:3px; border:1.5px solid var(--ink); }
+        .appbar-signout { font-size:14px; font-weight:600; color:var(--ink); padding:7px 14px; border-radius:8px; border:1.5px solid var(--ink); }
         .appbar-signout:hover { background:var(--ink); color:#fff; }
 
         .content-body { padding:28px 30px 72px; }
@@ -92,7 +92,7 @@
            :where() keeps these at zero specificity, so any page's own field styles still win. */
         :where(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):not([type=hidden]):not([type=submit]):not([type=button]), select, textarea) {
             font:inherit; color:var(--ink); background-color:#fff;
-            border:1.5px solid var(--line-strong); border-radius:3px;
+            border:1.5px solid var(--line-strong); border-radius:8px;
             -webkit-appearance:none; appearance:none;
         }
         :where(input:not([type=checkbox]):not([type=radio]):not([type=range]), select, textarea):focus { outline:none; border-color:var(--ink); }

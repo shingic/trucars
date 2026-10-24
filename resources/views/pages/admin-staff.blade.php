@@ -244,7 +244,7 @@ new #[Layout('layouts.dealer')] #[Title('TruCars staff')] class extends Componen
     <style>
         .st-head h1 { font-family:var(--font-display); font-size:36px; font-weight:700; line-height:1; text-transform:uppercase; margin:0 0 10px; }
         .st-head p { margin:0 0 24px; font-size:15px; color:var(--ink-2); max-width:660px; }
-        .btn { display:inline-flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; border-radius:3px; padding:10px 18px; border:1.5px solid transparent; transition:background .15s ease, color .15s ease, border-color .15s ease; white-space:nowrap; }
+        .btn { display:inline-flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; border-radius:8px; padding:10px 18px; border:1.5px solid transparent; transition:background .15s ease, color .15s ease, border-color .15s ease; white-space:nowrap; }
         .btn-primary { background:var(--primary); border-color:var(--primary); color:#fff; font-family:var(--font-display); font-size:16px; text-transform:uppercase; }
         .btn-primary:hover { background:var(--primary-press); border-color:var(--primary-press); }
         .btn-primary:disabled { opacity:.6; }
@@ -252,9 +252,9 @@ new #[Layout('layouts.dealer')] #[Title('TruCars staff')] class extends Componen
         .btn-ghost:hover { background:var(--ink); color:#fff; }
         .btn-sm { font-size:13px; padding:6px 12px; }
         .btn-primary.btn-sm { font-size:14px; }
-        .st-status { display:flex; align-items:center; gap:9px; background:var(--good-soft); color:#0B7355; border-left:3px solid var(--good); border-radius:2px; padding:11px 15px; font-size:14px; font-weight:600; margin-bottom:22px; max-width:920px; }
+        .st-status { display:flex; align-items:center; gap:9px; background:var(--good-soft); color:#0B7355; border-left:3px solid var(--good); border-radius:5px; padding:11px 15px; font-size:14px; font-weight:600; margin-bottom:22px; max-width:920px; }
         .card { max-width:920px; margin-bottom:34px; border-top:2px solid var(--ink); }
-        .card.boxed { background:#fff; border:1.5px solid var(--ink); border-radius:4px; }
+        .card.boxed { background:#fff; border:1.5px solid var(--ink); border-radius:10px; }
         .card-head { padding:12px 0 12px; border-bottom:1px solid var(--line-strong); }
         .card.boxed .card-head { padding:16px 20px 14px; }
         .card-head .ttl { font-family:var(--font-display); font-size:22px; font-weight:700; line-height:1.05; text-transform:uppercase; }
@@ -265,8 +265,8 @@ new #[Layout('layouts.dealer')] #[Title('TruCars staff')] class extends Componen
         .m-name { font-size:15px; font-weight:700; }
         .m-meta { font-size:13px; color:var(--ink-3); margin-top:2px; font-weight:400; }
         .m-perms { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
-        .perm { font-size:13px; font-weight:600; color:var(--ink-2); background:#fff; border:1px solid var(--line-strong); border-radius:2px; padding:1px 8px; }
-        .pill { font-family:var(--font-display); font-size:13px; font-weight:600; text-transform:uppercase; padding:2px 8px; border-radius:2px; background:var(--good-soft); color:#0B7355; white-space:nowrap; }
+        .perm { font-size:13px; font-weight:600; color:var(--ink-2); background:#fff; border:1px solid var(--line-strong); border-radius:5px; padding:1px 8px; }
+        .pill { font-family:var(--font-display); font-size:13px; font-weight:600; text-transform:uppercase; padding:2px 8px; border-radius:5px; background:var(--good-soft); color:#0B7355; white-space:nowrap; }
         .pill.off { background:#FFEEF3; color:#D81A48; }
         .pill.wait { background:#FFF8DD; color:#7A4E00; }
         .pill.owner { background:var(--ink); color:#fff; }
@@ -280,7 +280,7 @@ new #[Layout('layouts.dealer')] #[Title('TruCars staff')] class extends Componen
         .row2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
         .field { display:flex; flex-direction:column; gap:6px; }
         .field label, .lbl { font-size:14px; font-weight:700; color:var(--ink); }
-        .field input { background:#fff; border:1.5px solid var(--line-strong); border-radius:3px; padding:10px 13px; font-size:15px; font-family:inherit; color:var(--ink); }
+        .field input { background:#fff; border:1.5px solid var(--line-strong); border-radius:8px; padding:10px 13px; font-size:15px; font-family:inherit; color:var(--ink); }
         .field input:focus { outline:none; border-color:var(--ink); box-shadow:0 0 0 3px var(--primary-soft); }
         .err { font-size:13px; color:#D81A48; font-weight:600; }
         .presets { display:flex; gap:8px; flex-wrap:wrap; }

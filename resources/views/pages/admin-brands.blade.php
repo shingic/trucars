@@ -72,10 +72,10 @@ new #[Layout('layouts.dealer')] #[Title('Brands')] class extends Component {
         .br-head p { margin:0; font-size:15px; color:var(--ink-2); max-width:620px; }
         .br-head .spacer { flex:1; }
         .br-tools { display:flex; gap:8px; flex-wrap:wrap; }
-        .br-tools input { border:1.5px solid var(--line-strong); border-radius:3px; padding:9px 12px; font-size:14px; font-family:inherit; background:#fff; color:var(--ink); min-width:180px; }
+        .br-tools input { border:1.5px solid var(--line-strong); border-radius:8px; padding:9px 12px; font-size:14px; font-family:inherit; background:#fff; color:var(--ink); min-width:180px; }
         .br-tools input:focus { outline:none; border-color:var(--ink); }
         .br-tools input:focus-visible { box-shadow:0 0 0 2px var(--primary-soft); }
-        .btn { display:inline-flex; align-items:center; gap:7px; font-family:var(--font-display); font-size:15px; font-weight:700; text-transform:uppercase; border-radius:3px; padding:9px 18px; background:var(--primary); color:#fff; white-space:nowrap; }
+        .btn { display:inline-flex; align-items:center; gap:7px; font-family:var(--font-display); font-size:15px; font-weight:700; text-transform:uppercase; border-radius:8px; padding:9px 18px; background:var(--primary); color:#fff; white-space:nowrap; }
         .btn:hover { background:var(--primary-press); }
         .btn:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
         .err { font-size:13px; color:#D81A48; font-weight:600; }
@@ -84,13 +84,13 @@ new #[Layout('layouts.dealer')] #[Title('Brands')] class extends Component {
         .brand:hover { background:#fff; }
         .brand:hover .nm { text-decoration:underline; text-underline-offset:3px; }
         .brand-top { display:flex; align-items:center; gap:12px; flex:1; min-width:200px; }
-        .logo { width:40px; height:40px; border-radius:3px; background:var(--ink); color:#fff; display:grid; place-items:center; font-family:var(--font-display); font-weight:700; font-size:16px; flex-shrink:0; }
+        .logo { width:40px; height:40px; border-radius:8px; background:var(--ink); color:#fff; display:grid; place-items:center; font-family:var(--font-display); font-weight:700; font-size:16px; flex-shrink:0; }
         .brand.quiet .logo { background:#fff; color:var(--ink-3); border:1.5px solid var(--line-strong); }
         .brand .nm { font-family:var(--font-display); font-size:19px; font-weight:700; text-transform:uppercase; line-height:1.1; color:var(--ink); }
         .brand.quiet .nm { color:var(--ink-2); }
         .brand .dl { font-size:13px; color:var(--ink-3); }
         .chips { display:flex; gap:6px; flex-wrap:wrap; }
-        .chip { display:inline-flex; align-items:center; gap:5px; font-size:13px; font-weight:700; padding:3px 8px; border-radius:2px; background:#fff; color:var(--ink-3); border:1px solid var(--line-strong); }
+        .chip { display:inline-flex; align-items:center; gap:5px; font-size:13px; font-weight:700; padding:3px 8px; border-radius:5px; background:#fff; color:var(--ink-3); border:1px solid var(--line-strong); }
         .chip.on { background:#E6F8EC; color:#0B7355; border-color:transparent; }
         .chip.offer { background:var(--ink); color:#fff; border-color:var(--ink); }
         .chip svg { width:12px; height:12px; }

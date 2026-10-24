@@ -906,7 +906,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         .dl-head h1 { font-family:var(--font-display); font-size:36px; font-weight:700; line-height:1; text-transform:uppercase; letter-spacing:0; margin:0 0 10px; color:var(--ink); }
         .dl-head p { margin:0; font-size:15px; color:var(--ink-2); max-width:640px; }
 
-        .btn { display:inline-flex; align-items:center; justify-content:center; gap:7px; font-family:var(--font-display); font-size:15px; font-weight:600; text-transform:uppercase; letter-spacing:.02em; line-height:1.2; border-radius:3px; padding:10px 18px; border:1.5px solid transparent; transition:background .15s ease, color .15s ease, border-color .15s ease; white-space:nowrap; cursor:pointer; }
+        .btn { display:inline-flex; align-items:center; justify-content:center; gap:7px; font-family:var(--font-display); font-size:15px; font-weight:600; text-transform:uppercase; letter-spacing:.02em; line-height:1.2; border-radius:8px; padding:10px 18px; border:1.5px solid transparent; transition:background .15s ease, color .15s ease, border-color .15s ease; white-space:nowrap; cursor:pointer; }
         .btn-primary { background:var(--primary); border-color:var(--primary); color:#fff; box-shadow:none; }
         .btn-primary:hover { background:var(--primary-press); border-color:var(--primary-press); }
         .btn-primary:disabled { opacity:.5; cursor:not-allowed; }
@@ -916,39 +916,39 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         .btn-warn:hover { background:#D81A48; border-color:#D81A48; color:#fff; }
         .btn:focus-visible, .ebtn:focus-visible, .qa:focus-visible, .brand-change:focus-visible, .stat:focus-visible { outline:2px solid var(--primary); outline-offset:2px; }
 
-        .dl-status { display:flex; align-items:center; gap:9px; background:var(--good-soft); color:#0B7355; border-left:3px solid var(--good); border-radius:2px; padding:11px 15px; font-size:14px; font-weight:600; margin-bottom:20px; }
+        .dl-status { display:flex; align-items:center; gap:9px; background:var(--good-soft); color:#0B7355; border-left:3px solid var(--good); border-radius:5px; padding:11px 15px; font-size:14px; font-weight:600; margin-bottom:20px; }
 
         .dl-grid { display:grid; gap:28px; max-width:880px; border:none; padding:0; margin:0; min-width:0; }
         .card { background:transparent; border:none; border-top:2px solid var(--ink); border-radius:0; box-shadow:none; }
         .card-head { padding:14px 0 12px; border-bottom:1px solid var(--line-strong); }
         .card-head .ttl { font-family:var(--font-display); font-size:22px; font-weight:700; line-height:1.05; text-transform:uppercase; color:var(--ink); }
         .card-head .sub { font-size:14px; color:var(--ink-2); margin-top:5px; max-width:680px; }
-        .brand-fixed { display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:10px 12px; border:1px solid var(--line-strong); border-radius:3px; background:#fff; }
-        .brand-chip { font-family:var(--font-display); font-size:15px; font-weight:700; text-transform:uppercase; padding:3px 9px; border-radius:2px; background:var(--ink); color:#fff; }
+        .brand-fixed { display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:10px 12px; border:1px solid var(--line-strong); border-radius:8px; background:#fff; }
+        .brand-chip { font-family:var(--font-display); font-size:15px; font-weight:700; text-transform:uppercase; padding:3px 9px; border-radius:5px; background:var(--ink); color:#fff; }
         .brand-chip.missing { background:#FFF8DD; color:#7A4E00; }
         .brand-follows-text { font-size:13.5px; color:var(--ink-2); flex:1; min-width:200px; }
         .brand-follows-text a { color:var(--primary-press); font-weight:700; text-decoration:underline; text-underline-offset:3px; }
-        .brand-change { font-size:13.5px; font-weight:700; color:var(--ink); padding:6px 12px; border-radius:3px; border:1.5px solid var(--ink); background:#fff; cursor:pointer; }
+        .brand-change { font-size:13.5px; font-weight:700; color:var(--ink); padding:6px 12px; border-radius:8px; border:1.5px solid var(--ink); background:#fff; cursor:pointer; }
         .brand-change:hover { background:var(--ink); color:#fff; }
         .bc-scrim { position:fixed; inset:0; background:rgba(7,20,55,.55); z-index:80; display:grid; place-items:center; padding:20px; }
-        .bc { width:min(560px, 100%); max-height:calc(100vh - 40px); overflow:auto; background:#fff; border-top:3px solid var(--ink); border-radius:4px; box-shadow:var(--shadow-md); }
+        .bc { width:min(560px, 100%); max-height:calc(100vh - 40px); overflow:auto; background:#fff; border-top:3px solid var(--ink); border-radius:10px; box-shadow:var(--shadow-md); }
         .bc-head { padding:22px 24px 6px; }
-        .bc-head .warn { display:inline-flex; align-items:center; gap:7px; font-size:13px; font-weight:700; color:#7A4E00; background:#FFF8DD; border-radius:2px; padding:4px 8px; }
+        .bc-head .warn { display:inline-flex; align-items:center; gap:7px; font-size:13px; font-weight:700; color:#7A4E00; background:#FFF8DD; border-radius:5px; padding:4px 8px; }
         .bc-head .warn svg { color:#C59A00; }
         .bc-head h2 { font-family:var(--font-display); font-size:26px; font-weight:700; line-height:1.05; text-transform:uppercase; letter-spacing:0; margin:12px 0 8px; color:var(--ink); }
         .bc-head p { margin:0; font-size:14px; color:var(--ink-2); }
         .bc-body { padding:16px 24px 6px; display:grid; gap:16px; }
         .bc-body label { font-size:14px; font-weight:600; color:var(--ink); display:block; margin-bottom:6px; }
-        .bc-body select, .bc-body input, .bc-body textarea { width:100%; border:1.5px solid var(--line-strong); border-radius:3px; padding:10px 12px; font-size:15px; font-family:inherit; color:var(--ink); background:#fff; }
+        .bc-body select, .bc-body input, .bc-body textarea { width:100%; border:1.5px solid var(--line-strong); border-radius:8px; padding:10px 12px; font-size:15px; font-family:inherit; color:var(--ink); background:#fff; }
         .bc-body select:focus, .bc-body input:focus, .bc-body textarea:focus { outline:none; border-color:var(--ink); box-shadow:inset 0 0 0 1px var(--ink); }
         .impact { border-top:2px solid var(--ink); }
         .impact-row { display:grid; grid-template-columns:110px minmax(0, 1fr) 18px minmax(0, 1fr); gap:10px; align-items:center; padding:10px 0; border-bottom:1px solid var(--line-strong); font-size:14px; }
         .impact-row .k { font-family:var(--font-display); font-size:14px; font-weight:600; color:var(--ink-3); text-transform:uppercase; }
         .impact-row .from { color:var(--ink-3); text-decoration:line-through; }
         .impact-row .to { font-weight:700; color:var(--ink); }
-        .impact-note { font-size:13.5px; color:#7A4E00; font-weight:600; background:#FFF8DD; border-left:3px solid #C59A00; border-radius:2px; padding:10px 12px; }
+        .impact-note { font-size:13.5px; color:#7A4E00; font-weight:600; background:#FFF8DD; border-left:3px solid #C59A00; border-radius:5px; padding:10px 12px; }
         .bc-foot { display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap; padding:18px 24px 22px; }
-        .bc-foot .btn-danger, .bc-foot .btn-cancel { font-family:var(--font-display); font-size:15px; font-weight:600; text-transform:uppercase; letter-spacing:.02em; border-radius:3px; padding:10px 18px; cursor:pointer; }
+        .bc-foot .btn-danger, .bc-foot .btn-cancel { font-family:var(--font-display); font-size:15px; font-weight:600; text-transform:uppercase; letter-spacing:.02em; border-radius:8px; padding:10px 18px; cursor:pointer; }
         .bc-foot .btn-danger { background:#fff; color:#D81A48; border:1.5px solid #D81A48; }
         .bc-foot .btn-danger:not(:disabled):hover { background:#D81A48; color:#fff; }
         .bc-foot .btn-danger:disabled { opacity:.4; cursor:not-allowed; }
@@ -961,14 +961,14 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         .field.w6 { grid-column:1 / -1; }
         .field label { font-size:14px; font-weight:600; color:var(--ink); }
         .field label .opt { font-weight:500; color:var(--ink-3); }
-        .field input, .field select { border:1.5px solid var(--line-strong); border-radius:3px; padding:10px 12px; font-size:15px; color:var(--ink); background:#fff; font-family:inherit; width:100%; }
+        .field input, .field select { border:1.5px solid var(--line-strong); border-radius:8px; padding:10px 12px; font-size:15px; color:var(--ink); background:#fff; font-family:inherit; width:100%; }
         .field input:focus, .field select:focus { outline:none; border-color:var(--ink); box-shadow:inset 0 0 0 1px var(--ink); }
         .field input[readonly] { background:var(--bg-2); color:var(--ink-3); }
         .field .err { font-size:13px; color:#D81A48; font-weight:600; }
         .field .hint { font-size:13px; color:var(--ink-3); }
         input[type=checkbox], input[type=radio] { accent-color:var(--ink); width:16px; height:16px; }
 
-        .status-toggle { display:flex; gap:0; border:1.5px solid var(--ink); border-radius:3px; overflow:hidden; }
+        .status-toggle { display:flex; gap:0; border:1.5px solid var(--ink); border-radius:8px; overflow:hidden; }
         .status-opt { flex:1; border:none; border-radius:0; padding:12px 14px; text-align:left; background:#fff; cursor:pointer; transition:background .14s ease, color .14s ease; }
         .status-opt + .status-opt { border-left:1.5px solid var(--ink); }
         .status-opt .k { font-family:var(--font-display); font-size:17px; font-weight:700; text-transform:uppercase; color:var(--ink); }
@@ -984,14 +984,14 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         .u-row > div:first-child { flex:1; min-width:0; }
         .u-name { font-size:15px; font-weight:700; color:var(--ink); }
         .u-meta { font-size:13px; color:var(--ink-3); margin-top:2px; overflow:hidden; text-overflow:ellipsis; }
-        .u-pill { font-family:var(--font-display); font-size:13px; font-weight:600; text-transform:uppercase; padding:2px 7px; border-radius:2px; background:var(--good-soft); color:#0B7355; }
+        .u-pill { font-family:var(--font-display); font-size:13px; font-weight:600; text-transform:uppercase; padding:2px 7px; border-radius:5px; background:var(--good-soft); color:#0B7355; }
         .u-pill.u-off { background:#FFEEF3; color:#D81A48; }
         .u-pill.u-wait { background:#FFF8DD; color:#7A4E00; }
         .u-acts { display:flex; gap:6px; flex-wrap:wrap; }
         .rt-hours { display:grid; gap:8px; padding:14px 16px 16px; margin:0 0 12px; border:1px solid var(--line-strong); border-top:none; background:#fff; }
         .rt-day { display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:14px; }
         .rt-day .u-check { width:130px; }
-        .rt-day input[type=time], .rt-day input[type=text] { border:1.5px solid var(--line-strong); border-radius:3px; padding:7px 10px; font:inherit; font-size:14px; background:#fff; color:var(--ink); flex:1; min-width:0; }
+        .rt-day input[type=time], .rt-day input[type=text] { border:1.5px solid var(--line-strong); border-radius:8px; padding:7px 10px; font:inherit; font-size:14px; background:#fff; color:var(--ink); flex:1; min-width:0; }
         .rt-day input[type=time]:focus, .rt-day input[type=text]:focus { outline:none; border-color:var(--ink); }
         .rt-day input[type=time] { flex:0 0 auto; }
         .rt-hours .err { font-size:13px; color:#D81A48; font-weight:600; }
@@ -1015,13 +1015,13 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         .hero-body { position:relative; display:flex; align-items:center; gap:24px; padding:24px 0; }
         .hero.has-photo .hero-body { padding-right:calc(36% + 24px); min-height:220px; }
         .hero-brand { display:flex; flex-direction:column; align-items:center; gap:6px; flex-shrink:0; width:96px; }
-        .mark { width:72px; height:72px; border-radius:3px; background:var(--ink); color:#fff; display:grid; place-items:center; font-family:var(--font-display); font-size:26px; font-weight:700; letter-spacing:0; }
+        .mark { width:72px; height:72px; border-radius:8px; background:var(--ink); color:#fff; display:grid; place-items:center; font-family:var(--font-display); font-size:26px; font-weight:700; letter-spacing:0; }
         .mark.big { width:56px; height:56px; font-size:20px; }
         .mark-name { font-family:var(--font-display); font-size:13px; font-weight:600; text-transform:uppercase; color:var(--ink-2); text-align:center; }
         .hero-main { flex:1; min-width:0; }
         .hero-title { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
         .hero-title h1 { font-family:var(--font-display); font-size:40px; font-weight:700; line-height:1; text-transform:uppercase; letter-spacing:0; margin:0; color:var(--ink); }
-        .st { display:inline-flex; align-items:center; font-family:var(--font-display); font-size:14px; font-weight:600; text-transform:uppercase; padding:3px 8px; border-radius:2px; background:var(--bg-2); color:var(--ink-2); border:1px solid var(--line-strong); }
+        .st { display:inline-flex; align-items:center; font-family:var(--font-display); font-size:14px; font-weight:600; text-transform:uppercase; padding:3px 8px; border-radius:5px; background:var(--bg-2); color:var(--ink-2); border:1px solid var(--line-strong); }
         .st.st-draft { background:#FFF8DD; color:#7A4E00; border-color:transparent; }
         .st-active, .st.st-active { background:var(--good-soft); color:#0B7355; border-color:transparent; }
         .st.st-suspended { background:#FFEEF3; color:#D81A48; border-color:transparent; }
@@ -1036,9 +1036,9 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         .hero-contacts a { text-decoration:underline; text-underline-offset:3px; }
         .hero-contacts a:hover { color:var(--primary-press); }
         .hero-actions { align-self:flex-start; }
-        .hbtn { display:inline-flex; align-items:center; gap:7px; font-size:14px; font-weight:700; padding:8px 14px; border-radius:3px; background:#fff; color:var(--ink); border:1.5px solid var(--ink); white-space:nowrap; }
+        .hbtn { display:inline-flex; align-items:center; gap:7px; font-size:14px; font-weight:700; padding:8px 14px; border-radius:8px; background:#fff; color:var(--ink); border:1.5px solid var(--ink); white-space:nowrap; }
         .hbtn:hover { background:var(--ink); color:#fff; }
-        .photo-btn { position:absolute; right:12px; bottom:12px; display:inline-flex; align-items:center; gap:7px; font-size:13.5px; font-weight:700; color:#fff; padding:8px 13px; border-radius:3px; background:var(--ink); cursor:pointer; }
+        .photo-btn { position:absolute; right:12px; bottom:12px; display:inline-flex; align-items:center; gap:7px; font-size:13.5px; font-weight:700; color:#fff; padding:8px 13px; border-radius:8px; background:var(--ink); cursor:pointer; }
         .photo-btn:hover { background:#000; }
         .hero:not(.has-photo) .photo-btn { position:static; margin:0 0 18px; background:#fff; color:var(--ink); border:1.5px solid var(--ink); }
         .hero:not(.has-photo) .photo-btn:hover { background:var(--ink); color:#fff; }
@@ -1054,7 +1054,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         .stat b { display:block; font-family:var(--font-display); font-size:34px; font-weight:700; line-height:1; letter-spacing:0; color:var(--ink); font-variant-numeric:tabular-nums; }
         .stat .go { position:absolute; right:14px; top:14px; color:var(--ink-3); }
         a.stat:hover .go, button.stat:hover .go { color:var(--ink); }
-        .delta { position:absolute; right:14px; top:13px; font-family:var(--font-display); font-size:13px; font-weight:600; padding:1px 6px; border-radius:2px; }
+        .delta { position:absolute; right:14px; top:13px; font-family:var(--font-display); font-size:13px; font-weight:600; padding:1px 6px; border-radius:5px; }
         .delta.up { background:var(--good-soft); color:#0B7355; }
         .delta.down { background:#FFEEF3; color:#D81A48; }
 
@@ -1070,7 +1070,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         .pcard-head .t { font-family:var(--font-display); font-size:22px; font-weight:700; line-height:1.05; text-transform:uppercase; color:var(--ink); }
         .pcard-head .s { font-size:14px; color:var(--ink-2); margin-top:4px; }
         .pcard-head > div { flex:1; min-width:0; }
-        .ebtn { display:inline-flex; align-items:center; gap:6px; font-size:13.5px; font-weight:700; padding:7px 12px; border-radius:3px; border:1.5px solid var(--ink); background:#fff; color:var(--ink); white-space:nowrap; cursor:pointer; }
+        .ebtn { display:inline-flex; align-items:center; gap:6px; font-size:13.5px; font-weight:700; padding:7px 12px; border-radius:8px; border:1.5px solid var(--ink); background:#fff; color:var(--ink); white-space:nowrap; cursor:pointer; }
         .ebtn:hover { background:var(--ink); color:#fff; }
         .ebtn.ebtn-danger { color:#D81A48; border-color:#D81A48; }
         .ebtn.ebtn-danger:hover { background:#D81A48; color:#fff; }
@@ -1087,11 +1087,11 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         .mono { font-family:var(--mono); }
         .people { padding:0 0 14px; }
         .person { display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:11px 0; border-bottom:1px solid var(--line-strong); }
-        .person .av { width:34px; height:34px; border-radius:3px; background:var(--ink); color:#fff; display:grid; place-items:center; font-family:var(--font-display); font-size:14px; font-weight:700; flex-shrink:0; }
+        .person .av { width:34px; height:34px; border-radius:8px; background:var(--ink); color:#fff; display:grid; place-items:center; font-family:var(--font-display); font-size:14px; font-weight:700; flex-shrink:0; }
         .person .av.muted { background:#fff; color:var(--ink-3); border:1.5px dashed var(--line-strong); }
         .person b { display:block; font-size:14.5px; color:var(--ink); } .person small { display:block; font-size:13px; color:var(--ink-3); }
         .grow { flex:1; min-width:0; }
-        .dot-st { display:inline-flex; align-items:center; font-family:var(--font-display); font-size:13px; font-weight:600; text-transform:uppercase; padding:2px 7px; border-radius:2px; background:var(--bg-2); color:var(--ink-2); }
+        .dot-st { display:inline-flex; align-items:center; font-family:var(--font-display); font-size:13px; font-weight:600; text-transform:uppercase; padding:2px 7px; border-radius:5px; background:var(--bg-2); color:var(--ink-2); }
         .dot-st.on { background:var(--good-soft); color:#0B7355; }
         .dot-st.off { background:#FFEEF3; color:#D81A48; }
         .dot-st.wait { background:#FFF8DD; color:#7A4E00; }
@@ -1105,7 +1105,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         .offer-line { display:flex; align-items:center; gap:16px; flex-wrap:wrap; padding:14px 0; border-bottom:1px solid var(--line-strong); }
         .o-big { font-family:var(--font-display); font-size:24px; font-weight:700; line-height:1; color:var(--ink); min-width:110px; }
         .offer-line b { display:block; font-size:15px; color:var(--ink); } .offer-line small { font-size:13px; color:var(--ink-3); }
-        .o-st { font-family:var(--font-display); font-size:13px; font-weight:600; text-transform:uppercase; padding:2px 7px; border-radius:2px; background:var(--bg-2); color:var(--ink-2); border:1px solid var(--line-strong); }
+        .o-st { font-family:var(--font-display); font-size:13px; font-weight:600; text-transform:uppercase; padding:2px 7px; border-radius:5px; background:var(--bg-2); color:var(--ink-2); border:1px solid var(--line-strong); }
         .o-st.live { background:var(--good-soft); color:#0B7355; border-color:transparent; }
         .dl-users { max-width:none; margin-top:0; }
 
@@ -1114,17 +1114,17 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         .side-t { font-family:var(--font-display); font-size:20px; font-weight:700; text-transform:uppercase; line-height:1.1; color:var(--ink); margin-bottom:12px; }
         .side-note { font-size:13px; color:var(--ink-3); margin-top:8px; }
         .status-pick { position:relative; }
-        .sp-current { display:flex; align-items:center; gap:9px; width:100%; padding:10px 12px; border-radius:3px; border:1.5px solid var(--line-strong); font-size:15px; font-weight:700; color:var(--ink); background:#fff; text-align:left; cursor:pointer; }
+        .sp-current { display:flex; align-items:center; gap:9px; width:100%; padding:10px 12px; border-radius:8px; border:1.5px solid var(--line-strong); font-size:15px; font-weight:700; color:var(--ink); background:#fff; text-align:left; cursor:pointer; }
         button.sp-current:hover, button.sp-current:focus-visible { border-color:var(--ink); outline:none; }
         .sp-current.static { cursor:default; }
         .sp-chev { margin-left:auto; color:var(--ink-3); }
-        .sp-menu { position:absolute; left:0; right:0; top:calc(100% + 4px); background:#fff; border:1px solid var(--line-strong); border-radius:4px; box-shadow:var(--shadow-md); padding:4px; z-index:20; }
-        .sp-menu button { display:flex; align-items:flex-start; gap:10px; width:100%; padding:9px 10px; border-radius:2px; text-align:left; cursor:pointer; }
+        .sp-menu { position:absolute; left:0; right:0; top:calc(100% + 4px); background:#fff; border:1px solid var(--line-strong); border-radius:10px; box-shadow:var(--shadow-md); padding:4px; z-index:20; }
+        .sp-menu button { display:flex; align-items:flex-start; gap:10px; width:100%; padding:9px 10px; border-radius:5px; text-align:left; cursor:pointer; }
         .sp-menu button + button { border-top:1px solid var(--line); }
         .sp-menu button:hover { background:var(--bg-2); }
         .sp-menu .st-dot { margin-top:5px; }
         .sp-menu b { display:block; font-size:14px; color:var(--ink); } .sp-menu small { font-size:13px; color:var(--ink-3); }
-        .map { width:100%; height:170px; border:1px solid var(--line-strong); border-radius:3px; display:block; }
+        .map { width:100%; height:170px; border:1px solid var(--line-strong); border-radius:8px; display:block; }
         .map.empty { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; text-align:center; background:transparent; border:1.5px dashed var(--line-strong); color:var(--ink-3); font-size:13px; padding:16px; }
         .side-link { display:inline-flex; align-items:center; gap:5px; margin-top:8px; font-size:13.5px; font-weight:700; color:var(--primary-press); text-decoration:underline; text-underline-offset:3px; }
         .ring-row { position:relative; display:flex; align-items:baseline; gap:14px; margin-bottom:12px; padding-bottom:16px; }
@@ -1137,10 +1137,10 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         .step:last-child { border-bottom:none; }
         .step:hover { color:var(--ink); }
         .step svg { color:var(--ink-3); }
-        .step .tick { width:18px; height:18px; border-radius:2px; border:1.5px solid var(--line-strong); background:#fff; display:grid; place-items:center; flex-shrink:0; }
+        .step .tick { width:18px; height:18px; border-radius:5px; border:1.5px solid var(--line-strong); background:#fff; display:grid; place-items:center; flex-shrink:0; }
         .step.done .tick { background:var(--good); border-color:var(--good); color:#fff; }
         .step.done .tick svg { color:#fff; }
-        .qa { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:10px 11px; margin-top:8px; border-radius:3px; font-size:14px; font-weight:700; border:1.5px solid var(--ink); background:#fff; color:var(--ink); cursor:pointer; }
+        .qa { display:flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:10px 11px; margin-top:8px; border-radius:8px; font-size:14px; font-weight:700; border:1.5px solid var(--ink); background:#fff; color:var(--ink); cursor:pointer; }
         .qa:first-of-type { margin-top:0; }
         .qa:hover { background:var(--ink); color:#fff; }
         .qa.primary { background:var(--primary); border-color:var(--primary); color:#fff; font-family:var(--font-display); font-size:15px; font-weight:600; text-transform:uppercase; letter-spacing:.02em; }

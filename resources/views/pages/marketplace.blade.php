@@ -762,10 +762,10 @@ new class extends Component {
         .loc-pin { color:var(--ink); flex-shrink:0; }
         .loc-current b { color:var(--ink); }
         .loc-link { font-size:14px; font-weight:700; color:var(--primary-press); padding:0; text-decoration:underline; text-underline-offset:3px; }
-        .loc-use { font-size:14px; font-weight:600; color:var(--ink); border:1.5px solid var(--ink); border-radius:3px; padding:6px 12px; background:#fff; }
+        .loc-use { font-size:14px; font-weight:600; color:var(--ink); border:1.5px solid var(--ink); border-radius:8px; padding:6px 12px; background:#fff; }
         .loc-use:hover { background:var(--ink); color:#fff; }
         .loc-or { color:var(--ink-3); }
-        .loc-form { display:flex; align-items:center; border:1.5px solid var(--line-strong); border-radius:3px; background:#fff; overflow:hidden; }
+        .loc-form { display:flex; align-items:center; border:1.5px solid var(--line-strong); border-radius:8px; background:#fff; overflow:hidden; }
         .loc-form:focus-within { border-color:var(--ink); }
         .loc-form input { border:none; outline:none; font-size:14px; padding:7px 4px 7px 12px; width:170px; background:none; color:var(--ink); }
         .loc-form button { font-size:14px; font-weight:700; color:var(--ink); padding:7px 12px; border-left:1.5px solid var(--line-strong); }
@@ -775,7 +775,7 @@ new class extends Component {
 
         /* filters: a plain ruled index, no boxes */
         .sidebar { position:sticky; top:84px; max-height:calc(100vh - 100px); overflow-y:auto; padding-right:6px; scrollbar-width:thin; }
-        .sidebar::-webkit-scrollbar { width:6px; } .sidebar::-webkit-scrollbar-thumb { background:var(--line-strong); border-radius:3px; }
+        .sidebar::-webkit-scrollbar { width:6px; } .sidebar::-webkit-scrollbar-thumb { background:var(--line-strong); border-radius:8px; }
         .sidebar-head { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:12px; }
         .sidebar-head span { font-family:var(--font-display); font-size:22px; font-weight:700; text-transform:uppercase; }
         .sidebar-head-right { display:flex; align-items:center; gap:12px; }
@@ -783,7 +783,7 @@ new class extends Component {
         .clear-all:hover { color:var(--ink); }
         .sidebar-close { display:none; }
         .sidebar-foot { display:none; }
-        .filter-search { display:flex; align-items:center; gap:9px; background:#fff; border:1.5px solid var(--ink); border-radius:3px; padding:10px 12px; margin-bottom:14px; }
+        .filter-search { display:flex; align-items:center; gap:9px; background:#fff; border:1.5px solid var(--ink); border-radius:8px; padding:10px 12px; margin-bottom:14px; }
         .filter-search svg { color:var(--ink-3); flex-shrink:0; }
         .filter-search input { border:none; outline:none; background:transparent; font-size:14.5px; width:100%; color:var(--ink); }
 
@@ -794,7 +794,7 @@ new class extends Component {
         .fgroup-head .chev.chev-closed { transform:rotate(-90deg); }
         .fgroup-body { padding-bottom:14px; }
         .fopt { display:flex; align-items:center; gap:10px; padding:5px 0; cursor:pointer; font-size:14.5px; color:var(--ink-2); }
-        .fopt .box { width:18px; height:18px; border-radius:2px; border:1.5px solid var(--ink-3); display:grid; place-items:center; flex-shrink:0; color:#fff; }
+        .fopt .box { width:18px; height:18px; border-radius:5px; border:1.5px solid var(--ink-3); display:grid; place-items:center; flex-shrink:0; color:#fff; }
         .fopt .box svg { opacity:0; }
         .fopt:hover .box { border-color:var(--ink); }
         .fopt.on .box { background:var(--ink); border-color:var(--ink); }
@@ -804,41 +804,41 @@ new class extends Component {
         .fopt .count { font-size:13px; color:var(--ink-3); }
 
         .frange { display:flex; align-items:center; gap:8px; }
-        .money-field { flex:1; display:flex; align-items:center; gap:4px; border:1.5px solid var(--line-strong); border-radius:3px; padding:0 10px; background:#fff; }
+        .money-field { flex:1; display:flex; align-items:center; gap:4px; border:1.5px solid var(--line-strong); border-radius:8px; padding:0 10px; background:#fff; }
         .money-field span { color:var(--ink-3); font-size:14px; }
         .money-field input { border:none; outline:none; width:100%; padding:8px 0; font-size:14px; background:transparent; color:var(--ink); }
-        .num-field { flex:1; min-width:0; border:1.5px solid var(--line-strong); border-radius:3px; padding:8px 10px; font-size:14px; outline:none; background:#fff; color:var(--ink); }
+        .num-field { flex:1; min-width:0; border:1.5px solid var(--line-strong); border-radius:8px; padding:8px 10px; font-size:14px; outline:none; background:#fff; color:var(--ink); }
         .money-field:focus-within, .num-field:focus { border-color:var(--ink); }
         .frange .dash { color:var(--ink-3); flex:none; }
 
         .fpills { display:flex; flex-wrap:wrap; gap:6px; }
-        .fpill { padding:6px 10px; border:1.5px solid var(--line-strong); border-radius:3px; font-size:13.5px; font-weight:600; color:var(--ink-2); background:#fff; }
+        .fpill { padding:6px 10px; border:1.5px solid var(--line-strong); border-radius:8px; font-size:13.5px; font-weight:600; color:var(--ink-2); background:#fff; }
         .fpill:hover { border-color:var(--ink); color:var(--ink); }
         .fpill.on { background:var(--ink); border-color:var(--ink); color:#fff; }
 
         .km-readout { font-size:14px; color:var(--ink-2); margin-bottom:10px; }
         .km-readout b { font-family:var(--font-display); font-size:19px; color:var(--ink); font-weight:700; }
         .slider { -webkit-appearance:none; appearance:none; width:100%; height:3px; background:var(--line-strong); outline:none; }
-        .slider::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:22px; border-radius:2px; background:var(--ink); cursor:pointer; }
-        .slider::-moz-range-thumb { width:16px; height:22px; border-radius:2px; background:var(--ink); cursor:pointer; border:none; }
+        .slider::-webkit-slider-thumb { -webkit-appearance:none; width:16px; height:22px; border-radius:5px; background:var(--ink); cursor:pointer; }
+        .slider::-moz-range-thumb { width:16px; height:22px; border-radius:5px; background:var(--ink); cursor:pointer; border:none; }
         .slider-ends { display:flex; justify-content:space-between; font-size:12px; color:var(--ink-3); margin-top:8px; }
 
         .swatch-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
-        .cswatch { display:flex; align-items:center; gap:8px; padding:6px 9px; border:1.5px solid var(--line-strong); border-radius:3px; font-size:13.5px; font-weight:600; color:var(--ink-2); cursor:pointer; background:#fff; }
+        .cswatch { display:flex; align-items:center; gap:8px; padding:6px 9px; border:1.5px solid var(--line-strong); border-radius:8px; font-size:13.5px; font-weight:600; color:var(--ink-2); cursor:pointer; background:#fff; }
         .cswatch:hover { border-color:var(--ink); }
         .cswatch.on { border-color:var(--ink); color:var(--ink); box-shadow:inset 0 0 0 1px var(--ink); }
-        .cswatch .dot { width:14px; height:14px; border-radius:2px; border:1px solid var(--line-strong); flex-shrink:0; }
+        .cswatch .dot { width:14px; height:14px; border-radius:5px; border:1px solid var(--line-strong); flex-shrink:0; }
 
         /* results bar: the count, big, like a stock board */
         .results-bar { display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:20px; gap:14px; }
         .results-count { font-size:15px; color:var(--ink-2); }
         .results-count b { font-family:var(--font-display); font-size:30px; font-weight:700; line-height:1; color:var(--ink); margin-right:2px; }
         .results-tools { display:flex; align-items:center; gap:10px; }
-        .view-toggle { display:flex; border:1.5px solid var(--ink); border-radius:3px; overflow:hidden; }
+        .view-toggle { display:flex; border:1.5px solid var(--ink); border-radius:8px; overflow:hidden; }
         .vt-btn { width:36px; height:34px; display:grid; place-items:center; color:var(--ink); background:#fff; }
         .vt-btn + .vt-btn { border-left:1.5px solid var(--ink); }
         .vt-btn.on { background:var(--ink); color:#fff; }
-        .sort-select { border:1.5px solid var(--ink); border-radius:3px; padding:8px 12px; height:37px; font-size:14px; font-weight:600; color:var(--ink); outline:none; background:#fff; }
+        .sort-select { border:1.5px solid var(--ink); border-radius:8px; padding:8px 12px; height:37px; font-size:14px; font-weight:600; color:var(--ink); outline:none; background:#fff; }
 
         /* mobile toolbar + filter sheet — hidden on desktop */
         .srp-mobilebar { display:none; }
@@ -858,13 +858,13 @@ new class extends Component {
             .srp-body { grid-template-columns:minmax(0, 1fr); gap:0; }
 
             .srp-mobilebar { display:flex; flex-direction:column; gap:8px; margin-bottom:18px; }
-            .mb-search { display:flex; align-items:center; gap:9px; background:#fff; border:1.5px solid var(--ink); border-radius:3px; padding:12px 14px; }
+            .mb-search { display:flex; align-items:center; gap:9px; background:#fff; border:1.5px solid var(--ink); border-radius:8px; padding:12px 14px; }
             .mb-search svg { color:var(--ink-3); flex-shrink:0; }
             .mb-search input { border:none; outline:none; background:transparent; font-size:16px; width:100%; color:var(--ink); }
             .mb-tools { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-            .mb-btn { display:flex; align-items:center; justify-content:center; gap:8px; height:46px; border:1.5px solid var(--ink); border-radius:3px; background:#fff; font-size:15px; font-weight:700; color:var(--ink); }
+            .mb-btn { display:flex; align-items:center; justify-content:center; gap:8px; height:46px; border:1.5px solid var(--ink); border-radius:8px; background:#fff; font-size:15px; font-weight:700; color:var(--ink); }
             .mb-btn svg { color:var(--ink); flex-shrink:0; }
-            .mb-badge { display:inline-grid; place-items:center; min-width:20px; height:20px; padding:0 6px; border-radius:2px; background:var(--ink); color:#fff; font-size:12px; font-weight:700; }
+            .mb-badge { display:inline-grid; place-items:center; min-width:20px; height:20px; padding:0 6px; border-radius:5px; background:var(--ink); color:#fff; font-size:12px; font-weight:700; }
             .mb-sort { position:relative; }
             .mb-sort select { -webkit-appearance:none; appearance:none; border:none; outline:none; background:transparent; font-family:inherit; font-size:15px; font-weight:700; color:var(--ink); padding:0; cursor:pointer; }
             .mb-sort .mb-sort-chev { color:var(--ink-2); }
@@ -882,7 +882,7 @@ new class extends Component {
             }
             .sidebar.is-open { transform:translateY(0); }
             .sidebar-head { padding:16px 16px 12px; margin:0; border-bottom:1px solid var(--line-strong); align-items:center; }
-            .sidebar-close { display:grid; place-items:center; width:36px; height:36px; border-radius:3px; border:1.5px solid var(--ink); color:var(--ink); }
+            .sidebar-close { display:grid; place-items:center; width:36px; height:36px; border-radius:8px; border:1.5px solid var(--ink); color:var(--ink); }
             .sidebar-scroll { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:14px 16px 12px; }
             .fopt { padding:9px 0; font-size:16px; }
             .fopt .box { width:22px; height:22px; }
@@ -895,7 +895,7 @@ new class extends Component {
                 border-top:1px solid var(--line-strong);
                 background:#fff;
             }
-            .sheet-apply { width:100%; height:52px; border-radius:3px; background:var(--primary); color:#fff; font-family:var(--font-display); font-size:19px; font-weight:700; text-transform:uppercase; }
+            .sheet-apply { width:100%; height:52px; border-radius:8px; background:var(--primary); color:#fff; font-family:var(--font-display); font-size:19px; font-weight:700; text-transform:uppercase; }
             .sheet-apply:active { background:var(--primary-press); }
 
             .srp-scrim { display:block; position:fixed; inset:0; background:rgba(7,20,55,.5); z-index:65; }

@@ -10,7 +10,7 @@
     .pm-row { display:grid; grid-template-columns:minmax(0, 1fr) 170px auto; gap:18px; align-items:start; padding:14px 0; border-bottom:1px solid var(--line-strong); }
     .pm-row.is-hidden .pm-main, .pm-row.is-hidden .pm-price { opacity:.5; }
     .pm-name { font-size:15.5px; font-weight:700; display:flex; flex-wrap:wrap; align-items:center; gap:6px 8px; }
-    .pm-tag { font-size:12.5px; font-weight:600; padding:2px 7px; border-radius:2px; background:var(--bg-2); color:var(--ink-2); border:1px solid var(--line-strong); }
+    .pm-tag { font-size:12.5px; font-weight:600; padding:2px 7px; border-radius:5px; background:var(--bg-2); color:var(--ink-2); border:1px solid var(--line-strong); }
     .pm-tag.own { background:#E9F3FF; color:var(--primary-press); border-color:transparent; }
     .pm-tag.off { background:#FFF8DD; color:#7A4E00; border-color:transparent; }
     .pm-tag.star { background:var(--ink); color:#fff; border-color:transparent; }
@@ -21,7 +21,7 @@
     .pm-price.none { font-family:var(--font-ui); font-size:14px; font-weight:500; color:var(--ink-3); }
     .pm-price small { display:block; font-family:var(--font-ui); font-size:12.5px; font-weight:500; color:var(--ink-3); }
     .pm-actions { display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
-    .pm-btn { font-size:13.5px; font-weight:600; padding:6px 11px; border-radius:3px; border:1.5px solid var(--ink); background:#fff; color:var(--ink); white-space:nowrap; }
+    .pm-btn { font-size:13.5px; font-weight:600; padding:6px 11px; border-radius:8px; border:1.5px solid var(--ink); background:#fff; color:var(--ink); white-space:nowrap; }
     .pm-btn:hover { background:var(--ink); color:#fff; }
     .pm-btn.primary { background:var(--primary); border-color:var(--primary); color:#fff; }
     .pm-btn.primary:hover { background:var(--primary-press); border-color:var(--primary-press); }
@@ -29,10 +29,10 @@
     .pm-btn.danger:hover { background:#D81A48; color:#fff; }
     .pm-btn:disabled { opacity:.4; cursor:default; }
     .pm-empty { padding:16px; margin:10px 0 0; border:1.5px dashed var(--line-strong); color:var(--ink-3); font-size:14px; }
-    .pm-inline { display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:12px 14px; margin:8px 0; background:var(--bg-2); border:1px solid var(--line-strong); }
+    .pm-inline { display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:12px 14px; margin:8px 0; border-radius:10px; background:var(--bg-2); border:1px solid var(--line-strong); }
     .pm-inline em { flex-basis:100%; color:#D81A48; font-style:normal; font-size:13px; }
 
-    .pf { margin:10px 0 4px; padding:18px; background:#fff; border:1.5px solid var(--ink); border-radius:3px; }
+    .pf { margin:10px 0 4px; padding:18px; background:#fff; border:1.5px solid var(--ink); border-radius:8px; }
     .pf-title { font-family:var(--font-display); font-size:19px; font-weight:700; text-transform:uppercase; margin-bottom:12px; }
     .pf-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
     .pf-field { display:flex; flex-direction:column; gap:5px; font-size:14px; font-weight:600; }

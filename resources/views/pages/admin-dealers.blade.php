@@ -52,12 +52,12 @@ new #[Layout('layouts.dealer')] #[Title('Dealers')] class extends Component {
         .ad-head p { margin:0; font-size:15px; color:var(--ink-2); max-width:640px; }
         .ad-head .spacer { flex:1; }
 
-        .btn { display:inline-block; font-family:var(--font-display); font-size:15px; font-weight:600; text-transform:uppercase; letter-spacing:.02em; border-radius:3px; padding:10px 18px; border:1.5px solid transparent; transition:background .15s ease; white-space:nowrap; }
+        .btn { display:inline-block; font-family:var(--font-display); font-size:15px; font-weight:600; text-transform:uppercase; letter-spacing:.02em; border-radius:8px; padding:10px 18px; border:1.5px solid transparent; transition:background .15s ease; white-space:nowrap; }
         .btn-primary { background:var(--primary); border-color:var(--primary); color:#fff; box-shadow:none; }
         .btn-primary:hover { background:var(--primary-press); border-color:var(--primary-press); }
         .btn:focus-visible { outline:2px solid var(--primary); outline-offset:2px; }
 
-        .ad-alert { display:flex; align-items:center; flex-wrap:wrap; gap:10px; background:#FFF8DD; color:#5C3D00; border-left:3px solid #C59A00; border-radius:2px; padding:11px 15px; font-size:14px; font-weight:600; margin-bottom:22px; }
+        .ad-alert { display:flex; align-items:center; flex-wrap:wrap; gap:10px; background:#FFF8DD; color:#5C3D00; border-left:3px solid #C59A00; border-radius:5px; padding:11px 15px; font-size:14px; font-weight:600; margin-bottom:22px; }
         .ad-alert label { margin-left:auto; display:flex; align-items:center; gap:7px; cursor:pointer; white-space:nowrap; }
         .ad-alert input[type=checkbox] { accent-color:var(--ink); width:16px; height:16px; }
 
@@ -73,22 +73,22 @@ new #[Layout('layouts.dealer')] #[Title('Dealers')] class extends Component {
         .ad-row .nm a:hover { color:var(--primary-press); text-decoration:underline; text-underline-offset:3px; }
 
         .kebab { position:relative; justify-self:end; }
-        .kebab > button { width:34px; height:34px; display:grid; place-items:center; border:1.5px solid transparent; border-radius:3px; background:none; color:var(--ink-2); cursor:pointer; transition:background .12s ease, color .12s ease, border-color .12s ease; }
+        .kebab > button { width:34px; height:34px; display:grid; place-items:center; border:1.5px solid transparent; border-radius:8px; background:none; color:var(--ink-2); cursor:pointer; transition:background .12s ease, color .12s ease, border-color .12s ease; }
         .kebab > button:hover, .kebab.open > button { background:#fff; border-color:var(--ink); color:var(--ink); }
         .kebab > button:focus-visible { outline:2px solid var(--primary); outline-offset:2px; }
         .kebab svg { width:18px; height:18px; flex-shrink:0; }
-        .kebab-menu { position:absolute; right:0; top:calc(100% + 4px); z-index:30; min-width:220px; background:#fff; border:1px solid var(--line-strong); border-radius:4px; box-shadow:var(--shadow-md); padding:4px; }
-        .kebab-menu a { display:flex; align-items:center; gap:11px; padding:9px 10px; border-radius:2px; font-size:14px; font-weight:600; color:var(--ink); }
+        .kebab-menu { position:absolute; right:0; top:calc(100% + 4px); z-index:30; min-width:220px; background:#fff; border:1px solid var(--line-strong); border-radius:10px; box-shadow:var(--shadow-md); padding:4px; }
+        .kebab-menu a { display:flex; align-items:center; gap:11px; padding:9px 10px; border-radius:5px; font-size:14px; font-weight:600; color:var(--ink); }
         .kebab-menu a svg { width:16px; height:16px; color:var(--ink-3); }
         .kebab-menu a:hover { background:var(--bg-2); color:var(--ink); }
         .kebab-menu a:hover svg { color:var(--ink); }
-        .kebab-menu .count { margin-left:auto; font-family:var(--font-display); font-size:13px; font-weight:600; color:var(--ink-2); background:var(--bg-2); border:1px solid var(--line-strong); border-radius:2px; padding:0 6px; }
+        .kebab-menu .count { margin-left:auto; font-family:var(--font-display); font-size:13px; font-weight:600; color:var(--ink-2); background:var(--bg-2); border:1px solid var(--line-strong); border-radius:5px; padding:0 6px; }
         .kebab-menu hr { border:none; border-top:1px solid var(--line-strong); margin:4px 0; }
-        .pill { display:inline-block; font-family:var(--font-display); font-size:13px; font-weight:600; text-transform:uppercase; padding:2px 7px; border-radius:2px; }
+        .pill { display:inline-block; font-family:var(--font-display); font-size:13px; font-weight:600; text-transform:uppercase; padding:2px 7px; border-radius:5px; }
         .pill-active { background:var(--good-soft); color:#0B7355; }
         .pill-draft { background:#FFF8DD; color:#7A4E00; }
         .pill-suspended { background:#FFEEF3; color:#D81A48; }
-        .ad-empty { margin-top:14px; padding:18px 16px; font-size:14px; color:var(--ink-2); border:1.5px dashed var(--line-strong); border-radius:3px; }
+        .ad-empty { margin-top:14px; padding:18px 16px; font-size:14px; color:var(--ink-2); border:1.5px dashed var(--line-strong); border-radius:8px; }
 
         @media (max-width:860px){
             .ad-head { flex-direction:column; align-items:flex-start; }

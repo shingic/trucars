@@ -138,7 +138,7 @@ new #[Layout('layouts.checkout')] class extends Component {
         .field-error { color:#D81A48; font-size:13px; font-weight:600; margin:7px 0 0; }
         .resend-line { text-align:center; font-size:14px; color:var(--ink-2); margin-top:18px; padding-top:16px; border-top:1px solid var(--line-strong); }
         .resend-line .text-link { font-size:inherit; }
-        .auth-form .btn-primary { font-family:var(--font-display); text-transform:uppercase; font-size:18px; font-weight:600; border-radius:3px; }
+        .auth-form .btn-primary { font-family:var(--font-display); text-transform:uppercase; font-size:18px; font-weight:600; border-radius:8px; }
         @media (max-width:560px) { .auth-wrap { padding:32px 16px 70px; } .auth-top-inner { padding:0 16px; } .auth-card { padding:24px 18px; } }
     </style>
 @endpush

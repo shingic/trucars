@@ -156,13 +156,13 @@ new #[Layout('layouts.dealer')] class extends Component {
         .tab-btn { font-family:var(--font-display); font-size:17px; font-weight:700; text-transform:uppercase; color:var(--ink-3); padding:10px 16px 11px; border-bottom:3px solid transparent; margin-bottom:-1px; transition:color .15s ease; white-space:nowrap; }
         .tab-btn:hover { color:var(--ink); }
         .tab-btn.on { color:var(--ink); border-bottom-color:var(--primary); }
-        .tab-n { font-family:var(--font); font-size:13px; font-weight:700; color:var(--ink-2); background:rgba(7,20,55,.07); padding:1px 7px; border-radius:2px; margin-left:6px; }
+        .tab-n { font-family:var(--font); font-size:13px; font-weight:700; color:var(--ink-2); background:rgba(7,20,55,.07); padding:1px 7px; border-radius:5px; margin-left:6px; }
         .tab-btn.on .tab-n { background:var(--ink); color:#fff; }
 
         .inbox-toolbar { display:flex; align-items:center; gap:14px; margin-bottom:14px; flex-wrap:wrap; }
         .inbox-count { font-size:13px; color:var(--ink-3); font-weight:600; }
         .stage-filter { margin-left:auto; display:flex; gap:6px; flex-wrap:wrap; }
-        .sf-pill { font-size:13px; font-weight:700; color:var(--ink); padding:6px 11px; border:1.5px solid var(--line-strong); border-radius:3px; transition:border-color .15s ease, background .15s ease, color .15s ease; display:inline-flex; align-items:center; gap:7px; background:var(--card); }
+        .sf-pill { font-size:13px; font-weight:700; color:var(--ink); padding:6px 11px; border:1.5px solid var(--line-strong); border-radius:8px; transition:border-color .15s ease, background .15s ease, color .15s ease; display:inline-flex; align-items:center; gap:7px; background:var(--card); }
         .sf-pill:hover { border-color:var(--ink); }
         .sf-pill.on { background:var(--ink); color:#fff; border-color:var(--ink); }
         .sf-n { font-size:13px; opacity:.7; font-variant-numeric:tabular-nums; }
@@ -177,7 +177,7 @@ new #[Layout('layouts.dealer')] class extends Component {
         .dr-ref { font-family:var(--mono); font-size:13px; color:var(--ink-2); font-weight:600; }
 
         .dr-veh { display:flex; align-items:center; gap:11px; }
-        .dr-thumb { width:46px; height:36px; border-radius:2px; background:var(--hero-grad); display:grid; place-items:center; flex-shrink:0; }
+        .dr-thumb { width:46px; height:36px; border-radius:5px; background:var(--hero-grad); display:grid; place-items:center; flex-shrink:0; }
         .dr-veh-title { font-size:14px; font-weight:600; line-height:1.3; }
         .dr-veh-sub { font-size:13px; color:var(--ink-3); }
 
@@ -187,7 +187,7 @@ new #[Layout('layouts.dealer')] class extends Component {
         .dr-contact-line.muted { color:var(--ink-3); }
 
         /* Flat rectangular status chips; colour carries the meaning. */
-        .stage { display:inline-flex; align-items:center; font-size:13px; font-weight:700; padding:3px 8px; border-radius:2px; white-space:nowrap; line-height:1.4; }
+        .stage { display:inline-flex; align-items:center; font-size:13px; font-weight:700; padding:3px 8px; border-radius:5px; white-space:nowrap; line-height:1.4; }
 
         /* Deal stages */
         .stage.reserved { background:#E9F3FF; color:#056EE9; }
@@ -205,11 +205,11 @@ new #[Layout('layouts.dealer')] class extends Component {
         .stage.closed { background:rgba(7,20,55,.07); color:var(--ink-2); }
 
         .dr-action { display:flex; justify-content:flex-end; gap:8px; }
-        .advance-btn { font-size:13px; font-weight:700; color:#fff; background:var(--primary); padding:8px 13px; border:1.5px solid var(--primary); border-radius:3px; white-space:nowrap; transition:background .15s ease, border-color .15s ease; }
+        .advance-btn { font-size:13px; font-weight:700; color:#fff; background:var(--primary); padding:8px 13px; border:1.5px solid var(--primary); border-radius:8px; white-space:nowrap; transition:background .15s ease, border-color .15s ease; }
         .advance-btn:hover { background:var(--primary-press); border-color:var(--primary-press); }
         .advance-btn[disabled] { opacity:.5; cursor:wait; }
         .dr-done { font-size:13px; color:var(--ink-3); font-weight:600; }
-        .open-btn { font-size:13px; font-weight:700; color:var(--ink); padding:8px 13px; border:1.5px solid var(--ink); border-radius:3px; white-space:nowrap; text-decoration:none; display:inline-flex; align-items:center; background:#fff; transition:background .15s ease, color .15s ease; }
+        .open-btn { font-size:13px; font-weight:700; color:var(--ink); padding:8px 13px; border:1.5px solid var(--ink); border-radius:8px; white-space:nowrap; text-decoration:none; display:inline-flex; align-items:center; background:#fff; transition:background .15s ease, color .15s ease; }
         .open-btn:hover { background:var(--ink); color:#fff; }
 
         .deal-empty { color:var(--ink-2); padding:28px 20px; margin:14px 0 0; text-align:center; background:var(--card); border:1.5px dashed var(--line-strong); border-radius:var(--radius); }

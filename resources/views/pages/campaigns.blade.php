@@ -321,7 +321,7 @@ new #[Layout('layouts.dealer')] #[Title('Campaigns')] class extends Component {
         .cmp-head p { margin:0; font-size:14.5px; color:var(--ink-2); max-width:640px; }
         .cmp-head .spacer { flex:1; }
 
-        .btn { font-size:14px; font-weight:700; border-radius:3px; padding:10px 18px; transition:background .15s ease, color .15s ease; white-space:nowrap; }
+        .btn { font-size:14px; font-weight:700; border-radius:8px; padding:10px 18px; transition:background .15s ease, color .15s ease; white-space:nowrap; }
         .btn-primary { background:var(--primary); color:#fff; font-family:var(--font-display); font-size:15px; text-transform:uppercase; letter-spacing:.02em; }
         .btn-primary:hover { background:var(--primary-press); }
         .btn-primary:disabled { opacity:.55; }
@@ -332,11 +332,11 @@ new #[Layout('layouts.dealer')] #[Title('Campaigns')] class extends Component {
         .btn-ghost.btn-sm { padding:6px 11px; }
         .btn:focus-visible, .chip:focus-visible, .dest-opt:focus-visible { outline:2px solid var(--primary); outline-offset:2px; }
 
-        .cmp-status { display:flex; align-items:center; gap:9px; background:#fff; color:#0B7355; border:1px solid var(--line-strong); border-left:3px solid var(--good); border-radius:3px; padding:11px 15px; font-size:14px; font-weight:600; margin-bottom:20px; }
-        .cmp-alert { display:flex; align-items:flex-start; gap:9px; background:#FFF8DD; color:#5C3D00; border:1px solid rgba(197,154,0,.35); border-left:3px solid #C59A00; border-radius:3px; padding:11px 15px; font-size:14px; font-weight:600; margin-bottom:20px; }
+        .cmp-status { display:flex; align-items:center; gap:9px; background:#fff; color:#0B7355; border:1px solid var(--line-strong); border-left:3px solid var(--good); border-radius:8px; padding:11px 15px; font-size:14px; font-weight:600; margin-bottom:20px; }
+        .cmp-alert { display:flex; align-items:flex-start; gap:9px; background:#FFF8DD; color:#5C3D00; border:1px solid rgba(197,154,0,.35); border-left:3px solid #C59A00; border-radius:8px; padding:11px 15px; font-size:14px; font-weight:600; margin-bottom:20px; }
         .cmp-alert svg { flex-shrink:0; margin-top:2px; color:#C59A00; }
 
-        .card { background:#fff; border:1px solid var(--line-strong); border-radius:4px; }
+        .card { background:#fff; border:1px solid var(--line-strong); border-radius:10px; }
         .card-head { padding:14px 20px 12px; border-bottom:2px solid var(--ink); }
         .card-head .ttl { font-family:var(--font-display); font-size:22px; font-weight:700; text-transform:uppercase; line-height:1.1; }
         .card-head .sub { font-size:13.5px; color:var(--ink-2); margin-top:3px; }
@@ -350,17 +350,17 @@ new #[Layout('layouts.dealer')] #[Title('Campaigns')] class extends Component {
         .cmp-form { padding:20px; display:flex; flex-direction:column; gap:20px; }
         .field { display:flex; flex-direction:column; gap:7px; }
         .field > label, .field .lbl { font-size:13.5px; font-weight:700; color:var(--ink); }
-        .field input, .field select { border:1.5px solid var(--line-strong); border-radius:3px; padding:9px 12px; font-size:15px; color:var(--ink); background:#fff; font-family:inherit; width:100%; }
+        .field input, .field select { border:1.5px solid var(--line-strong); border-radius:8px; padding:9px 12px; font-size:15px; color:var(--ink); background:#fff; font-family:inherit; width:100%; }
         .field input:focus, .field select:focus { outline:none; border-color:var(--ink); box-shadow:0 0 0 2px var(--primary-soft); }
         .field .err { font-size:13px; color:#D81A48; font-weight:600; }
         .field .hint { font-size:13px; color:var(--ink-3); }
 
         .chips { display:flex; flex-wrap:wrap; gap:6px; }
-        .chip { background:#fff; border:1.5px solid var(--line-strong); border-radius:3px; padding:7px 12px; font-size:14px; font-weight:600; color:var(--ink-2); transition:all .14s ease; }
+        .chip { background:#fff; border:1.5px solid var(--line-strong); border-radius:8px; padding:7px 12px; font-size:14px; font-weight:600; color:var(--ink-2); transition:all .14s ease; }
         .chip:hover { border-color:var(--ink); color:var(--ink); }
         .chip.on { border-color:var(--ink); background:var(--ink); color:#fff; }
 
-        .dest { display:grid; grid-template-columns:1fr 1fr; border:1.5px solid var(--ink); border-radius:3px; }
+        .dest { display:grid; grid-template-columns:1fr 1fr; border:1.5px solid var(--ink); border-radius:8px; }
         .dest-opt { background:#fff; padding:12px 13px; text-align:left; transition:background .14s ease; }
         .dest-opt + .dest-opt { border-left:1.5px solid var(--ink); }
         .dest-opt .k { font-size:14px; font-weight:700; color:var(--ink); }
@@ -372,25 +372,25 @@ new #[Layout('layouts.dealer')] #[Title('Campaigns')] class extends Component {
         .locked { border-top:1px solid var(--line-strong); }
         .locked-row { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--line-strong); font-size:14px; }
         .locked-row svg { color:var(--ink-3); flex-shrink:0; }
-        .locked-row .v { margin-left:auto; font-family:var(--font-display); font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.02em; color:var(--ink-2); background:var(--bg-2); border:1px solid var(--line-strong); border-radius:2px; padding:1px 8px; white-space:nowrap; }
+        .locked-row .v { margin-left:auto; font-family:var(--font-display); font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.02em; color:var(--ink-2); background:var(--bg-2); border:1px solid var(--line-strong); border-radius:5px; padding:1px 8px; white-space:nowrap; }
 
         .linkbox { display:flex; gap:8px; align-items:center; }
-        .linkbox code { flex:1; min-width:0; font-family:var(--mono); font-size:13px; background:var(--bg-2); border:1.5px solid var(--line-strong); border-radius:3px; padding:9px 12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .linkbox .muted { flex:1; font-size:14px; color:var(--ink-3); border:1.5px dashed var(--line-strong); border-radius:3px; padding:9px 12px; }
+        .linkbox code { flex:1; min-width:0; font-family:var(--mono); font-size:13px; background:var(--bg-2); border:1.5px solid var(--line-strong); border-radius:8px; padding:9px 12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .linkbox .muted { flex:1; font-size:14px; color:var(--ink-3); border:1.5px dashed var(--line-strong); border-radius:8px; padding:9px 12px; }
 
         .cmp-actions { display:flex; justify-content:flex-end; gap:10px; flex-wrap:wrap; padding-top:18px; border-top:1px solid var(--line-strong); }
 
         /* preview */
         .pv { padding:18px; }
-        .pv-eyebrow { display:inline-flex; font-family:var(--font-display); font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.02em; color:#fff; background:var(--ink); border-radius:2px; padding:2px 8px; }
+        .pv-eyebrow { display:inline-flex; font-family:var(--font-display); font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.02em; color:#fff; background:var(--ink); border-radius:5px; padding:2px 8px; }
         .pv-dealer { font-family:var(--font-display); font-size:22px; font-weight:700; text-transform:uppercase; line-height:1.05; letter-spacing:0; margin-top:10px; }
         .pv-count { font-size:13px; color:var(--ink-3); margin-top:3px; }
         .pv-list { margin-top:14px; display:flex; flex-direction:column; border-top:2px solid var(--ink); }
         .pv-car { display:flex; gap:11px; align-items:center; border-bottom:1px solid var(--line-strong); padding:9px 0; }
-        .pv-car .ph { width:64px; height:46px; border-radius:2px; background:var(--bg-2) center/cover; flex-shrink:0; }
+        .pv-car .ph { width:64px; height:46px; border-radius:5px; background:var(--bg-2) center/cover; flex-shrink:0; }
         .pv-car .t { font-size:14px; font-weight:700; line-height:1.3; }
         .pv-car .p { font-size:13px; color:var(--ink-2); }
-        .pv-empty { font-size:14px; color:var(--ink-2); margin-top:14px; padding:14px; border:1.5px dashed var(--line-strong); border-radius:3px; }
+        .pv-empty { font-size:14px; color:var(--ink-2); margin-top:14px; padding:14px; border:1.5px dashed var(--line-strong); border-radius:8px; }
 
         /* list rows */
         .cmp-row { display:grid; grid-template-columns:minmax(0, 1.6fr) minmax(0, 1fr) 80px 100px auto; gap:16px; align-items:center; padding:13px 0; border-bottom:1px solid var(--line-strong); }
@@ -399,11 +399,11 @@ new #[Layout('layouts.dealer')] #[Title('Campaigns')] class extends Component {
         .cmp-row .num { font-family:var(--font-display); font-size:22px; font-weight:700; line-height:1; color:var(--ink); }
         .cmp-row .num small { display:block; font-family:var(--font); font-size:13px; color:var(--ink-3); font-weight:500; margin-top:3px; }
         .cmp-row .acts { display:flex; gap:6px; justify-content:flex-end; flex-wrap:wrap; }
-        .pill { display:inline-block; font-family:var(--font-display); font-size:13px; font-weight:700; letter-spacing:.02em; text-transform:uppercase; padding:2px 8px; border-radius:2px; }
+        .pill { display:inline-block; font-family:var(--font-display); font-size:13px; font-weight:700; letter-spacing:.02em; text-transform:uppercase; padding:2px 8px; border-radius:5px; }
         .pill-active { background:#E5F8EC; color:#0B7355; }
         .pill-draft { background:var(--bg-2); color:var(--ink-2); border:1px solid var(--line-strong); }
         .pill-paused { background:#FFF8DD; color:#7A4E00; }
-        .cmp-empty { margin-top:12px; padding:14px 16px; font-size:14px; color:var(--ink-2); border:1.5px dashed var(--line-strong); border-radius:3px; }
+        .cmp-empty { margin-top:12px; padding:14px 16px; font-size:14px; color:var(--ink-2); border:1.5px dashed var(--line-strong); border-radius:8px; }
 
         @media (max-width:1100px){
             .cmp-editor { grid-template-columns:1fr; }

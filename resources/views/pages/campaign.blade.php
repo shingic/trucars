@@ -218,24 +218,24 @@ new class extends Component {
         [x-cloak] { display:none !important; }
 
         .cs-head { padding-bottom:16px; margin-bottom:24px; border-bottom:2px solid var(--ink); }
-        .cs-eyebrow { display:inline-flex; align-items:center; gap:6px; font-family:var(--font-display); font-size:14px; font-weight:600; text-transform:uppercase; color:#fff; background:var(--ink); border-radius:2px; padding:4px 10px; margin-bottom:14px; }
+        .cs-eyebrow { display:inline-flex; align-items:center; gap:6px; font-family:var(--font-display); font-size:14px; font-weight:600; text-transform:uppercase; color:#fff; background:var(--ink); border-radius:5px; padding:4px 10px; margin-bottom:14px; }
         .cs-eyebrow svg { color:var(--good); }
         .cs-title { font-family:var(--font-display); font-size:44px; font-weight:700; text-transform:uppercase; line-height:1; letter-spacing:0; margin:0; }
         .cs-sub { color:var(--ink-2); font-size:15px; margin:10px 0 0; }
 
-        .cs-unavailable { display:flex; gap:12px; align-items:flex-start; border:1px solid var(--line-strong); border-left:3px solid #C59A00; background:#FFF8DD; border-radius:3px; padding:14px 16px; margin-bottom:22px; font-size:14.5px; color:#5C3D00; }
+        .cs-unavailable { display:flex; gap:12px; align-items:flex-start; border:1px solid var(--line-strong); border-left:3px solid #C59A00; background:#FFF8DD; border-radius:8px; padding:14px 16px; margin-bottom:22px; font-size:14.5px; color:#5C3D00; }
         .cs-unavailable svg { color:#C59A00; flex-shrink:0; margin-top:1px; }
         .cs-unavailable strong { display:block; color:#5C3D00; }
         .cs-unavailable span { color:#7A4E00; }
 
         .cs-tools { display:flex; gap:12px; margin-bottom:24px; }
-        .cs-search { flex:1; max-width:420px; display:flex; align-items:center; gap:9px; border:1.5px solid var(--line-strong); border-radius:3px; padding:0 12px; color:var(--ink-3); background:#fff; }
+        .cs-search { flex:1; max-width:420px; display:flex; align-items:center; gap:9px; border:1.5px solid var(--line-strong); border-radius:8px; padding:0 12px; color:var(--ink-3); background:#fff; }
         .cs-search:focus-within { border-color:var(--ink); }
         .cs-search input { flex:1; border:none; outline:none; font-size:15px; padding:10px 0; color:var(--ink); background:none; min-width:0; }
-        .cs-sort { border:1.5px solid var(--ink); border-radius:3px; padding:0 12px; font-size:14px; font-weight:600; font-family:inherit; color:var(--ink); background:#fff; outline:none; }
+        .cs-sort { border:1.5px solid var(--ink); border-radius:8px; padding:0 12px; font-size:14px; font-weight:600; font-family:inherit; color:var(--ink); background:#fff; outline:none; }
         .cs-sort:focus-visible { outline:2px solid var(--primary); outline-offset:2px; }
 
-        .cs-empty { max-width:560px; margin:8px 0 20px; padding:24px 26px; border:1.5px dashed var(--line-strong); border-radius:3px; color:var(--ink-2); font-size:15px; }
+        .cs-empty { max-width:560px; margin:8px 0 20px; padding:24px 26px; border:1.5px dashed var(--line-strong); border-radius:8px; color:var(--ink-2); font-size:15px; }
         .cs-empty p { margin:0; }
         .cs-empty-title { font-family:var(--font-display); font-size:24px; font-weight:700; text-transform:uppercase; line-height:1; letter-spacing:0; color:var(--ink); margin-bottom:10px; }
 

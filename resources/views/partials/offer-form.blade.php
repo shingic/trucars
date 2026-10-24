@@ -15,7 +15,7 @@
     .of-sec { padding:18px 20px; border-bottom:1px solid var(--line-strong); }
     .of-sec:last-child { border-bottom:none; }
     .of-sec-t { font-family:var(--font-display); font-size:20px; font-weight:700; text-transform:uppercase; line-height:1.1; color:var(--ink); margin-bottom:14px; }
-    .types { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); border:1.5px solid var(--ink); border-radius:3px; margin-bottom:16px; }
+    .types { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); border:1.5px solid var(--ink); border-radius:8px; margin-bottom:16px; }
     .type { display:flex; align-items:center; gap:9px; padding:11px 13px; font-size:14px; font-weight:700; color:var(--ink); text-align:left; background:#fff; transition:background .14s ease, color .14s ease; }
     .type + .type { border-left:1.5px solid var(--ink); }
     .type .ic { display:inline-flex; color:var(--ink-3); flex-shrink:0; }
@@ -29,11 +29,11 @@
     .f.w1 { grid-column:span 1; } .f.w2 { grid-column:span 2; } .f.w4 { grid-column:span 4; } .f.w6 { grid-column:1 / -1; }
     .f label { font-size:13.5px; font-weight:700; color:var(--ink); }
     .f .opt { font-weight:500; color:var(--ink-3); }
-    .f input, .f textarea { border:1.5px solid var(--line-strong); border-radius:3px; padding:9px 12px; font-size:15px; font-family:inherit; color:var(--ink); background:#fff; width:100%; }
+    .f input, .f textarea { border:1.5px solid var(--line-strong); border-radius:8px; padding:9px 12px; font-size:15px; font-family:inherit; color:var(--ink); background:#fff; width:100%; }
     .f input:focus, .f textarea:focus { outline:none; border-color:var(--ink); box-shadow:0 0 0 2px var(--primary-soft); }
     .f input[readonly], .of-form:disabled input, .of-form:disabled textarea { background:var(--bg-2); color:var(--ink-2); }
     .provs { display:flex; flex-wrap:wrap; gap:5px; }
-    .prov { position:relative; font-size:13px; font-weight:700; padding:5px 9px; border-radius:3px; border:1.5px solid var(--line-strong); background:#fff; cursor:pointer; color:var(--ink-2); }
+    .prov { position:relative; font-size:13px; font-weight:700; padding:5px 9px; border-radius:8px; border:1.5px solid var(--line-strong); background:#fff; cursor:pointer; color:var(--ink-2); }
     .prov:hover { border-color:var(--ink); color:var(--ink); }
     .prov:focus-within { outline:2px solid var(--primary); outline-offset:1px; }
     .prov input { position:absolute; opacity:0; width:1px; height:1px; pointer-events:none; }
