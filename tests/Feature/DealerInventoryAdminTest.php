@@ -194,7 +194,7 @@ class DealerInventoryAdminTest extends TestCase
             fputcsv($handle, [
                 $rooftopId, 'CHILLIWACK MITSUBISHI', '', '+1 672-784-5040', '45510 Yale Rd', 'Chilliwack', 'BC', 'V2P 2M9',
                 '49.151131', '-121.963743', $vin, 'S1', 'USED', '2022', 'Mitsubishi', 'Outlander', 'ES', '29999',
-                '30000', 'SUV', 'Blue', 'Automatic', 'AWD', 'Gasoline', '', 'FALSE',
+                '30000', 'SUV', 'Blue', 'Automatic', 'AWD', 'Gasoline', '', 'TRUE',
             ]);
         }
 

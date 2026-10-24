@@ -74,7 +74,7 @@ new #[Title('How it works — TruCars')] class extends Component {
         /* documents: a paper checklist with real boxes to tick */
         .hw-checklist { list-style:none; margin:18px 0 0; padding:0; max-width:820px; border-top:2px solid var(--ink); }
         .hw-checklist li { display:grid; grid-template-columns:28px minmax(0, 1fr) 200px; gap:16px; align-items:start; padding:14px 0; border-bottom:1px solid var(--line-strong); }
-        .hw-box { width:20px; height:20px; border:2px solid var(--ink); margin-top:3px; }
+        .hw-box { width:20px; height:20px; border:2px solid var(--ink); border-radius:5px; margin-top:3px; }
         .hw-checklist b { display:block; } .hw-checklist small { color:var(--ink-2); font-size:14px; }
         .hw-when { font-family:var(--font-display); font-size:15px; font-weight:600; text-transform:uppercase; color:var(--primary-press); }
 

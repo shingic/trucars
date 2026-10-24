@@ -118,7 +118,7 @@ new #[Layout('layouts.dealer')] #[Title('Platform settings')] class extends Comp
         .end { display:flex; justify-content:flex-end; }
         .btn { font-family:var(--font-display); font-size:16px; font-weight:700; text-transform:uppercase; border-radius:8px; padding:10px 20px; background:var(--primary); color:#fff; transition:background .15s ease; }
         .btn:hover { background:var(--primary-press); }
-        .pay-card { margin-bottom:22px; border:1.5px solid var(--ink); }
+        .pay-card { margin-bottom:22px; border:1.5px solid var(--ink); border-radius:12px; overflow:hidden; }
         .pay-head { display:flex; align-items:center; gap:10px; padding-bottom:14px; border-bottom:1px solid var(--line-strong); }
         .pay-head h2 { margin:0; font-family:var(--font-display); font-size:22px; font-weight:700; line-height:1.05; text-transform:uppercase; }
         .pay-head p { margin:4px 0 0; font-size:14px; color:var(--ink-3); }

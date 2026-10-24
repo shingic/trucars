@@ -93,6 +93,29 @@ class InventoryImportTest extends TestCase
         $this->assertTrue(Vehicle::where('vin', 'VIN00000000000001')->sole()->is_published);
     }
 
+    public function test_only_certified_pre_owned_cars_are_imported(): void
+    {
+        $this->import([
+            $this->row('ROOF-A', 'VIN0000000000CPO1'),
+            $this->row('ROOF-A', 'VIN0000000000CPO2', ['condition' => 'CPO', 'certified' => '']),
+            $this->row('ROOF-A', 'VIN000000000USED1', ['certified' => 'FALSE']),
+            $this->row('ROOF-A', 'VIN0000000000NEW1', ['condition' => 'NEW', 'certified' => 'TRUE']),
+        ])->assertSuccessful()->expectsOutputToContain('Skipped (not certified pre-owned): 2');
+
+        $this->assertEqualsCanonicalizing(['VIN0000000000CPO1', 'VIN0000000000CPO2'], Vehicle::pluck('vin')->all());
+        $this->assertSame(['USED'], Vehicle::distinct()->pluck('condition')->all());
+    }
+
+    public function test_a_listed_car_the_feed_stops_calling_certified_comes_off_the_marketplace(): void
+    {
+        $this->import([$this->row('ROOF-A', 'VIN00000000000001')]);
+        Vehicle::query()->update(['is_published' => true]);
+
+        $this->import([$this->row('ROOF-A', 'VIN00000000000001', ['certified' => 'FALSE'])])->assertSuccessful();
+
+        $this->assertFalse(Vehicle::where('vin', 'VIN00000000000001')->sole()->is_published);
+    }
+
     public function test_two_rooftops_with_the_same_name_stay_separate_dealers(): void
     {
         $this->import([$this->row('ROOF-A', 'VIN00000000000001', ['dealer_name' => 'DOWNTOWN HONDA'])]);
@@ -200,7 +223,7 @@ class InventoryImportTest extends TestCase
             'dealer_longitude' => '-121.963743', 'vin' => $vin, 'stockNumber' => 'S1', 'condition' => 'USED',
             'year' => '2022', 'make' => 'Mitsubishi', 'model' => 'Outlander', 'trim' => 'ES', 'price' => '29999',
             'mileage' => '30000', 'body_type' => 'SUV', 'exterior_color' => 'Blue', 'transmission' => 'Automatic',
-            'drivetrain' => 'AWD', 'fuel_type' => 'Gasoline', 'photos' => '', 'certified' => 'FALSE',
+            'drivetrain' => 'AWD', 'fuel_type' => 'Gasoline', 'photos' => '', 'certified' => 'TRUE',
         ];
     }
 

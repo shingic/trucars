@@ -756,7 +756,7 @@ new class extends Component {
         .srp-head { margin-bottom:26px; padding-bottom:16px; border-bottom:2px solid var(--ink); }
         .srp-title { font-family:var(--font-display); font-size:clamp(32px, 3.6vw, 48px); font-weight:700; line-height:1; text-transform:uppercase; margin:0; }
         .srp-sub { color:var(--ink-2); font-size:16px; margin:8px 0 0; max-width:640px; }
-        .srp-notice { background:#E9F3FF; border-left:4px solid var(--primary); color:var(--ink); padding:10px 14px; font-size:14.5px; font-weight:600; margin-bottom:18px; }
+        .srp-notice { background:#E9F3FF; border-left:4px solid var(--primary); border-radius:10px; color:var(--ink); padding:10px 14px; font-size:14.5px; font-weight:600; margin-bottom:18px; }
 
         .loc-bar { display:flex; align-items:center; flex-wrap:wrap; gap:8px 10px; margin-top:16px; font-size:14px; color:var(--ink-2); }
         .loc-pin { color:var(--ink); flex-shrink:0; }

@@ -223,8 +223,8 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
         .car { display:block; text-decoration:none; color:var(--ink); }
         .car-photo { aspect-ratio:4/2.8; border-radius:8px; background:var(--bg-2); }
         .car:hover .car-name { color:var(--primary-press); }
-        .car-photo .reserved { position:absolute; z-index:1; top:0; left:0; background:var(--ink); color:#fff; font-family:var(--font-display); font-size:14px; font-weight:600; text-transform:uppercase; padding:4px 10px; }
-        .car-photo .cert { position:absolute; z-index:1; left:0; bottom:0; max-width:100%; background:var(--primary); color:#fff; font-family:var(--font-display); font-size:14px; font-weight:600; text-transform:uppercase; padding:4px 10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .car-photo .reserved { position:absolute; z-index:1; top:0; left:0; background:var(--ink); color:#fff; font-family:var(--font-display); font-size:14px; font-weight:600; text-transform:uppercase; padding:4px 10px; border-radius:0 0 8px 0; }
+        .car-photo .cert { position:absolute; z-index:1; left:0; bottom:0; max-width:100%; background:var(--primary); color:#fff; font-family:var(--font-display); font-size:14px; font-weight:600; text-transform:uppercase; padding:4px 10px; border-radius:0 8px 0 0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .car-name { font-size:16.5px; font-weight:700; margin-top:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .car-meta { font-size:14px; color:var(--ink-3); margin-top:1px; }
         .car-price { font-family:var(--font-display); font-size:26px; font-weight:700; line-height:1; margin-top:10px; padding-top:10px; border-top:1px solid var(--line-strong); }
@@ -235,13 +235,12 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
         .calm > div > p { font-size:17px; color:var(--ink-2); margin:16px 0 0; max-width:440px; line-height:1.55; }
         .heard small { display:block; font-family:var(--font-display); font-size:15px; font-weight:600; text-transform:uppercase; color:var(--ink-3); margin-bottom:6px; }
         .said { font-family:var(--font-display); font-size:clamp(22px, 2.4vw, 30px); font-weight:500; line-height:1.2; color:var(--ink-3); padding:8px 0; border-bottom:1px solid var(--line-strong); text-decoration:line-through; text-decoration-color:var(--ink); text-decoration-thickness:2px; }
-        .reply { margin-top:18px; background:var(--ink); color:#fff; padding:18px 20px; font-size:17px; line-height:1.5; }
+        .reply { margin-top:18px; background:var(--ink); color:#fff; padding:18px 20px; font-size:17px; line-height:1.5; border-radius:12px; }
         .reply b { display:block; font-family:var(--font-display); font-size:15px; font-weight:600; text-transform:uppercase; color:var(--primary-bright); margin-bottom:4px; }
 
         /* shop by: outlined tiles; the little car drives off when you point at it */
-        .garage { display:grid; grid-template-columns:repeat(6, minmax(0, 1fr)); gap:0; border:2px solid var(--ink); }
-        .bay { display:flex; flex-direction:column; justify-content:space-between; gap:18px; min-height:180px; padding:18px; text-decoration:none; color:var(--ink); overflow:hidden; background:#fff; }
-        .bay + .bay { border-left:2px solid var(--ink); }
+        .garage { display:grid; grid-template-columns:repeat(6, minmax(0, 1fr)); gap:12px; }
+        .bay { display:flex; flex-direction:column; justify-content:space-between; gap:18px; min-height:180px; padding:18px; text-decoration:none; color:var(--ink); overflow:hidden; background:#fff; border:2px solid var(--ink); border-radius:14px; }
         .bay .ride { --paint:#DBDFE9; }
         .bay:hover { background:var(--ink); color:#fff; }
         .bay:hover .ride { --paint:var(--primary); animation:vroom .7s cubic-bezier(.3,.7,.3,1) forwards; }
@@ -252,7 +251,7 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
         @keyframes vroom { 0% { transform:none; } 25% { transform:translateX(-4px) rotate(-2deg); } 60% { transform:translateX(14px) rotate(1deg); } 100% { transform:translateX(10px); } }
         @media (prefers-reduced-motion:reduce) { .bay:hover .ride { animation:none; } }
         .makes { display:flex; flex-wrap:wrap; gap:6px; margin-top:16px; }
-        .makes a { font-size:14.5px; font-weight:600; color:var(--ink); text-decoration:none; padding:6px 12px; border:1.5px solid var(--ink); }
+        .makes a { font-size:14.5px; font-weight:600; color:var(--ink); text-decoration:none; padding:6px 12px; border:1.5px solid var(--ink); border-radius:999px; }
         .makes a span { color:var(--ink-3); margin-left:4px; }
         .makes a:hover { background:var(--ink); color:#fff; }
         .makes a:hover span { color:rgba(255,255,255,.6); }
@@ -284,8 +283,6 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
         @media (max-width:1100px) {
             .cars { grid-template-columns:repeat(2, minmax(0, 1fr)); }
             .garage { grid-template-columns:repeat(3, minmax(0, 1fr)); }
-            .bay + .bay { border-left:none; }
-            .bay { border-right:2px solid var(--ink); border-bottom:2px solid var(--ink); margin:0 -2px -2px 0; }
             .how { grid-template-columns:repeat(2, minmax(0, 1fr)); }
             .faq-wrap, .calm { grid-template-columns:minmax(0, 1fr); gap:24px; }
             .facts { grid-template-columns:repeat(2, minmax(0, 1fr)); row-gap:24px; }
@@ -348,7 +345,8 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
                 <img src="{{ $featured->primary_photo_url }}" alt="">
                 <a class="pictured" href="/cars/{{ $featured->id }}" wire:navigate>
                     <div class="pictured-main">
-                        @if ($featured->certification()) <small>Certified pre-owned</small> @else <small>Pictured</small> @endif
+                        {{-- Every car on TruCars is certified pre-owned: the dealer feeds only carry CPO stock. --}}
+                        <small>Certified pre-owned</small>
                         <strong>{{ $featured->model_year }} {{ $featured->make }} {{ $featured->model }}</strong>
                         <div class="meta">{!! collect([$featured->trim, $featured->display_kilometres, $featured->display_location])->filter()->map(fn ($part) => e($part))->join('<i>|</i>') !!}</div>
                         <b>{{ $featured->display_price }}</b>

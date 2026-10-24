@@ -50,9 +50,11 @@ class ImportDealerInventory extends Command
         $skippedForNotACar = 0;
         $skippedForOtherRooftop = 0;
         $skippedForVinOnOtherRooftop = 0;
+        $skippedForNotCpo = 0;
 
-        /** @var array<string, true> every VIN this rooftop's rows mention, imported or not */
+        /** @var array<string, true> every VIN this rooftop's rows mention, imported or not (non-CPO rows excepted) */
         $vinsInFeed = [];
+        $rowsForRooftop = 0;
 
         while (($rowValues = fgetcsv($fileHandle, separator: $delimiter, escape: "\\")) !== false) {
             if (count($rowValues) !== count($headerColumns)) {
@@ -84,6 +86,16 @@ class ImportDealerInventory extends Command
                 continue;
             }
 
+            $rowsForRooftop++;
+
+            // TruCars lists certified pre-owned cars only. New cars and plain
+            // used cars are turned away, and don't count as "in the feed" — so
+            // one already listed comes off the marketplace below.
+            if (! $this->isCertifiedPreOwned($row)) {
+                $skippedForNotCpo++;
+                continue;
+            }
+
             $vinsInFeed[strtoupper(trim($row['vin']))] = true;
 
             // A VIN already at another rooftop — this dealer's or anyone's — is
@@ -106,7 +118,7 @@ class ImportDealerInventory extends Command
                 continue;
             }
 
-            $condition = strtoupper(trim($row['condition']));
+            $condition = 'USED'; // every CPO car is a used car, whatever word the feed used
             $modelYear = (int) $row['year'];
             $kilometres = (int) $row['mileage'];
 
@@ -165,6 +177,7 @@ class ImportDealerInventory extends Command
         }
 
         $this->info("Imported / updated: {$importedCount} vehicles ({$newCount} new, unpublished until reviewed)");
+        $this->line("Skipped (not certified pre-owned): {$skippedForNotCpo}");
         $this->line("Skipped (no price): {$skippedForNoPrice}");
         $this->line("Skipped (not a car): {$skippedForNotACar}");
         $this->line("Skipped (another rooftop in the file): {$skippedForOtherRooftop}");
@@ -176,7 +189,7 @@ class ImportDealerInventory extends Command
             $this->warn('No franchise brand confirmed for this dealer — none of its stock can qualify as manufacturer CPO.');
         }
 
-        $this->unpublishCarsMissingFromFeed($rooftop, $vinsInFeed);
+        $this->unpublishCarsMissingFromFeed($rooftop, $vinsInFeed, $rowsForRooftop);
 
         return self::SUCCESS;
     }
@@ -189,11 +202,13 @@ class ImportDealerInventory extends Command
      * it's back the moment it reappears in a feed and someone republishes it.
      *
      * A file with no rows for this rooftop is treated as broken, not as "the
-     * dealer sold everything", so nothing is touched.
+     * dealer sold everything", so nothing is touched. A file whose rows are all
+     * new or plain used cars is real, though: none of it is CPO, so nothing of
+     * this rooftop's stays listed.
      *
      * @param  array<string, true>  $vinsInFeed
      */
-    private function unpublishCarsMissingFromFeed(Rooftop $rooftop, array $vinsInFeed): void
+    private function unpublishCarsMissingFromFeed(Rooftop $rooftop, array $vinsInFeed, int $rowsForRooftop): void
     {
         if ($this->option('keep-missing')) {
             $this->line('Cars no longer in the feed: left as they are (--keep-missing).');
@@ -201,7 +216,7 @@ class ImportDealerInventory extends Command
             return;
         }
 
-        if ($vinsInFeed === []) {
+        if ($rowsForRooftop === 0) {
             $this->warn('No rows for this rooftop in the file — not unpublishing anything.');
 
             return;
@@ -398,18 +413,32 @@ class ImportDealerInventory extends Command
     }
 
     /**
-     * Manufacturer CPO only when the feed itself flags the unit certified, it's
-     * used, and it's the dealer's confirmed franchise brand — a Mitsubishi
-     * store's certified Tiguan can't be Volkswagen CPO. Without a confirmed
-     * franchise brand nothing qualifies.
+     * Certified pre-owned, the only kind of car TruCars lists: the feed flags it
+     * certified and it isn't new, or the feed's condition itself says CPO.
+     *
+     * @param  array<string, string>  $row
+     */
+    private function isCertifiedPreOwned(array $row): bool
+    {
+        $condition = strtoupper(trim($row['condition'] ?? ''));
+
+        if (in_array($condition, ['CPO', 'CERTIFIED', 'CERTIFIED PRE-OWNED', 'CERTIFIED PREOWNED'], true)) {
+            return true;
+        }
+
+        return $condition !== 'NEW' && in_array(strtoupper(trim($row['certified'] ?? '')), ['TRUE', '1', 'YES'], true);
+    }
+
+    /**
+     * Manufacturer CPO: a certified pre-owned row (the only kind imported) of the
+     * dealer's confirmed franchise brand — a Mitsubishi store's certified Tiguan
+     * can't be Volkswagen CPO. Without a confirmed franchise brand nothing qualifies.
      *
      * @param  array<string, string>  $row
      */
     private function isFlaggedManufacturerCertified(array $row, string $condition, Dealer $dealer): bool
     {
-        $feedSaysCertified = in_array(strtoupper(trim($row['certified'] ?? '')), ['TRUE', '1', 'YES'], true);
-
-        return $feedSaysCertified
+        return $this->isCertifiedPreOwned($row)
             && $condition === 'USED'
             && filled($dealer->franchise_make)
             && strcasecmp(trim($row['make']), trim($dealer->franchise_make)) === 0;

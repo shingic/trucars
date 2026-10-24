@@ -710,7 +710,7 @@ new class extends Component {
         /* dealer photos are 4:3 with a vendor badge along the bottom edge; the frame is 4:3 less that strip, so the whole car shows and only the badge is trimmed (fullscreen shows the whole photo) */
         .gallery-img { position:absolute; top:0; left:0; width:100%; height:107%; object-fit:cover; object-position:center 40%; display:block; -webkit-user-drag:none; }
         .gallery-badges { position:absolute; top:0; left:0; z-index:2; display:flex; flex-direction:column; align-items:flex-start; pointer-events:none; }
-        .gallery-badge { display:inline-flex; align-items:center; gap:7px; background:#fff; padding:6px 12px 6px 10px; font-family:var(--font-display); font-size:16px; font-weight:600; text-transform:uppercase; color:var(--ink); }
+        .gallery-badge { display:inline-flex; align-items:center; gap:7px; background:#fff; padding:6px 12px 6px 10px; font-family:var(--font-display); font-size:16px; font-weight:600; text-transform:uppercase; color:var(--ink); border-radius:0 0 10px 0; }
         .gallery-badge .dot { width:16px; height:16px; border-radius:5px; background:var(--good); display:grid; place-items:center; }
         .gallery-badge.reserved { background:var(--ink); color:#fff; }
         .gallery-badge.reserved .dot { background:transparent; }

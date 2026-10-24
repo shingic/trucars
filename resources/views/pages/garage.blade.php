@@ -374,7 +374,7 @@ new #[Layout('layouts.checkout')] class extends Component {
         .g-hero-car { border-radius:8px; background:var(--hero-grad); position:relative; overflow:hidden; aspect-ratio:4/2.8; display:flex; align-items:flex-end; justify-content:center; padding:26px; }
         /* dealer photos are 4:3 with a vendor badge along the bottom edge; the 4:2.8 frame, pinned to the top, trims just that strip */
         .g-hero-car.has-photo { background-color:var(--bg-2); background-size:cover; background-position:center top; background-repeat:no-repeat; }
-        .g-hero-badge { position:absolute; top:0; left:0; z-index:2; display:inline-flex; align-items:center; gap:6px; background:var(--ink); color:#fff; font-family:var(--font-display); font-size:14px; font-weight:600; text-transform:uppercase; line-height:1.2; padding:5px 11px; }
+        .g-hero-badge { position:absolute; top:0; left:0; z-index:2; display:inline-flex; align-items:center; gap:6px; background:var(--ink); color:#fff; font-family:var(--font-display); font-size:14px; font-weight:600; text-transform:uppercase; line-height:1.2; padding:5px 11px; border-radius:0 0 8px 0; }
         .g-hero-badge.cancelled { background:#FFEEF3; color:#D81A48; }
         .g-hero-art { width:100%; position:relative; z-index:1; display:flex; justify-content:center; }
         .g-hero-info { border-top:2px solid var(--ink); padding-top:16px; display:flex; flex-direction:column; min-width:0; }

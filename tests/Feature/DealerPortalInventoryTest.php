@@ -119,7 +119,7 @@ class DealerPortalInventoryTest extends TestCase
     private function feedFile(string $rooftopId, string $vin): UploadedFile
     {
         $header = ['rooftop_id', 'dealer_name', 'dealer_email', 'dealer_phone', 'dealer_address', 'dealer_city', 'dealer_region_code', 'dealer_postal_code', 'dealer_latitude', 'dealer_longitude', 'vin', 'stockNumber', 'condition', 'year', 'make', 'model', 'trim', 'price', 'mileage', 'body_type', 'exterior_color', 'transmission', 'drivetrain', 'fuel_type', 'photos', 'certified'];
-        $row = [$rooftopId, 'CHILLIWACK MITSUBISHI', '', '', '45510 Yale Rd', 'Chilliwack', 'BC', 'V2P 2M9', '49.15', '-121.96', $vin, 'S1', 'USED', '2022', 'Mitsubishi', 'RVR', 'ES', '24999', '30000', 'SUV', 'Red', 'Automatic', 'AWD', 'Gasoline', '', 'FALSE'];
+        $row = [$rooftopId, 'CHILLIWACK MITSUBISHI', '', '', '45510 Yale Rd', 'Chilliwack', 'BC', 'V2P 2M9', '49.15', '-121.96', $vin, 'S1', 'USED', '2022', 'Mitsubishi', 'RVR', 'ES', '24999', '30000', 'SUV', 'Red', 'Automatic', 'AWD', 'Gasoline', '', 'TRUE'];
 
         $handle = fopen('php://temp', 'r+');
         fputcsv($handle, $header);

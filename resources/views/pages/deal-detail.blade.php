@@ -624,7 +624,7 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
         .mini-btn.danger:hover { background:#FFEEF3; }
         .mini-btn.danger[type="submit"] { background:#D81A48; color:#fff; border-color:#D81A48; }
         .mini-btn.danger[type="submit"]:hover { background:#B5143B; border-color:#B5143B; }
-        .decline-done .panel-body { font-size:14px; line-height:1.55; color:var(--ink-2); background:#FFEEF3; padding:14px 16px; margin-top:0; }
+        .decline-done .panel-body { font-size:14px; line-height:1.55; color:var(--ink-2); background:#FFEEF3; padding:14px 16px; margin-top:0; border-radius:10px; }
         .decline-done { border-top-color:#D81A48; }
         .decline-done b { color:#D81A48; }
         @media (max-width:560px) { .fin-form { grid-template-columns:1fr; } }

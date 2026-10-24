@@ -988,7 +988,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         .u-pill.u-off { background:#FFEEF3; color:#D81A48; }
         .u-pill.u-wait { background:#FFF8DD; color:#7A4E00; }
         .u-acts { display:flex; gap:6px; flex-wrap:wrap; }
-        .rt-hours { display:grid; gap:8px; padding:14px 16px 16px; margin:0 0 12px; border:1px solid var(--line-strong); border-top:none; background:#fff; }
+        .rt-hours { display:grid; gap:8px; padding:14px 16px 16px; margin:0 0 12px; border:1px solid var(--line-strong); border-top:none; border-radius:0 0 10px 10px; background:#fff; }
         .rt-day { display:flex; align-items:center; gap:10px; flex-wrap:wrap; font-size:14px; }
         .rt-day .u-check { width:130px; }
         .rt-day input[type=time], .rt-day input[type=text] { border:1.5px solid var(--line-strong); border-radius:8px; padding:7px 10px; font:inherit; font-size:14px; background:#fff; color:var(--ink); flex:1; min-width:0; }
@@ -998,7 +998,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         .rt-hours .hint { font-size:13px; color:var(--ink-3); }
         .rt-hours .sb-label { font-family:var(--font-display); font-size:16px; font-weight:700; text-transform:uppercase; color:var(--ink); margin-top:10px; padding-top:10px; border-top:1px solid var(--line-strong); }
         .rt-hours .opt { font-family:var(--font); font-size:13px; font-weight:500; text-transform:none; color:var(--ink-3); }
-        .u-access { display:grid; gap:8px; padding:14px 16px 16px; border:1px solid var(--line-strong); border-top:none; background:#fff; }
+        .u-access { display:grid; gap:8px; padding:14px 16px 16px; border:1px solid var(--line-strong); border-top:none; border-radius:0 0 10px 10px; background:#fff; }
         .u-stores { display:grid; gap:6px; padding:4px 0 4px 24px; }
         .u-check { display:flex; align-items:center; gap:8px; font-size:14px; font-weight:600; color:var(--ink); }
         .u-access .err { font-size:13px; color:#D81A48; font-weight:600; }
