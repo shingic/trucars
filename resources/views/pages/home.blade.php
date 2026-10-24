@@ -197,6 +197,9 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
         .chips .ride .tyre { fill:currentColor; } .chips .ride .hub { fill:var(--primary); } .chips a:first-child .ride .hub { fill:#fff; }
         .chips .ico { width:19px; height:19px; stroke-width:2; }
         .stage figure { margin:0; position:relative; min-height:620px; background:var(--primary-press); }
+        .stage .feature-photo { position:absolute; inset:0; }
+        .feature-cert { display:none; }
+        .fact em { display:none; }
         /* dealer photos carry a vendor badge along the bottom edge; the frame trims it off */
         .shot { position:relative; overflow:hidden; }
         .shot > img { position:absolute; top:0; left:0; width:100%; height:107%; object-fit:cover; object-position:center 40%; }
@@ -295,23 +298,57 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
         @media (max-width:760px) {
             .home section { margin-top:60px; }
             .stage, .close { grid-template-columns:minmax(0, 1fr); }
-            .stage-copy { padding:30px 16px 30px; }
-            .stage-kicker { font-size:13px; letter-spacing:.12em; }
-            .stage p.lede { font-size:17px; }
-            .hero-search { padding:6px 6px 6px 14px; gap:6px; }
-            .hero-search input { font-size:16px; padding:12px 2px; }
-            .hero-search button { padding:13px 16px; font-size:16px; }
-            .chips a { height:40px; font-size:14px; padding:0 12px; }
-            .stage figure { min-height:0; aspect-ratio:4/2.8; order:-1; }
-            .pictured { top:auto; bottom:12px; right:12px; left:12px; width:auto; padding:12px 14px; gap:10px; }
-            .pictured strong { font-size:19px; }
-            .pictured .meta { font-size:13px; }
-            .pictured b { font-size:24px; margin-top:4px; }
-            .facts { grid-template-columns:minmax(0, 1fr); padding:8px 16px; }
-            .fact, .fact:first-child { padding:16px 0; }
-            .fact + .fact { border-left:none; border-top:1px solid rgba(255,255,255,.16); }
-            .fact-ic { width:48px; height:48px; }
-            .cars { gap:26px 12px; }
+            .home h2 { font-family:var(--font-ui); font-size:27px; font-weight:800; text-transform:none; letter-spacing:-.01em; }
+            .sec-head { flex-wrap:nowrap; align-items:center; border-bottom:none; padding-bottom:0; margin-bottom:16px; }
+            .sec-head p { display:none; }
+            .sec-head > a { font-family:var(--font-ui); font-size:15.5px; font-weight:700; text-transform:none; color:var(--primary); white-space:nowrap; }
+
+            /* phones: a light hero, the car on a card under the copy, three promises across */
+            .hero-band { background:linear-gradient(180deg, #F4F8FF 0%, #FBFCFF 70%, #fff 100%); }
+            .stage { background:none; overflow:visible; }
+            .stage-copy { padding:28px 16px 0; color:var(--ink); }
+            .stage-kicker { font-size:12.5px; letter-spacing:.14em; color:var(--ink-2); margin-bottom:12px; }
+            .stage h1 { font-size:clamp(24px, 6.8vw, 34px); line-height:1.1; color:var(--ink); }
+            .stage h1 span + span { display:inline; }
+            .stage p.lede { font-size:16.5px; color:var(--ink-2); margin-top:12px; }
+            .hero-search { margin-top:22px; padding:6px 6px 6px 16px; gap:8px; border-radius:12px; border:1px solid #EEF0F5; box-shadow:0 8px 24px rgba(7,20,55,.08); }
+            .hero-search input { font-size:16px; padding:12px 2px; text-overflow:ellipsis; }
+            .hero-search button { padding:0; width:54px; height:48px; justify-content:center; border-radius:9px; }
+            .hero-search button span { display:none; }
+            .hero-search button svg { width:22px; height:22px; }
+            .chips { flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none; margin:14px -16px 0; padding:2px 16px 10px; }
+            .chips::-webkit-scrollbar { display:none; }
+            .chips a { flex-shrink:0; height:46px; font-size:15px; padding:0 14px; color:var(--ink); background:#fff; border:1px solid #EEF0F5; box-shadow:0 3px 10px rgba(7,20,55,.06); }
+            .chips a:hover { background:#fff; }
+            .chips a:first-child { background:#E9F3FF; color:var(--primary-press); border-color:#B5D6FF; }
+            .chips .ride .glass, .chips .ride .hub { fill:#fff; }
+            .chips a:first-child .ride .glass, .chips a:first-child .ride .hub { fill:#E9F3FF; }
+            .stage figure { min-height:0; margin:8px 16px 0; background:#fff; border-radius:14px; overflow:hidden; box-shadow:0 10px 28px rgba(7,20,55,.10); border:1px solid #EEF0F5; }
+            .stage .feature-photo { position:relative; inset:auto; aspect-ratio:4/2.6; background:var(--bg-2); }
+            .feature-cert { display:inline-flex; align-items:center; gap:7px; position:absolute; z-index:1; top:12px; left:12px; background:var(--ink); color:#fff; font-family:var(--font-display); font-size:14px; font-weight:600; letter-spacing:.02em; text-transform:uppercase; padding:6px 11px 6px 9px; border-radius:8px; }
+            .feature-cert .ico { width:17px; height:17px; stroke-width:2; }
+            .pictured { position:static; width:auto; box-shadow:none; border-radius:0; padding:14px 16px 16px 18px; gap:12px; }
+            .pictured small { display:none; }
+            .pictured strong { font-size:22px; margin-top:0; }
+            .pictured .meta { font-size:14.5px; }
+            .pictured b { font-size:30px; margin-top:6px; }
+            .pictured .go { width:44px; height:44px; }
+            .facts { grid-template-columns:repeat(3, minmax(0, 1fr)); background:none; color:var(--ink); padding:22px 16px 20px; margin:0 0 0; position:relative; }
+            .facts::after { content:""; position:absolute; left:16px; right:16px; bottom:0; border-bottom:1px solid var(--line-strong); }
+            .fact-cert { order:-1; }
+            .fact-dealers { display:none; }
+            /* shown certified first; a rule before each of the other two */
+            .fact, .fact:first-child, .fact + .fact { flex-direction:column; gap:8px; padding:0 6px 0 12px; border-top:none; border-left:1px solid var(--line-strong); }
+            .facts .fact-cert { padding-left:0; border-left:none; }
+            .fact-ic { width:44px; height:44px; border:none; background:#E9F3FF; }
+            .fact-ic svg { width:22px; height:22px; stroke:var(--primary); }
+            .fact b { font-family:var(--font-ui); font-size:14px; font-weight:700; text-transform:none; color:var(--ink); line-height:1.25; }
+            .fact div span { display:none; }
+            .fact em { display:block; font-style:normal; font-size:13px; color:var(--ink-2); margin-top:3px; line-height:1.4; }
+            .home section:first-child { margin-top:30px; }
+            .cars { display:flex; overflow-x:auto; scroll-snap-type:x mandatory; scrollbar-width:none; gap:12px; margin:0 -16px; padding:0 16px 4px; }
+            .cars::-webkit-scrollbar { display:none; }
+            .car { flex:0 0 68%; scroll-snap-align:start; scroll-margin-left:16px; }
             .car-price { font-size:22px; }
             .garage { grid-template-columns:repeat(2, minmax(0, 1fr)); }
             .bay { min-height:140px; padding:14px; }
@@ -333,8 +370,8 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
 
             <form class="hero-search" wire:submit="search" role="search">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-                <input type="search" wire:model="q" placeholder="Search by make, model or keyword, e.g. Outlander" aria-label="Search cars">
-                <button type="submit">Search <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+                <input type="search" wire:model="q" placeholder="Search by make, model or keyword" aria-label="Search cars">
+                <button type="submit" aria-label="Search"><span>Search</span> <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
             </form>
 
             <div class="chips">
@@ -346,8 +383,11 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
             </div>
         </div>
         @if ($featured)
-            <figure class="shot">
-                <img src="{{ $featured->primary_photo_url }}" alt="">
+            <figure class="feature">
+                <div class="shot feature-photo">
+                    <img src="{{ $featured->primary_photo_url }}" alt="">
+                    <span class="feature-cert">{!! $icon('shield') !!} Certified pre-owned</span>
+                </div>
                 <a class="pictured" href="/cars/{{ $featured->id }}" wire:navigate>
                     <div class="pictured-main">
                         {{-- Every car on TruCars is certified pre-owned: the dealer feeds only carry CPO stock. --}}
@@ -363,10 +403,10 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
     </div>
 
     <div class="facts">
-        <div class="fact"><span class="fact-ic">{!! $icon('tag') !!}</span><div><b>All-in prices</b><span>No hidden fees. Freight, prep and dealer fees included.</span></div></div>
-        <div class="fact"><span class="fact-ic">{!! $icon('shield') !!}</span><div><b>Certified vehicles</b><span>Inspected and backed by real dealerships.</span></div></div>
-        <div class="fact"><span class="fact-ic">{!! $icon('store') !!}</span><div><b>Licensed dealers only</b><span>Every listing names the licensed dealership selling it.</span></div></div>
-        <div class="fact"><span class="fact-ic">{!! $icon('dollar') !!}</span><div><b>Hold it for $150</b><span>Refundable until you take delivery.</span></div></div>
+        <div class="fact"><span class="fact-ic">{!! $icon('tag') !!}</span><div><b>All-in prices</b><span>No hidden fees. Freight, prep and dealer fees included.</span><em>Freight and fees included.</em></div></div>
+        <div class="fact fact-cert"><span class="fact-ic">{!! $icon('shield') !!}</span><div><b>Certified vehicles</b><span>Inspected and backed by real dealerships.</span><em>Inspected and dealer-backed.</em></div></div>
+        <div class="fact fact-dealers"><span class="fact-ic">{!! $icon('store') !!}</span><div><b>Licensed dealers only</b><span>Every listing names the licensed dealership selling it.</span></div></div>
+        <div class="fact"><span class="fact-ic">{!! $icon('dollar') !!}</span><div><b>Hold it for $150</b><span>Refundable until you take delivery.</span><em>Refundable until you take delivery.</em></div></div>
     </div>
 
     </div>
