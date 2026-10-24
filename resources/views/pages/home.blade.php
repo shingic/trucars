@@ -125,10 +125,14 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
         return '<svg class="ride" viewBox="0 0 64 32" aria-hidden="true">' . $svg . '</svg>';
     };
 
-    // Line icons for the two shop-by tiles that aren't a body type.
+    // Line icons for the shop-by tiles, the hero chips and the promise strip.
     $icons = [
         'piggy'  => '<path d="M5 11.5C5 8 8.4 6 12 6c2 0 3.6.5 4.8 1.4L19.5 6l-.4 3.2c1 .9 1.4 1.8 1.6 2.8H22v3h-1.6c-.5 1.2-1.4 2.2-2.6 2.8V20h-3v-1.5h-4V20H8v-2.3C6 16.6 5 14.3 5 11.5Z"/><circle cx="16.5" cy="10.5" r=".9"/><path d="M10 6.3V4.5h3v1.6M5 11.5H3"/>',
         'grid'   => '<rect x="3.5" y="3.5" width="7" height="7"/><rect x="13.5" y="3.5" width="7" height="7"/><rect x="3.5" y="13.5" width="7" height="7"/><rect x="13.5" y="13.5" width="7" height="7"/>',
+        'tag'    => '<path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z"/><circle cx="7.5" cy="7.5" r="1.5"/>',
+        'shield' => '<path d="M12 3 4 6v6c0 5 8 9 8 9s8-4 8-9V6Z"/><path d="m9 12 2 2 4-4"/>',
+        'store'  => '<path d="M4 21V5h10v16M14 9h6v12M2 21h20M7 8h1M10 8h1M7 11h1M10 11h1M7 14h1M10 14h1M17 13h1M17 16h1"/>',
+        'dollar' => '<circle cx="12" cy="12" r="9"/><path d="M15 9.2a2.6 2.6 0 0 0-2.5-1.7h-1a2.25 2.25 0 0 0 0 4.5h1a2.25 2.25 0 0 1 0 4.5h-1A2.6 2.6 0 0 1 9 14.8M12 6v1.5M12 16.5V18"/>',
     ];
     $icon = fn (string $name): string => '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">' . $icons[$name] . '</svg>';
 
@@ -167,40 +171,52 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
         .ride .tyre { fill:var(--ink); }
         .ride .hub { fill:#D9DCE0; }
 
-        /* hero: a blue sign beside a real car from the lot */
-        .stage { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1.15fr); background:var(--primary); overflow:hidden; }
+        /* hero: the promise on blue, beside a real car from the lot */
+        .stage { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1.08fr); background:var(--primary); overflow:hidden; }
         .stage.no-photo { grid-template-columns:1fr; }
-        .stage-copy { padding:64px 48px 52px var(--gut); color:#fff; }
-        .stage h1 { font-family:var(--font-display); font-size:clamp(42px, 4.9vw, 74px); font-weight:700; line-height:.94; text-transform:uppercase; margin:0; max-width:13ch; color:#fff; }
+        .stage-copy { padding:64px 48px 60px var(--gut); color:#fff; align-self:center; }
+        .stage-kicker { font-size:15px; font-weight:500; letter-spacing:.16em; text-transform:uppercase; color:rgba(255,255,255,.9); margin:0 0 18px; }
+        .stage h1 { font-family:var(--font-ui); font-size:clamp(44px, 5.1vw, 84px); font-weight:800; line-height:1; letter-spacing:-.015em; margin:0; color:#fff; }
         .stage h1 span { display:block; }
-        .stage p { font-size:18px; color:#fff; margin:20px 0 0; max-width:440px; line-height:1.55; }
-        .hero-search { margin-top:28px; display:flex; max-width:520px; background:#fff; border:2px solid var(--ink); }
-        .hero-search svg { align-self:center; margin-left:14px; color:var(--ink-3); flex-shrink:0; }
-        .hero-search input { flex:1; min-width:0; border:none; outline:none; font-size:16px; background:none; padding:14px 12px; color:var(--ink); }
-        .hero-search button { background:var(--ink); color:#fff; font-family:var(--font-display); font-size:18px; font-weight:600; text-transform:uppercase; padding:0 22px; }
-        .hero-search button:hover { background:#12224D; }
-        .chips { display:flex; gap:6px; flex-wrap:wrap; margin-top:14px; }
-        .chips a { display:inline-flex; align-items:center; gap:7px; font-size:14.5px; font-weight:600; color:var(--ink); text-decoration:none; padding:6px 12px 6px 9px; background:rgba(255,255,255,.88); border:1.5px solid var(--ink); }
-        .chips a:hover { background:var(--ink); color:#fff; }
-        .chips a:hover .ride .paint { stroke:#fff; }
-        .chips .ride { width:26px; height:13px; }
-        .stage figure { margin:0; position:relative; min-height:560px; background:var(--primary-press); }
+        .stage p.lede { font-size:19px; color:rgba(255,255,255,.92); margin:22px 0 0; max-width:540px; line-height:1.5; }
+        .hero-search { margin-top:30px; display:flex; align-items:center; gap:10px; max-width:660px; background:#fff; border-radius:10px; padding:8px 8px 8px 20px; }
+        .hero-search > svg { color:var(--ink-2); flex-shrink:0; }
+        .hero-search input { flex:1; min-width:0; border:none; outline:none; font-size:17px; background:none; padding:14px 4px; color:var(--ink); }
+        .hero-search input::placeholder { color:var(--ink-3); }
+        .hero-search button { display:inline-flex; align-items:center; gap:10px; background:var(--primary); color:#fff; font-size:18px; font-weight:700; padding:15px 28px; border-radius:7px; white-space:nowrap; }
+        .hero-search button:hover { background:var(--primary-press); }
+        .chips { display:flex; gap:8px; flex-wrap:wrap; margin-top:18px; }
+        .chips a { display:inline-flex; align-items:center; gap:8px; font-size:14.5px; font-weight:600; color:#fff; text-decoration:none; padding:9px 15px; border:1.5px solid rgba(255,255,255,.55); border-radius:999px; }
+        .chips a:hover, .chips a:first-child { background:#fff; color:var(--primary-press); border-color:#fff; }
+        .chips .ride { width:24px; height:12px; }
+        .chips .ride .paint, .chips .ride .glass { fill:none; stroke:currentColor; stroke-width:2.4; }
+        .chips .ride .tyre { fill:currentColor; } .chips .ride .hub { fill:none; }
+        .chips .ico { width:17px; height:17px; stroke-width:2; }
+        .stage figure { margin:0; position:relative; min-height:620px; background:var(--primary-press); }
         /* dealer photos carry a vendor badge along the bottom edge; the frame trims it off */
         .shot { position:relative; overflow:hidden; }
         .shot > img { position:absolute; top:0; left:0; width:100%; height:107%; object-fit:cover; object-position:center 40%; }
 
-        .pictured { position:absolute; z-index:1; left:0; bottom:0; background:var(--ink); color:#fff; text-decoration:none; font-size:14px; padding:10px 14px; }
-        .pictured span { display:block; font-size:12px; color:rgba(255,255,255,.65); }
-        .pictured b { font-family:var(--font-display); font-size:20px; font-weight:700; color:var(--primary-bright); }
-        .pictured:hover b { color:#fff; }
+        /* the car in the photo, named and priced, on a card over it */
+        .pictured { position:absolute; z-index:1; top:40px; right:var(--gut-r, 44px); width:min(480px, calc(100% - 64px)); display:flex; align-items:center; gap:16px; background:#fff; color:var(--ink); text-decoration:none; border-radius:12px; padding:20px 22px 20px 24px; box-shadow:0 10px 30px rgba(7,20,55,.18); }
+        .pictured-main { flex:1; min-width:0; }
+        .pictured small { display:block; font-size:12.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-2); }
+        .pictured strong { display:block; font-size:26px; font-weight:700; line-height:1.15; margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .pictured .meta { font-size:15px; color:var(--ink-2); margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .pictured .meta i { font-style:normal; color:var(--line-strong); margin:0 8px; }
+        .pictured b { display:block; font-size:36px; font-weight:800; color:var(--primary); margin-top:8px; line-height:1; }
+        .pictured .go { width:40px; height:40px; border-radius:50%; background:#E9F3FF; color:var(--primary-press); display:grid; place-items:center; flex-shrink:0; }
+        .pictured:hover .go { background:var(--primary); color:#fff; }
 
-        /* three promises, as a black road-sign strip */
-        .facts { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); background:var(--ink); color:#fff; }
-        .fact { padding:18px 22px; }
-        .fact:first-child { padding-left:var(--gut); }
-        .fact + .fact { border-left:1px solid rgba(255,255,255,.16); }
-        .fact b { display:block; font-family:var(--font-display); font-size:21px; font-weight:600; text-transform:uppercase; color:var(--primary-bright); }
-        .fact span { font-size:14.5px; color:rgba(255,255,255,.78); }
+        /* four promises on a navy strip */
+        .facts { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); background:var(--ink); color:#fff; padding:30px var(--gut); gap:0; }
+        .fact { display:flex; gap:18px; align-items:flex-start; padding:0 28px; }
+        .fact:first-child { padding-left:0; }
+        .fact + .fact { border-left:1px solid rgba(255,255,255,.2); }
+        .fact-ic { width:58px; height:58px; border-radius:50%; border:1.5px solid rgba(255,255,255,.75); display:grid; place-items:center; flex-shrink:0; }
+        .fact-ic svg { width:26px; height:26px; fill:none; stroke:#fff; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+        .fact b { display:block; font-family:var(--font-display); font-size:22px; font-weight:700; text-transform:uppercase; color:#fff; }
+        .fact div span { display:block; font-size:16px; color:rgba(255,255,255,.85); margin-top:4px; line-height:1.45; }
 
         /* cars */
         .cars { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:34px 22px; }
@@ -272,15 +288,27 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
             .bay { border-right:2px solid var(--ink); border-bottom:2px solid var(--ink); margin:0 -2px -2px 0; }
             .how { grid-template-columns:repeat(2, minmax(0, 1fr)); }
             .faq-wrap, .calm { grid-template-columns:minmax(0, 1fr); gap:24px; }
+            .facts { grid-template-columns:repeat(2, minmax(0, 1fr)); row-gap:24px; }
+            .fact:nth-child(3) { border-left:none; padding-left:0; }
         }
         @media (max-width:760px) {
             .home section { margin-top:60px; }
             .stage, .close { grid-template-columns:minmax(0, 1fr); }
-            .stage-copy { padding:30px 16px 26px; }
+            .stage-copy { padding:30px 16px 30px; }
+            .stage-kicker { font-size:13px; letter-spacing:.12em; }
+            .stage p.lede { font-size:17px; }
+            .hero-search { padding:6px 6px 6px 14px; gap:6px; }
+            .hero-search input { font-size:16px; padding:12px 2px; }
+            .hero-search button { padding:13px 16px; font-size:16px; }
             .stage figure { min-height:0; aspect-ratio:4/2.8; order:-1; }
-            .facts { grid-template-columns:minmax(0, 1fr); }
+            .pictured { top:auto; bottom:12px; right:12px; left:12px; width:auto; padding:12px 14px; gap:10px; }
+            .pictured strong { font-size:19px; }
+            .pictured .meta { font-size:13px; }
+            .pictured b { font-size:24px; margin-top:4px; }
+            .facts { grid-template-columns:minmax(0, 1fr); padding:8px 16px; }
+            .fact, .fact:first-child { padding:16px 0; }
             .fact + .fact { border-left:none; border-top:1px solid rgba(255,255,255,.16); }
-            .fact, .fact:first-child { padding:14px 16px; }
+            .fact-ic { width:48px; height:48px; }
             .cars { gap:26px 12px; }
             .car-price { font-size:22px; }
             .garage { grid-template-columns:repeat(2, minmax(0, 1fr)); }
@@ -297,38 +325,45 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
     <div class="hero-band">
     <div class="stage {{ $featured ? '' : 'no-photo' }}">
         <div class="stage-copy">
-            <h1><span>Skip the haggle.</span> <span>Skip the day at the dealership.</span></h1>
-            <p>Reserve online, send your documents from home, and get your financing approved before you go. When you arrive, you sign and drive.</p>
+            <p class="stage-kicker">Certified pre-owned. Real dealerships.</p>
+            <h1><span>Skip the haggle.</span> <span>Skip the day</span> <span>at the dealership.</span></h1>
+            <p class="lede">Browse certified vehicles from licensed Canadian dealers, reserve online, get your financing approved, and pick up when you're ready.</p>
 
             <form class="hero-search" wire:submit="search" role="search">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-                <input type="search" wire:model="q" placeholder="Search a make or model, like “Outlander”" aria-label="Search cars">
-                <button type="submit">Search</button>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+                <input type="search" wire:model="q" placeholder="Search by make, model or keyword, e.g. Outlander" aria-label="Search cars">
+                <button type="submit">Search <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
             </form>
 
             <div class="chips">
                 @foreach ($bodyTypes->keys() as $body)
                     <a href="{{ route('shop', ['body' => [$body]]) }}" wire:navigate>{!! $car($body) !!} {{ $body }}s</a>
                 @endforeach
-                @if ($under) <a href="{{ route('shop', ['max' => 25000]) }}" wire:navigate>Under $25k</a> @endif
-                <a href="{{ route('shop') }}" wire:navigate>Everything →</a>
+                @if ($under) <a href="{{ route('shop', ['max' => 25000]) }}" wire:navigate>{!! $icon('tag') !!} Under $25k</a> @endif
+                <a href="{{ route('shop') }}" wire:navigate>{!! $icon('grid') !!} Everything</a>
             </div>
         </div>
         @if ($featured)
             <figure class="shot">
                 <img src="{{ $featured->primary_photo_url }}" alt="">
                 <a class="pictured" href="/cars/{{ $featured->id }}" wire:navigate>
-                    <span>Pictured · {{ $featured->display_location }}</span>
-                    {{ $featured->model_year }} {{ $featured->make }} {{ $featured->model }} · <b>{{ $featured->display_price }}</b>
+                    <div class="pictured-main">
+                        @if ($featured->certification()) <small>Certified pre-owned</small> @else <small>Pictured</small> @endif
+                        <strong>{{ $featured->model_year }} {{ $featured->make }} {{ $featured->model }}</strong>
+                        <div class="meta">{!! collect([$featured->trim, $featured->display_kilometres, $featured->display_location])->filter()->map(fn ($part) => e($part))->join('<i>|</i>') !!}</div>
+                        <b>{{ $featured->display_price }}</b>
+                    </div>
+                    <span class="go"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 6 6 6-6 6"/></svg></span>
                 </a>
             </figure>
         @endif
     </div>
 
     <div class="facts">
-        <div class="fact"><b>All-in prices</b><span>Freight, prep and dealer fees included.</span></div>
-        <div class="fact"><b>Licensed dealers only</b><span>Every listing names the dealership.</span></div>
-        <div class="fact"><b>Hold it for $150</b><span>Refundable until you take delivery.</span></div>
+        <div class="fact"><span class="fact-ic">{!! $icon('tag') !!}</span><div><b>All-in prices</b><span>No hidden fees. Freight, prep and dealer fees included.</span></div></div>
+        <div class="fact"><span class="fact-ic">{!! $icon('shield') !!}</span><div><b>Certified vehicles</b><span>Inspected and backed by real dealerships.</span></div></div>
+        <div class="fact"><span class="fact-ic">{!! $icon('store') !!}</span><div><b>Licensed dealers only</b><span>Every listing names the licensed dealership selling it.</span></div></div>
+        <div class="fact"><span class="fact-ic">{!! $icon('dollar') !!}</span><div><b>Hold it for $150</b><span>Refundable until you take delivery.</span></div></div>
     </div>
 
     </div>

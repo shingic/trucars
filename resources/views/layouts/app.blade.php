@@ -64,6 +64,8 @@
         .acct-menu-sep { height:1px; background:var(--line); margin:6px 4px; }
         .acct-menu-signout { color:var(--ink-2); }
         .acct-menu-signout:hover { background:var(--primary-soft); color:var(--primary); }
+        .nav-saved { display:inline-flex; align-items:center; gap:8px; font-size:14.5px; font-weight:600; color:var(--ink); text-decoration:none; }
+        .nav-saved:hover { color:var(--primary-press); }
         .nav-signin { display:inline-flex; align-items:center; font-size:14.5px; font-weight:700; color:var(--ink); text-decoration:none; border:1.5px solid var(--ink); border-radius:3px; padding:7px 16px; }
         .nav-signin:hover { background:var(--ink); color:#fff; }
 
@@ -183,6 +185,13 @@
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                 <span x-text="label === 'your location' ? 'Near you' : label"></span>
             </span>
+            {{-- Saved cars, for shoppers (a guest is sent to sign in). --}}
+            @if (! auth()->check() || auth()->user()->dealer_id === null)
+                <a href="{{ route('saved') }}" wire:navigate class="nav-saved">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 14c1.5-1.5 3-3.3 3-5.5A4.5 4.5 0 0 0 12 5 4.5 4.5 0 0 0 2 8.5c0 2.2 1.5 4 3 5.5l7 7Z"/></svg>
+                    <span>Saved (<span x-data="{ count: {{ auth()->user()?->favouriteVehiclesCount ?? 0 }} }" x-text="count" @favourites-updated.window="count = $event.detail.count">{{ auth()->user()?->favouriteVehiclesCount ?? 0 }}</span>)</span>
+                </a>
+            @endif
             @auth
                 @if (auth()->user()->dealer_id === null)
                     <div class="acct" x-data="{ open: false }" @click.outside="open = false" @keydown.escape.window="open = false">
