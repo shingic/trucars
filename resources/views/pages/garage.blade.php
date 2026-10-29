@@ -222,6 +222,7 @@ new #[Layout('layouts.checkout')] class extends Component {
             'Amount financed' => $money($deal->financing_amount_in_cents),
             'Down payment'    => $deal->financing_down_payment_in_cents !== null ? $money($deal->financing_down_payment_in_cents) : null,
             'First payment'   => $deal->financing_first_payment_on?->format('M j, Y'),
+            'Conditions'      => $deal->financing_conditions,
         ]);
     }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Mail\FinancingApproved;
 use App\Mail\InsuranceRequested;
 use App\Mail\ReadyForHandover;
 use App\Models\Concerns\CarriesCampaignAttribution;
@@ -52,7 +53,7 @@ class Deal extends Model
         'handover_mode', 'pickup_location', 'pickup_at',
         'identity_verified_at',
         'financing_lender', 'financing_apr', 'financing_term_months', 'financing_payment_in_cents', 'financing_frequency',
-        'financing_amount_in_cents', 'financing_down_payment_in_cents', 'financing_first_payment_on', 'financing_approved_at',
+        'financing_amount_in_cents', 'financing_down_payment_in_cents', 'financing_first_payment_on', 'financing_conditions', 'financing_approved_at',
     ];
 
     protected $attributes = [
@@ -196,6 +197,61 @@ class Deal extends Model
     public function activities(): HasMany
     {
         return $this->hasMany(DealActivity::class);
+    }
+
+    /** Lender decisions on this deal: approvals first, then by lowest payment. */
+    public function lenderOffers(): HasMany
+    {
+        return $this->hasMany(LenderOffer::class)
+            ->orderByRaw("case decision when 'approved' then 1 when 'conditional' then 2 when 'pending' then 3 else 4 end")
+            ->orderByRaw('payment_in_cents is null')->orderBy('payment_in_cents')->orderBy('id');
+    }
+
+    /** The offer the buyer is being shown in My Garage, if any. */
+    public function publishedLenderOffer(): ?LenderOffer
+    {
+        return $this->lenderOffers()->whereNotNull('published_at')->first();
+    }
+
+    /**
+     * Show the buyer this offer: its terms become the deal's financing approval
+     * (what My Garage and the approval email read), it becomes the one published
+     * offer, and the buyer is emailed. Publishing again after a change sends the
+     * "updated terms" email instead.
+     */
+    public function publishLenderOffer(LenderOffer $offer, ?string $byName = null): void
+    {
+        if ((int) $offer->deal_id !== (int) $this->id || ! $offer->isPublishable()) {
+            throw new \DomainException('That offer cannot be published on this deal.');
+        }
+
+        $updated = $this->hasFinancingApproval();
+
+        DB::transaction(function () use ($offer) {
+            $this->lenderOffers()->whereKeyNot($offer->id)->whereNotNull('published_at')->update(['published_at' => null]);
+            $offer->update(['published_at' => now()]);
+
+            $this->update([
+                'financing_lender'                => $offer->lender,
+                'financing_apr'                   => $offer->apr,
+                'financing_term_months'           => $offer->term_months,
+                'financing_payment_in_cents'      => $offer->payment_in_cents,
+                'financing_frequency'             => $offer->frequency ?? 'biweekly',
+                'financing_amount_in_cents'       => $offer->amount_in_cents,
+                'financing_down_payment_in_cents' => $offer->down_payment_in_cents,
+                'financing_conditions'            => $offer->conditions,
+                'financing_approved_at'           => $this->financing_approved_at ?? now(),
+            ]);
+        });
+
+        $this->recordActivity(
+            'status',
+            ($updated ? 'Published updated terms to My Garage: ' : 'Published to My Garage: ')
+                . $offer->lender . ', ' . $offer->payment_label . ' over ' . $offer->term_months . ' months.',
+            $byName ?? 'Dealer',
+        );
+
+        $this->emailBuyer(new FinancingApproved($this, $updated), $updated ? 'Updated financing terms' : 'Financing approval');
     }
 
     public function recordActivity(string $kind, string $body, ?string $authorName = null, ?string $direction = null): DealActivity

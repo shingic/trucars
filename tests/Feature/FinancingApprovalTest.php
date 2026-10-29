@@ -96,6 +96,7 @@ class FinancingApprovalTest extends TestCase
         $this->actingAs(User::factory()->staffOf($this->dealer)->create());
 
         Livewire::test('pages::deal-detail', ['deal' => $deal])
+            ->set('tab', 'financing')
             ->assertSee("no bank approval to enter")
             ->set('financingLender', 'Scotiabank')
             ->call('saveFinancing');
@@ -108,6 +109,7 @@ class FinancingApprovalTest extends TestCase
         $this->actingAs(User::factory()->staffOf($this->dealer)->create());
 
         Livewire::test('pages::deal-detail', ['deal' => $deal])
+            ->set('tab', 'financing')
             ->assertSee('Save approval and email the buyer')
             ->set('financingLender', 'Scotiabank')
             ->set('financingPayment', '412.50')
