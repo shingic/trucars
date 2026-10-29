@@ -25,15 +25,13 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
         $listed = Vehicle::query()->listed();
 
         $activeDealers = Dealer::where('status', Dealer::STATUS_ACTIVE)->whereHas('vehicles', fn ($vehicles) => $vehicles->where('is_published', true));
-        $featured = $this->showcase($listed);
-        $closer = $this->showcase($listed, except: $featured);
+        $closer = $this->showcase($listed);
 
         return [
             'carCount'    => (clone $listed)->count(),
             'dealerCount' => (clone $activeDealers)->count(),
             'cityCount'   => (clone $activeDealers)->distinct()->count('city'),
             'mix'         => $this->mix($listed, 8),
-            'featured'    => $featured,
             'closer'      => $closer,
             'bodyTypes'   => $this->countsBy($listed, 'body_type', 4),
             'makes'       => $this->countsBy($listed, 'make', 10),
@@ -42,14 +40,13 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
     }
 
     /**
-     * A random car with a photo for the big pictures, different on every
+     * A random car with a photo for the closing panel, different on every
      * visit. A random dealer is picked first, so a small lot gets the same
      * turns as a big one.
      */
-    private function showcase($listed, ?Vehicle $except = null): ?Vehicle
+    private function showcase($listed): ?Vehicle
     {
-        $withPhotos = (clone $listed)->whereNotNull('photos')
-            ->when($except, fn ($query) => $query->whereKeyNot($except->id));
+        $withPhotos = (clone $listed)->whereNotNull('photos');
 
         $dealerId = (clone $withPhotos)->distinct()->pluck('vehicles.dealer_id')->shuffle()->first();
 
@@ -173,7 +170,6 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
 
         /* hero: the promise on blue, beside a real car from the lot */
         .stage { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1.08fr); background:var(--primary); overflow:hidden; }
-        .stage.no-photo { grid-template-columns:1fr; }
         .stage-copy { padding:64px 48px 60px var(--gut); color:#fff; align-self:center; }
         .stage-kicker { font-size:15px; font-weight:500; letter-spacing:.16em; text-transform:uppercase; color:rgba(255,255,255,.9); margin:0 0 18px; }
         .stage h1 { font-family:var(--font-ui); font-size:clamp(44px, 5.1vw, 84px); font-weight:800; line-height:1; letter-spacing:-.015em; margin:0; color:#fff; }
@@ -197,7 +193,8 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
         .chips .ride .tyre { fill:currentColor; } .chips .ride .hub { fill:var(--primary); } .chips a:first-child .ride .hub { fill:#fff; }
         .chips .ico { width:19px; height:19px; stroke-width:2; }
         .stage figure { margin:0; position:relative; min-height:620px; background:var(--primary-press); }
-        .stage .feature-photo { position:absolute; inset:0; }
+        .stage .feature-photo { position:absolute; inset:0; overflow:hidden; }
+        .feature-photo > img { width:100%; height:100%; object-fit:cover; object-position:35% center; }
         .feature-cert, .shop-all { display:none; }
         .fact em { display:none; }
         /* dealer photos carry a vendor badge along the bottom edge; the frame trims it off */
@@ -205,7 +202,7 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
         .shot > img { position:absolute; top:0; left:0; width:100%; height:107%; object-fit:cover; object-position:center 40%; }
 
         /* the car in the photo, named and priced, on a card over it */
-        .pictured { position:absolute; z-index:1; top:40px; right:var(--gut-r, 44px); width:min(480px, calc(100% - 64px)); display:flex; align-items:center; gap:16px; background:#fff; color:var(--ink); text-decoration:none; border-radius:12px; padding:20px 22px 20px 24px; box-shadow:0 10px 30px rgba(7,20,55,.18); }
+        .pictured { position:absolute; z-index:1; bottom:36px; left:36px; width:min(400px, calc(100% - 72px)); display:flex; align-items:center; gap:16px; background:#fff; color:var(--ink); text-decoration:none; border-radius:12px; padding:20px 22px 20px 24px; box-shadow:0 10px 30px rgba(7,20,55,.18); }
         .pictured-main { flex:1; min-width:0; }
         .pictured small { display:block; font-size:12.5px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-2); }
         .pictured strong { display:block; font-size:26px; font-weight:700; line-height:1.15; margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -329,6 +326,7 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
             .chips a:first-child .ride .glass, .chips a:first-child .ride .hub { fill:#E9F3FF; }
             .stage figure { min-height:0; margin:8px 16px 0; background:#fff; border-radius:14px; overflow:hidden; box-shadow:0 10px 28px rgba(7,20,55,.10); border:1px solid #EEF0F5; }
             .stage .feature-photo { position:relative; inset:auto; aspect-ratio:4/2.6; background:var(--bg-2); }
+            .feature-photo > img { object-position:70% center; }
             .feature-cert { display:inline-flex; align-items:center; gap:7px; position:absolute; z-index:1; top:12px; left:12px; background:var(--ink); color:#fff; font-family:var(--font-display); font-size:14px; font-weight:600; letter-spacing:.02em; text-transform:uppercase; padding:6px 11px 6px 9px; border-radius:8px; }
             .feature-cert .ico { width:17px; height:17px; stroke-width:2; }
             .pictured { position:static; width:auto; box-shadow:none; border-radius:0; padding:14px 16px 16px 18px; gap:12px; }
@@ -366,7 +364,7 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
 
     {{-- HERO --}}
     <div class="hero-band">
-    <div class="stage {{ $featured ? '' : 'no-photo' }}">
+    <div class="stage">
         <div class="stage-copy">
             <p class="stage-kicker">Certified pre-owned. Real dealerships.</p>
             <h1><span>Skip the haggle.</span> <span>Skip the day</span> <span>at the dealership.</span></h1>
@@ -388,24 +386,23 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
                 <a href="{{ route('shop') }}" wire:navigate>{!! $icon('grid') !!} Everything</a>
             </div>
         </div>
-        @if ($featured)
-            <figure class="feature">
-                <div class="shot feature-photo">
-                    <img src="{{ $featured->primary_photo_url }}" alt="">
-                    <span class="feature-cert">{!! $icon('shield') !!} Certified pre-owned</span>
+        {{-- A set hero photo, so the panel looks the same on every visit. The card
+             is an illustration of a listing, not a car for sale; it opens the shop. --}}
+        <figure class="feature">
+            <div class="feature-photo">
+                <img src="{{ asset('images/hero-maxima.jpg') }}" alt="A white Nissan Maxima parked on a sunny street">
+                <span class="feature-cert">{!! $icon('shield') !!} Certified pre-owned</span>
+            </div>
+            <a class="pictured" href="{{ route('shop') }}" wire:navigate>
+                <div class="pictured-main">
+                    <small>Certified pre-owned</small>
+                    <strong>2018 Nissan Maxima SR</strong>
+                    <div class="meta">48,200 km<i>|</i>Mississauga, ON</div>
+                    <b>$27,495</b>
                 </div>
-                <a class="pictured" href="/cars/{{ $featured->id }}" wire:navigate>
-                    <div class="pictured-main">
-                        {{-- Every car on TruCars is certified pre-owned: the dealer feeds only carry CPO stock. --}}
-                        <small>Certified pre-owned</small>
-                        <strong>{{ $featured->model_year }} {{ $featured->make }} {{ $featured->model }}</strong>
-                        <div class="meta">{!! collect([$featured->trim, $featured->display_kilometres, $featured->display_location])->filter()->map(fn ($part) => e($part))->join('<i>|</i>') !!}</div>
-                        <b>{{ $featured->display_price }}</b>
-                    </div>
-                    <span class="go"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 6 6 6-6 6"/></svg></span>
-                </a>
-            </figure>
-        @endif
+                <span class="go"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 6 6 6-6 6"/></svg></span>
+            </a>
+        </figure>
     </div>
 
     <div class="facts">

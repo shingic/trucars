@@ -44,7 +44,7 @@ class HomepageTest extends TestCase
             ->assertSee(route('how-it-works'));
     }
 
-    public function test_the_big_photo_rotates_through_every_dealer(): void
+    public function test_the_closing_photo_rotates_through_every_dealer(): void
     {
         $other = $this->makeDealer(['name' => 'Valley Nissan']);
         $this->car(['model' => 'Outlander', 'photos' => ['https://example.test/outlander.jpg']]);
@@ -55,7 +55,7 @@ class HomepageTest extends TestCase
             'photos' => ['https://example.test/rogue.jpg'],
         ]);
 
-        $seen = collect(range(1, 30))->map(fn () => Livewire::test('pages::home')->viewData('featured')?->model)->unique();
+        $seen = collect(range(1, 30))->map(fn () => Livewire::test('pages::home')->viewData('closer')?->model)->unique();
 
         $this->assertEqualsCanonicalizing(['Outlander', 'Rogue'], $seen->all());
     }
