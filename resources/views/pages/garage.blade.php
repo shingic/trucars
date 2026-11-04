@@ -135,9 +135,9 @@ new #[Layout('layouts.checkout')] class extends Component {
                 'sub'    => $rank >= 3 ? 'Done' : ($rank === 2 ? 'In progress' : 'Next'),
             ],
             [
-                'label'  => 'Delivery',
+                'label'  => 'Pickup',
                 'state'  => $rank >= 4 ? 'done' : ($rank === 3 ? 'current' : 'next'),
-                'sub'    => $rank >= 4 ? 'Delivered' : ($rank === 3 ? 'Being prepped' : 'Next'),
+                'sub'    => $rank >= 4 ? 'Picked up' : ($rank === 3 ? 'Being prepped' : 'Next'),
             ],
         ];
     }
@@ -146,7 +146,7 @@ new #[Layout('layouts.checkout')] class extends Component {
     {
         return match (true) {
             $deal->stage === 'cancelled' => 'Cancelled',
-            $deal->stage === 'delivered' => 'Delivered',
+            $deal->stage === 'delivered' => 'Picked up',
             default                      => 'Reserved',
         };
     }
@@ -161,8 +161,8 @@ new #[Layout('layouts.checkout')] class extends Component {
             'reserved', 'contacted', 'appointment_set' => 'Reserved',
             'financing'                                => $deal->hasFinancingApproval() ? 'Financing approved' : 'Financing in review',
             'documents'                                => 'Paperwork in progress',
-            'ready_for_delivery'                       => 'Ready for delivery',
-            'delivered'                                => 'Delivered',
+            'ready_for_delivery'                       => 'Ready for pickup',
+            'delivered'                                => 'Picked up',
             'cancelled'                                => 'Cancelled',
             default                                    => $deal->stage_label,
         };
@@ -736,7 +736,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                 <h3>Your garage grows with you</h3>
                 <p>The profile behind your reservation keeps working for you — quietly, for years.</p>
                 <div class="g-lc-row">
-                    <div class="g-lc-item"><div class="yr">Now</div><div class="ev">Insurance &amp; protection</div><div class="de">Get covered before delivery</div></div>
+                    <div class="g-lc-item"><div class="yr">Now</div><div class="ev">Insurance &amp; protection</div><div class="de">Get covered before pickup</div></div>
                     <div class="g-lc-item"><div class="yr">Year 2</div><div class="ev">Warranty renewal</div><div class="de">Reminders before it lapses</div></div>
                     <div class="g-lc-item"><div class="yr">Year 3</div><div class="ev">Trade-in offer</div><div class="de">A real number, unprompted</div></div>
                     <div class="g-lc-item"><div class="yr">Year 4</div><div class="ev">Upgrade picks</div><div class="de">Matched to your history</div></div>

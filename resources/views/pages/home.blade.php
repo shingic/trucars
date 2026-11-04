@@ -137,8 +137,8 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
         ['Can I negotiate the price?', 'There’s nothing to haggle over. The price on the listing is the dealership’s price, with freight, prep and fees already in it. HST and licensing are the only things added.'],
         ['Who am I actually buying from?', 'The licensed dealership named on the listing. TruCars is where you find the car and reserve it; the dealership sells it to you, and their registration number is on every listing.'],
         ['Is the price really all-in?', 'Yes. Freight, pre-delivery prep, dealer admin and regulator fees are already in the price you see. HST and licensing are the only things added.'],
-        ['What does the $150 deposit do?', 'It takes the car off the market while you finish up, and it comes off the price when you buy. It’s refundable any time before you take delivery.'],
-        ['Can I pick the car up myself?', 'Yes. Pick it up at the dealership, or choose delivery when you reserve. Either way you pick the day and time window.'],
+        ['What does the $150 deposit do?', 'It takes the car off the market while you finish up, and it comes off the price when you buy. It’s refundable any time before you pick the car up.'],
+        ['How do I get the car?', 'You pick it up at the dealership. Every car shows how far it is from you, and you choose the day and time window when you reserve.'],
         ['What does “certified” mean on a listing?', 'It means the car is covered by the dealer’s or manufacturer’s inspection checklist, and the listing shows every point that’s checked, not just a number.'],
     ];
 @endphp
@@ -409,7 +409,7 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
         <div class="fact"><span class="fact-ic">{!! $icon('tag') !!}</span><div><b>All-in prices</b><span>No hidden fees. Freight, prep and dealer fees included.</span><em>Freight and fees included.</em></div></div>
         <div class="fact fact-cert"><span class="fact-ic">{!! $icon('shield') !!}</span><div><b>Certified vehicles</b><span>Inspected and backed by real dealerships.</span><em>Inspected and dealer-backed.</em></div></div>
         <div class="fact fact-dealers"><span class="fact-ic">{!! $icon('store') !!}</span><div><b>Licensed dealers only</b><span>Every listing names the licensed dealership selling it.</span></div></div>
-        <div class="fact"><span class="fact-ic">{!! $icon('dollar') !!}</span><div><b>Hold it for $150</b><span>Refundable until you take delivery.</span><em>Refundable until you take delivery.</em></div></div>
+        <div class="fact"><span class="fact-ic">{!! $icon('dollar') !!}</span><div><b>Hold it for $150</b><span>Refundable until you pick it up.</span><em>Refundable until you pick it up.</em></div></div>
     </div>
 
     </div>
@@ -493,9 +493,9 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
         </div>
         <div class="how">
             <div><div class="n">1</div><b>Find it</b><p>Browse cars from licensed dealers, each with its all-in price.</p></div>
-            <div><div class="n">2</div><b>Hold it for $150</b><p>The car is marked reserved for you. Refundable until delivery.</p></div>
+            <div><div class="n">2</div><b>Hold it for $150</b><p>The car is marked reserved for you. Refundable until pickup.</p></div>
             <div><div class="n">3</div><b>Confirm it</b><p>Verify your ID and the dealership reaches out about the details.</p></div>
-            <div><div class="n">4</div><b>Drive it</b><p>Pick it up or have it delivered. Your $150 comes off the price.</p></div>
+            <div><div class="n">4</div><b>Drive it</b><p>Pick it up at the dealership. Your $150 comes off the price.</p></div>
         </div>
     </section>
 

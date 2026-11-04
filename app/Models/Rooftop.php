@@ -28,6 +28,15 @@ class Rooftop extends Model
     /** Text columns kept as clean UTF-8 (see CleansText). */
     public const CLEAN_TEXT = ['name', 'street_address', 'unit', 'city', 'phone', 'email'];
 
+    /** A store is put on the map from its address, so shoppers get a distance to it. */
+    protected static function booted(): void
+    {
+        // A plain closure on purpose: returning false from `saving` would cancel the save.
+        static::saving(function (Rooftop $rooftop): void {
+            $rooftop->placeOnMapFromAddress();
+        });
+    }
+
     /** What a rooftop holds that the dealer's own columns also hold. */
     public const LOCATION_FIELDS = [
         'street_address', 'unit', 'city', 'province', 'postal_code', 'country',

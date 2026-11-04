@@ -141,7 +141,7 @@
                                     @if ($deal->fees_by_kind['passThroughTotalInCents'] > 0)
                                         <div style="border-top:1px solid #D5D7DD; margin-top:16px; padding-top:14px;"></div>
                                         <p style="margin:0 0 8px; font-family:'Barlow Semi Condensed','Barlow',Arial,sans-serif; font-size:14px; font-weight:700; letter-spacing:0.02em; text-transform:uppercase; color:#071437;">
-                                            Added at delivery · never financed
+                                            Added at pickup · never financed
                                         </p>
                                         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
                                             @foreach ($deal->fees_by_kind['passThrough'] as $passThroughFee)
@@ -159,7 +159,7 @@
                                                     HST
                                                 </td>
                                                 <td align="right" style="padding:3px 0; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:13.5px; color:#78829D;">
-                                                    calculated at delivery
+                                                    calculated at pickup
                                                 </td>
                                             </tr>
                                         </table>
@@ -231,7 +231,7 @@
                             <tr>
                                 <td width="28" valign="top" style="font-family:'Barlow Semi Condensed','Barlow',Arial,sans-serif; font-size:17px; font-weight:700; color:#1B84FF; line-height:1.3;">2.</td>
                                 <td style="padding-bottom:12px; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:14px; line-height:1.55; color:#252F4A;">
-                                    Your identity is already verified — one less thing to sort out at delivery.
+                                    Your identity is already verified — one less thing to sort out at pickup.
                                 </td>
                             </tr>
                             <tr>
@@ -303,7 +303,7 @@
                             <tr>
                                 <td style="border-top:2px solid #071437; padding-top:20px;">
                                     <p style="margin:0; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:13px; line-height:1.6; color:#4B5675;">
-                                        TruCars handles your reservation and checkout. {{ $deal->seller_name }} owns the vehicle, the financing and the delivery, and confirms all final figures with you before anything is signed.
+                                        TruCars handles your reservation and checkout. {{ $deal->seller_name }} owns the vehicle, the financing and the handover, and confirms all final figures with you before anything is signed.
                                     </p>
                                     <p style="margin:10px 0 0; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:13px; line-height:1.6; color:#78829D;">
                                         Sent because you placed a reservation at TruCars.

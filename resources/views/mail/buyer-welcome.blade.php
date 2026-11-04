@@ -115,7 +115,7 @@
                             <tr>
                                 <td style="border-top:2px solid #071437; padding-top:20px;">
                                     <p style="margin:0; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:13px; line-height:1.6; color:#4B5675;">
-                                        TruCars handles your reservation and checkout. The dealership owns the vehicle, the financing and the delivery, and confirms all final figures with you before anything is signed.
+                                        TruCars handles your reservation and checkout. The dealership owns the vehicle, the financing and the handover, and confirms all final figures with you before anything is signed.
                                     </p>
                                     <p style="margin:10px 0 0; font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:13px; line-height:1.6; color:#78829D;">
                                         Sent because you created a TruCars account.

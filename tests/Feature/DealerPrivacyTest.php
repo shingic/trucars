@@ -59,7 +59,7 @@ class DealerPrivacyTest extends TestCase
             ->assertSee('From Vancouver, BC')
             ->assertSee('km from Vancouver, BC')
             ->assertSee('About a 1 hr 30 min drive')
-            ->assertSee('$149 delivery to your door')
+            ->assertSee('drive to pick it up')
             ->assertDontSee("That's a long way from you");
     }
 

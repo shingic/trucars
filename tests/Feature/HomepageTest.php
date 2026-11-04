@@ -108,7 +108,7 @@ class HomepageTest extends TestCase
 
     public function test_how_it_works_page(): void
     {
-        $this->get('/how-it-works')->assertOk()->assertSee('Reserve it for $150')->assertSee('refundable any time before delivery');
+        $this->get('/how-it-works')->assertOk()->assertSee('Reserve it for $150')->assertSee('refundable any time before pickup');
     }
 
     private function car(array $overrides): Vehicle

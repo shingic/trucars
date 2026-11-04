@@ -139,7 +139,7 @@ new class extends Component {
                 Before you browse
             </div>
             <h2 id="lg-title">Where are you shopping from?</h2>
-            <p>Every car shows how far it is from you, so you can pick one close enough to collect, or have it delivered.</p>
+            <p>Every car shows how far it is from you. You pick the car up at the dealership, so choose one that’s close enough to collect.</p>
 
             <form class="lg-form" wire:submit="usePostalCode">
                 <label for="lg-postal" class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">Your postal code</label>

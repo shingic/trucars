@@ -54,6 +54,33 @@ trait HasStreetAddress
         return $this->latitude !== null && $this->longitude !== null;
     }
 
+    /**
+     * Put the store on the map from its address, so shoppers get a distance.
+     * Runs when the store has no coordinates yet, or when its address changed
+     * and nobody set the coordinates by hand in the same save. Without a
+     * Google key, or if the lookup fails, the store simply stays unplaced.
+     */
+    public function placeOnMapFromAddress(bool $force = false): bool
+    {
+        $addressChanged = $this->isDirty(['street_address', 'city', 'province', 'postal_code']);
+        $coordinatesSetByHand = $this->isDirty(['latitude', 'longitude']) && $this->hasCoordinates();
+
+        if (! $this->hasCompleteAddress() || $coordinatesSetByHand || (! $force && $this->hasCoordinates() && ! $addressChanged)) {
+            return false;
+        }
+
+        $point = app(\App\Support\AddressLookup::class)->pointForAddress(implode(', ', [...$this->address_lines, 'Canada']));
+
+        if ($point === null) {
+            return false;
+        }
+
+        $this->latitude = round($point['latitude'], 6);
+        $this->longitude = round($point['longitude'], 6);
+
+        return true;
+    }
+
     /** Rows that can't yet place their cars on a map — the backfill list. */
     public function scopeMissingAddress(Builder $query): void
     {

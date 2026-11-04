@@ -114,6 +114,36 @@ class AddressLookup
         return $this->geocodeCity(['address' => $postalCode, 'components' => 'country:CA']);
     }
 
+    /**
+     * The map point of a street address, for a store's distance to shoppers.
+     * Google Geocoding API, same key; null when it's off, fails or can't place it.
+     *
+     * @return array{latitude: float, longitude: float}|null
+     */
+    public function pointForAddress(string $address): ?array
+    {
+        if (! $this->enabled() || trim($address) === '') {
+            return null;
+        }
+
+        try {
+            $response = Http::timeout(4)->get('https://maps.googleapis.com/maps/api/geocode/json', [
+                'address'    => $address,
+                'components' => 'country:CA',
+                'language'   => 'en',
+                'key'        => (string) config('services.google_places.key'),
+            ])->throw()->json();
+        } catch (Throwable $e) {
+            Log::warning('Address geocoding failed', ['error' => $e->getMessage()]);
+
+            return null;
+        }
+
+        $point = $response['results'][0]['geometry']['location'] ?? null;
+
+        return isset($point['lat'], $point['lng']) ? ['latitude' => (float) $point['lat'], 'longitude' => (float) $point['lng']] : null;
+    }
+
     /** @param  array<string, string>  $query */
     private function geocodeCity(array $query): ?array
     {

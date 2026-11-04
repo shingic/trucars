@@ -8,8 +8,8 @@ use Livewire\Component;
 /*
 | How TruCars works, start to finish, for shoppers. Static content — kept in
 | step with the actual flow: listing → reserve ($150, refundable) → ID check,
-| documents and the dealer's call → financing approval → insurance → pickup
-| or delivery. The deposit wording mirrors checkout; change both together.
+| documents and the dealer’s call → financing approval → insurance → pickup
+| at the dealership. The deposit wording mirrors checkout; change both together.
 |
 | The worked example at the top is a real car on the marketplace right now,
 | with its real price. With nothing listed, it is simply left out.
@@ -134,7 +134,7 @@ new #[Title('How it works — TruCars')] class extends Component {
                 </div>
                 <dl>
                     <div><dt>Listed price<small>The price on the listing</small></dt><dd>{{ $car->display_price }}</dd></div>
-                    <div class="today"><dt>Today, to reserve it<small>Refundable any time before delivery</small></dt><dd>${{ number_format(Deposits::AMOUNT_IN_CENTS / 100) }}</dd></div>
+                    <div class="today"><dt>Today, to reserve it<small>Refundable any time before pickup</small></dt><dd>${{ number_format(Deposits::AMOUNT_IN_CENTS / 100) }}</dd></div>
                     <div><dt>At pickup<small>Plus tax and licensing</small></dt><dd>${{ number_format(max(0, $car->price_in_cents - Deposits::AMOUNT_IN_CENTS) / 100) }}</dd></div>
                 </dl>
             </aside>
@@ -166,8 +166,8 @@ new #[Title('How it works — TruCars')] class extends Component {
                 <div class="hw-meta">About five minutes online</div>
             </header>
             <div>
-                <p>Checkout asks how you’d like to pay (cash, finance or lease), whether you have a trade-in, and when you’d like to pick the car up or have it delivered. You also do a quick ID check.</p>
-                <p>Once you pay the $150 deposit, the car is held for you and nobody else can reserve it. The deposit comes off the price when you buy, and it’s refundable any time before delivery.</p>
+                <p>Checkout asks how you’d like to pay (cash, finance or lease), whether you have a trade-in, and when you’d like to pick the car up at the dealership. You also do a quick ID check.</p>
+                <p>Once you pay the $150 deposit, the car is held for you and nobody else can reserve it. The deposit comes off the price when you buy, and it’s refundable any time before pickup.</p>
             </div>
         </li>
 
@@ -237,7 +237,7 @@ new #[Title('How it works — TruCars')] class extends Component {
                     <dt>When you buy</dt>
                     <dd>It comes straight off the price.</dd>
                     <dt>If you change your mind</dt>
-                    <dd>It’s refundable any time before you take delivery.</dd>
+                    <dd>It’s refundable any time before you pick the car up.</dd>
                 </dl>
             </div>
         </section>

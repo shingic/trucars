@@ -31,7 +31,7 @@ new #[Layout('layouts.checkout')] class extends Component {
         ['key' => 'buyer',   'label' => 'About you'],
         ['key' => 'plan',    'label' => 'Plan'],
         ['key' => 'extras',  'label' => 'Extras'],
-        ['key' => 'handover','label' => 'Handover'],
+        ['key' => 'handover','label' => 'Pickup'],
         ['key' => 'id',      'label' => 'ID check'],
         ['key' => 'review',  'label' => 'Review'],
         ['key' => 'reserve', 'label' => 'Reserve'],
@@ -159,10 +159,10 @@ new #[Layout('layouts.checkout')] class extends Component {
 
     public array $provinceOptions = ['Ontario', 'Alberta', 'British Columbia', 'Manitoba', 'Quebec', 'Saskatchewan'];
 
-    // ----- Handover (pickup or delivery, with a day + time window) -----
-    // Both options are free to the buyer; pickup also names a hub, delivery
-    // goes to the address from the "About you" step. The chosen day + window
-    // is combined into a single timestamp (pickup_at) when the deal is created.
+    // ----- Handover: pickup at the dealership, with a day + time window -----
+    // No dealer delivers, so pickup is the only mode. The buyer chooses the
+    // spot, day and window; they're combined into a single timestamp
+    // (pickup_at) when the deal is created.
     public string $handoverMode = 'pickup';
     public int $pickupSpotIndex = 0;
     public ?string $handoverDate = null;     // 'Y-m-d' from handoverDateOptions()
@@ -634,7 +634,7 @@ new #[Layout('layouts.checkout')] class extends Component {
        --------------------------------------------------------------------- */
     public function setHandoverMode(string $mode): void
     {
-        if (in_array($mode, ['pickup', 'delivery'], true)) {
+        if ($mode === 'pickup') {
             $this->handoverMode = $mode;
         }
     }
@@ -762,7 +762,7 @@ new #[Layout('layouts.checkout')] class extends Component {
         $availableDates = array_column($this->handoverDateOptions(), 'date');
 
         $this->validate([
-            'handoverMode'     => ['required', 'in:pickup,delivery'],
+            'handoverMode'     => ['required', 'in:pickup'],
             'handoverDate'     => ['required', 'in:' . implode(',', $availableDates)],
             'handoverTimeSlot' => ['required', 'in:' . implode(',', array_keys($this->availableTimeSlots($this->handoverDate)))],
         ], [
@@ -1089,16 +1089,10 @@ new #[Layout('layouts.checkout')] class extends Component {
         return ($spots[$this->pickupSpotIndex] ?? $spots[0])['name'];
     }
 
-    /** Where the car changes hands — the store for pickup, the buyer's city for delivery. */
+    /** Where the car changes hands: the pickup spot at the dealership. */
     public function handoverLocationLabel(): string
     {
-        if ($this->handoverMode === 'pickup') {
-            return $this->selectedPickupSpotName();
-        }
-
-        $cityProvince = trim($this->city . ', ' . $this->province, ', ');
-
-        return 'Home delivery' . ($cityProvince !== '' ? ' · ' . $cityProvince : '');
+        return $this->selectedPickupSpotName();
     }
 
     /** The car's rooftop's IANA zone — handover windows are store-local times. */
@@ -1125,9 +1119,7 @@ new #[Layout('layouts.checkout')] class extends Component {
     {
         $when = $this->handoverAt();
         $window = $this->handoverTimeSlots[$this->handoverTimeSlot] ?? '';
-        $modeLabel = $this->handoverMode === 'pickup'
-            ? 'Pickup · ' . $this->selectedPickupSpotName()
-            : $this->handoverLocationLabel();
+        $modeLabel = 'Pickup · ' . $this->selectedPickupSpotName();
 
         if ($when === null) {
             return $modeLabel;
@@ -1930,7 +1922,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                 <div class="field"><label class="field-label">Mobile number</label><input type="text" class="field-input" wire:model="phone" placeholder="(647) 555-0123">@error('phone') <p class="field-error">{{ $message }}</p> @enderror</div>
 
                 <div class="section-label">{!! $icon('pin', 24) !!} Where do you call home?</div>
-                <p class="section-note">For registration and billing. Your delivery spot can differ.</p>
+                <p class="section-note">For registration and billing.</p>
                 @if (app(\App\Support\AddressLookup::class)->enabled())
                     {{-- Start typing → Google address suggestions; picking one fills the form. --}}
                     <div class="field addr" x-data="addressSuggest($wire)" x-on:click.outside="close()" x-on:keydown.escape="close()">
@@ -2155,38 +2147,19 @@ new #[Layout('layouts.checkout')] class extends Component {
                 <p class="section-note" style="margin-top:18px;">Prices are the dealership's, so your estimate shows what you'd really pay. You're never required to take any of them, and the dealership's F&amp;I office confirms what's available and the final cost with you before anything is final. Biweekly prices apply when you finance.</p>
 
             @elseif ($this->stepKey() === 'handover')
-                <div class="step-meta">Step 5 · Handover</div>
-                <h1 class="h1">How should we get it to you?</h1>
-                <p class="lede">Both options are on us. Collect it yourself from the dealership, or we'll bring it to your door — keys in hand, paperwork done on the spot.</p>
+                <div class="step-meta">Step 5 · Pickup</div>
+                <h1 class="h1">When will you pick it up?</h1>
+                <p class="lede">You collect it at the dealership, keys in hand and paperwork done on the spot. Choose where, then the day and time that suit you.</p>
 
-                <button type="button" class="choice {{ $handoverMode === 'pickup' ? 'is-on' : '' }}" wire:click="setHandoverMode('pickup')">
-                    <span class="radio"></span>
-                        <span class="choice-ic">{!! $icon('store', 30) !!}</span>
-                    <div>
-                        <div class="choice-title">I'll pick it up <span class="tag-free">FREE</span></div>
-                        <div class="choice-sub">At {{ $this->pickupSpots()[0]['name'] }}{{ $this->vehicle->display_location ? ', ' . $this->vehicle->display_location : '' }}{{ count($this->pickupSpots()) > 1 ? ' or ' . (count($this->pickupSpots()) - 1) . ' more ' . (count($this->pickupSpots()) === 2 ? 'spot' : 'spots') : '' }} · we cover up to $100 of your ride there</div>
-                    </div>
-                </button>
-                <button type="button" class="choice {{ $handoverMode === 'delivery' ? 'is-on' : '' }}" wire:click="setHandoverMode('delivery')">
-                    <span class="radio"></span>
-                        <span class="choice-ic">{!! $icon('truck', 30) !!}</span>
-                    <div>
-                        <div class="choice-title">Bring it to me <span class="tag-free">FREE</span></div>
-                        <div class="choice-sub">Dropped at {{ $city !== '' ? $city : 'your address' }}, keys in hand, paperwork done on the spot</div>
-                    </div>
-                </button>
-
-                @if ($handoverMode === 'pickup')
-                    <div class="section-label">{!! $icon('pin', 24) !!} Where you'll collect it</div>
-                    <div class="spot-grid">
-                        @foreach ($this->pickupSpots() as $spotIndex => $spot)
-                            <button type="button" class="spot {{ $pickupSpotIndex === $spotIndex ? 'is-on' : '' }}" wire:click="setPickupSpot({{ $spotIndex }})">
-                                <span class="spot-name">{{ $spot['name'] }}</span>
-                                @if ($spot['address'] !== '') <span class="spot-distance">{{ $spot['address'] }}</span> @endif
-                            </button>
-                        @endforeach
-                    </div>
-                @endif
+                <div class="section-label">{!! $icon('pin', 24) !!} Where you'll collect it</div>
+                <div class="spot-grid">
+                    @foreach ($this->pickupSpots() as $spotIndex => $spot)
+                        <button type="button" class="spot {{ $pickupSpotIndex === $spotIndex ? 'is-on' : '' }}" wire:click="setPickupSpot({{ $spotIndex }})">
+                            <span class="spot-name">{{ $spot['name'] }}</span>
+                            @if ($spot['address'] !== '') <span class="spot-distance">{{ $spot['address'] }}</span> @endif
+                        </button>
+                    @endforeach
+                </div>
 
                 <div class="section-label">{!! $icon('calendar', 24) !!} Which day works?</div>
                 <div class="date-grid">
@@ -2299,7 +2272,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                     @endif
                     <p class="muted pay-secure">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
-                        {{ $paymentDemo ? 'Demo payment — nothing is charged' : 'Secured by Stripe · refundable any time before delivery' }}
+                        {{ $paymentDemo ? 'Demo payment — nothing is charged' : 'Secured by Stripe · refundable any time before pickup' }}
                     </p>
                 </div>
 
@@ -2321,7 +2294,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                     <div class="timeline-next">
                         <div class="tn-head">From here</div>
                         <div class="tn-step"><span class="tn-n">1</span><div><div class="tn-title">The dealership confirms your financing</div><div class="muted tn-sub">Final approval and your real rate — usually within a day.</div></div></div>
-                        <div class="tn-step"><span class="tn-n">2</span><div><div class="tn-title">They prep your car</div><div class="muted tn-sub">Detailed, inspected, and ready for pickup or delivery.</div></div></div>
+                        <div class="tn-step"><span class="tn-n">2</span><div><div class="tn-title">They prep your car</div><div class="muted tn-sub">Detailed, inspected, and ready for pickup.</div></div></div>
                         <div class="tn-step"><span class="tn-n">3</span><div><div class="tn-title">Track it all in My Garage</div><div class="muted tn-sub">Live deal status, your documents, and a direct line to the dealership.</div></div></div>
                     </div>
                 </div>
@@ -2395,7 +2368,7 @@ new #[Layout('layouts.checkout')] class extends Component {
 
                                     @if (count($this->paymentBreakdown['passThroughFees']) > 0)
                                         <div class="rail-group">
-                                            <div class="rail-included">Added at delivery — at cost</div>
+                                            <div class="rail-included">Added at pickup — at cost</div>
                                             @foreach ($this->paymentBreakdown['passThroughFees'] as $passThroughFee)
                                                 <div class="rail-line sub"><span>{{ $passThroughFee['label'] }}</span><span>{{ $this->asMoney($passThroughFee['amount']) }}</span></div>
                                             @endforeach
@@ -2419,7 +2392,7 @@ new #[Layout('layouts.checkout')] class extends Component {
 
                                     @if (count($this->paymentBreakdown['passThroughFees']) > 0)
                                         <div class="rail-group">
-                                            <div class="rail-included">Added at delivery — at cost</div>
+                                            <div class="rail-included">Added at pickup — at cost</div>
                                             @foreach ($this->paymentBreakdown['passThroughFees'] as $passThroughFee)
                                                 <div class="rail-line sub"><span>{{ $passThroughFee['label'] }}</span><span>{{ $this->asMoney($passThroughFee['amount']) }}</span></div>
                                             @endforeach

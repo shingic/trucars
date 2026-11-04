@@ -72,6 +72,8 @@ class Dealer extends Model
     protected static function booted(): void
     {
         static::saving(function (Dealer $dealer) {
+            $dealer->placeOnMapFromAddress();
+
             if ($dealer->isDirty('brand_id') && $dealer->brand_id) {
                 $dealer->franchise_make = Brand::whereKey($dealer->brand_id)->value('name');
             } elseif ($dealer->isDirty('franchise_make')) {

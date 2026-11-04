@@ -577,23 +577,21 @@ new class extends Component {
                             <button type="button" class="loc-change" @click="$dispatch('open-location-gate')">Change</button>
                         </div>
                         @if ($km >= self::FAR_KM)
-                            <div class="loc-far">That's a long way from you. Check pickup and delivery timing before you reserve.</div>
+                            <div class="loc-far">That's a long way from you. You'll need to travel there to pick it up.</div>
                         @endif
                     @else
                         {{-- Location known but not on the map (a typed city, or the geocoder was unavailable). --}}
                         <div class="loc-row">
                             <div>
                                 <div class="loc-km">{{ $carIn ? 'In ' . $carIn : 'Distance unknown' }}</div>
-                                @if ($here)
-                                    <div class="loc-sub">{{ trim($this->proximityLine() . ' From ' . $here['label'] . '.') }}</div>
-                                @endif
+                                <div class="loc-sub">{{ trim($this->proximityLine() . ' We don’t have this store on our map yet, so there’s no distance for it.') }}</div>
                             </div>
                             <button type="button" class="loc-change" @click="$dispatch('open-location-gate')">Change</button>
                         </div>
                     @endif
 
                     @if ($km !== null)
-                        <p class="loc-note">{{ $this->driveTimeLabel($km) }} · or $149 delivery to your door</p>
+                        <p class="loc-note">{{ $this->driveTimeLabel($km) }} to pick it up</p>
                     @endif
                 </div>
                 <dl class="vdp-quickmeta">
@@ -711,10 +709,6 @@ new class extends Component {
                     <div class="buy-pricelabel">TruCars price</div>
                     <div class="buy-price">{{ $vehicle->display_price }}</div>
                     <div class="price-disclosure">
-                        <div class="pd-row">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 13h18M5 13 7 6h10l2 7M7 17h.01M17 17h.01"/></svg>
-                            $149 delivery to your door
-                        </div>
                         @if ($this->distanceKm() !== null)
                             <a class="pd-row pd-dist" href="#distance">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-6.1 7-11.5A7 7 0 0 0 5 9.5C5 14.9 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
@@ -788,8 +782,8 @@ new class extends Component {
                 </div>
 
                 <div class="buy-assure">
-                    <div class="ba"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg> Fully refundable $150 deposit until delivery</div>
-                    <div class="ba"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg> Home delivery or dealership pickup</div>
+                    <div class="ba"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg> Fully refundable $150 deposit until pickup</div>
+                    <div class="ba"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg> Pick it up at the dealership, on a day you choose</div>
                     <div class="ba"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg> Trade-in &amp; financing built into checkout</div>
                 </div>
             </div>
