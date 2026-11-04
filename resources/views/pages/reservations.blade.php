@@ -1,46 +1,15 @@
 <?php
 
 use App\Models\Deal;
-use App\Models\Lead;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
 use Illuminate\Support\Facades\Auth;
 
 new #[Layout('layouts.dealer')] class extends Component {
-    public string $activeTab = 'reservations';
     public string $stageFilter = 'all';
-    public string $statusFilter = 'all';
-
-    public array $leadStatusLabels = [
-        'new'       => 'New inquiry',
-        'contacted' => 'Contacted',
-        'confirmed' => 'Confirmed',
-        'closed'    => 'Closed',
-    ];
-
-    public array $leadFilterOrder = ['new', 'contacted', 'confirmed', 'closed'];
-
-    public array $leadNextStage = [
-        'new'       => 'contacted',
-        'contacted' => 'confirmed',
-        'confirmed' => 'closed',
-    ];
-
-    public function switchTab(string $tab): void
-    {
-        $this->activeTab = $tab;
-        $this->stageFilter = 'all';
-        $this->statusFilter = 'all';
-    }
-
     public function filterByStage(string $stage): void
     {
         $this->stageFilter = $stage;
-    }
-
-    public function filterByStatus(string $status): void
-    {
-        $this->statusFilter = $status;
     }
 
     public function advanceDeal(int $dealId): void
@@ -57,17 +26,6 @@ new #[Layout('layouts.dealer')] class extends Component {
                 'Stage moved to ' . Deal::STAGE_LABELS[$nextStage] . '.',
                 Auth::user()->name ?? 'Dealer',
             );
-        }
-    }
-
-    public function advanceLead(int $leadId): void
-    {
-        $lead = Lead::findOrFail($leadId);
-
-        $nextStatus = $this->leadNextStage[$lead->status] ?? null;
-
-        if ($nextStatus) {
-            $lead->update(['status' => $nextStatus]);
         }
     }
 
@@ -102,31 +60,6 @@ new #[Layout('layouts.dealer')] class extends Component {
         return array_merge($emptyTally, $countedByStage);
     }
 
-    public function leads()
-    {
-        return Lead::query()
-            ->with('vehicle')
-            ->when(
-                $this->statusFilter !== 'all',
-                fn ($query) => $query->where('status', $this->statusFilter),
-            )
-            ->latest()
-            ->get();
-    }
-
-    public function statusCounts(): array
-    {
-        $countedByStatus = Lead::query()
-            ->selectRaw('status, count(*) as total')
-            ->groupBy('status')
-            ->pluck('total', 'status')
-            ->toArray();
-
-        $emptyTally = ['new' => 0, 'contacted' => 0, 'confirmed' => 0, 'closed' => 0];
-
-        return array_merge($emptyTally, $countedByStatus);
-    }
-
     /**
      * Hand the view its data computed exactly once per render. This is what
      * replaces the old #[Computed] properties: the counts and lists are derived
@@ -137,9 +70,7 @@ new #[Layout('layouts.dealer')] class extends Component {
     {
         return [
             'stageCounts'  => $this->stageCounts(),
-            'statusCounts' => $this->statusCounts(),
-            'reservations' => $this->activeTab === 'reservations' ? $this->deals() : collect(),
-            'inquiries'    => $this->activeTab === 'inquiries' ? $this->leads() : collect(),
+            'reservations' => $this->deals(),
         ];
     }
 }; ?>
@@ -228,20 +159,10 @@ new #[Layout('layouts.dealer')] class extends Component {
 
 <div class="inbox">
     <div class="page-head">
-        <h1>Reservations &amp; inquiries</h1>
-        <p class="page-sub">Reservations are committed buyers with a deposit down. Inquiries are everything else.</p>
+        <h1>Reservations</h1>
+        <p class="page-sub">Committed buyers with a $150 deposit down. A shopper becomes your customer the moment they pay.</p>
     </div>
 
-    <div class="inbox-tabs">
-        <button type="button" class="tab-btn {{ $activeTab === 'reservations' ? 'on' : '' }}" wire:click="switchTab('reservations')">
-            Reservations <span class="tab-n">{{ array_sum($stageCounts) }}</span>
-        </button>
-        <button type="button" class="tab-btn {{ $activeTab === 'inquiries' ? 'on' : '' }}" wire:click="switchTab('inquiries')">
-            Inquiries <span class="tab-n">{{ array_sum($statusCounts) }}</span>
-        </button>
-    </div>
-
-    @if ($activeTab === 'reservations')
         <div class="inbox-toolbar">
             <span class="inbox-count">{{ $reservations->count() }} shown</span>
 
@@ -312,80 +233,4 @@ new #[Layout('layouts.dealer')] class extends Component {
                 <p class="deal-empty">No reservations in this view yet. They'll land here the moment a buyer puts $150 down.</p>
             @endforelse
         </div>
-    @else
-        <div class="inbox-toolbar">
-            <span class="inbox-count">{{ $inquiries->count() }} shown</span>
-
-            <div class="stage-filter">
-                <button type="button"
-                        class="sf-pill {{ $statusFilter === 'all' ? 'on' : '' }}"
-                        wire:click="filterByStatus('all')">
-                    All <span class="sf-n">{{ array_sum($statusCounts) }}</span>
-                </button>
-
-                @foreach ($leadFilterOrder as $statusKey)
-                    <button type="button"
-                            class="sf-pill {{ $statusFilter === $statusKey ? 'on' : '' }}"
-                            wire:click="filterByStatus('{{ $statusKey }}')">
-                        {{ $leadStatusLabels[$statusKey] }} <span class="sf-n">{{ $statusCounts[$statusKey] }}</span>
-                    </button>
-                @endforeach
-            </div>
-        </div>
-
-        <div class="deal-list">
-            @forelse ($inquiries as $lead)
-                <div class="deal-row" wire:key="lead-{{ $lead->id }}">
-                    <div class="dr-cust">
-                        <span class="dr-name">{{ $lead->name }}</span>
-                        <span class="dr-meta">#{{ $lead->id }} · {{ $lead->created_at->diffForHumans() }}</span>
-                    </div>
-
-                    <div class="dr-veh">
-                        <span class="dr-thumb">
-                            <svg width="32" height="13" viewBox="0 0 320 130" xmlns="http://www.w3.org/2000/svg"><path d="M20 92 C20 78 34 74 50 72 L74 50 C82 40 96 34 116 34 L196 34 C220 34 236 42 250 58 L286 70 C300 74 304 80 304 92 L304 96 C304 100 300 102 296 102 L24 102 C20 102 20 98 20 96 Z" fill="#1f2227"/><circle cx="92" cy="100" r="20" fill="#111"/><circle cx="240" cy="100" r="20" fill="#111"/></svg>
-                        </span>
-                        <div>
-                            @if ($lead->vehicle)
-                                <div class="dr-veh-title">{{ $lead->vehicle->model_year }} {{ $lead->vehicle->make }} {{ $lead->vehicle->model }}</div>
-                                <div class="dr-veh-sub">{{ $lead->vehicle->trim }} · ${{ number_format($lead->vehicle->price_in_cents / 100) }}</div>
-                            @else
-                                <div class="dr-veh-title">General inquiry</div>
-                                <div class="dr-veh-sub">No vehicle attached</div>
-                            @endif
-                        </div>
-                    </div>
-
-                    <div class="dr-contact">
-                        <a href="mailto:{{ $lead->email }}" class="dr-contact-line">{{ $lead->email }}</a>
-                        <a href="tel:{{ $lead->phone }}" class="dr-contact-line muted">{{ $lead->phone }}</a>
-                    </div>
-
-                    <div>
-                        <span class="stage {{ $lead->status }}">
-                            {{ $leadStatusLabels[$lead->status] ?? ucfirst($lead->status) }}
-                        </span>
-                    </div>
-
-                    <div class="dr-action">
-                        <a href="{{ route('dealer.lead', $lead) }}" class="open-btn">Open</a>
-
-                        @if (isset($leadNextStage[$lead->status]))
-                            <button type="button"
-                                    class="advance-btn"
-                                    wire:click="advanceLead({{ $lead->id }})"
-                                    wire:loading.attr="disabled"
-                                    wire:target="advanceLead({{ $lead->id }})">
-                                Mark {{ $leadStatusLabels[$leadNextStage[$lead->status]] }}
-                            </button>
-                        @else
-                            <span class="dr-done">Closed</span>
-                        @endif
-                    </div>
-                </div>
-            @empty
-                <p class="deal-empty">No inquiries in this view yet.</p>
-            @endforelse
-        </div>
-    @endif
 </div>

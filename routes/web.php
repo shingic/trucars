@@ -49,6 +49,17 @@ Route::domain($publicDomain)->middleware(TreatNonCustomersAsGuests::class)->grou
         ->where(['first' => '[a-z0-9-]+', 'second' => '[a-z0-9-]+'])
         ->name('landing');
 
+    // One-click unsubscribe from marketing email (the link in every email, and
+    // List-Unsubscribe-Post for mail apps). Signed, so it needs no sign-in.
+    Route::match(['get', 'post'], '/email/unsubscribe/{user}', function (\App\Models\User $user) {
+        if ($user->marketing_unsubscribed_at === null) {
+            $user->forceFill(['marketing_unsubscribed_at' => now()])->save();
+            \App\Models\AuditLog::record('marketing.unsubscribed', $user);
+        }
+
+        return request()->isMethod('post') ? response()->noContent() : view('marketing-unsubscribed');
+    })->middleware('signed')->withoutMiddleware(TreatNonCustomersAsGuests::class)->name('marketing.unsubscribe');
+
     Route::get('/sitemap.xml', \App\Http\Controllers\SitemapController::class)->name('sitemap');
     Route::get('/robots.txt', fn () => response("User-agent: *\nDisallow: /livewire/\n\nSitemap: " . route('sitemap') . "\n", 200, ['Content-Type' => 'text/plain']));
     Route::livewire('/how-it-works', 'pages::how-it-works')->name('how-it-works');
@@ -156,18 +167,13 @@ Route::domain($staffDomain)->group(function () {
         ->middleware(EnsureUserIsStaff::class)
         ->name('dealer.reservations');
 
-    // The committed-deal workspace. A separate /deals/{deal} path (not nested
-    // under /reservations) so it can never collide with the lead detail route
-    // below — leads and deals are different models on different keys. DealerScope
+    // The committed-deal workspace, at /deals/{deal}. DealerScope
     // on Deal fences the bound model to the signed-in rooftop, so a deal from
     // another dealership 404s before the page loads.
     Route::livewire('/deals/{deal}', 'pages::deal-detail')
         ->middleware(EnsureUserIsStaff::class)
         ->name('dealer.deal');
 
-    Route::livewire('/reservations/{lead}', 'pages::lead-detail')
-        ->middleware(EnsureUserIsStaff::class)
-        ->name('dealer.lead');
 
     // The dealership's own inventory — fenced to the signed-in staff member's dealer.
     Route::livewire('/inventory', 'pages::dealer-inventory')
@@ -288,6 +294,16 @@ Route::domain($adminDomain)->group(function () {
         ->whereNumber('customer')
         ->middleware([EnsureCommandCentreAccess::class, 'can:customers.view'])
         ->name('admin.customers.show');
+
+    // Shoppers who haven't paid a deposit belong to the platform: they're only
+    // ever shown here, never in the dealer portal.
+    Route::livewire('/checkouts', 'pages::admin-checkouts')
+        ->middleware([EnsureCommandCentreAccess::class, 'can:customers.view'])
+        ->name('admin.checkouts');
+
+    Route::livewire('/inquiries', 'pages::admin-inquiries')
+        ->middleware([EnsureCommandCentreAccess::class, 'can:customers.view'])
+        ->name('admin.inquiries');
 
     Route::livewire('/reservations', 'pages::admin-reservations')
         ->middleware([EnsureCommandCentreAccess::class, 'can:reservations.view'])

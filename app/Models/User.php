@@ -50,7 +50,20 @@ class User extends Authenticatable
             'password' => 'hashed',
             'suspended_at' => 'datetime',
             'permissions' => 'array',
+            'marketing_unsubscribed_at' => 'datetime',
         ];
+    }
+
+    /** Unfinished checkouts: the cars they started on but haven't paid a deposit for. */
+    public function checkoutDrafts(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(CheckoutDraft::class);
+    }
+
+    /** Whether marketing email may be sent to them: a verified customer who hasn't unsubscribed. */
+    public function acceptsMarketing(): bool
+    {
+        return $this->isCustomer() && $this->email_verified_at !== null && $this->marketing_unsubscribed_at === null && $this->suspended_at === null;
     }
 
     public const ROLE_CUSTOMER = 'customer';

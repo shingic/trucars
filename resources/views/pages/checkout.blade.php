@@ -216,20 +216,40 @@ new #[Layout('layouts.checkout')] class extends Component {
         return 'checkout_draft.' . auth()->id() . '.' . $this->vehicle->id;
     }
 
-    /** Saved after every request, so a refresh lands where the buyer left off. */
+    /**
+     * Saved after every request, so a refresh lands where the buyer left off:
+     * in the session for this visit, and as a CheckoutDraft so they can come
+     * back another day and so the Command Centre can follow up. Never shown
+     * to the dealer: an unpaid shopper isn't their customer.
+     */
     public function dehydrate(): void
     {
-        if (! auth()->check() || $this->dealReference !== null) {
+        if (! auth()->check() || ! auth()->user()->isCustomer() || $this->dealReference !== null) {
             return;
         }
 
-        session()->put($this->draftKey(), $this->only(self::DRAFT_FIELDS));
+        $draft = $this->only(self::DRAFT_FIELDS);
+        session()->put($this->draftKey(), $draft);
+
+        \App\Models\CheckoutDraft::updateOrCreate(
+            ['user_id' => auth()->id(), 'vehicle_id' => $this->vehicle->id],
+            [
+                'step_key'         => $this->stepKey(),
+                'data'             => $draft,
+                'shopper_location' => \App\Support\ShopperLocation::current(),
+                'status'           => \App\Models\CheckoutDraft::STATUS_ACTIVE,
+                'last_active_at'   => now(),
+            ],
+        );
     }
 
     /** Put a saved draft back, keeping only what still makes sense today. */
     private function restoreDraft(): void
     {
-        $draft = session($this->draftKey());
+        $draft = session($this->draftKey())
+            ?? \App\Models\CheckoutDraft::query()
+                ->where('user_id', auth()->id())->where('vehicle_id', $this->vehicle->id)
+                ->active()->first()?->data;
 
         if (! is_array($draft)) {
             return;
@@ -1466,7 +1486,15 @@ new #[Layout('layouts.checkout')] class extends Component {
 
     private function showConfirmation(Deal $deal): void
     {
+        // Paid: the draft becomes the deal, and the follow-up emails stop.
         session()->forget($this->draftKey());
+        \App\Models\CheckoutDraft::query()
+            ->where('user_id', $deal->user_id)->where('vehicle_id', $deal->vehicle_id)
+            ->update(['status' => \App\Models\CheckoutDraft::STATUS_RESERVED, 'deal_id' => $deal->id]);
+        // Anyone else partway through this car can't have it now.
+        \App\Models\CheckoutDraft::query()
+            ->where('vehicle_id', $deal->vehicle_id)->where('user_id', '!=', $deal->user_id)->active()
+            ->update(['status' => \App\Models\CheckoutDraft::STATUS_CAR_GONE]);
         $this->dealReference = $deal->reference;
         $this->paymentClientSecret = null;
         $this->stepIndex = count($this->steps) - 1;

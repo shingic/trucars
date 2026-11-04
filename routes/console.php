@@ -15,3 +15,6 @@ Schedule::command('deposits:reconcile')->everyFifteenMinutes()->withoutOverlappi
 // Buyers who haven't sent the documents they were asked for get one nudge,
 // during the day only.
 Schedule::command('deals:remind-documents')->hourly()->between('9:00', '19:00')->timezone('America/Toronto')->withoutOverlapping();
+
+// Follow-ups to shoppers who started a checkout but didn't pay the deposit.
+Schedule::command('checkouts:send-recovery')->everyFifteenMinutes()->withoutOverlapping();

@@ -50,7 +50,7 @@
                             Good news, {{ $firstName }} — it's back.
                         </h1>
                         <p style="margin:0; {{ $font }} font-size:15px; line-height:1.6; color:#4B5675;">
-                            The {{ $car }}{{ $vehicle->trim ? ' ' . $vehicle->trim : '' }} you were watching at {{ ucwords(strtolower((string) $vehicle->dealer?->name)) }} is available again. Its last reservation didn't go through, so it's open to reserve right now — first come, first served.
+                            The {{ $car }}{{ $vehicle->trim ? ' ' . $vehicle->trim : '' }} you were watching{{ $vehicle->display_location ? ' in ' . $vehicle->display_location : '' }} is available again. Its last reservation didn't go through, so it's open to reserve right now — first come, first served.
                         </p>
                     </td>
                 </tr>

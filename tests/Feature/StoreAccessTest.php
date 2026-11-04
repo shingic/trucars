@@ -45,7 +45,8 @@ class StoreAccessTest extends TestCase
         $this->actingAs($this->staff($this->dealer));
 
         $this->assertSame(['Our Buyer'], Lead::pluck('name')->all());
-        $this->get(route('dealer.lead', $theirs))->assertNotFound();
+        // Enquiries aren't in the dealer portal at all any more: unpaid shoppers belong to the platform.
+        $this->assertFalse(\Illuminate\Support\Facades\Route::has('dealer.lead'));
     }
 
     /* ---- store-limited staff ------------------------------------------- */

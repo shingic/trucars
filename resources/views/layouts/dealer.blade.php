@@ -115,7 +115,7 @@
     <aside class="sidebar">
         <div class="sb-brand">
             <span class="wordmark">@include('partials.logo', ['variant' => 'light', 'height' => 26])</span>
-            <span class="wordmark-short"><img src="{{ asset('images/motokari-mark-light.png') }}?v={{ @filemtime(public_path('images/motokari-mark-light.png')) ?: 1 }}" alt="Motokari" style="height:24px; width:auto; display:block;"></span>
+            <span class="wordmark-short"><img src="{{ asset('images/trumoto-mark.png') }}?v={{ @filemtime(public_path('images/trumoto-mark.png')) ?: 1 }}" alt="trumoto" style="height:24px; width:auto; display:block;"></span>
         </div>
 
         <nav class="sb-scroll">
@@ -193,6 +193,16 @@
                         <a href="{{ route('admin.dealers') }}" class="nav-item {{ request()->routeIs('admin.dealers*') || request()->routeIs('admin.customers*') ? 'on' : '' }}">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6"/></svg>
                             <span class="nav-label">Dealers</span>
+                        </a>
+                    @endcan
+                    @can('customers.view')
+                        <a href="{{ route('admin.checkouts') }}" class="nav-item {{ request()->routeIs('admin.checkouts') ? 'on' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.7 12.4a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6"/></svg>
+                            <span class="nav-label">Unfinished checkouts</span>
+                        </a>
+                        <a href="{{ route('admin.inquiries') }}" class="nav-item {{ request()->routeIs('admin.inquiries') ? 'on' : '' }}">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                            <span class="nav-label">Inquiries</span>
                         </a>
                     @endcan
                     @can('reservations.view')

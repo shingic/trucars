@@ -69,7 +69,7 @@ new #[Layout('layouts.dealer')] #[Title('Platform settings')] class extends Comp
 
         $rules = [];
         foreach (PlatformSettings::DEFINITIONS as $key => [$label, , , $maxLength]) {
-            $rules["values.{$key}"] = [$key === 'marketplace_notice' ? 'nullable' : 'required', 'string', "max:{$maxLength}"];
+            $rules["values.{$key}"] = [in_array($key, ['marketplace_notice', 'business_mailing_address'], true) ? 'nullable' : 'required', 'string', "max:{$maxLength}"];
         }
 
         $this->validate($rules, attributes: collect(PlatformSettings::DEFINITIONS)->mapWithKeys(fn ($definition, $key) => ["values.{$key}" => strtolower($definition[0])])->all());

@@ -40,6 +40,12 @@ final class PlatformSettings
             '',
             200,
         ],
+        'business_mailing_address' => [
+            'Business mailing address',
+            'Printed in the footer of every marketing email, as Canada\'s anti-spam law (CASL) requires. Follow-up emails to unfinished checkouts don\'t send until this is set.',
+            '',
+            200,
+        ],
     ];
 
     /**
