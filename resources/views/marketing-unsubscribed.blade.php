@@ -19,7 +19,7 @@
 <body>
 <main>
     <div class="card">
-        <img src="{{ asset('images/trumo-logo.svg') }}" alt="{{ config('site.name') }}">
+        @include("partials.logo")
         <h1>You're unsubscribed</h1>
         <p>We won't send you any more marketing emails. You'll still get emails about a reservation you make, like your receipt and pickup details.</p>
         <p><a href="{{ route('shop') }}">Back to the cars</a></p>
