@@ -407,7 +407,7 @@ new class extends Component {
 };
 ?>
 
-<div x-data="{ filtersOpen: false }"
+<div class="srp" x-data="{ filtersOpen: false }"
      x-effect="document.body.style.overflow = filtersOpen ? 'hidden' : ''"
      @keydown.escape.window="filtersOpen = false">
 
@@ -741,6 +741,8 @@ new class extends Component {
         .loc-form button { font-size:14px; font-weight:700; color:var(--ink); padding:7px 12px; border-left:1.5px solid var(--line-strong); }
         .loc-form button:hover { background:var(--ink); color:#fff; }
         .loc-note { flex-basis:100%; font-size:13px; color:var(--primary-press); font-weight:600; }
+        /* capped and centred like the vehicle page */
+        .srp { max-width:1240px; margin:0 auto; }
         .srp-body { display:grid; grid-template-columns:260px minmax(0, 1fr); gap:40px; align-items:start; }
 
         /* filters: a plain ruled index, no boxes */
@@ -814,8 +816,7 @@ new class extends Component {
         .srp-mobilebar { display:none; }
         .srp-scrim { display:none; }
 
-        .grid { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:34px 22px; }
-        @media (max-width:1350px) { .grid { grid-template-columns:repeat(3, minmax(0, 1fr)); } }
+        .grid { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:34px 22px; }
         @media (max-width:1000px) { .grid { grid-template-columns:repeat(2, minmax(0, 1fr)); } }
         .grid.is-list { grid-template-columns:1fr; gap:0; border-top:2px solid var(--ink); }
         .floor-empty { grid-column:1 / -1; padding:60px 32px; text-align:center; color:var(--ink-2); border:1.5px dashed var(--line-strong); }
