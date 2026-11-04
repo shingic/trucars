@@ -193,6 +193,72 @@ new #[Layout('layouts.checkout')] class extends Component {
     public bool $paymentDemo = false;
     public string $paymentError = '';
 
+    /**
+     * What a refresh keeps: where the buyer is and everything they've entered.
+     * Held server-side in their session (so the trade estimate and ID check
+     * can't be edited), per car, and cleared once the reservation is made.
+     * Payment state is never kept; Reserve sets the payment up again.
+     */
+    private const DRAFT_FIELDS = [
+        'stepIndex', 'wantsTrade', 'tradeSubStep',
+        'tradeYear', 'tradeMake', 'tradeModel', 'tradeTrim', 'tradeKilometres', 'tradeExteriorColour', 'tradeKeyCount', 'tradeFeatures',
+        'tradeExteriorCondition', 'tradeInteriorCondition', 'tradeTireCondition', 'tradeMechanicalCondition', 'tradeAccidentHistory',
+        'tradeOwnerCount', 'tradeTitleStatus', 'tradeWasSmokedIn', 'tradeCarriedPets', 'tradeHasAftermarketMods', 'tradeLienOwing', 'tradeNotes',
+        'tradeEstimatePointInCents', 'tradeEstimateLowInCents', 'tradeEstimateHighInCents', 'tradeEstimateLines', 'tradeEstimateBreakdown',
+        'tradeEstimateProviderKey', 'tradeEstimatedAt',
+        'firstName', 'lastName', 'email', 'phone', 'streetAddress', 'city', 'province', 'postalCode',
+        'purchaseType', 'termMonths', 'downPayment', 'warrantyPlan', 'wantsGap', 'selectedExtras',
+        'handoverMode', 'pickupSpotIndex', 'handoverDate', 'handoverTimeSlot', 'identityVerified',
+    ];
+
+    private function draftKey(): string
+    {
+        return 'checkout_draft.' . auth()->id() . '.' . $this->vehicle->id;
+    }
+
+    /** Saved after every request, so a refresh lands where the buyer left off. */
+    public function dehydrate(): void
+    {
+        if (! auth()->check() || $this->dealReference !== null) {
+            return;
+        }
+
+        session()->put($this->draftKey(), $this->only(self::DRAFT_FIELDS));
+    }
+
+    /** Put a saved draft back, keeping only what still makes sense today. */
+    private function restoreDraft(): void
+    {
+        $draft = session($this->draftKey());
+
+        if (! is_array($draft)) {
+            return;
+        }
+
+        foreach (array_intersect_key($draft, array_flip(self::DRAFT_FIELDS)) as $field => $value) {
+            try {
+                $this->{$field} = $value;
+            } catch (\TypeError) {
+                // A field whose type changed since the draft was saved: keep the default.
+            }
+        }
+
+        $this->stepIndex = max(0, min($this->stepIndex, count($this->steps) - 2)); // never straight into "done"
+        if (! array_key_exists($this->pickupSpotIndex, $this->pickupSpots())) {
+            $this->pickupSpotIndex = 0;
+        }
+
+        // A saved pickup day that's no longer offered (it's passed, or now too soon) gives way to the first one that is.
+        if (! in_array($this->handoverDate, array_column($this->handoverDateOptions(), 'date'), true)) {
+            $this->handoverDate = $this->handoverDateOptions()[0]['date'] ?? null;
+        }
+        $this->keepTimeSlotAvailable();
+
+        if ($this->stepKey() === 'reserve') {
+            $this->preparePayment();
+        }
+    }
+
     public function mount(Vehicle $vehicle): void
     {
         // Consumers can only reserve a car that's actually live on the marketplace.
@@ -233,6 +299,9 @@ new #[Layout('layouts.checkout')] class extends Component {
         // Pre-select the first available handover day so the step opens ready to go.
         $this->handoverDate = $this->handoverDateOptions()[0]['date'] ?? null;
         $this->keepTimeSlotAvailable();
+
+        // Came back after a refresh: pick up where they left off.
+        $this->restoreDraft();
     }
 
     /* ---------------------------------------------------------------------
@@ -1016,7 +1085,11 @@ new #[Layout('layouts.checkout')] class extends Component {
     public function handoverDateOptions(): array
     {
         $options = [];
-        $first = \App\Support\PickupCalendar::earliest(now($this->dealerTimezone()));
+        $now = now($this->dealerTimezone());
+        $store = $this->vehicle->locatedAt();
+        // Today's closing time is the cutoff; an order after it counts as tomorrow's.
+        $closing = $store instanceof \App\Models\Rooftop && $store->hasHours() ? ($store->hoursOn($now)[1] ?? '00:00') : null;
+        $first = \App\Support\PickupCalendar::earliest($now, $closing);
 
         for ($dayOffset = 0; $dayOffset <= 21 && count($options) < 6; $dayOffset++) {
             $day = $first->copy()->addDays($dayOffset);
@@ -1393,6 +1466,7 @@ new #[Layout('layouts.checkout')] class extends Component {
 
     private function showConfirmation(Deal $deal): void
     {
+        session()->forget($this->draftKey());
         $this->dealReference = $deal->reference;
         $this->paymentClientSecret = null;
         $this->stepIndex = count($this->steps) - 1;
