@@ -57,8 +57,8 @@ trait HasStreetAddress
     /**
      * Put the store on the map from its address, so shoppers get a distance.
      * Runs when the store has no coordinates yet, or when its address changed
-     * and nobody set the coordinates by hand in the same save. Without a
-     * Google key, or if the lookup fails, the store simply stays unplaced.
+     * and nobody set the coordinates by hand in the same save. Without
+     * Google, it uses the centre of the store's postal area instead.
      */
     public function placeOnMapFromAddress(bool $force = false): bool
     {
@@ -69,7 +69,9 @@ trait HasStreetAddress
             return false;
         }
 
-        $point = app(\App\Support\AddressLookup::class)->pointForAddress(implode(', ', [...$this->address_lines, 'Canada']));
+        // Google when it answers; else the centre of the store's postal area (approximate).
+        $point = app(\App\Support\AddressLookup::class)->pointForAddress(implode(', ', [...$this->address_lines, 'Canada']))
+            ?? \App\Support\PostalAreas::forPostalCode($this->postal_code);
 
         if ($point === null) {
             return false;

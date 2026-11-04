@@ -33,15 +33,19 @@ class ShopperLocation
 
     public static function setFromBrowser(float $latitude, float $longitude): void
     {
-        $place = app(AddressLookup::class)->cityAt(round($latitude, 2), round($longitude, 2));
+        // The town from Google when it answers, else from the nearest postal area.
+        $area = PostalAreas::nearest($latitude, $longitude);
+        $place = app(AddressLookup::class)->cityAt(round($latitude, 2), round($longitude, 2))
+            ?? ($area ? ['city' => $area['city'], 'province' => $area['province']] : null);
 
         session()->put(self::SESSION_KEY, array_filter([
-            'source'    => 'browser',
-            'label'     => $place ? self::placeLabel($place['city'], $place['province']) : 'your location',
-            'latitude'  => round($latitude, 2),
-            'longitude' => round($longitude, 2),
-            'city'      => $place['city'] ?? null,
-            'province'  => $place['province'] ?? null,
+            'source'      => 'browser',
+            'label'       => $place ? self::placeLabel($place['city'], $place['province']) : 'your location',
+            'latitude'    => round($latitude, 2),
+            'longitude'   => round($longitude, 2),
+            'city'        => $place['city'] ?? null,
+            'province'    => $place['province'] ?? null,
+            'postal_area' => $area['fsa'] ?? null,
         ], fn ($value) => $value !== null));
     }
 
@@ -60,7 +64,10 @@ class ShopperLocation
         $postalCode = CanadianAddress::normalizePostalCode($input);
 
         if ($postalCode !== null) {
-            $place = app(AddressLookup::class)->cityForPostalCode($postalCode);
+            // Google when it answers; else the postal area's town and centre point.
+            $area = PostalAreas::forPostalCode($postalCode);
+            $place = app(AddressLookup::class)->cityForPostalCode($postalCode)
+                ?? ($area ? ['city' => $area['city'], 'province' => $area['province'], 'latitude' => $area['latitude'], 'longitude' => $area['longitude']] : null);
 
             session()->put(self::SESSION_KEY, array_filter([
                 'source'      => 'manual',
@@ -90,6 +97,22 @@ class ShopperLocation
         ]));
 
         return true;
+    }
+
+    /**
+     * "Newmarket, ON · L3Y 4X1": the town plus the postal code the shopper
+     * typed, or the postal area (L3Y) their browser location falls in.
+     */
+    public static function placeLine(?array $location): ?string
+    {
+        if ($location === null) {
+            return null;
+        }
+
+        $code = $location['postal_code'] ?? $location['postal_area'] ?? null;
+        $town = $location['label'] === 'your location' ? null : $location['label'];
+
+        return collect([$town, $code])->filter()->implode(' · ') ?: 'Near you';
     }
 
     public static function clear(): void

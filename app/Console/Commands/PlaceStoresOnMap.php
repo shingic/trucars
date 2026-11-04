@@ -18,9 +18,7 @@ class PlaceStoresOnMap extends Command
     public function handle(AddressLookup $lookup): int
     {
         if (! $lookup->enabled()) {
-            $this->error('GOOGLE_PLACES_KEY is not set, so addresses cannot be looked up.');
-
-            return self::FAILURE;
+            $this->warn('GOOGLE_PLACES_KEY is not set: stores are placed at the centre of their postal area (approximate).');
         }
 
         $placed = 0;
@@ -40,7 +38,7 @@ class PlaceStoresOnMap extends Command
                     $placed++;
                     $this->line("Placed {$label}: {$store->latitude}, {$store->longitude}");
                 } else {
-                    $skipped[] = [$label, $store->hasCompleteAddress() ? 'Google could not place the address' : 'Address incomplete: ' . implode(', ', $store->missingAddressFields())];
+                    $skipped[] = [$label, $store->hasCompleteAddress() ? 'Address could not be placed' : 'Address incomplete: ' . implode(', ', $store->missingAddressFields())];
                 }
             }
         }

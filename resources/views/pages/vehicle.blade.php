@@ -572,7 +572,7 @@ new class extends Component {
                         <div class="loc-row">
                             <div>
                                 <div class="loc-km"><b>{{ $this->formatKm($km) }}</b> km away</div>
-                                <div class="loc-sub">From {{ $here['label'] }}@if ($carIn) · the car is in {{ $carIn }}@endif</div>
+                                <div class="loc-sub">From {{ \App\Support\ShopperLocation::placeLine($here) }}@if ($carIn) · the car is in {{ $carIn }}@endif</div>
                             </div>
                             <button type="button" class="loc-change" @click="$dispatch('open-location-gate')">Change</button>
                         </div>
@@ -712,7 +712,7 @@ new class extends Component {
                         @if ($this->distanceKm() !== null)
                             <a class="pd-row pd-dist" href="#distance">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-6.1 7-11.5A7 7 0 0 0 5 9.5C5 14.9 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
-                                {{ $this->formatKm($this->distanceKm()) }} km from {{ $this->shopperLocation()['label'] }}
+                                {{ $this->formatKm($this->distanceKm()) }} km from {{ \App\Support\ShopperLocation::placeLine($this->shopperLocation()) }}
                             </a>
                         @endif
                         <div class="pd-note">All-in price — freight, PDI, admin &amp; OMVIC fee included. <b>Excludes HST &amp; licensing.</b></div>

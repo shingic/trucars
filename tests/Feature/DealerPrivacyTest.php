@@ -111,6 +111,34 @@ class DealerPrivacyTest extends TestCase
         $this->get('/cars/' . $vehicle->id)->assertSee('km away')->assertSee('From Abbotsford, BC');
     }
 
+    public function test_without_google_a_postal_code_still_gives_town_and_kilometres(): void
+    {
+        config(['services.google_places.key' => null]);
+        Http::fake();
+        $vehicle = $this->vehicle();
+
+        Livewire::test('pages::location-gate', ['returnUrl' => url('/cars/' . $vehicle->id)])
+            ->set('postalCode', 'L3Y 4X1')
+            ->call('usePostalCode')
+            ->assertHasNoErrors();
+
+        $this->assertSame('Newmarket, ON', ShopperLocation::current()['label']);
+        $this->get('/cars/' . $vehicle->id)->assertSee('km away')->assertSee('From Newmarket, ON · L3Y 4X1');
+        $this->get(route('shop'))->assertSee('for Sale in Newmarket, Ontario');
+        Http::assertNothingSent();
+    }
+
+    public function test_without_google_a_browser_location_still_names_the_town(): void
+    {
+        config(['services.google_places.key' => null]);
+        Http::fake();
+
+        Livewire::test('pages::location-gate')->call('useBrowserLocation', 44.05, -79.46);
+
+        $this->assertSame('Newmarket, ON', ShopperLocation::current()['label']);
+        $this->assertSame('L3Y', ShopperLocation::current()['postal_area']);
+    }
+
     public function test_the_prompt_wants_a_postal_code_not_a_city(): void
     {
         Livewire::test('pages::location-gate')

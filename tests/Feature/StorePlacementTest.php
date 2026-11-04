@@ -56,22 +56,23 @@ class StorePlacementTest extends TestCase
         $this->assertSame(43.65, $dealer->fresh()->latitude);
     }
 
-    public function test_without_a_key_nothing_is_looked_up_and_saving_still_works(): void
+    public function test_without_a_key_the_store_goes_to_the_centre_of_its_postal_area(): void
     {
         config(['services.google_places.key' => null]);
         Http::fake();
 
-        $dealer = $this->makeDealer(['latitude' => null, 'longitude' => null]);
+        $dealer = $this->makeDealer(['latitude' => null, 'longitude' => null]); // V2P 2M9
 
-        $this->assertTrue($dealer->exists);
-        $this->assertFalse($dealer->hasCoordinates());
+        $this->assertEqualsWithDelta(49.1838, $dealer->latitude, 0.0001);
+        $this->assertEqualsWithDelta(-121.9046, $dealer->longitude, 0.0001);
         Http::assertNothingSent();
     }
 
     public function test_the_backfill_command_places_existing_stores(): void
     {
-        config(['services.google_places.key' => null]);
-        $dealer = $this->makeDealer(['latitude' => null, 'longitude' => null]);
+        $dealer = $this->makeDealer();
+        $dealer->forceFill(['latitude' => null, 'longitude' => null])->saveQuietly();
+        $dealer->primaryRooftop()->first()->forceFill(['latitude' => null, 'longitude' => null])->saveQuietly();
         $this->fakeGeocoder();
 
         $this->artisan('stores:place-on-map')->assertSuccessful()->expectsOutputToContain('Placed');

@@ -64,7 +64,7 @@ new class extends Component {
 
     private function done(): void
     {
-        $this->dispatch('shopper-location-updated', label: ShopperLocation::current()['label'] ?? null);
+        $this->dispatch('shopper-location-updated', label: ShopperLocation::placeLine(ShopperLocation::current()));
         $this->redirect($this->safeReturnUrl(), navigate: true);
     }
 

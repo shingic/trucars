@@ -54,7 +54,8 @@ class ShopperLocationTest extends TestCase
             ->call('useBrowserLocation', 49.0504, -122.3045)
             ->assertSet('sort', 'nearest')
             ->assertSeeInOrder(['Chilliwack Outlander', 'Toronto Corolla'])
-            ->assertSee('Near you')
+            ->assertSee('Abbotsford, BC · V2S')
+            ->assertSee('for Sale in Abbotsford, British Columbia')
             ->assertSee(' km');
 
         // Rounded to ~1 km before it's kept; session only.
@@ -69,8 +70,8 @@ class ShopperLocationTest extends TestCase
             ->call('setManualLocation')
             ->assertHasNoErrors()
             ->assertSet('sort', 'nearest')
-            ->assertSee('Nearest first to')
-            ->assertSee('M5V 2T6')
+            ->assertSee('Toronto, ON · M5V 2T6')
+            ->assertSee('for Sale in Toronto, Ontario')
             ->assertSeeInOrder(['Toronto Corolla', 'Chilliwack Outlander']);
     }
 

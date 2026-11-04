@@ -317,7 +317,7 @@ new class extends Component {
     {
         $this->resetErrorBag('locationInput');
         $this->sort = 'nearest';
-        $this->dispatch('shopper-location-updated', label: ShopperLocation::current()['label'] ?? null);
+        $this->dispatch('shopper-location-updated', label: ShopperLocation::placeLine(ShopperLocation::current()));
     }
 
     /**
@@ -416,8 +416,14 @@ new class extends Component {
         @if (\App\Support\PlatformSettings::get('marketplace_notice') !== '')
             <div class="srp-notice" role="status">{{ \App\Support\PlatformSettings::get('marketplace_notice') }}</div>
         @endif
-        {{-- With the shopper's town known, the headline names it; otherwise it's the one set in Platform settings. --}}
-        <h1 class="srp-title">{{ isset($shopperLocation['city']) ? 'Certified Pre-owned Cars for Sale in ' . $shopperLocation['city'] : \App\Support\PlatformSettings::get('marketplace_headline') }}</h1>
+        {{-- With the shopper's town known, the headline counts the cars and names it; otherwise it's the one set in Platform settings. --}}
+        <h1 class="srp-title">
+            @if (isset($shopperLocation['city']))
+                {{ number_format($this->totalCount) }} Certified Pre-owned {{ $this->totalCount === 1 ? 'Car' : 'Cars' }} for Sale in {{ $shopperLocation['city'] }}{{ isset($shopperLocation['province']) ? ', ' . (\App\Support\CanadianAddress::PROVINCES[$shopperLocation['province']] ?? $shopperLocation['province']) : '' }}
+            @else
+                {{ \App\Support\PlatformSettings::get('marketplace_headline') }}
+            @endif
+        </h1>
         <p class="srp-sub">{{ \App\Support\PlatformSettings::get('marketplace_subheadline') }}</p>
 
         <div class="loc-bar"
@@ -445,13 +451,7 @@ new class extends Component {
              }">
             <svg class="loc-pin" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
             @if ($shopperLocation)
-                <span class="loc-current">
-                    @if ($shopperLocation['label'] === 'your location')
-                        <b>Near you</b>
-                    @else
-                        Nearest first to <b>{{ $shopperLocation['label'] }}</b>
-                    @endif
-                </span>
+                <span class="loc-current"><b>{{ \App\Support\ShopperLocation::placeLine($shopperLocation) }}</b></span>
                 <button type="button" class="loc-link" @click="$dispatch('open-location-gate')">Change</button>
             @else
                 <button type="button" class="loc-use" @click="locate()" :disabled="locating">

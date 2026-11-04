@@ -181,14 +181,14 @@
         <div class="nav-right">
             {{-- The shopper's own location (session only). Tap to change it. --}}
             <button type="button" class="nav-loc"
-                  x-data="{ label: @js(\App\Support\ShopperLocation::current()['label'] ?? null) }"
+                  x-data="{ label: @js(\App\Support\ShopperLocation::placeLine(\App\Support\ShopperLocation::current())) }"
                   x-show="label"
                   @shopper-location-updated.window="label = $event.detail.label"
                   @click="$dispatch('open-location-gate')"
                   aria-label="Change your location"
                   x-cloak>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                <span x-text="label === 'your location' ? 'Near you' : label"></span>
+                <span x-text="label"></span>
                 <svg class="nav-loc-chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 9 6 6 6-6"/></svg>
             </button>
             {{-- Saved cars, for shoppers (a guest is sent to sign in). --}}
@@ -347,7 +347,7 @@
             @endauth
             <button type="button" class="drawer-loc" @click="menuOpen = false; $dispatch('open-location-gate')">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-                {{ (\App\Support\ShopperLocation::current()['label'] ?? null) === 'your location' ? 'Near you' : (\App\Support\ShopperLocation::current()['label'] ?? 'Anywhere in Canada') }}
+                {{ \App\Support\ShopperLocation::placeLine(\App\Support\ShopperLocation::current()) ?? 'Set your location' }}
             </button>
         </div>
     </aside>
@@ -366,7 +366,7 @@
             <a href="{{ route('how-it-works') }}" wire:navigate>How it works</a>
             @guest <a href="{{ route('buyer.login') }}" wire:navigate>Sign in</a> @endguest
         </nav>
-        <span class="site-foot-legal">© {{ date('Y') }} TruCars. Every price is all-in, with freight, prep and dealer fees included. HST and licensing are extra.</span>
+        <span class="site-foot-legal">© {{ date('Y') }} TruCars. Every price is all-in, with freight, prep and dealer fees included. HST and licensing are extra. Postal area data from <a href="https://www.geonames.org/" target="_blank" rel="noopener" style="color:inherit;">GeoNames</a> (CC BY 4.0).</span>
     </div>
 </footer>
 
