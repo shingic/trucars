@@ -120,6 +120,32 @@ new class extends Component {
         return \App\Support\ShopperLocation::distanceKm($this->shopperLocation(), $this->vehicle->locatedAt());
     }
 
+    /**
+     * A rough drive time from the straight-line distance: roads run about
+     * 1.3× longer than the crow flies, at about 80 km/h on average. Always
+     * labelled "about", never presented as a route.
+     */
+    public function driveTimeLabel(float $km): string
+    {
+        $minutes = $km * 1.3 / 80 * 60;
+
+        return match (true) {
+            $minutes < 10  => 'A few minutes’ drive',
+            $minutes < 60  => 'About a ' . (int) (round($minutes / 5) * 5) . '-minute drive',
+            $minutes < 600 => 'About a ' . $this->hoursLabel($minutes) . ' drive',
+            default        => 'More than a day’s drive',
+        };
+    }
+
+    private function hoursLabel(float $minutes): string
+    {
+        $rounded = (int) (round($minutes / 15) * 15);
+        $hours = intdiv($rounded, 60);
+        $rest = $rounded % 60;
+
+        return $hours . ($rest ? ' hr ' . $rest . ' min' : '-hour');
+    }
+
     public function formatKm(float $km): string
     {
         return $km < 10 ? number_format($km, 1) : number_format($km);
@@ -566,7 +592,9 @@ new class extends Component {
                         </div>
                     @endif
 
-                    <p class="loc-note">You'll get the selling dealership's name, address and contact details as soon as your deposit is in.</p>
+                    @if ($km !== null)
+                        <p class="loc-note">{{ $this->driveTimeLabel($km) }} · or $149 delivery to your door</p>
+                    @endif
                 </div>
                 <dl class="vdp-quickmeta">
                     <div class="qm"><dt>Mileage</dt><dd>{{ number_format($vehicle->kilometres) }} km</dd></div>
