@@ -115,7 +115,7 @@
     <aside class="sidebar">
         <div class="sb-brand">
             <span class="wordmark">@include('partials.logo', ['variant' => 'light', 'height' => 26])</span>
-            <span class="wordmark-short"><img src="{{ asset('images/motokari-mark-light.png') }}" alt="Motokari" style="height:24px; width:auto; display:block;"></span>
+            <span class="wordmark-short"><img src="{{ asset('images/motokari-mark-light.png') }}?v={{ @filemtime(public_path('images/motokari-mark-light.png')) ?: 1 }}" alt="Motokari" style="height:24px; width:auto; display:block;"></span>
         </div>
 
         <nav class="sb-scroll">
