@@ -392,7 +392,7 @@
 @endif
 <footer class="site-foot">
     <div class="site-foot-inner {{ ($narrowShell ?? false) ? 'is-narrow' : '' }}">
-        <span class="brand">@include('partials.logo', ['variant' => 'light', 'height' => 26])</span>
+        <span class="brand">@include('partials.logo', ['variant' => 'light', 'height' => 32])</span>
         <nav class="site-foot-links">
             <a href="{{ route('home') }}" wire:navigate>Home</a>
             <a href="{{ route('shop') }}" wire:navigate>Shop cars</a>

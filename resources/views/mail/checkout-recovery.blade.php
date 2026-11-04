@@ -49,7 +49,7 @@
                 <tr>
                     <td style="background-color:#071437; padding:22px 36px;">
                         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
-                            <td><img src="{{ asset('images/trumo-logo-white-1200.png') }}" alt="{{ $brand }}" width="114" height="28" style="display:block; width:114px; height:28px; border:0;"></td>
+                            <td><img src="{{ asset('images/trumo-lane-white-1200.png') }}" alt="{{ $brand }}" width="99" height="34" style="display:block; width:99px; height:34px; border:0;"></td>
                             <td align="right" style="{{ $display }} font-size:14px; font-weight:700; letter-spacing:0.02em; text-transform:uppercase; color:#C9D3E6;">{{ $copy['tag'] }}</td>
                         </tr></table>
                     </td>

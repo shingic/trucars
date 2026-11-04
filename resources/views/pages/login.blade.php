@@ -173,7 +173,7 @@ new #[Layout('layouts.auth')] class extends Component {
 
 <div class="auth-screen">
     <aside class="auth-brand">
-        <div class="auth-brand-mark">@include('partials.logo', ['variant' => 'light', 'height' => 34])</div>
+        <div class="auth-brand-mark">@include('partials.logo', ['variant' => 'light', 'height' => 46])</div>
 
         <div class="auth-brand-body">
             <h1 class="auth-brand-headline">Your digital retail desk.</h1>
