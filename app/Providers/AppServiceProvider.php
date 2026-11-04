@@ -21,6 +21,16 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(\App\Support\Payments\DepositGateway::class, \App\Support\Payments\StripeDepositGateway::class);
+
+        $this->app->singleton(\App\Services\Carfax\Providers\CarfaxProvider::class, fn () => match (config('services.carfax.driver')) {
+            'carfax_canada' => new \App\Services\Carfax\Providers\CarfaxCanadaProvider(
+                (string) config('services.carfax.base_url'),
+                config('services.carfax.api_key'),
+                (int) config('services.carfax.timeout', 4),
+            ),
+            'fake'  => new \App\Services\Carfax\Providers\FakeCarfaxProvider(),
+            default => new \App\Services\Carfax\Providers\NullCarfaxProvider(),
+        });
     }
 
     /**

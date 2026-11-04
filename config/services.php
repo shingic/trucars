@@ -24,6 +24,17 @@ return [
         'default_mode'   => env('PAYMENTS_DEFAULT_MODE', 'demo'),
     ],
 
+    // CARFAX Canada vehicle history on the vehicle page (App\Services\Carfax).
+    // Each dealership's own CARFAX account id is set in Command Centre ›
+    // Dealer › Integrations. These are the platform's API credentials.
+    // driver: 'null' (off), 'fake' (sample data, local only), 'carfax_canada'.
+    'carfax' => [
+        'driver'   => env('CARFAX_DRIVER', 'null'),
+        'base_url' => env('CARFAX_BASE_URL'),
+        'api_key'  => env('CARFAX_API_KEY'),
+        'timeout'  => (int) env('CARFAX_TIMEOUT', 4),
+    ],
+
     // Address suggestions at checkout (App\Support\AddressLookup), via Google
     // Places API (New). Without a key the address fields are plain inputs.
     'google_places' => [

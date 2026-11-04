@@ -23,7 +23,7 @@ class Dealer extends Model
     use HasStreetAddress;
 
     /** Text columns kept as clean UTF-8 (see CleansText). */
-    public const CLEAN_TEXT = ['name', 'street_address', 'unit', 'city', 'franchise_make', 'phone', 'email', 'website'];
+    public const CLEAN_TEXT = ['name', 'street_address', 'unit', 'city', 'franchise_make', 'phone', 'email', 'website', 'carfax_account_id'];
 
     public const STATUS_DRAFT = 'draft';
     public const STATUS_ACTIVE = 'active';
@@ -55,6 +55,8 @@ class Dealer extends Model
         'email',
         'website',
         'cover_photo_path',
+        'carfax_enabled',
+        'carfax_account_id',
         'status',
     ];
 
@@ -106,6 +108,7 @@ class Dealer extends Model
         return [
             'latitude'  => 'float',
             'longitude' => 'float',
+            'carfax_enabled' => 'boolean',
         ];
     }
 

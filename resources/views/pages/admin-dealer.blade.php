@@ -108,6 +108,10 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
 
     public string $status = Dealer::STATUS_DRAFT;
 
+    // CARFAX Canada (Integrations tab): the dealership's own account.
+    public bool $carfaxEnabled = false;
+    public string $carfaxAccountId = '';
+
     public string $statusMessage = '';
 
     // The add / edit form for a rooftop other than the main store.
@@ -170,6 +174,8 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         $this->email = (string) $dealer->email;
         $this->website = (string) $dealer->website;
         $this->status = $dealer->status;
+        $this->carfaxEnabled = (bool) $dealer->carfax_enabled;
+        $this->carfaxAccountId = (string) $dealer->carfax_account_id;
     }
 
     /**
@@ -760,6 +766,46 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         AuditLog::record('dealer_user.invited', $dealer, null, ['name' => $invitation->name, 'email' => $invitation->email]);
 
         return true;
+    }
+
+    /* ---- CARFAX Canada ----------------------------------------------------- */
+
+    /**
+     * The dealership's CARFAX Canada account. Its reports show on this
+     * dealer's vehicle pages. Switching it on needs an account id.
+     */
+    public function saveCarfax(): void
+    {
+        Gate::authorize(Permission::DEALERS_MANAGE);
+        $dealer = $this->dealerOrFail();
+
+        $this->carfaxAccountId = trim($this->carfaxAccountId);
+        $this->validate([
+            'carfaxAccountId' => [Rule::requiredIf($this->carfaxEnabled), 'nullable', 'string', 'max:64', 'regex:/^[A-Za-z0-9._-]+$/'],
+        ], [
+            'carfaxAccountId.required' => 'Enter the dealership’s CARFAX account id to switch CARFAX on.',
+            'carfaxAccountId.regex'    => 'Use only letters, numbers, dots, dashes and underscores.',
+        ], ['carfaxAccountId' => 'CARFAX account id']);
+
+        $before = $dealer->only(['carfax_enabled', 'carfax_account_id']);
+        $dealer->update([
+            'carfax_enabled'    => $this->carfaxEnabled,
+            'carfax_account_id' => $this->carfaxAccountId === '' ? null : $this->carfaxAccountId,
+        ]);
+        $after = $dealer->only(['carfax_enabled', 'carfax_account_id']);
+
+        if ($before !== $after) {
+            AuditLog::record('dealer.carfax_updated', $dealer, $before, $after);
+
+            // A new account means new reports: drop the old account's cached ones.
+            if ($before['carfax_account_id'] && $before['carfax_account_id'] !== $after['carfax_account_id']) {
+                \App\Services\Carfax\CarfaxService::forget($before['carfax_account_id'], $dealer->vehicles()->pluck('vin'));
+            }
+        }
+
+        $this->statusMessage = $this->carfaxEnabled
+            ? "CARFAX is on. {$dealer->name}’s vehicle pages show its CARFAX reports where one exists."
+            : "CARFAX is off for {$dealer->name}. Vehicle pages don't show a history section.";
     }
 
     /* ---- status: its own confirmed action --------------------------------- */
@@ -1618,6 +1664,32 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
                             <div class="row"><span>Vehicles</span><b>{{ $stats['live'] }} live of {{ $stats['vehicles'] }}</b></div>
                         </div>
                     </div>
+
+                    <form wire:submit="saveCarfax" class="pcard" style="margin-top:30px">
+                        <div class="pcard-head">
+                            <div><div class="t">CARFAX Canada</div><div class="s">Shows the vehicle history report from this dealership’s own CARFAX account on its vehicle pages.</div></div>
+                        </div>
+                        <div class="kv">
+                            <div class="row"><span>Status</span><b class="{{ $dealer->carfax_enabled ? 'ok' : 'warn' }}">{{ $dealer->carfax_enabled ? 'On' : 'Off' }}</b></div>
+                            @if (config('services.carfax.driver') === 'null')
+                                <div class="row"><span>Connection</span><b class="warn">CARFAX isn’t connected on this platform yet, so no reports show even when this is on.</b></div>
+                            @elseif (config('services.carfax.driver') === 'fake')
+                                <div class="row"><span>Connection</span><b class="warn">Sample data: vehicle pages show made-up reports.</b></div>
+                            @endif
+                        </div>
+                        <fieldset class="fields" @disabled(! $canManage) style="border:none; margin:0;">
+                            <div class="field w6">
+                                <label class="u-check"><input type="checkbox" wire:model.live="carfaxEnabled"> Show CARFAX reports on this dealership’s vehicle pages</label>
+                            </div>
+                            <div class="field w4">
+                                <label for="carfax-account">CARFAX account id @unless ($carfaxEnabled)<span class="opt">(optional while off)</span>@endunless</label>
+                                <input id="carfax-account" type="text" wire:model="carfaxAccountId" autocomplete="off" spellcheck="false" maxlength="64" placeholder="From the dealership’s CARFAX Canada account">
+                                @error('carfaxAccountId') <span class="err">{{ $message }}</span> @enderror
+                                <span class="hint">Reports are looked up by VIN under this account and refreshed every 12 hours.</span>
+                            </div>
+                        </fieldset>
+                        @if ($canManage) <div class="form-end"><button type="submit" class="btn btn-primary">Save CARFAX settings</button></div> @endif
+                    </form>
                 @endif
             </div>
 
