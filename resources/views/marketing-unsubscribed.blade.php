@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex">
+    @include('partials.favicons')
     <title>Unsubscribed · {{ config('site.name') }}</title>
     <style>
         body { margin:0; background:#F9F9F9; font-family:"Barlow",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; color:#071437; }
@@ -18,7 +19,7 @@
 <body>
 <main>
     <div class="card">
-        <img src="{{ asset('images/trumoto-logo.png') }}" alt="{{ config('site.name') }}">
+        <img src="{{ asset('images/trumo-logo.svg') }}" alt="{{ config('site.name') }}">
         <h1>You're unsubscribed</h1>
         <p>We won't send you any more marketing emails. You'll still get emails about a reservation you make, like your receipt and pickup details.</p>
         <p><a href="{{ route('shop') }}">Back to the cars</a></p>

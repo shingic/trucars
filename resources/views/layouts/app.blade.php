@@ -8,6 +8,7 @@
         $seo ??= [];
         $pageTitle = $seo['title'] ?? $title ?? (config('site.name') . ' — Certified used cars');
     @endphp
+    @include('partials.favicons')
     <title>{{ $pageTitle }}</title>
     @if (! empty($seo['description']))
         <meta name="description" content="{{ $seo['description'] }}">

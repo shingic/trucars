@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    @include('partials.favicons')
     <title>{{ $title ?? 'Reservations' }} · TruCars</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -115,7 +116,7 @@
     <aside class="sidebar">
         <div class="sb-brand">
             <span class="wordmark">@include('partials.logo', ['variant' => 'light', 'height' => 26])</span>
-            <span class="wordmark-short"><img src="{{ asset('images/trumoto-mark.png') }}?v={{ @filemtime(public_path('images/trumoto-mark.png')) ?: 1 }}" alt="trumoto" style="height:24px; width:auto; display:block;"></span>
+            <span class="wordmark-short"><img src="{{ asset('images/trumo-icon.svg') }}?v={{ @filemtime(public_path('images/trumo-icon.svg')) ?: 1 }}" alt="TRUMO" style="height:24px; width:auto; display:block;"></span>
         </div>
 
         <nav class="sb-scroll">
