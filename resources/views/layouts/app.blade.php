@@ -386,8 +386,10 @@
     {{ $slot }}
 </main>
 
+@if (request()->routeIs('home'))
+    @include('partials.seo-home-links')
+@endif
 <footer class="site-foot">
-    @include('partials.seo-links')
     <div class="site-foot-inner {{ ($narrowShell ?? false) ? 'is-narrow' : '' }}">
         <span class="brand">@include('partials.logo', ['variant' => 'light', 'height' => 26])</span>
         <nav class="site-foot-links">

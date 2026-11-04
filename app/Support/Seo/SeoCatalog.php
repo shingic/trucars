@@ -93,27 +93,30 @@ class SeoCatalog
     }
 
     /**
-     * The footer's link groups: only pages with enough cars, busiest first.
+     * The search link groups: only pages with enough cars, busiest first.
+     * Each link has the full search phrase ("Used Honda Civic for Sale", for
+     * the shop's link sections) and a short label ("Honda Civic", for the
+     * home page's footer columns).
      *
-     * @return array<string, list<array{text: string, url: string, count: int}>>
+     * @return array<string, list<array{text: string, short: string, url: string, count: int}>>  keyed models, makes, bodies, prices, fuels, cities
      */
-    public static function footerGroups(): array
+    public static function linkGroups(): array
     {
         $facets = self::facets();
-        $link = fn (Landing $landing, int $count) => ['text' => $landing->linkText(), 'url' => url($landing->path), 'count' => $count];
+        $link = fn (Landing $landing, string $short, int $count) => ['text' => $landing->linkText(), 'short' => $short, 'url' => url($landing->path), 'count' => $count];
         $busiest = fn (array $entries) => collect($entries)->filter(fn ($entry) => $entry['count'] >= self::FOOTER_MIN)->sortByDesc('count');
 
         $models = collect($facets['makes'])->flatMap(fn ($make, $makeSlug) => collect($make['models'])
             ->map(fn ($model) => $model + ['make' => $make['value'], 'makeSlug' => $makeSlug]));
 
         return array_filter([
-            'Popular makes'      => $busiest($facets['makes'])->map(fn ($entry) => $link(self::landingFor('make', $entry), $entry['count']))->values()->all(),
-            'Popular models'     => $busiest($models->all())->map(fn ($entry) => $link(self::landingFor('model', $entry), $entry['count']))->values()->all(),
-            'Shop by body style' => $busiest($facets['bodies'])->map(fn ($entry) => $link(self::landingFor('body', $entry), $entry['count']))->values()->all(),
-            'Shop by price'      => collect($facets['prices'])->filter(fn ($count) => $count >= self::FOOTER_MIN)->sortKeysDesc()
-                ->map(fn ($count, $band) => $link(self::priceLanding((int) $band), $count))->values()->all(),
-            'Shop by fuel type'  => $busiest($facets['fuels'])->map(fn ($entry) => $link(self::landingFor('fuel', $entry), $entry['count']))->values()->all(),
-            'Popular locations'  => $busiest($facets['cities'])->map(fn ($entry) => $link(self::landingFor('city', $entry), $entry['count']))->values()->all(),
+            'models' => $busiest($models->all())->map(fn ($e) => $link(self::landingFor('model', $e), $e['make'] . ' ' . $e['value'], $e['count']))->values()->all(),
+            'makes'  => $busiest($facets['makes'])->map(fn ($e) => $link(self::landingFor('make', $e), $e['value'], $e['count']))->values()->all(),
+            'bodies' => $busiest($facets['bodies'])->map(fn ($e) => $link(self::landingFor('body', $e), $e['value'], $e['count']))->values()->all(),
+            'prices' => collect($facets['prices'])->filter(fn ($count) => $count >= self::FOOTER_MIN)->sortKeysDesc()
+                ->map(fn ($count, $band) => $link(self::priceLanding((int) $band), 'Under $' . number_format((int) $band), $count))->values()->all(),
+            'fuels'  => $busiest($facets['fuels'])->map(fn ($e) => $link(self::landingFor('fuel', $e), $e['value'], $e['count']))->values()->all(),
+            'cities' => $busiest($facets['cities'])->map(fn ($e) => $link(self::landingFor('city', $e), 'Used Cars in ' . $e['city'] . ', ' . $e['province'], $e['count']))->values()->all(),
         ]);
     }
 

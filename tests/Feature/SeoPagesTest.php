@@ -62,21 +62,38 @@ class SeoPagesTest extends TestCase
         $this->get('/used-cars/in/atlantis-zz')->assertNotFound();
     }
 
-    public function test_the_footer_links_only_pages_with_enough_cars(): void
+    public function test_the_shop_lists_search_links_under_the_results_for_pages_with_enough_cars(): void
     {
         $this->get(route('shop'))
             ->assertOk()
-            ->assertSee('Popular models')
-            ->assertSee('Used Honda Civic for Sale')
+            ->assertSeeInOrder(['Why buy your next car from TruCars?', 'Popular Models', 'Used Honda Civic for Sale', 'Popular Locations', 'Used Cars for Sale in Chilliwack, BC', '<footer'], false)
             ->assertSee(url('/used-cars/honda/civic'), false)
-            ->assertSee('Used Cars for Sale in Chilliwack, BC')
             ->assertDontSee('Used Honda CR-V for Sale')   // one car: not linked
             ->assertDontSee('Used Toyota for Sale');
     }
 
-    public function test_the_footer_never_names_a_dealership(): void
+    public function test_a_landing_page_asks_why_buy_that_car_and_skips_its_own_link(): void
     {
-        $this->get(route('shop'))->assertOk()->assertDontSee('Chilliwack Mitsubishi');
+        $this->get('/used-cars/honda/civic')
+            ->assertOk()
+            ->assertSee('Why buy your next Honda Civic from TruCars?')
+            ->assertDontSee('>Used Honda Civic for Sale</a>', false)
+            ->assertSee('>Used Honda for Sale</a>', false);
+    }
+
+    public function test_the_home_page_footer_has_short_link_columns(): void
+    {
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSee('Browse Popular Models')
+            ->assertSee('>Honda Civic</a>', false)
+            ->assertSee('>Used Cars in Chilliwack, BC</a>', false)
+            ->assertDontSee('Why buy your next');
+    }
+
+    public function test_other_pages_carry_no_search_link_block(): void
+    {
+        $this->get('/cars/' . Vehicle::first()->id)->assertOk()->assertDontSee('Browse Popular Models')->assertDontSee('Popular Models');
     }
 
     public function test_the_sitemap_lists_landing_pages_and_every_car(): void

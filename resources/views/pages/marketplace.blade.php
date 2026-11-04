@@ -73,6 +73,10 @@ new class extends Component {
     #[Locked]
     public ?string $landingPlace = null;     // "Chilliwack, BC" on a town page
 
+    #[Locked]
+    public ?string $landingSingular = null;  // "Honda Civic", "SUV", "hybrid car", for "Why buy your next …"
+
+
     /** This page's own path, for the page picker's links (requests here come through /livewire/update). */
     #[Locked]
     public string $basePath = '/shop';
@@ -87,6 +91,12 @@ new class extends Component {
             $this->landingType = $landing->type;
             $this->landingHeading = $landing->headingSubject();
             $this->landingPlace = $landing->place;
+            $this->landingSingular = match ($landing->type) {
+                'make', 'model' => $landing->subject,
+                'body'          => $landing->filters['body'],
+                'fuel'          => mb_strtolower($landing->filters['fuel']) . ' car',
+                default         => null,
+            };
             $this->basePath = $landing->path;
         }
 
@@ -897,6 +907,8 @@ new class extends Component {
             @endif
         </div>
     </div>
+
+    @include('partials.seo-shop-links', ['subject' => $landingSingular, 'current' => url($basePath)])
 
     <!-- scrim behind the mobile filter sheet -->
     <div class="srp-scrim" x-cloak x-show="filtersOpen" x-transition.opacity @click="filtersOpen = false"></div>
