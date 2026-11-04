@@ -108,7 +108,7 @@ class AddressLookup
         return $this->geocodeCity(['latlng' => $latitude . ',' . $longitude, 'result_type' => 'locality']);
     }
 
-    /** @return array{city: string, province: ?string}|null the town a Canadian postal code belongs to */
+    /** @return array{city: string, province: ?string, latitude?: float, longitude?: float}|null the town a Canadian postal code belongs to, and its centre point */
     public function cityForPostalCode(string $postalCode): ?array
     {
         return $this->geocodeCity(['address' => $postalCode, 'components' => 'country:CA']);
@@ -139,7 +139,10 @@ class AddressLookup
             if (filled($city)) {
                 $province = $components->first(fn ($part) => in_array('administrative_area_level_1', $part['types'] ?? [], true))['short_name'] ?? null;
 
-                return ['city' => (string) $city, 'province' => CanadianAddress::normalizeProvince($province)];
+                $point = $result['geometry']['location'] ?? null;
+
+                return ['city' => (string) $city, 'province' => CanadianAddress::normalizeProvince($province)]
+                    + (isset($point['lat'], $point['lng']) ? ['latitude' => (float) $point['lat'], 'longitude' => (float) $point['lng']] : []);
             }
         }
 

@@ -130,7 +130,7 @@ new #[Title('How it works — TruCars')] class extends Component {
                 <div class="hw-ex-head">
                     <small>What you’d pay, and when</small>
                     <a href="{{ url('/cars/' . $car->id) }}" wire:navigate>{{ $car->model_year }} {{ $car->make }} {{ $car->model }}</a>
-                    <span>{{ ucwords(strtolower($car->dealer->name)) }}{{ $car->display_location ? ', ' . $car->display_location : '' }}</span>
+                    @if ($car->display_location)<span>In {{ $car->display_location }}</span>@endif
                 </div>
                 <dl>
                     <div><dt>Listed price<small>The price on the listing</small></dt><dd>{{ $car->display_price }}</dd></div>

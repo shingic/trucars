@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\Dealer;
 use App\Models\Vehicle;
 use App\Support\VehicleCertification;
 use App\Support\ShopperLocation;
@@ -45,9 +44,6 @@ new class extends Component {
     public array $selectedTransmissions = [];
     /** @var array<int, string> */
     public array $selectedColours = [];
-    /** @var array<int, int> */
-    #[Url(as: 'dealer', except: [])]
-    public array $selectedDealers = [];
 
     public ?int $priceMin = null;
     #[Url(as: 'max')]
@@ -66,7 +62,7 @@ new class extends Component {
         $this->reset([
             'search', 'selectedMakes', 'selectedBodyTypes', 'selectedFuels',
             'selectedDrivetrains', 'selectedTransmissions', 'selectedColours',
-            'selectedDealers', 'priceMin', 'priceMax', 'yearMin', 'yearMax', 'kmMax', 'sort',
+            'priceMin', 'priceMax', 'yearMin', 'yearMax', 'kmMax', 'sort',
         ]);
     }
 
@@ -125,17 +121,6 @@ new class extends Component {
     public function availableTransmissions(): Collection
     {
         return $this->distinctWithCounts('transmission');
-    }
-
-    #[Computed]
-    public function availableDealers(): Collection
-    {
-        return Dealer::query()
-            ->where('status', Dealer::STATUS_ACTIVE)
-            ->whereHas('vehicles', fn (Builder $query) => $query->where('is_published', true))
-            ->withCount(['vehicles' => fn (Builder $query) => $query->where('is_published', true)])
-            ->orderBy('name')
-            ->get();
     }
 
     /**
@@ -201,7 +186,6 @@ new class extends Component {
         $activeCount += count($this->selectedDrivetrains);
         $activeCount += count($this->selectedTransmissions);
         $activeCount += count($this->selectedColours);
-        $activeCount += count($this->selectedDealers);
 
         if ($this->priceMin !== null || $this->priceMax !== null) {
             $activeCount++;
@@ -245,7 +229,6 @@ new class extends Component {
             ->when($this->selectedFuels !== [], fn (Builder $query) => $query->whereIn('fuel_type', $this->selectedFuels))
             ->when($this->selectedDrivetrains !== [], fn (Builder $query) => $query->whereIn('drivetrain', $this->selectedDrivetrains))
             ->when($this->selectedTransmissions !== [], fn (Builder $query) => $query->whereIn('transmission', $this->selectedTransmissions))
-            ->when($this->selectedDealers !== [], fn (Builder $query) => $query->whereIn('dealer_id', $this->selectedDealers))
             ->when($this->selectedColours !== [], function (Builder $query) {
                 $query->where(function (Builder $colourQuery) {
                     foreach ($this->selectedColours as $family) {
@@ -681,23 +664,6 @@ new class extends Component {
                                 </label>
                             @endforeach
                         </div>
-                    </div>
-                </div>
-
-                <div class="fgroup" wire:key="group-dealer" x-data="{ open: false }">
-                    <button type="button" class="fgroup-head" x-on:click="open = !open">
-                        Dealer
-                        <svg class="chev" :class="{ 'chev-closed': !open }" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
-                    </button>
-                    <div class="fgroup-body" x-show="open" x-cloak>
-                        @foreach ($this->availableDealers as $dealer)
-                            <label class="fopt {{ in_array($dealer->id, $selectedDealers) ? 'on' : '' }}" wire:key="dealer-{{ $dealer->id }}">
-                                <input type="checkbox" wire:model.live="selectedDealers" value="{{ $dealer->id }}" hidden>
-                                <span class="box"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>
-                                <span class="fopt-label">{{ ucwords(strtolower($dealer->name)) }}</span>
-                                <span class="count">{{ $dealer->vehicles_count }}</span>
-                            </label>
-                        @endforeach
                     </div>
                 </div>
             </div>

@@ -209,6 +209,7 @@ new class extends Component {
                     'badgeLabel' => $vehicle->certification()?->badge ?? 'Manufacturer CPO',
                     'savedVehicleIds' => $savedVehicleIds,
                     'favouritesAreVisible' => $favouritesAreVisible,
+                    'showDealer' => true,
                 ])
             @endforeach
         </div>

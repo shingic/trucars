@@ -121,6 +121,7 @@ new class extends Component {
                 @include('partials.vehicle-card', [
                     'vehicle' => $vehicle,
                     'savedVehicleIds' => $savedVehicleIds,
+                    'distanceKm' => \App\Support\ShopperLocation::distanceKm(\App\Support\ShopperLocation::current(), $vehicle->locatedAt()),
                     'favouritesAreVisible' => $favouritesAreVisible,
                 ])
             @endforeach

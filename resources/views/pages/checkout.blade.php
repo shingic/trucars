@@ -1347,6 +1347,16 @@ new #[Layout('layouts.checkout')] class extends Component {
         $this->showConfirmation($newDeal);
     }
 
+    /** The dealership behind the reservation just made: only ever after the deposit is paid. */
+    public function confirmedSeller(): ?array
+    {
+        if ($this->dealReference === null) {
+            return null;
+        }
+
+        return auth()->user()?->deals()->where('reference', $this->dealReference)->first()?->sellerDetails();
+    }
+
     private function showConfirmation(Deal $deal): void
     {
         $this->dealReference = $deal->reference;
@@ -2305,6 +2315,9 @@ new #[Layout('layouts.checkout')] class extends Component {
                     <h1>The keys are basically yours, {{ $firstName }}.</h1>
                     <p class="lede">Your {{ $vehicle->model_year }} {{ $vehicle->make }} {{ $vehicle->model }} is held in your name. We've emailed your confirmation and the $150 deposit receipt.</p>
                     <div class="ref-chip">Reservation <b>{{ $dealReference }}</b></div>
+                    @if ($seller = $this->confirmedSeller())
+                        <div style="max-width:460px; margin:0 auto 28px;">@include('partials.seller-details', ['seller' => $seller])</div>
+                    @endif
                     <div class="timeline-next">
                         <div class="tn-head">From here</div>
                         <div class="tn-step"><span class="tn-n">1</span><div><div class="tn-title">The dealership confirms your financing</div><div class="muted tn-sub">Final approval and your real rate — usually within a day.</div></div></div>

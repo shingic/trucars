@@ -70,6 +70,14 @@ new class extends Component {
     protected ?VehicleCertification $resolvedCertification = null;
     protected bool $certificationResolved = false;
 
+    /** From here on, the distance section says the car is a long way off. */
+    public const FAR_KM = 300;
+
+    /** The shopper's postal code (or city), typed in the distance section. */
+    public string $locationInput = '';
+
+    public bool $editingLocation = false;
+
     protected ?\App\Services\Carfax\CarfaxReport $resolvedCarfax = null;
     protected bool $carfaxResolved = false;
 
@@ -103,6 +111,51 @@ new class extends Component {
         }
 
         return $this->resolvedCertification;
+    }
+
+    /** Where the shopper said they are (session only), or null. */
+    public function shopperLocation(): ?array
+    {
+        return \App\Support\ShopperLocation::current();
+    }
+
+    /** Straight-line km from the shopper to the store the car sits at, when both are on the map. */
+    public function distanceKm(): ?float
+    {
+        return \App\Support\ShopperLocation::distanceKm($this->shopperLocation(), $this->vehicle->locatedAt());
+    }
+
+    public function formatKm(float $km): string
+    {
+        return $km < 10 ? number_format($km, 1) : number_format($km);
+    }
+
+    /** For a typed city (no coordinates): how close it is, coarsely. */
+    public function proximityLine(): string
+    {
+        $here = $this->shopperLocation();
+
+        return match (\App\Support\ShopperLocation::proximityRank($here, $this->vehicle->locatedAt())) {
+            0       => 'In your city.',
+            1       => 'In your province.',
+            default => isset($here['province']) ? "Outside {$here['province']}." : '',
+        };
+    }
+
+    /** Same input as the shop's location box: a postal code or a city. Kept for the whole visit. */
+    public function setLocation(): void
+    {
+        $this->validate(['locationInput' => ['required', 'string', 'max:60']], attributes: ['locationInput' => 'postal code']);
+
+        if (! \App\Support\ShopperLocation::setManual($this->locationInput)) {
+            $this->addError('locationInput', 'Enter a postal code (e.g. M5V 2T6) or a city.');
+
+            return;
+        }
+
+        $this->locationInput = '';
+        $this->editingLocation = false;
+        $this->dispatch('shopper-location-updated', label: \App\Support\ShopperLocation::current()['label'] ?? null);
     }
 
     /** The selling dealership's CARFAX report for this car, or null to hide the section. */
@@ -514,7 +567,7 @@ new class extends Component {
                         <div class="cert-head">
                             <div class="cert-headtext">
                                 <h3>{{ $cert->name }}</h3>
-                                <div class="cert-by">{{ $cert->pointCount }}-point inspection · {{ ucwords(strtolower($vehicle->dealer->name)) }}</div>
+                                <div class="cert-by">{{ $cert->pointCount }}-point inspection by the selling dealership</div>
                                 @if ($cert->summary) <p>{{ $cert->summary }}</p> @endif
                             </div>
                         </div>
@@ -560,7 +613,7 @@ new class extends Component {
                         </div>
 
                         @if ($carfax->stolen)
-                            <div class="cfx-alert">CARFAX reports this vehicle as stolen. Contact the dealership before going further.</div>
+                            <div class="cfx-alert">CARFAX reports this vehicle as stolen. Contact us before going further.</div>
                         @endif
 
                         @if ($carfax->badges)
@@ -586,7 +639,7 @@ new class extends Component {
                             @endif
                         </dl>
 
-                        <p class="cfx-note">History supplied by CARFAX Canada through {{ ucwords(strtolower($vehicle->dealer->name)) }}. Read the full report for damage amounts, liens and dates.</p>
+                        <p class="cfx-note">History supplied by CARFAX Canada through the selling dealership. Read the full report for damage amounts, liens and dates.</p>
                     </div>
                 </div>
             @endif
@@ -606,24 +659,57 @@ new class extends Component {
                 </div>
             </div>
 
-            <div class="vdp-section">
-                <h2>Sold by</h2>
-                <div class="dealer-card">
-                    <div class="dealer-top">
-                        <div>
-                            <div class="dealer-name">{{ ucwords(strtolower($vehicle->dealer->name)) }}</div>
-                            {{-- The dealer sells it; the address is the rooftop the car sits at. --}}
-                            @php $store = $vehicle->locatedAt(); @endphp
-                            <div class="dealer-sub">
-                                @if ($store instanceof \App\Models\Rooftop && $store->name) {{ $store->name }} · @endif
-                                {{ implode(' · ', $store->address_lines) ?: $store->display_location }}
-                                @if ($store instanceof \App\Models\Rooftop && $store->todayLabel()) <span class="dot-sep"></span> {{ $store->todayLabel() }} @endif
-                                @if ($vehicle->dealer->registration_number)
-                                    <span class="dot-sep"></span> {{ $vehicle->dealer->regulator ?? 'Dealer reg.' }}&nbsp;#{{ $vehicle->dealer->registration_number }}
-                                @endif
+            {{--
+                Where the car is, as a distance from the shopper. The selling
+                dealership's name and address are only shared once the deposit
+                is paid (My Garage), so shoppers judge it by how far away it is.
+            --}}
+            @php
+                $here = $this->shopperLocation();
+                $km = $this->distanceKm();
+                $carIn = $vehicle->display_location;
+            @endphp
+            <div class="vdp-section" id="distance">
+                <h2>Distance from you</h2>
+                <div class="loc">
+                    @if ($km !== null)
+                        <div class="loc-row">
+                            <div>
+                                <div class="loc-km"><b>{{ $this->formatKm($km) }}</b> km away</div>
+                                <div class="loc-sub">From {{ $here['label'] }}@if ($carIn) · the car is in {{ $carIn }}@endif</div>
+                            </div>
+                            @unless ($editingLocation)
+                                <button type="button" class="loc-change" wire:click="$set('editingLocation', true)">Change</button>
+                            @endunless
+                        </div>
+                        @if ($km >= self::FAR_KM)
+                            <div class="loc-far">That's a long way from you. Check pickup and delivery timing before you reserve.</div>
+                        @endif
+                    @else
+                        <div class="loc-row">
+                            <div>
+                                <div class="loc-km">{{ $carIn ? 'In ' . $carIn : 'Distance unknown' }}</div>
+                                <div class="loc-sub">
+                                    @if ($here)
+                                        {{ $this->proximityLine() }} Enter your postal code to see the distance in kilometres.
+                                    @else
+                                        Enter your postal code to see how far this car is from you.
+                                    @endif
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    @endif
+
+                    @if ($km === null || $editingLocation)
+                        <form class="loc-form" wire:submit="setLocation">
+                            <label for="vdp-postal" class="sr-only">Your postal code</label>
+                            <input id="vdp-postal" type="text" wire:model="locationInput" placeholder="Postal code, e.g. M5V 2T6" maxlength="60" autocomplete="postal-code" aria-describedby="vdp-postal-err">
+                            <button type="submit" class="loc-go" wire:loading.attr="disabled" wire:target="setLocation">Show distance</button>
+                        </form>
+                        @error('locationInput') <p class="loc-err" id="vdp-postal-err">{{ $message }}</p> @enderror
+                    @endif
+
+                    <p class="loc-note">You'll get the selling dealership's name, address and contact details as soon as your deposit is in.</p>
                 </div>
             </div>
         </div>
@@ -638,6 +724,12 @@ new class extends Component {
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 13h18M5 13 7 6h10l2 7M7 17h.01M17 17h.01"/></svg>
                             $149 delivery to your door
                         </div>
+                        @if ($this->distanceKm() !== null)
+                            <a class="pd-row pd-dist" href="#distance">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-6.1 7-11.5A7 7 0 0 0 5 9.5C5 14.9 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+                                {{ $this->formatKm($this->distanceKm()) }} km from {{ $this->shopperLocation()['label'] }}
+                            </a>
+                        @endif
                         <div class="pd-note">All-in price — freight, PDI, admin &amp; OMVIC fee included. <b>Excludes HST &amp; licensing.</b></div>
                     </div>
                     @php $payment = $this->paymentEstimate(); @endphp
@@ -897,11 +989,25 @@ new class extends Component {
         .spec .k { color:var(--ink-2); }
         .spec .v { font-weight:600; text-align:right; overflow-wrap:anywhere; }
 
-        .dealer-card { border-top:2px solid var(--ink); padding-top:14px; }
-        .dealer-top { display:block; }
-        .dealer-name { font-family:var(--font-display); font-size:24px; font-weight:700; }
-        .dealer-sub { font-size:15px; color:var(--ink-2); margin-top:4px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-        .dealer-sub .dot-sep { width:4px; height:4px; background:var(--ink-3); }
+        .loc { border-top:2px solid var(--ink); padding-top:14px; }
+        .loc-row { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
+        .loc-km { font-family:var(--font-display); font-size:24px; font-weight:700; color:var(--ink); line-height:1.1; }
+        .loc-km b { font-size:34px; font-weight:800; color:var(--primary-press); }
+        .loc-sub { font-size:15px; color:var(--ink-2); margin-top:5px; }
+        .loc-change { flex-shrink:0; background:none; border:none; padding:4px 0; font-size:15px; font-weight:700; color:var(--ink); text-decoration:underline; text-underline-offset:3px; cursor:pointer; }
+        .loc-far { margin-top:12px; padding:10px 12px; border-left:3px solid #C59A00; background:#FFF8DD; font-size:14.5px; font-weight:600; color:#7A4E00; }
+        .loc-form { display:flex; gap:8px; margin-top:14px; max-width:440px; }
+        .loc-form input { flex:1; min-width:0; border:1.5px solid var(--line-strong); border-radius:8px; padding:10px 12px; font-size:15px; font-family:inherit; color:var(--ink); background:#fff; }
+        .loc-form input:focus { outline:none; border-color:var(--ink); box-shadow:inset 0 0 0 1px var(--ink); }
+        .loc-go { flex-shrink:0; border:1.5px solid var(--ink); background:var(--ink); color:#fff; border-radius:8px; padding:10px 16px; font-family:var(--font-display); font-size:15px; font-weight:600; text-transform:uppercase; letter-spacing:.02em; cursor:pointer; }
+        .loc-go:hover { background:var(--primary-press); border-color:var(--primary-press); }
+        .loc-go:disabled { opacity:.6; cursor:wait; }
+        .loc-change:focus-visible, .loc-go:focus-visible, .pd-dist:focus-visible { outline:2px solid var(--primary); outline-offset:2px; }
+        .loc-err { margin:6px 0 0; font-size:13px; font-weight:600; color:#D81A48; }
+        .loc-note { margin:14px 0 0; font-size:13.5px; color:var(--ink-3); }
+        .pd-dist { color:var(--ink); text-decoration:none; }
+        .pd-dist:hover { text-decoration:underline; text-underline-offset:3px; }
+        .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
 
         /* the buy box is the window sticker: a heavy frame, the price, then ruled lines */
         .buy-rail { position:sticky; top:90px; }

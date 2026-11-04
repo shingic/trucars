@@ -360,6 +360,34 @@ class Deal extends Model
     }
 
     /**
+     * Who the buyer is dealing with, revealed once the deposit is paid: the
+     * seller's name and registration from the dealer as it was at reserve,
+     * and the address and contact details of the store the car is collected
+     * from. Shoppers never see this before they reserve.
+     *
+     * @return array{name: string, store: ?string, address_lines: list<string>, phone: ?string, email: ?string, registration: ?string}
+     */
+    public function sellerDetails(): array
+    {
+        $dealer = $this->dealer_snapshot ?? $this->dealer?->toSnapshot() ?? [];
+        $store = $this->rooftop_snapshot ?? $dealer;
+
+        $street = collect([! empty($store['unit']) ? "Unit {$store['unit']}" : null, $store['street_address'] ?? null])->filter()->implode(', ');
+        $locality = trim(collect([$store['city'] ?? null, $store['province'] ?? null])->filter()->implode(', ') . ' ' . ($store['postal_code'] ?? ''));
+        $regulator = \App\Support\CanadianAddress::regulatorFor($dealer['province'] ?? null) ?? 'Dealer reg.';
+        $storeName = $store['name'] ?? null;
+
+        return [
+            'name'          => $this->seller_name,
+            'store'         => $storeName && strcasecmp($storeName, $this->seller_name) !== 0 ? $storeName : null,
+            'address_lines' => array_values(array_filter([$street, $locality])),
+            'phone'         => ($store['phone'] ?? null) ?: ($dealer['phone'] ?? null),
+            'email'         => ($store['email'] ?? null) ?: ($dealer['email'] ?? null),
+            'registration'  => ! empty($dealer['registration_number']) ? "{$regulator} #{$dealer['registration_number']}" : null,
+        ];
+    }
+
+    /**
      * The zone handover windows were offered in: the rooftop's at reserve time,
      * else the seller's, else today's. pickup_at itself is stored in UTC.
      */

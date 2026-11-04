@@ -653,6 +653,10 @@ new #[Layout('layouts.checkout')] class extends Component {
                     </div>
                 </section>
 
+                <section class="g-card" style="border-top:none; padding-top:0;">
+                    @include('partials.seller-details', ['seller' => $this->featuredDeal->sellerDetails()])
+                </section>
+
                 <section class="g-card">
                     <div class="g-card-head">
                         <div>

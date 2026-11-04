@@ -76,15 +76,13 @@ class DealerFoundationTest extends TestCase
         $this->get('/cars/' . $vehicle->id)->assertNotFound();
     }
 
-    public function test_vehicle_page_shows_the_dealer_address_and_regulator(): void
+    public function test_reserved_buyers_get_the_dealer_address_and_regulator(): void
     {
-        $vehicle = $this->vehicle($this->makeDealer(['registration_number' => '31234']));
+        $deal = $this->deal($this->vehicle($this->makeDealer(['registration_number' => '31234'])));
 
-        $this->get('/cars/' . $vehicle->id)
-            ->assertOk()
-            ->assertSee('45510 Yale Rd · Chilliwack, BC V2P 2M9')
-            ->assertSee('VSA&nbsp;#31234', false)
-            ->assertDontSee('OMVIC&nbsp;#', false);
+        $seller = $deal->sellerDetails();
+        $this->assertSame(['45510 Yale Rd', 'Chilliwack, BC V2P 2M9'], $seller['address_lines']);
+        $this->assertSame('VSA #31234', $seller['registration']);
     }
 
     /* ---- reservations keep their history ----------------------------- */

@@ -15,8 +15,9 @@ use App\Models\Rooftop;
  * Two ways in: the browser's location (after the shopper taps "Use my
  * location"), rounded to ~1 km before it's kept; or a typed city or postal
  * code. The town is looked up for the browser's point and for a postal code
- * (AddressLookup), so the shop can say "for sale in Chilliwack"; typed input
- * still gives a city / province match rather than kilometres.
+ * (AddressLookup), so the shop can say "for sale in Chilliwack". A postal
+ * code is also placed on the map (its centre, rounded to ~1 km), so it gives
+ * real kilometres; a typed city still gives a city / province match only.
  */
 class ShopperLocation
 {
@@ -65,6 +66,8 @@ class ShopperLocation
                 'source'      => 'manual',
                 'label'       => $place ? self::placeLabel($place['city'], $place['province'] ?? CanadianAddress::provinceForPostalCode($postalCode)) : $postalCode,
                 'postal_code' => $postalCode,
+                'latitude'    => isset($place['latitude']) ? round($place['latitude'], 2) : null,
+                'longitude'   => isset($place['longitude']) ? round($place['longitude'], 2) : null,
                 'city'        => $place['city'] ?? null,
                 'province'    => $place['province'] ?? CanadianAddress::provinceForPostalCode($postalCode),
             ], fn ($value) => $value !== null));
