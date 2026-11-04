@@ -849,6 +849,8 @@ new class extends Component {
 
         .vdp-back { display:inline-flex; align-items:center; gap:7px; font-size:14px; font-weight:600; color:var(--ink-2); margin-bottom:16px; text-decoration:none; }
         .vdp-back:hover { color:var(--ink); }
+        /* capped and centred, so the gallery doesn't balloon on wide screens */
+        .vdp { max-width:1240px; margin:0 auto; }
         .vdp-grid { display:grid; grid-template-columns:minmax(0, 1fr) 380px; gap:44px; align-items:start; }
         .vdp-main { min-width:0; }
 
