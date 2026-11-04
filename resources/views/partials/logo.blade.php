@@ -9,4 +9,4 @@
     // The file's own timestamp busts browser caches whenever the logo is replaced.
     $version = @filemtime(public_path('images/'.$file)) ?: 1;
 @endphp
-<img src="{{ asset('images/'.$file) }}?v={{ $version }}" alt="TRUMO" class="site-logo" height="{{ $height }}" width="{{ round($height * 4772 / 792) }}" style="height:{{ $height }}px; width:auto; display:block;">
+<img src="{{ asset('images/'.$file) }}?v={{ $version }}" alt="TRUMO" class="site-logo" height="{{ $height }}" width="{{ round($height * 3240 / 799) }}" style="height:{{ $height }}px; width:auto; display:block;">
