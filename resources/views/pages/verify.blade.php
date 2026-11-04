@@ -146,7 +146,7 @@ new #[Layout('layouts.checkout')] class extends Component {
 <div>
     <header class="auth-top">
         <div class="auth-top-inner">
-            <a href="/" class="brand"><span class="wordmark">Tru<b>Cars</b></span></a>
+            <a href="/" class="brand">@include('partials.logo')</a>
         </div>
     </header>
 

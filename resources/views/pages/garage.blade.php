@@ -498,7 +498,7 @@ new #[Layout('layouts.checkout')] class extends Component {
 <div x-data @garage-deal-changed.window="window.scrollTo({ top: 0, behavior: 'smooth' })">
     <header class="g-top">
         <div class="g-top-inner">
-            <a href="/" class="brand"><span class="wordmark">Tru<b>Cars</b></span></a>
+            <a href="/" class="brand">@include('partials.logo')</a>
             <span class="sep">·</span>
             <span class="garage-word">My Garage</span>
             <div class="g-account">

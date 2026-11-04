@@ -114,8 +114,8 @@
 <div class="app">
     <aside class="sidebar">
         <div class="sb-brand">
-            <span class="wordmark">Tru<b>Cars</b></span>
-            <span class="wordmark-short" aria-hidden="true">T<b>C</b></span>
+            <span class="wordmark">@include('partials.logo', ['variant' => 'light', 'height' => 26])</span>
+            <span class="wordmark-short"><img src="{{ asset('images/motokari-mark-light.png') }}" alt="Motokari" style="height:24px; width:auto; display:block;"></span>
         </div>
 
         <nav class="sb-scroll">

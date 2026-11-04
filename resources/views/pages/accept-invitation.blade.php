@@ -135,7 +135,7 @@ new #[Layout('layouts.auth')] class extends Component {
 @endpush
 
 <div class="inv-wrap">
-    <div class="inv-brand"><span class="wordmark">Tru<b>Cars</b></span></div>
+    <div class="inv-brand">@include('partials.logo')</div>
 
     @if (! $isUsable)
         <h1 class="inv-title">This invitation can't be used</h1>

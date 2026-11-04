@@ -1682,7 +1682,7 @@ new #[Layout('layouts.checkout')] class extends Component {
 <div id="checkout-app" x-data @checkout-step-changed.window="window.scrollTo({ top: 0, behavior: 'smooth' })">
     <header class="top">
         <div class="top-inner">
-            <a href="{{ $this->exitUrl() }}" class="brand"><span class="wordmark">Tru<b>Cars</b></span></a>
+            <a href="{{ $this->exitUrl() }}" class="brand">@include('partials.logo')</a>
             <div class="veh-chip">
                 <span class="thumb" @if ($this->heroPhoto) style="background-image:url('{{ $this->heroPhoto }}');" @endif></span>
                 <span><span class="vt">{{ $vehicle->model_year }} {{ $vehicle->make }} {{ $vehicle->model }}</span> &nbsp;<span class="vp">{{ $this->asMoney($this->priceDollars) }}</span></span>
