@@ -10,7 +10,8 @@
         body { margin:0; background:#F9F9F9; font-family:"Barlow",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; color:#071437; }
         main { max-width:520px; margin:12vh auto 0; padding:0 16px; }
         .card { background:#fff; border:1px solid #D5D7DD; border-top:6px solid #1B84FF; border-radius:12px; padding:30px 28px; }
-        img { display:block; height:30px; width:auto; margin-bottom:22px; }
+        .wordmark { display:block; font-family:"Barlow Semi Condensed","Barlow",sans-serif; font-size:24px; font-weight:800; line-height:1; text-transform:uppercase; letter-spacing:.01em; color:#071437; margin-bottom:22px; }
+        .wordmark b { font-weight:800; color:#1B84FF; }
         h1 { font-family:"Barlow Semi Condensed","Barlow",sans-serif; font-size:28px; text-transform:uppercase; margin:0 0 10px; }
         p { font-size:15.5px; line-height:1.6; color:#4B5675; margin:0 0 14px; }
         a { color:#056EE9; font-weight:700; }
@@ -19,7 +20,7 @@
 <body>
 <main>
     <div class="card">
-        @include("partials.logo")
+        <span class="wordmark">Tru<b>Cars</b></span>
         <h1>You're unsubscribed</h1>
         <p>We won't send you any more marketing emails. You'll still get emails about a reservation you make, like your receipt and pickup details.</p>
         <p><a href="{{ route('shop') }}">Back to the cars</a></p>

@@ -115,8 +115,8 @@
 <div class="app">
     <aside class="sidebar">
         <div class="sb-brand">
-            <span class="wordmark">@include('partials.logo', ['variant' => 'light', 'height' => 42])</span>
-            <span class="wordmark-short"><img src="{{ asset('images/trumo-badge-192.png') }}?v={{ @filemtime(public_path('images/trumo-badge-192.png')) ?: 1 }}" alt="TRUMO" style="height:30px; width:30px; display:block;"></span>
+            <span class="wordmark">Tru<b>Cars</b></span>
+            <span class="wordmark-short" aria-hidden="true">T<b>C</b></span>
         </div>
 
         <nav class="sb-scroll">

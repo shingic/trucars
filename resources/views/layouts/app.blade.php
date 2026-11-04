@@ -197,7 +197,7 @@
     {{-- On a vehicle page the header and footer line up with its 1240px column. --}}
     @php $narrowShell = request()->is('cars/*') || request()->routeIs('campaign.vehicle'); @endphp
     <div class="nav-inner {{ $narrowShell ? 'is-narrow' : '' }}">
-        <a href="{{ $brandUrl }}" wire:navigate class="brand">@include('partials.logo')</a>
+        <a href="{{ $brandUrl }}" wire:navigate class="brand"><span class="wordmark">Tru<b>Cars</b></span></a>
 
         <div class="nav-links">
             @if ($referredCampaign)
@@ -297,7 +297,7 @@
 
     <aside class="nav-drawer" :class="{ 'is-open': menuOpen }" x-cloak>
         <div class="drawer-top">
-            <a href="{{ $brandUrl }}" wire:navigate class="brand" @click="menuOpen = false">@include('partials.logo')</a>
+            <a href="{{ $brandUrl }}" wire:navigate class="brand" @click="menuOpen = false"><span class="wordmark">Tru<b>Cars</b></span></a>
             <button type="button" class="drawer-close" @click="menuOpen = false" aria-label="Close menu">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg>
             </button>
@@ -392,7 +392,7 @@
 @endif
 <footer class="site-foot">
     <div class="site-foot-inner {{ ($narrowShell ?? false) ? 'is-narrow' : '' }}">
-        <span class="brand">@include('partials.logo', ['variant' => 'light', 'height' => 42])</span>
+        <span class="brand"><span class="wordmark">Tru<b>Cars</b></span></span>
         <nav class="site-foot-links">
             <a href="{{ route('home') }}" wire:navigate>Home</a>
             <a href="{{ route('shop') }}" wire:navigate>Shop cars</a>
