@@ -110,7 +110,8 @@ class DealerFoundationTest extends TestCase
         $this->actingAs(User::factory()->create());
 
         $checkout = Livewire::test('pages::checkout', ['vehicle' => $vehicle]);
-        $this->assertSame('2026-07-02', $checkout->get('handoverDate'));
+        // Ordered Wednesday: two weekdays of prep, so the first pickup is Friday.
+        $this->assertSame('2026-07-03', $checkout->get('handoverDate'));
 
         $checkout->set('handoverTimeSlot', '10:00')
             ->set('firstName', 'Sam')
@@ -121,8 +122,8 @@ class DealerFoundationTest extends TestCase
         $deal = Deal::withoutGlobalScope(DealerScope::class)->sole();
 
         // 10am in Vancouver (PDT, UTC-7) is 17:00 UTC.
-        $this->assertSame('2026-07-02 17:00:00', $deal->getRawOriginal('pickup_at'));
-        $this->assertSame('2026-07-02 10:00', $deal->local_pickup_at->format('Y-m-d H:i'));
+        $this->assertSame('2026-07-03 17:00:00', $deal->getRawOriginal('pickup_at'));
+        $this->assertSame('2026-07-03 10:00', $deal->local_pickup_at->format('Y-m-d H:i'));
         $this->assertStringContainsString('10:00 am PDT', $deal->handover_summary);
 
         Carbon::setTestNow();

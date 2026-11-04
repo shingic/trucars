@@ -1007,18 +1007,21 @@ new #[Layout('layouts.checkout')] class extends Component {
        --------------------------------------------------------------------- */
 
     /**
-     * The next six collection/delivery days the store is open, from tomorrow
-     * so the options never go stale. Each row carries the parts the date chip
-     * renders. "Tomorrow" is the store's tomorrow.
+     * The next six pickup days: from the first day the dealership can have the
+     * car ready (two weekdays of prep, see PickupCalendar), never a Sunday, and
+     * only days the store is open. Worked out from "now" each time, in the
+     * store's timezone, so the options never go stale. Each row carries the
+     * parts the date chip renders.
      */
     public function handoverDateOptions(): array
     {
         $options = [];
+        $first = \App\Support\PickupCalendar::earliest(now($this->dealerTimezone()));
 
-        for ($dayOffset = 1; $dayOffset <= 14 && count($options) < 6; $dayOffset++) {
-            $day = now($this->dealerTimezone())->addDays($dayOffset);
+        for ($dayOffset = 0; $dayOffset <= 21 && count($options) < 6; $dayOffset++) {
+            $day = $first->copy()->addDays($dayOffset);
 
-            if ($this->availableTimeSlots($day->format('Y-m-d')) === []) {
+            if (! \App\Support\PickupCalendar::allowsDay($day) || $this->availableTimeSlots($day->format('Y-m-d')) === []) {
                 continue;
             }
 
@@ -2188,7 +2191,8 @@ new #[Layout('layouts.checkout')] class extends Component {
             @elseif ($this->stepKey() === 'handover')
                 <div class="step-meta">Step 5 · Pickup</div>
                 <h1 class="h1">When will you pick it up?</h1>
-                <p class="lede">You collect it at the dealership, keys in hand and paperwork done on the spot. Choose where, then the day and time that suit you.</p>
+                @php $firstPickup = $this->handoverDateOptions()[0]['date'] ?? null; @endphp
+                <p class="lede">You collect it at the dealership, keys in hand and paperwork done on the spot. The dealership takes two business days to get it ready{{ $firstPickup ? ', so the first pickup day is ' . \Illuminate\Support\Carbon::parse($firstPickup)->format('l, F j') : '' }}.</p>
 
                 <div class="section-label">{!! $icon('pin', 24) !!} Where you'll collect it</div>
                 <div class="spot-grid">
