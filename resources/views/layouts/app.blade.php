@@ -33,6 +33,8 @@
 
         .nav { position:sticky; top:0; z-index:40; background:#fff; border-bottom:1px solid var(--line-strong); }
         .nav-inner { max-width:1600px; margin:0 auto; padding:14px 24px; display:flex; align-items:center; gap:28px; }
+        /* 1240px of content plus the 24px side padding, to match the vehicle page */
+        .nav-inner.is-narrow, .site-foot-inner.is-narrow { max-width:1288px; }
         .brand { display:flex; align-items:center; text-decoration:none; }
         /* the TruCars wordmark: condensed caps, "Cars" in blue */
         .wordmark { font-family:var(--font-display); font-size:24px; font-weight:800; line-height:1; text-transform:uppercase; letter-spacing:.01em; color:var(--ink); white-space:nowrap; }
@@ -166,7 +168,9 @@
      x-data="{ menuOpen: false }"
      x-effect="document.body.style.overflow = menuOpen ? 'hidden' : ''"
      @keydown.escape.window="menuOpen = false">
-    <div class="nav-inner">
+    {{-- On a vehicle page the header and footer line up with its 1240px column. --}}
+    @php $narrowShell = request()->is('cars/*') || request()->routeIs('campaign.vehicle'); @endphp
+    <div class="nav-inner {{ $narrowShell ? 'is-narrow' : '' }}">
         <a href="{{ $brandUrl }}" wire:navigate class="brand">@include('partials.logo')</a>
 
         <div class="nav-links">
@@ -358,7 +362,7 @@
 </main>
 
 <footer class="site-foot">
-    <div class="site-foot-inner">
+    <div class="site-foot-inner {{ ($narrowShell ?? false) ? 'is-narrow' : '' }}">
         <span class="brand">@include('partials.logo', ['variant' => 'light', 'height' => 26])</span>
         <nav class="site-foot-links">
             <a href="{{ route('home') }}" wire:navigate>Home</a>

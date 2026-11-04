@@ -54,11 +54,71 @@ new class extends Component {
 
     public string $sort = 'newest';
 
+    /** Results are shown 40 at a time. The page is in the URL, so ?page=2 can be shared and crawled. */
+    public const PER_PAGE = 40;
+
+    #[Url(as: 'page', except: 1)]
+    public int $page = 1;
+
     /** The typed fallback when browser location is denied or not wanted. */
     public string $locationInput = '';
 
+    /** Any filter or sort change starts the results over from page 1. */
+    public function updated(string $property): void
+    {
+        if (! in_array($property, ['page', 'locationInput'], true)) {
+            $this->page = 1;
+        }
+    }
+
+    public function goToPage(int $page): void
+    {
+        $this->page = max(1, min($page, $this->lastPage()));
+    }
+
+    public function lastPage(): int
+    {
+        return max(1, (int) ceil($this->publishedVehicles->count() / self::PER_PAGE));
+    }
+
+    /** The cars on the current page, in the chosen order. */
+    #[Computed]
+    public function pageVehicles(): Collection
+    {
+        $page = max(1, min($this->page, $this->lastPage()));
+
+        return $this->publishedVehicles->forPage($page, self::PER_PAGE)->values();
+    }
+
+    /**
+     * Page numbers for the picker: always the first and last, two either side
+     * of the current one, and null where a run is skipped (shown as "…").
+     *
+     * @return list<int|null>
+     */
+    public function pageLinks(): array
+    {
+        $last = $this->lastPage();
+        $current = max(1, min($this->page, $last));
+        $links = [];
+        $previous = 0;
+
+        foreach (range(1, $last) as $number) {
+            if ($number === 1 || $number === $last || abs($number - $current) <= 2) {
+                if ($previous && $number - $previous > 1) {
+                    $links[] = null;
+                }
+                $links[] = $number;
+                $previous = $number;
+            }
+        }
+
+        return $links;
+    }
+
     public function clearFilters(): void
     {
+        $this->page = 1;
         $this->reset([
             'search', 'selectedMakes', 'selectedBodyTypes', 'selectedFuels',
             'selectedDrivetrains', 'selectedTransmissions', 'selectedColours',
@@ -71,12 +131,14 @@ new class extends Component {
         if ($this->priceMin === $min && $this->priceMax === $max) {
             $this->priceMin = null;
             $this->priceMax = null;
+            $this->page = 1;
 
             return;
         }
 
         $this->priceMin = $min;
         $this->priceMax = $max;
+        $this->page = 1;
     }
 
     /**
@@ -317,6 +379,7 @@ new class extends Component {
     {
         $this->resetErrorBag('locationInput');
         $this->sort = 'nearest';
+        $this->page = 1;
         $this->dispatch('shopper-location-updated', label: ShopperLocation::placeLine(ShopperLocation::current()));
     }
 
@@ -398,7 +461,7 @@ new class extends Component {
             'favouritesAreVisible' => $this->favouritesAreVisible(),
             'shopperLocation' => $shopperLocation,
             // km per vehicle id, only where both ends have coordinates.
-            'distancesKm' => $this->publishedVehicles
+            'distancesKm' => $this->pageVehicles
                 ->mapWithKeys(fn (Vehicle $vehicle) => [$vehicle->id => ShopperLocation::distanceKm($shopperLocation, $vehicle->locatedAt())])
                 ->filter(fn (?float $km) => $km !== null)
                 ->all(),
@@ -407,7 +470,7 @@ new class extends Component {
 };
 ?>
 
-<div class="srp" x-data="{ filtersOpen: false }"
+<div x-data="{ filtersOpen: false }"
      x-effect="document.body.style.overflow = filtersOpen ? 'hidden' : ''"
      @keydown.escape.window="filtersOpen = false">
 
@@ -702,7 +765,7 @@ new class extends Component {
             </div>
 
             <div class="grid" :class="{ 'is-list': view === 'list' }">
-                @forelse ($this->publishedVehicles as $vehicle)
+                @forelse ($this->pageVehicles as $vehicle)
                     @include('partials.vehicle-card', [
                         'vehicle' => $vehicle,
                         'distanceKm' => $distancesKm[$vehicle->id] ?? null,
@@ -713,6 +776,45 @@ new class extends Component {
                     <div class="floor-empty">No cars match those filters — try widening them.</div>
                 @endforelse
             </div>
+
+            @if ($this->lastPage() > 1)
+                @php
+                    $current = max(1, min($page, $this->lastPage()));
+                    $from = ($current - 1) * self::PER_PAGE + 1;
+                    $to = min($current * self::PER_PAGE, $this->publishedVehicles->count());
+                    $pageUrl = fn (int $number) => request()->fullUrlWithQuery(['page' => $number === 1 ? null : $number]);
+                @endphp
+                <nav class="pager" aria-label="Results pages" x-data @click="if ($event.target.closest('a')) window.scrollTo({ top: 0, behavior: 'smooth' })">
+                    @if ($current > 1)
+                        <a class="pager-step" href="{{ $pageUrl($current - 1) }}" wire:click.prevent="goToPage({{ $current - 1 }})" rel="prev">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m15 18-6-6 6-6"/></svg> Previous
+                        </a>
+                    @else
+                        <span class="pager-step is-off" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m15 18-6-6 6-6"/></svg> Previous</span>
+                    @endif
+
+                    <ol class="pager-nums">
+                        @foreach ($this->pageLinks() as $number)
+                            @if ($number === null)
+                                <li class="pager-gap" aria-hidden="true">…</li>
+                            @elseif ($number === $current)
+                                <li><span class="pager-num is-on" aria-current="page">{{ $number }}</span></li>
+                            @else
+                                <li><a class="pager-num" href="{{ $pageUrl($number) }}" wire:click.prevent="goToPage({{ $number }})" aria-label="Page {{ $number }}">{{ $number }}</a></li>
+                            @endif
+                        @endforeach
+                    </ol>
+
+                    @if ($current < $this->lastPage())
+                        <a class="pager-step" href="{{ $pageUrl($current + 1) }}" wire:click.prevent="goToPage({{ $current + 1 }})" rel="next">
+                            Next <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 18 6-6-6-6"/></svg>
+                        </a>
+                    @else
+                        <span class="pager-step is-off" aria-hidden="true">Next <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 18 6-6-6-6"/></svg></span>
+                    @endif
+                </nav>
+                <p class="pager-note">Showing {{ $from }}–{{ $to }} of {{ $this->publishedVehicles->count() }} cars</p>
+            @endif
         </div>
     </div>
 
@@ -741,8 +843,6 @@ new class extends Component {
         .loc-form button { font-size:14px; font-weight:700; color:var(--ink); padding:7px 12px; border-left:1.5px solid var(--line-strong); }
         .loc-form button:hover { background:var(--ink); color:#fff; }
         .loc-note { flex-basis:100%; font-size:13px; color:var(--primary-press); font-weight:600; }
-        /* capped and centred like the vehicle page */
-        .srp { max-width:1240px; margin:0 auto; }
         .srp-body { display:grid; grid-template-columns:260px minmax(0, 1fr); gap:40px; align-items:start; }
 
         /* filters: a plain ruled index, no boxes */
@@ -816,9 +916,29 @@ new class extends Component {
         .srp-mobilebar { display:none; }
         .srp-scrim { display:none; }
 
-        .grid { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:34px 22px; }
+        .grid { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:34px 22px; }
+        @media (max-width:1350px) { .grid { grid-template-columns:repeat(3, minmax(0, 1fr)); } }
         @media (max-width:1000px) { .grid { grid-template-columns:repeat(2, minmax(0, 1fr)); } }
         .grid.is-list { grid-template-columns:1fr; gap:0; border-top:2px solid var(--ink); }
+
+        /* the page picker under the results */
+        .pager { display:flex; align-items:center; justify-content:center; gap:14px; margin-top:44px; padding-top:22px; border-top:2px solid var(--ink); }
+        .pager-nums { list-style:none; display:flex; align-items:center; gap:4px; margin:0; padding:0; }
+        .pager-num { min-width:40px; height:40px; padding:0 10px; display:grid; place-items:center; border-radius:8px; font-family:var(--font-display); font-size:17px; font-weight:700; color:var(--ink); text-decoration:none; }
+        a.pager-num:hover { background:var(--bg-2); }
+        .pager-num.is-on { background:var(--ink); color:#fff; }
+        .pager-gap { min-width:24px; text-align:center; color:var(--ink-3); font-weight:700; }
+        .pager-step { display:inline-flex; align-items:center; gap:6px; height:40px; padding:0 14px; border:1.5px solid var(--ink); border-radius:8px; font-size:14.5px; font-weight:700; color:var(--ink); text-decoration:none; background:#fff; }
+        a.pager-step:hover { background:var(--ink); color:#fff; }
+        .pager-step.is-off { border-color:var(--line-strong); color:var(--ink-3); }
+        .pager-num:focus-visible, .pager-step:focus-visible { outline:2px solid var(--primary); outline-offset:2px; }
+        .pager-note { text-align:center; font-size:13.5px; color:var(--ink-3); margin:12px 0 0; }
+        @media (max-width:640px) {
+            .pager { gap:8px; }
+            .pager-step { padding:0 10px; font-size:0; gap:0; width:40px; justify-content:center; }
+            .pager-step svg { width:17px; height:17px; }
+            .pager-num { min-width:36px; height:36px; font-size:16px; padding:0 6px; }
+        }
         .floor-empty { grid-column:1 / -1; padding:60px 32px; text-align:center; color:var(--ink-2); border:1.5px dashed var(--line-strong); }
 
         @media (max-width: 860px) {
