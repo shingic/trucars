@@ -452,7 +452,7 @@ new class extends Component {
                         Nearest first to <b>{{ $shopperLocation['label'] }}</b>
                     @endif
                 </span>
-                <button type="button" class="loc-link" wire:click="clearLocation">Change</button>
+                <button type="button" class="loc-link" @click="$dispatch('open-location-gate')">Change</button>
             @else
                 <button type="button" class="loc-use" @click="locate()" :disabled="locating">
                     <span x-show="! locating">Use my location</span>

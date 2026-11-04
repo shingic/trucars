@@ -40,9 +40,7 @@ class DealerPrivacyTest extends TestCase
 
         $this->get('/cars/' . $vehicle->id)
             ->assertOk()
-            ->assertSee('Distance from you')
             ->assertSee('In Chilliwack, BC')
-            ->assertSee('Enter your postal code')
             ->assertDontSee('Mitsubishi Motors')
             ->assertDontSee('Chilliwack Mitsubishi')
             ->assertDontSee('45510 Yale Rd')
@@ -71,7 +69,23 @@ class DealerPrivacyTest extends TestCase
         $this->get('/cars/' . $vehicle->id)->assertOk()->assertSee("That's a long way from you", false);
     }
 
-    public function test_a_postal_code_on_the_vehicle_page_gives_the_distance(): void
+    public function test_shoppers_are_asked_where_they_are_before_seeing_cars(): void
+    {
+        $vehicle = $this->vehicle();
+
+        $this->get('/cars/' . $vehicle->id)->assertOk()->assertSee('Where are you shopping from?')->assertSee('open: true', false);
+        $this->get(route('shop'))->assertOk()->assertSee('Where are you shopping from?');
+        $this->get(route('home'))->assertOk()->assertDontSee('Where are you shopping from?');
+    }
+
+    public function test_once_located_the_prompt_stays_closed_until_asked_for(): void
+    {
+        session([ShopperLocation::SESSION_KEY => ['source' => 'browser', 'label' => 'Vancouver, BC', 'latitude' => 49.28, 'longitude' => -123.12]]);
+
+        $this->get('/cars/' . $this->vehicle()->id)->assertOk()->assertSee('open: false', false)->assertSee('open-location-gate');
+    }
+
+    public function test_a_postal_code_places_the_shopper_and_reloads_the_page(): void
     {
         config(['services.google_places.key' => 'AIza-test']);
         Http::fake(['maps.googleapis.com/maps/api/geocode/*' => Http::response(['results' => [[
@@ -81,24 +95,44 @@ class DealerPrivacyTest extends TestCase
             ],
             'geometry' => ['location' => ['lat' => 49.0504, 'lng' => -122.3045]],
         ]]])]);
+        $vehicle = $this->vehicle();
 
-        Livewire::test('pages::vehicle', ['vehicle' => $this->vehicle()])
-            ->set('locationInput', 'v2t 1a1')
-            ->call('setLocation')
+        Livewire::test('pages::location-gate', ['returnUrl' => url('/cars/' . $vehicle->id)])
+            ->set('postalCode', 'v2t 1a1')
+            ->call('usePostalCode')
             ->assertHasNoErrors()
-            ->assertSee('km away')
-            ->assertSee('From Abbotsford, BC');
+            ->assertRedirect(url('/cars/' . $vehicle->id));
 
         $this->assertSame(49.05, ShopperLocation::current()['latitude']);
         $this->assertSame('V2T 1A1', ShopperLocation::current()['postal_code']);
+
+        $this->get('/cars/' . $vehicle->id)->assertSee('km away')->assertSee('From Abbotsford, BC');
     }
 
-    public function test_nonsense_location_input_is_refused(): void
+    public function test_the_prompt_wants_a_postal_code_not_a_city(): void
     {
-        Livewire::test('pages::vehicle', ['vehicle' => $this->vehicle()])
-            ->set('locationInput', '!!!')
-            ->call('setLocation')
-            ->assertHasErrors(['locationInput']);
+        Livewire::test('pages::location-gate')
+            ->set('postalCode', 'Toronto')
+            ->call('usePostalCode')
+            ->assertHasErrors(['postalCode']);
+
+        $this->assertNull(ShopperLocation::current());
+    }
+
+    public function test_the_browser_location_works_too(): void
+    {
+        Livewire::test('pages::location-gate', ['returnUrl' => url('/shop')])
+            ->call('useBrowserLocation', 49.28, -123.12)
+            ->assertRedirect(url('/shop'));
+
+        $this->assertSame(49.28, ShopperLocation::current()['latitude']);
+    }
+
+    public function test_the_prompt_only_ever_returns_to_this_site(): void
+    {
+        Livewire::test('pages::location-gate', ['returnUrl' => 'https://evil.example/phish'])
+            ->call('useBrowserLocation', 49.28, -123.12)
+            ->assertRedirect(url('/'));
     }
 
     public function test_shop_cards_show_distance_and_town_not_the_dealer(): void

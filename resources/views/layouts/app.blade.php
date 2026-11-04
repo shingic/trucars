@@ -42,7 +42,10 @@
         .nav-links a.active, .nav-links a:hover { color:var(--ink); }
         .nav-links a.active { border-bottom-color:var(--primary); }
         .nav-right { margin-left:auto; display:flex; align-items:center; gap:16px; }
-        .nav-loc { display:flex; align-items:center; gap:7px; font-size:13.5px; color:var(--ink-2); font-weight:500; }
+        .nav-loc { display:flex; align-items:center; gap:7px; font-size:13.5px; color:var(--ink-2); font-weight:600; background:none; border:none; padding:6px 4px; font-family:inherit; cursor:pointer; border-radius:6px; }
+        .nav-loc:hover { color:var(--ink); }
+        .nav-loc:focus-visible { outline:2px solid var(--primary); outline-offset:2px; }
+        .nav-loc-chev { color:var(--ink-3) !important; }
         .nav-loc svg { color:var(--primary); }
         .nav-acct { width:36px; height:36px; border-radius:8px; background:#fff; border:1.5px solid var(--ink); display:grid; place-items:center; font-weight:700; font-size:13px; color:var(--ink-2); text-decoration:none; transition:border-color .15s ease, color .15s ease; }
         .nav-acct:hover { background:var(--ink); color:#fff; }
@@ -109,7 +112,7 @@
         .drawer-signout { display:flex; align-items:center; justify-content:center; gap:9px; width:100%; font-size:15px; font-weight:700; color:var(--ink); background:#fff; border:1.5px solid var(--ink); border-radius:var(--radius-pill); padding:13px 18px; }
         .drawer-signout svg { color:var(--ink-2); flex-shrink:0; }
         .drawer-signout:active { background:var(--line); }
-        .drawer-loc { display:inline-flex; align-items:center; gap:7px; font-size:13.5px; color:var(--ink-2); font-weight:500; }
+        .drawer-loc { display:inline-flex; align-items:center; gap:7px; font-size:13.5px; color:var(--ink-2); font-weight:600; background:none; border:none; padding:0; font-family:inherit; cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
         .drawer-loc svg { color:var(--primary); }
 
         .page { max-width:1600px; margin:0 auto; padding:32px 24px 64px; }
@@ -176,15 +179,18 @@
         </div>
 
         <div class="nav-right">
-            {{-- The shopper's own location (session only), set on the marketplace. --}}
-            <span class="nav-loc"
+            {{-- The shopper's own location (session only). Tap to change it. --}}
+            <button type="button" class="nav-loc"
                   x-data="{ label: @js(\App\Support\ShopperLocation::current()['label'] ?? null) }"
                   x-show="label"
                   @shopper-location-updated.window="label = $event.detail.label"
+                  @click="$dispatch('open-location-gate')"
+                  aria-label="Change your location"
                   x-cloak>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                 <span x-text="label === 'your location' ? 'Near you' : label"></span>
-            </span>
+                <svg class="nav-loc-chev" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 9 6 6 6-6"/></svg>
+            </button>
             {{-- Saved cars, for shoppers (a guest is sent to sign in). --}}
             @if (! auth()->check() || auth()->user()->dealer_id === null)
                 <a href="{{ route('saved') }}" wire:navigate class="nav-saved">
@@ -339,10 +345,10 @@
                     </form>
                 @endif
             @endauth
-            <span class="drawer-loc">
+            <button type="button" class="drawer-loc" @click="menuOpen = false; $dispatch('open-location-gate')">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
                 {{ (\App\Support\ShopperLocation::current()['label'] ?? null) === 'your location' ? 'Near you' : (\App\Support\ShopperLocation::current()['label'] ?? 'Anywhere in Canada') }}
-            </span>
+            </button>
         </div>
     </aside>
 </nav>
@@ -363,6 +369,14 @@
         <span class="site-foot-legal">© {{ date('Y') }} TruCars. Every price is all-in, with freight, prep and dealer fees included. HST and licensing are extra.</span>
     </div>
 </footer>
+
+{{--
+    Cars are shown by their distance from the shopper, so the pages that list
+    them ask where the shopper is first.
+--}}
+@if (request()->routeIs('shop', 'saved', 'campaign.shop', 'campaign.vehicle') || request()->is('cars/*'))
+    <livewire:pages::location-gate :return-url="request()->fullUrl()" />
+@endif
 
 @livewireScripts
 </body>
