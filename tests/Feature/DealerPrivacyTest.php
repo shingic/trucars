@@ -165,6 +165,28 @@ class DealerPrivacyTest extends TestCase
             ->assertRedirect(url('/'));
     }
 
+    public function test_checkout_pickup_shows_town_and_distance_not_the_store(): void
+    {
+        $vehicle = $this->vehicle();
+        $this->dealer->primaryRooftop->update(['pickup_points' => [['name' => 'Yale Rd Service Lot', 'address' => '45600 Yale Rd, Chilliwack, BC V2P 2N1']]]);
+        session([ShopperLocation::SESSION_KEY => ['source' => 'browser', 'label' => 'Vancouver, BC', 'latitude' => 49.28, 'longitude' => -123.12]]);
+        $this->actingAs(User::factory()->create());
+
+        $checkout = Livewire::test('pages::checkout', ['vehicle' => $vehicle])->set('stepIndex', 4);
+
+        $checkout->assertSee('At the dealership')
+            ->assertSee('Chilliwack, BC · ')
+            ->assertSee('km from you')
+            ->assertSee('Pickup spot 2')
+            ->assertDontSee('Chilliwack Mitsubishi')
+            ->assertDontSee('45510 Yale Rd')
+            ->assertDontSee('Yale Rd Service Lot')
+            ->assertDontSee('45600 Yale Rd');
+
+        $this->assertStringNotContainsString('Mitsubishi', $checkout->instance()->handoverSummaryLabel(forShopper: true));
+        $this->assertStringContainsString('Chilliwack Mitsubishi', $checkout->instance()->handoverSummaryLabel());
+    }
+
     public function test_shop_cards_show_distance_and_town_not_the_dealer(): void
     {
         $this->vehicle();

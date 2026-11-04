@@ -365,7 +365,7 @@ class Deal extends Model
      * and the address and contact details of the store the car is collected
      * from. Shoppers never see this before they reserve.
      *
-     * @return array{name: string, store: ?string, address_lines: list<string>, phone: ?string, email: ?string, registration: ?string}
+     * @return array{name: string, store: ?string, address_lines: list<string>, phone: ?string, email: ?string, registration: ?string, pickup: ?string}
      */
     public function sellerDetails(): array
     {
@@ -384,6 +384,8 @@ class Deal extends Model
             'phone'         => ($store['phone'] ?? null) ?: ($dealer['phone'] ?? null),
             'email'         => ($store['email'] ?? null) ?: ($dealer['email'] ?? null),
             'registration'  => ! empty($dealer['registration_number']) ? "{$regulator} #{$dealer['registration_number']}" : null,
+            // The spot the buyer chose at checkout, with its address.
+            'pickup'        => $this->pickup_location ?: null,
         ];
     }
 

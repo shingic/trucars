@@ -1089,10 +1089,45 @@ new #[Layout('layouts.checkout')] class extends Component {
         return ($spots[$this->pickupSpotIndex] ?? $spots[0])['name'];
     }
 
-    /** Where the car changes hands: the pickup spot at the dealership. */
+    /**
+     * The pickup spots as the buyer sees them before paying: the town and how
+     * far it is, never the store's name or street address. Those reach the
+     * buyer once the deposit is in (confirmation email, My Garage).
+     *
+     * @return array<int, array{title: string, detail: string}>
+     */
+    public function shopperPickupSpots(): array
+    {
+        $store = $this->vehicle->locatedAt();
+        $here = \App\Support\ShopperLocation::current();
+        $km = fn ($place) => ($d = \App\Support\ShopperLocation::distanceKm($here, $place)) === null ? null : ($d < 10 ? number_format($d, 1) : number_format($d)) . ' km from you';
+
+        $spots = [[
+            'title'  => 'At the dealership',
+            'detail' => collect([$store?->display_location, $km($store)])->filter()->implode(' · '),
+        ]];
+
+        foreach (array_slice($this->pickupSpots(), 1) as $index => $spot) {
+            // An extra pickup point is just a name and free-text address; its postal code, when there is one, places it.
+            $area = preg_match('/[A-Za-z]\d[A-Za-z]\s?\d[A-Za-z]\d/', $spot['address'], $postal) ? \App\Support\PostalAreas::forPostalCode($postal[0]) : null;
+            $point = $area ? new \App\Models\Rooftop(['latitude' => $area['latitude'], 'longitude' => $area['longitude']]) : null;
+
+            $spots[] = [
+                'title'  => 'Pickup spot ' . ($index + 2),
+                'detail' => collect([$area ? $area['city'] . ', ' . $area['province'] : $store?->display_location, $point ? $km($point) : null])->filter()->implode(' · '),
+            ];
+        }
+
+        return $spots;
+    }
+
+    /** Where the car changes hands, saved on the deal: the spot's name and address, for the dealer and the paid-up buyer. */
     public function handoverLocationLabel(): string
     {
-        return $this->selectedPickupSpotName();
+        $spots = $this->pickupSpots();
+        $spot = $spots[$this->pickupSpotIndex] ?? $spots[0];
+
+        return $spot['address'] !== '' ? $spot['name'] . ' — ' . $spot['address'] : $spot['name'];
     }
 
     /** The car's rooftop's IANA zone — handover windows are store-local times. */
@@ -1114,12 +1149,16 @@ new #[Layout('layouts.checkout')] class extends Component {
         return \Illuminate\Support\Carbon::parse($this->handoverDate . ' ' . $this->handoverTimeSlot, $this->dealerTimezone());
     }
 
-    /** A one-line summary for the review card and the dealer's activity trail. */
-    public function handoverSummaryLabel(): string
+    /**
+     * A one-line summary: for the dealer's activity trail by default, or for
+     * the buyer's review card ($forShopper), which names only the town.
+     */
+    public function handoverSummaryLabel(bool $forShopper = false): string
     {
         $when = $this->handoverAt();
         $window = $this->handoverTimeSlots[$this->handoverTimeSlot] ?? '';
-        $modeLabel = 'Pickup · ' . $this->selectedPickupSpotName();
+        $spot = $this->shopperPickupSpots()[$this->pickupSpotIndex] ?? $this->shopperPickupSpots()[0];
+        $modeLabel = 'Pickup · ' . ($forShopper ? trim($spot['title'] . ($spot['detail'] !== '' ? ', ' . $spot['detail'] : '')) : $this->selectedPickupSpotName());
 
         if ($when === null) {
             return $modeLabel;
@@ -2153,10 +2192,10 @@ new #[Layout('layouts.checkout')] class extends Component {
 
                 <div class="section-label">{!! $icon('pin', 24) !!} Where you'll collect it</div>
                 <div class="spot-grid">
-                    @foreach ($this->pickupSpots() as $spotIndex => $spot)
+                    @foreach ($this->shopperPickupSpots() as $spotIndex => $spot)
                         <button type="button" class="spot {{ $pickupSpotIndex === $spotIndex ? 'is-on' : '' }}" wire:click="setPickupSpot({{ $spotIndex }})">
-                            <span class="spot-name">{{ $spot['name'] }}</span>
-                            @if ($spot['address'] !== '') <span class="spot-distance">{{ $spot['address'] }}</span> @endif
+                            <span class="spot-name">{{ $spot['title'] }}</span>
+                            @if ($spot['detail'] !== '') <span class="spot-distance">{{ $spot['detail'] }}</span> @endif
                         </button>
                     @endforeach
                 </div>
@@ -2233,7 +2272,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                 <div class="rev-card">
                     <div>
                         <div class="rev-label">{!! $icon('key', 18) !!} Handover</div>
-                        <div class="rev-value">{{ $this->handoverSummaryLabel() }}</div>
+                        <div class="rev-value">{{ $this->handoverSummaryLabel(forShopper: true) }}</div>
                     </div>
                     <button type="button" class="text-link" wire:click="jumpTo(4)">Edit</button>
                 </div>

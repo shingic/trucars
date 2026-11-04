@@ -134,7 +134,7 @@ class RooftopTest extends TestCase
         $deal = Deal::withoutGlobalScope(DealerScope::class)->sole();
 
         $this->assertSame($toronto->id, $deal->rooftop_id);
-        $this->assertSame('Toronto Store', $deal->pickup_location);
+        $this->assertSame('Toronto Store — 1 Store Rd, Toronto, ON M5V 2T6', $deal->pickup_location);
         // 10am in Toronto (EDT, UTC-4) is 14:00 UTC.
         $this->assertSame('2026-07-02 14:00:00', $deal->getRawOriginal('pickup_at'));
 
