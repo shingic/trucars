@@ -41,6 +41,16 @@ Route::domain($publicDomain)->middleware(TreatNonCustomersAsGuests::class)->grou
     // Visitors land on the homepage; the shop (search floor) is at /shop.
     Route::livewire('/', 'pages::home')->name('home');
     Route::livewire('/shop', 'pages::marketplace')->name('shop');
+
+    // Search landing pages: the shop with a fixed filter at a clean URL
+    // (/used-cars/honda/civic, /used-cars/body/suv, /used-cars/under-20000,
+    // /used-cars/in/chilliwack-bc). App\Support\Seo\SeoCatalog decides which exist.
+    Route::livewire('/used-cars/{first}/{second?}', 'pages::marketplace')
+        ->where(['first' => '[a-z0-9-]+', 'second' => '[a-z0-9-]+'])
+        ->name('landing');
+
+    Route::get('/sitemap.xml', \App\Http\Controllers\SitemapController::class)->name('sitemap');
+    Route::get('/robots.txt', fn () => response("User-agent: *\nDisallow: /livewire/\n\nSitemap: " . route('sitemap') . "\n", 200, ['Content-Type' => 'text/plain']));
     Route::livewire('/how-it-works', 'pages::how-it-works')->name('how-it-works');
 
     // A dealer's storefront photo (public — it's the dealer's own branding).

@@ -3,7 +3,32 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>TruCars — Certified used cars</title>
+    {{-- Pages share $seo (title, description, canonical, robots, json-ld) for search engines and link previews. --}}
+    @php
+        $seo ??= [];
+        $pageTitle = $seo['title'] ?? $title ?? (config('site.name') . ' — Certified used cars');
+    @endphp
+    <title>{{ $pageTitle }}</title>
+    @if (! empty($seo['description']))
+        <meta name="description" content="{{ $seo['description'] }}">
+        <meta property="og:description" content="{{ $seo['description'] }}">
+    @endif
+    @if (! empty($seo['canonical']))
+        <link rel="canonical" href="{{ $seo['canonical'] }}">
+        <meta property="og:url" content="{{ $seo['canonical'] }}">
+    @endif
+    @if (! empty($seo['robots']))
+        <meta name="robots" content="{{ $seo['robots'] }}">
+    @endif
+    <meta property="og:site_name" content="{{ config('site.name') }}">
+    <meta property="og:title" content="{{ $pageTitle }}">
+    <meta property="og:type" content="website">
+    @if (! empty($seo['image']))
+        <meta property="og:image" content="{{ $seo['image'] }}">
+    @endif
+    @if (! empty($seo['jsonLd']))
+        <script type="application/ld+json">{!! json_encode($seo['jsonLd'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) !!}</script>
+    @endif
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Barlow:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Barlow+Semi+Condensed:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -362,6 +387,7 @@
 </main>
 
 <footer class="site-foot">
+    @include('partials.seo-links')
     <div class="site-foot-inner {{ ($narrowShell ?? false) ? 'is-narrow' : '' }}">
         <span class="brand">@include('partials.logo', ['variant' => 'light', 'height' => 26])</span>
         <nav class="site-foot-links">
@@ -378,7 +404,7 @@
     Cars are shown by their distance from the shopper, so the pages that list
     them ask where the shopper is first.
 --}}
-@if (request()->routeIs('shop', 'saved', 'campaign.shop', 'campaign.vehicle') || request()->is('cars/*'))
+@if (request()->routeIs('shop', 'landing', 'saved', 'campaign.shop', 'campaign.vehicle') || request()->is('cars/*'))
     <livewire:pages::location-gate :return-url="request()->fullUrl()" />
 @endif
 

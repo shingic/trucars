@@ -1,11 +1,14 @@
 <?php
 
 use App\Models\Vehicle;
+use App\Support\Seo\SeoCatalog;
 use App\Support\VehicleCertification;
 use App\Support\ShopperLocation;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\View;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
@@ -53,6 +56,69 @@ new class extends Component {
     public int $kmMax = 200000;
 
     public string $sort = 'newest';
+
+    /*
+     * A search landing page (/used-cars/honda/civic, /used-cars/body/suv, …):
+     * the shop with a fixed filter, set from the URL. Empty on /shop.
+     */
+    #[Locked]
+    public array $landingFilters = [];
+
+    #[Locked]
+    public ?string $landingType = null;
+
+    #[Locked]
+    public ?string $landingHeading = null;   // "Honda Civics"
+
+    #[Locked]
+    public ?string $landingPlace = null;     // "Chilliwack, BC" on a town page
+
+    /** This page's own path, for the page picker's links (requests here come through /livewire/update). */
+    #[Locked]
+    public string $basePath = '/shop';
+
+    public function mount(?string $first = null, ?string $second = null): void
+    {
+        if ($first !== null) {
+            $landing = SeoCatalog::resolve($first, $second);
+            abort_if($landing === null, 404);
+
+            $this->landingFilters = $landing->filters;
+            $this->landingType = $landing->type;
+            $this->landingHeading = $landing->headingSubject();
+            $this->landingPlace = $landing->place;
+            $this->basePath = $landing->path;
+        }
+
+        $this->shareSeo($landing ?? null);
+    }
+
+    /** Title, description and canonical URL for the page head (see layouts/app). */
+    private function shareSeo(?\App\Support\Seo\Landing $landing): void
+    {
+        $brand = config('site.name');
+        $pool = SeoCatalog::apply(Vehicle::query()->listed(), $this->landingFilters);
+        $count = (clone $pool)->count();
+        $from = $count ? (int) floor((clone $pool)->min('price_in_cents') / 100) : null;
+        $years = $count ? [(int) (clone $pool)->min('model_year'), (int) (clone $pool)->max('model_year')] : null;
+        $pageSuffix = $this->page > 1 ? ' – Page ' . $this->page : '';
+
+        $what = $landing ? mb_strtolower($landing->headingSubject()) : 'cars';
+        $where = $landing?->place ? ' in ' . $landing->place : '';
+        $description = $count
+            ? "Shop {$count} certified pre-owned {$what}{$where}, priced all-in from \$" . number_format($from)
+                . ($years[0] === $years[1] ? ", {$years[0]} models." : ", {$years[0]}–{$years[1]} models.")
+                . ' Every car is inspected and certified. Reserve online for $150, refundable.'
+            : "Certified pre-owned {$what}{$where} on {$brand}. Every car is inspected, certified and priced all-in.";
+
+        View::share('seo', [
+            'title'       => ($landing ? $landing->linkText() . ' | Certified Pre-owned' : 'Certified Pre-owned Cars for Sale') . $pageSuffix . ' | ' . $brand,
+            'description' => $description,
+            'canonical'   => url($this->basePath) . ($this->page > 1 ? '?page=' . $this->page : ''),
+            // Nothing in stock right now: keep the page, but out of the index until there is.
+            'robots'      => $count ? null : 'noindex, follow',
+        ]);
+    }
 
     /** Results are shown 40 at a time. The page is in the URL, so ?page=2 can be shared and crawled. */
     public const PER_PAGE = 40;
@@ -229,7 +295,7 @@ new class extends Component {
     #[Computed]
     public function totalCount(): int
     {
-        return Vehicle::query()->listed()->count();
+        return SeoCatalog::apply(Vehicle::query()->listed(), $this->landingFilters)->count();
     }
 
     /**
@@ -277,6 +343,7 @@ new class extends Component {
         return Vehicle::query()
             ->with(VehicleCertification::EAGER)
             ->listed()
+            ->tap(fn (Builder $query) => SeoCatalog::apply($query, $this->landingFilters))
             ->withReservedFlag()
             ->when($this->search !== '', function (Builder $query) {
                 $keyword = '%' . $this->search . '%';
@@ -479,15 +546,28 @@ new class extends Component {
         @if (\App\Support\PlatformSettings::get('marketplace_notice') !== '')
             <div class="srp-notice" role="status">{{ \App\Support\PlatformSettings::get('marketplace_notice') }}</div>
         @endif
-        {{-- With the shopper's town known, the headline counts the cars and names it; otherwise it's the one set in Platform settings. --}}
+        {{--
+            On a landing page the headline counts what it's about ("12 Certified Pre-owned Honda Civics for Sale").
+            With the shopper's town known, it names it; otherwise it's the one set in Platform settings.
+        --}}
+        @php
+            $shopperTown = isset($shopperLocation['city'])
+                ? $shopperLocation['city'] . (isset($shopperLocation['province']) ? ', ' . (\App\Support\CanadianAddress::PROVINCES[$shopperLocation['province']] ?? $shopperLocation['province']) : '')
+                : null;
+        @endphp
         <h1 class="srp-title">
-            @if (isset($shopperLocation['city']))
+            @if ($landingType !== null)
+                {{ number_format($this->totalCount) }} Certified Pre-owned {{ $landingHeading }}{{ $landingType === 'price' ? '' : ' for Sale' }}{{ $landingPlace ? ' in ' . $landingPlace : ($shopperTown ? ' in ' . $shopperTown : '') }}
+            @elseif (isset($shopperLocation['city']))
                 {{ number_format($this->totalCount) }} Certified Pre-owned {{ $this->totalCount === 1 ? 'Car' : 'Cars' }} for Sale in {{ $shopperLocation['city'] }}{{ isset($shopperLocation['province']) ? ', ' . (\App\Support\CanadianAddress::PROVINCES[$shopperLocation['province']] ?? $shopperLocation['province']) : '' }}
             @else
                 {{ \App\Support\PlatformSettings::get('marketplace_headline') }}
             @endif
         </h1>
         <p class="srp-sub">{{ \App\Support\PlatformSettings::get('marketplace_subheadline') }}</p>
+        @if ($landingType !== null)
+            <nav class="srp-crumbs" aria-label="Breadcrumb"><a href="{{ route('shop') }}" wire:navigate>All cars</a><span aria-hidden="true">/</span><span>{{ $landingHeading }}{{ $landingPlace ? ' in ' . $landingPlace : '' }}</span></nav>
+        @endif
 
         <div class="loc-bar"
              x-data="{
@@ -782,7 +862,7 @@ new class extends Component {
                     $current = max(1, min($page, $this->lastPage()));
                     $from = ($current - 1) * self::PER_PAGE + 1;
                     $to = min($current * self::PER_PAGE, $this->publishedVehicles->count());
-                    $pageUrl = fn (int $number) => request()->fullUrlWithQuery(['page' => $number === 1 ? null : $number]);
+                    $pageUrl = fn (int $number) => url($basePath) . ($number === 1 ? '' : '?page=' . $number);
                 @endphp
                 <nav class="pager" aria-label="Results pages" x-data @click="if ($event.target.closest('a')) window.scrollTo({ top: 0, behavior: 'smooth' })">
                     @if ($current > 1)
@@ -828,6 +908,8 @@ new class extends Component {
         .srp-head { margin-bottom:26px; padding-bottom:16px; border-bottom:2px solid var(--ink); }
         .srp-title { font-family:var(--font-display); font-size:clamp(22px, 2vw, 28px); font-weight:700; line-height:1.15; letter-spacing:0; margin:0; }
         .srp-sub { color:var(--ink-2); font-size:16px; margin:8px 0 0; max-width:640px; }
+        .srp-crumbs { display:flex; gap:8px; align-items:center; margin-top:10px; font-size:13.5px; color:var(--ink-3); }
+        .srp-crumbs a { color:var(--ink-2); font-weight:600; }
         .srp-notice { background:#E9F3FF; border-left:4px solid var(--primary); border-radius:10px; color:var(--ink); padding:10px 14px; font-size:14.5px; font-weight:600; margin-bottom:18px; }
 
         .loc-bar { display:flex; align-items:center; flex-wrap:wrap; gap:8px 10px; margin-top:16px; font-size:14px; color:var(--ink-2); }

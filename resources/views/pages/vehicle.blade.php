@@ -22,6 +22,7 @@ new class extends Component {
     public function mount(Vehicle $vehicle, ?string $token = null): void
     {
         $this->vehicle = $vehicle;
+        $this->shareSeo();
 
         if ($token === null) {
             // Open floor: only cars that are actually live (published, active
@@ -49,6 +50,52 @@ new class extends Component {
 
         $this->campaignToken = $token;
         View::share('referredCampaign', $campaign);
+    }
+
+    /**
+     * Title, description, preview image and Car structured data for the page
+     * head. The open-floor URL is always canonical, campaign links included.
+     * Never names the dealership.
+     */
+    private function shareSeo(): void
+    {
+        $car = $this->vehicle;
+        $name = trim("{$car->model_year} {$car->make} {$car->model} {$car->trim}");
+        $where = $car->display_location;
+        $facts = collect([number_format($car->kilometres) . ' km', $car->drivetrain, $car->transmission, $car->fuel_type])->filter()->implode(' · ');
+        $url = url('/cars/' . $car->id);
+
+        View::share('seo', [
+            'title'       => $name . ' for Sale' . ($where ? " in {$where}" : '') . ' | ' . config('site.name'),
+            'description' => "{$name}, {$facts}. {$car->display_price} all-in, certified pre-owned" . ($where ? " in {$where}" : '') . '. Reserve online for $150, refundable.',
+            'canonical'   => $url,
+            'image'       => $car->primary_photo_url,
+            'jsonLd'      => array_filter([
+                '@context'            => 'https://schema.org',
+                '@type'               => 'Car',
+                'name'                => $name,
+                'brand'               => ['@type' => 'Brand', 'name' => $car->make],
+                'model'               => $car->model,
+                'vehicleModelDate'    => (string) $car->model_year,
+                'vehicleIdentificationNumber' => $car->vin,
+                'mileageFromOdometer' => ['@type' => 'QuantitativeValue', 'value' => (int) $car->kilometres, 'unitCode' => 'KMT'],
+                'bodyType'            => $car->body_type,
+                'fuelType'            => $car->fuel_type,
+                'vehicleTransmission' => $car->transmission,
+                'driveWheelConfiguration' => $car->drivetrain,
+                'color'               => $car->colour,
+                'itemCondition'       => 'https://schema.org/UsedCondition',
+                'image'               => $car->primary_photo_url,
+                'url'                 => $url,
+                'offers'              => [
+                    '@type'         => 'Offer',
+                    'price'         => round($car->price_in_cents / 100, 2),
+                    'priceCurrency' => 'CAD',
+                    'availability'  => $car->isReserved() ? 'https://schema.org/LimitedAvailability' : 'https://schema.org/InStock',
+                    'url'           => $url,
+                ],
+            ], fn ($value) => $value !== null && $value !== ''),
+        ]);
     }
 
     /** Where "back" goes — the campaign storefront when referred, else the floor. */
