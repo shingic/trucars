@@ -638,18 +638,20 @@ new class extends Component {
             @endif
 
             @if ($carfax = $this->carfax())
+                @php
+                    // CARFAX's own badges, minus the ones the facts below already say.
+                    $extraBadges = array_values(array_filter($carfax->badges, fn ($badge) => ! preg_match('/accident|owner/i', $badge)));
+                    $tick = '<path d="M20 6 9 17l-5-5"/>';
+                @endphp
                 <div class="vdp-section">
                     <h2>Vehicle history</h2>
                     <div class="cfx">
                         <div class="cfx-head">
-                            <div>
-                                <div class="cfx-src">CARFAX Canada report</div>
-                                <div class="cfx-vin">VIN {{ $vehicle->vin }}</div>
-                            </div>
+                            <img class="cfx-logo" src="{{ asset('images/carfax-canada.png') }}" alt="CARFAX Canada" width="160" height="23">
                             @if ($carfax->reportUrl)
                                 <a class="cfx-link" href="{{ $carfax->reportUrl }}" target="_blank" rel="noopener noreferrer">
-                                    View full report
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7 17 17 7M8 7h9v9"/></svg>
+                                    View report
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M7 17 17 7M8 7h9v9"/></svg>
                                 </a>
                             @endif
                         </div>
@@ -658,30 +660,32 @@ new class extends Component {
                             <div class="cfx-alert">CARFAX reports this vehicle as stolen. Contact us before going further.</div>
                         @endif
 
-                        @if ($carfax->badges)
+                        <ul class="cfx-facts">
+                            @if ($carfax->accidentCount !== null)
+                                @if ($carfax->accidentCount === 0)
+                                    <li class="cfx-fact is-good"><span class="cfx-ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">{!! $tick !!}</svg></span><span><b>No accidents</b><small>reported</small></span></li>
+                                @else
+                                    <li class="cfx-fact is-warn"><span class="cfx-ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"><path d="M12 5v9"/><circle cx="12" cy="19" r="1.8" fill="currentColor" stroke="none"/></svg></span><span><b>{{ $carfax->accidentCount }} {{ $carfax->accidentCount === 1 ? 'accident' : 'accidents' }}</b><small>reported</small></span></li>
+                                @endif
+                            @endif
+                            @if ($carfax->ownerCount !== null)
+                                <li class="cfx-fact"><span class="cfx-ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span><span><b>{{ $carfax->ownerCount }} {{ $carfax->ownerCount === 1 ? 'owner' : 'owners' }}</b><small>on record</small></span></li>
+                            @endif
+                            @if ($carfax->serviceRecordCount !== null)
+                                <li class="cfx-fact"><span class="cfx-ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4Z"/></svg></span><span><b>{{ $carfax->serviceRecordCount }} service {{ $carfax->serviceRecordCount === 1 ? 'record' : 'records' }}</b><small>on file</small></span></li>
+                            @endif
+                            @if ($carfax->registeredIn)
+                                <li class="cfx-fact"><span class="cfx-ic"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 21s7-6.1 7-11.5A7 7 0 0 0 5 9.5C5 14.9 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></svg></span><span><b>{{ implode(', ', $carfax->registeredIn) }}</b><small>registered in</small></span></li>
+                            @endif
+                        </ul>
+
+                        @if ($extraBadges)
                             <ul class="cfx-badges">
-                                @foreach ($carfax->badges as $badge)
-                                    <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>{{ $badge }}</li>
-                                @endforeach
+                                @foreach ($extraBadges as $badge)<li>{{ $badge }}</li>@endforeach
                             </ul>
                         @endif
 
-                        <dl class="cfx-facts">
-                            @if ($carfax->accidentCount !== null)
-                                <div class="cfx-fact {{ $carfax->accidentCount === 0 ? 'is-good' : '' }}"><dt>Accidents</dt><dd>{{ $carfax->accidentCount === 0 ? 'None reported' : $carfax->accidentCount . ' reported' }}</dd></div>
-                            @endif
-                            @if ($carfax->ownerCount !== null)
-                                <div class="cfx-fact"><dt>Owners</dt><dd>{{ $carfax->ownerCount }}</dd></div>
-                            @endif
-                            @if ($carfax->serviceRecordCount !== null)
-                                <div class="cfx-fact"><dt>Service records</dt><dd>{{ $carfax->serviceRecordCount }}</dd></div>
-                            @endif
-                            @if ($carfax->registeredIn)
-                                <div class="cfx-fact"><dt>Registered in</dt><dd>{{ implode(', ', $carfax->registeredIn) }}</dd></div>
-                            @endif
-                        </dl>
-
-                        <p class="cfx-note">History supplied by CARFAX Canada through the selling dealership. Read the full report for damage amounts, liens and dates.</p>
+                        <p class="cfx-note">From CARFAX Canada. The full report has dates, damage amounts and liens.</p>
                     </div>
                 </div>
             @endif
@@ -948,27 +952,28 @@ new class extends Component {
         .cert-more-chev { transition:transform .2s ease; }
         .cert-more-chev.is-up { transform:rotate(180deg); }
 
-        .cfx { border-top:2px solid var(--ink); }
-        .cfx-head { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; padding:14px 0; }
-        .cfx-src { font-family:var(--font-display); font-size:19px; font-weight:700; text-transform:uppercase; color:var(--ink); line-height:1.1; }
-        .cfx-vin { font-family:var(--font-mono); font-size:13px; color:var(--ink-3); margin-top:4px; overflow-wrap:anywhere; }
-        .cfx-link { display:inline-flex; align-items:center; gap:6px; flex-shrink:0; font-size:15px; font-weight:700; color:var(--primary-press); text-decoration:underline; text-underline-offset:3px; }
-        .cfx-link:hover { color:var(--ink); }
+        /* CARFAX: one tight card, logo up top, the four facts in a row */
+        .cfx { border:1.5px solid var(--line-strong); border-radius:8px; padding:14px 16px 12px; }
+        .cfx-head { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+        .cfx-logo { display:block; height:22px; width:auto; }
+        .cfx-link { display:inline-flex; align-items:center; gap:5px; flex-shrink:0; font-size:14px; font-weight:700; color:var(--primary-press); text-decoration:none; padding:6px 10px; border-radius:6px; background:var(--primary-soft); }
+        .cfx-link:hover { background:var(--primary); color:#fff; }
         .cfx-link:focus-visible { outline:2px solid var(--primary); outline-offset:2px; }
-        .cfx-alert { margin:0 0 14px; padding:12px 14px; border-left:3px solid #D81A48; background:rgba(216,26,72,.07); font-size:14.5px; font-weight:600; color:#8A0F2E; }
-        .cfx-badges { list-style:none; margin:0 0 16px; padding:0; display:flex; flex-wrap:wrap; gap:8px; }
-        .cfx-badges li { display:inline-flex; align-items:center; gap:6px; padding:6px 11px; border-radius:var(--radius-sm); background:var(--primary-soft); color:var(--primary-press); font-size:14px; font-weight:700; }
-        .cfx-facts { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); margin:0; border-top:1px solid var(--line-strong); border-bottom:1px solid var(--line-strong); }
-        .cfx-fact { padding:13px 14px 13px 0; min-width:0; }
-        .cfx-fact + .cfx-fact { border-left:1px solid var(--line-strong); padding-left:14px; }
-        .cfx-fact dt { font-size:13px; font-weight:600; color:var(--ink-3); }
-        .cfx-fact dd { margin:4px 0 0; font-family:var(--font-display); font-size:21px; font-weight:700; color:var(--ink); line-height:1.15; overflow-wrap:anywhere; }
-        .cfx-fact.is-good dd { color:#0E8A3A; }
-        .cfx-note { margin:12px 0 0; font-size:13px; color:var(--ink-3); }
+        .cfx-alert { margin:12px 0 0; padding:10px 12px; border-left:3px solid #D81A48; background:rgba(216,26,72,.07); font-size:14px; font-weight:600; color:#8A0F2E; }
+        .cfx-facts { list-style:none; margin:12px 0 0; padding:12px 0 0; border-top:1px solid var(--line); display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:12px; }
+        .cfx-fact { display:flex; align-items:center; gap:9px; min-width:0; }
+        .cfx-ic { flex-shrink:0; width:28px; height:28px; border-radius:50%; display:grid; place-items:center; background:var(--bg-2); color:var(--ink-2); }
+        .cfx-fact.is-good .cfx-ic { background:var(--good-soft); color:#0E8A3A; }
+        .cfx-fact.is-warn .cfx-ic { background:#FFF3C4; color:#9A6B00; }
+        .cfx-fact b { display:block; font-size:14.5px; font-weight:700; color:var(--ink); line-height:1.2; overflow-wrap:anywhere; }
+        .cfx-fact small { display:block; font-size:12.5px; color:var(--ink-3); margin-top:1px; }
+        .cfx-badges { list-style:none; margin:12px 0 0; padding:0; display:flex; flex-wrap:wrap; gap:6px; }
+        .cfx-badges li { padding:4px 9px; border-radius:5px; background:var(--primary-soft); color:var(--primary-press); font-size:13px; font-weight:700; }
+        .cfx-note { margin:12px 0 0; font-size:12.5px; color:var(--ink-3); }
         @media (max-width:640px) {
-            .cfx-facts { grid-template-columns:1fr 1fr; }
-            .cfx-fact:nth-child(odd) { border-left:none; padding-left:0; }
-            .cfx-fact:nth-child(n+3) { border-top:1px solid var(--line-strong); }
+            .cfx { padding:12px 12px 10px; }
+            .cfx-logo { height:19px; }
+            .cfx-facts { grid-template-columns:1fr 1fr; gap:12px 10px; }
         }
 
         .specs { display:grid; grid-template-columns:1fr 1fr; column-gap:32px; border-top:2px solid var(--ink); }

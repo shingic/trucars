@@ -76,10 +76,10 @@ class CarfaxTest extends TestCase
         $this->get('/cars/' . $vehicle->id)
             ->assertOk()
             ->assertSee('Vehicle history')
-            ->assertSee('CARFAX Canada report')
-            ->assertSee('No Reported Accidents')
-            ->assertSee('None reported')
-            ->assertSee('Service records')
+            ->assertSee('alt="CARFAX Canada"', false)
+            ->assertSee('No accidents')
+            ->assertSee('1 owner')
+            ->assertSee('7 service records')
             ->assertSee('https://vhr.carfax.ca/?id=abc123', false);
 
         $this->assertSame([['DLR-4471', self::VIN]], $this->lookups);
@@ -143,9 +143,9 @@ class CarfaxTest extends TestCase
 
         $this->get('/cars/' . $this->vehicle()->id)
             ->assertOk()
-            ->assertSee('2 reported')
+            ->assertSee('2 accidents')
             ->assertSee('reports this vehicle as stolen')
-            ->assertDontSee('View full report');
+            ->assertDontSee('View report');
     }
 
     public function test_admin_turns_carfax_on_with_an_account_id(): void
