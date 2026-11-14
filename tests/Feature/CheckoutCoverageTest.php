@@ -76,16 +76,14 @@ class CheckoutCoverageTest extends TestCase
         $this->assertEqualsWithDelta(29990, $checkout->instance()->cashTotalDollars(), 0.01);
     }
 
-    public function test_add_ons_and_accessories_are_entered_at_full_price_and_gap_stays_biweekly(): void
+    public function test_add_ons_and_accessories_are_entered_at_full_price(): void
     {
         $tires = ProtectionProduct::defaults()->where('name', 'Tire & rim cover')->sole();
         $tires->update(['amount_in_cents' => 120000, 'price_basis' => 'biweekly']);
         $mats = ProtectionProduct::create(['kind' => 'accessory', 'name' => 'Floor mats', 'amount_in_cents' => 30000, 'price_basis' => 'biweekly']);
-        $gap = ProtectionProduct::defaults()->where('kind', 'gap')->first();
 
         $this->assertSame('one_time', $tires->fresh()->price_basis);
         $this->assertSame('one_time', $mats->fresh()->price_basis);
-        $this->assertSame('biweekly', $gap->price_basis, 'GAP is untouched for now');
 
         $checkout = Livewire::test('pages::checkout', ['vehicle' => $this->car]);
         $checkout->set('stepIndex', $checkout->instance()->indexOfStep('extras'));
@@ -100,5 +98,36 @@ class CheckoutCoverageTest extends TestCase
 
         $checkout->call('setPurchaseType', 'cash')->assertSee('+$1,200');
         $this->assertEqualsWithDelta(29990 + 1200 + 300, $checkout->instance()->cashTotalDollars(), 0.01);
+    }
+
+    public function test_gap_is_a_full_price_offered_only_when_financing(): void
+    {
+        $gap = ProtectionProduct::defaults()->where('kind', 'gap')->sole();
+        $gap->update(['amount_in_cents' => 180000, 'price_basis' => 'biweekly']);
+        $this->assertSame('one_time', $gap->fresh()->price_basis);
+
+        $checkout = Livewire::test('pages::checkout', ['vehicle' => $this->car]);
+        $checkout->set('stepIndex', $checkout->instance()->indexOfStep('extras'));
+        $before = $checkout->instance()->estimatedBiweekly();
+        $gapBiweekly = PaymentEstimate::loanBiweekly(1800, 72);
+
+        $checkout->assertSee('Add GAP')
+            ->assertSee('$1,800 added to your loan')
+            ->assertSee('+$' . number_format($gapBiweekly, 0) . '/biweekly')
+            ->call('toggleGap')
+            ->assertSet('wantsGap', true);
+        $this->assertEqualsWithDelta($before + $gapBiweekly, $checkout->instance()->estimatedBiweekly(), 0.01);
+
+        // Paying in full: GAP comes off, the section is hidden, and it can't be ticked back on.
+        $checkout->call('setPurchaseType', 'cash')
+            ->assertSet('wantsGap', false)
+            ->assertDontSee('Add GAP')
+            ->call('toggleGap')
+            ->assertSet('wantsGap', false);
+        $this->assertEqualsWithDelta(29990, $checkout->instance()->cashTotalDollars(), 0.01);
+        $this->assertSame([], $checkout->instance()->flaggedProtection());
+
+        // Back to financing, it's offered again.
+        $checkout->call('setPurchaseType', 'finance')->assertSee('Add GAP');
     }
 }

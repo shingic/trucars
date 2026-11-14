@@ -273,6 +273,7 @@ new #[Layout('layouts.checkout')] class extends Component {
             $this->handoverDate = $this->handoverDateOptions()[0]['date'] ?? null;
         }
         $this->keepTimeSlotAvailable();
+        $this->setPurchaseType($this->purchaseType); // a pay-in-full draft drops any GAP
 
         if ($this->stepKey() === 'reserve') {
             $this->preparePayment();
@@ -676,6 +677,15 @@ new #[Layout('layouts.checkout')] class extends Component {
         if (in_array($type, ['finance', 'cash'], true)) {
             $this->purchaseType = $type;
         }
+
+        // GAP only covers a loan, so paying in full takes it off.
+        if ($this->purchaseType === 'cash') {
+            $this->wantsGap = false;
+            $this->selectedExtras = array_values(array_filter(
+                $this->selectedExtras,
+                fn (string $extraKey) => ! $this->isGapExtra($extraKey),
+            ));
+        }
     }
 
     public function adjustTerm(int $direction): void
@@ -696,7 +706,7 @@ new #[Layout('layouts.checkout')] class extends Component {
 
     public function toggleGap(): void
     {
-        $this->wantsGap = $this->gapOption !== null && ! $this->wantsGap;
+        $this->wantsGap = $this->gapOption !== null && $this->purchaseType === 'finance' && ! $this->wantsGap;
     }
 
     public function toggleExtra(string $extraKey): void
@@ -705,11 +715,29 @@ new #[Layout('layouts.checkout')] class extends Component {
             return;
         }
 
+        if ($this->isGapExtra($extraKey) && $this->purchaseType !== 'finance') {
+            return;
+        }
+
         if (in_array($extraKey, $this->selectedExtras, true)) {
             $this->selectedExtras = array_values(array_diff($this->selectedExtras, [$extraKey]));
         } else {
             $this->selectedExtras[] = $extraKey;
         }
+    }
+
+    /** The add-ons to offer: any extra GAP product only when financing. */
+    public function visibleExtras(): array
+    {
+        return $this->purchaseType === 'finance'
+            ? $this->extrasCatalog
+            : array_filter($this->extrasCatalog, fn (array $extra) => $extra['kind'] !== ProtectionProduct::KIND_GAP);
+    }
+
+    /** A second GAP product a dealership listed, which sits with the add-ons. */
+    public function isGapExtra(string $extraKey): bool
+    {
+        return ($this->extrasCatalog[$extraKey]['kind'] ?? null) === ProtectionProduct::KIND_GAP;
     }
 
     public function verifyIdentity(): void
@@ -1095,6 +1123,11 @@ new #[Layout('layouts.checkout')] class extends Component {
             if ($item = $this->extrasCatalog[$extraKey] ?? $this->accessoryCatalog[$extraKey] ?? null) {
                 $items[] = $item;
             }
+        }
+
+        // GAP only covers a loan: never part of a pay-in-full deal, whatever was ticked.
+        if ($this->purchaseType !== 'finance') {
+            $items = array_values(array_filter($items, fn (array $item) => $item['kind'] !== ProtectionProduct::KIND_GAP));
         }
 
         return $items;
@@ -1759,6 +1792,7 @@ new #[Layout('layouts.checkout')] class extends Component {
         .hatch-dot { width:14px; height:14px; border-radius:5px; flex-shrink:0; background:var(--primary-bright); }
         .gap-cta { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px 16px; padding-top:16px; margin-top:16px; border-top:1px solid var(--line-strong); }
         .gap-cta .price { font-family:var(--font-display); font-weight:700; font-size:26px; line-height:1; }
+        .gap-price-note { display:block; font-size:13px; color:var(--ink-3); margin-top:6px; }
         .gap-cta .price .per { font-family:var(--font-ui); font-size:13.5px; font-weight:500; color:var(--ink-3); }
 
         .extras-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
@@ -2251,7 +2285,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                 <h1 class="h1">Want a little extra armour?</h1>
                 <p class="lede">All optional. Add what gives you peace of mind, skip the rest. Anything you tick is added to your estimate at the dealership's price; its F&amp;I office confirms the final numbers. Nothing extra is due today.</p>
 
-                @if ($gapOption)
+                @if ($gapOption && $purchaseType === 'finance')
                 <div class="gap-hero">
                     <div class="gap-hero-top">
                         <div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 4 6v6c0 5 8 9 8 9s8-4 8-9V6Z"/></svg></div>
@@ -2277,7 +2311,12 @@ new #[Layout('layouts.checkout')] class extends Component {
                     </div>
                     <div class="gap-cta">
                         @if ($gapOption['amount'] !== null)
-                            <span class="price">{{ $this->asMoney($gapOption['amount'] / 100) }}<span class="per"> {{ $gapOption['basis'] === 'biweekly' ? '/biweekly · est.' : '· est.' }}</span></span>
+                            <span>
+                                <span class="price">{{ $this->itemPriceLabel($gapOption) }}<span class="per"> · est.</span></span>
+                                @if ($gapOption['basis'] === \App\Models\ProtectionProduct::BASIS_ONE_TIME)
+                                    <span class="gap-price-note">{{ $this->centsAsMoney($gapOption['amount']) }} added to your loan</span>
+                                @endif
+                            </span>
                         @else
                             <span class="price"></span>
                         @endif
@@ -2286,10 +2325,10 @@ new #[Layout('layouts.checkout')] class extends Component {
                 </div>
                 @endif
 
-                @if (count($extrasCatalog) > 0)
+                @if (count($this->visibleExtras()) > 0)
                 <div class="section-label">{!! $icon('plus', 24) !!} More you can stack on</div>
                 <div class="extras-grid">
-                    @foreach ($extrasCatalog as $key => $extra)
+                    @foreach ($this->visibleExtras() as $key => $extra)
                         <button type="button" class="extra {{ in_array($key, $selectedExtras, true) ? 'is-on' : '' }}" wire:click="toggleExtra('{{ $key }}')">
                             <span class="check">
                                 @if (in_array($key, $selectedExtras, true))
@@ -2326,7 +2365,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                 </div>
                 @endif
 
-                @if (! $gapOption && count($extrasCatalog) === 0 && count($accessoryCatalog) === 0)
+                @if (! ($gapOption && $purchaseType === 'finance') && count($this->visibleExtras()) === 0 && count($accessoryCatalog) === 0)
                     <p class="section-note no-extras">This dealership hasn't listed any extras. Carry on to the next step.</p>
                 @endif
 

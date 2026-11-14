@@ -40,7 +40,7 @@ class ProtectionProductsTest extends TestCase
         $menu = ProtectionProduct::menuFor($this->dealer);
 
         $this->assertSame(['Open Road', 'Safe Bet', 'Bumper-to-Bumper'], $menu->where('kind', 'plan')->pluck('name')->values()->all());
-        $this->assertSame(1800, $menu->firstWhere('kind', 'gap')->offered_amount_in_cents);
+        $this->assertSame(200000, $menu->firstWhere('kind', 'gap')->offered_amount_in_cents);
         $this->assertCount(5, $menu->where('kind', 'addon'));
     }
 
@@ -52,18 +52,18 @@ class ProtectionProductsTest extends TestCase
 
         Livewire::test('pages::dealer-protection')
             ->call('startPricing', $gap->id)
-            ->set('pricingAmount', '24.50')
+            ->set('pricingAmount', '1450')
             ->call('savePricing')
             ->assertHasNoErrors()
             ->call('toggleDefault', $keys->id)
             ->assertSee('Hidden from buyers');
 
         $mine = ProtectionProduct::menuFor($this->dealer);
-        $this->assertSame(2450, $mine->firstWhere('kind', 'gap')->offered_amount_in_cents);
+        $this->assertSame(145000, $mine->firstWhere('kind', 'gap')->offered_amount_in_cents);
         $this->assertFalse($mine->contains('name', 'Lost key cover'));
 
         $theirs = ProtectionProduct::menuFor($this->other);
-        $this->assertSame(1800, $theirs->firstWhere('kind', 'gap')->offered_amount_in_cents);
+        $this->assertSame(200000, $theirs->firstWhere('kind', 'gap')->offered_amount_in_cents);
         $this->assertTrue($theirs->contains('name', 'Lost key cover'));
         $this->assertDatabaseHas('audit_logs', ['action' => 'protection.default_hidden', 'target_id' => $this->dealer->id]);
     }
@@ -76,7 +76,6 @@ class ProtectionProductsTest extends TestCase
             ->call('startAddProduct', 'accessory')
             ->set('productName', 'All-weather floor mats')
             ->set('productAmount', '249')
-            ->set('productBasis', 'one_time')
             ->call('saveOwnProduct')
             ->assertHasNoErrors()
             ->assertSee('All-weather floor mats');
@@ -124,7 +123,7 @@ class ProtectionProductsTest extends TestCase
 
         $this->assertSame([
             ['kind' => 'plan', 'name' => 'Safe Bet', 'amount_in_cents' => null, 'price_basis' => 'one_time'],
-            ['kind' => 'gap', 'name' => 'GAP protection', 'amount_in_cents' => 1800, 'price_basis' => 'biweekly'],
+            ['kind' => 'gap', 'name' => 'GAP protection', 'amount_in_cents' => 200000, 'price_basis' => 'one_time'],
             ['kind' => 'addon', 'name' => 'Tire & rim cover', 'amount_in_cents' => 110000, 'price_basis' => 'one_time'],
         ], $checkout->instance()->protectionSnapshot());
     }
@@ -159,16 +158,16 @@ class ProtectionProductsTest extends TestCase
         $checkout->call('toggleGap')->call('toggleExtra', 'p' . $mats->id);
         $financing = $checkout->instance();
 
-        // GAP adds its $18 biweekly price; the $249 mats are financed with the car.
+        // The $2,000 GAP and the $249 mats are both financed with the car.
         $this->assertEqualsWithDelta(
-            PaymentEstimate::loanBiweekly(29990 + 249, 72) + 18,
+            PaymentEstimate::loanBiweekly(29990 + 2000 + 249, 72),
             $financing->estimatedBiweekly,
             0.001,
         );
-        $this->assertGreaterThan($base + 18, $financing->estimatedBiweekly);
+        $this->assertGreaterThan($base, $financing->estimatedBiweekly);
 
-        // Paying in full: the one-time mats add to the total; biweekly GAP needs financing.
-        $checkout->call('setPurchaseType', 'cash');
+        // Paying in full: the mats add to the total; GAP only covers a loan, so it comes off.
+        $checkout->call('setPurchaseType', 'cash')->assertSet('wantsGap', false);
         $this->assertEqualsWithDelta(29990 + 249, $checkout->instance()->cashTotalDollars, 0.001);
     }
 
@@ -180,7 +179,6 @@ class ProtectionProductsTest extends TestCase
             ->call('startAddProduct', 'accessory')
             ->set('productName', 'Cargo tray')
             ->set('productAmount', '129')
-            ->set('productBasis', 'one_time')
             ->call('saveDefault')
             ->assertHasNoErrors();
 

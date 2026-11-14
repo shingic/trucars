@@ -24,15 +24,13 @@ trait EditsProtectionProduct
     public string $productName = '';
     public string $productDescription = '';
     public string $productFeatures = '';   // one per line, plans only
-    public $productAmount = '';            // dollars; blank = no price shown
-    public string $productBasis = ProtectionProduct::BASIS_BIWEEKLY;
+    public $productAmount = '';            // full price in dollars; blank = no price shown
     public bool $productFeatured = false;
 
     public function startAddProduct(string $kind): void
     {
         $this->resetProductForm();
         $this->productKind = array_key_exists($kind, ProtectionProduct::KINDS) ? $kind : ProtectionProduct::KIND_ADDON;
-        $this->productBasis = ProtectionProduct::isFullPriceKind($this->productKind) ? ProtectionProduct::BASIS_ONE_TIME : ProtectionProduct::BASIS_BIWEEKLY;
         $this->showProductForm = true;
     }
 
@@ -50,7 +48,6 @@ trait EditsProtectionProduct
         $this->productDescription = (string) $product->description;
         $this->productFeatures = implode("\n", $product->features ?? []);
         $this->productAmount = $product->amount_in_cents === null ? '' : number_format($product->amount_in_cents / 100, 2, '.', '');
-        $this->productBasis = $product->price_basis;
         $this->productFeatured = $product->is_featured;
         $this->showProductForm = true;
     }
@@ -64,7 +61,6 @@ trait EditsProtectionProduct
             'productDescription' => ['nullable', 'string', 'max:200'],
             'productFeatures'    => ['nullable', 'string', 'max:2000'],
             'productAmount'      => ['nullable', 'numeric', 'min:0', 'max:100000'],
-            'productBasis'       => ['required', Rule::in(array_keys(ProtectionProduct::BASES))],
         ], [], [
             'productName'   => 'name',
             'productAmount' => 'price',
@@ -80,8 +76,8 @@ trait EditsProtectionProduct
             'description'     => trim($this->productDescription) ?: null,
             'features'        => $isPlan && $features !== [] ? $features : null,
             'amount_in_cents' => $this->productAmount === '' || $this->productAmount === null ? null : (int) round((float) $this->productAmount * 100),
-            // Plans, add-ons and accessories are always a full price; checkout works out the biweekly.
-            'price_basis'     => ProtectionProduct::isFullPriceKind($this->productKind) ? ProtectionProduct::BASIS_ONE_TIME : $this->productBasis,
+            // Always a full price; checkout works out the biweekly.
+            'price_basis'     => ProtectionProduct::BASIS_ONE_TIME,
             'is_featured'     => $isPlan && $this->productFeatured,
         ];
     }
@@ -95,7 +91,6 @@ trait EditsProtectionProduct
         $this->productDescription = '';
         $this->productFeatures = '';
         $this->productAmount = '';
-        $this->productBasis = ProtectionProduct::BASIS_BIWEEKLY;
         $this->productFeatured = false;
         $this->resetErrorBag();
     }

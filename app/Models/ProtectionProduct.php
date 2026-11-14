@@ -41,22 +41,6 @@ class ProtectionProduct extends Model
     public const BASIS_BIWEEKLY = 'biweekly';
     public const BASIS_ONE_TIME = 'one_time';
 
-    public const BASES = [
-        self::BASIS_BIWEEKLY => 'Biweekly estimate',
-        self::BASIS_ONE_TIME => 'One-time price',
-    ];
-
-    /**
-     * Kinds always entered at their full price. Checkout rolls the price into
-     * the loan and shows the biweekly amount, so nobody works it out by hand.
-     * GAP still takes a biweekly figure for now.
-     */
-    public const FULL_PRICE_KINDS = [self::KIND_PLAN, self::KIND_ADDON, self::KIND_ACCESSORY];
-
-    public static function isFullPriceKind(?string $kind): bool
-    {
-        return in_array($kind, self::FULL_PRICE_KINDS, true);
-    }
 
     protected $fillable = [
         'dealer_id', 'kind', 'name', 'description', 'features', 'amount_in_cents',
@@ -64,19 +48,21 @@ class ProtectionProduct extends Model
     ];
 
     protected $attributes = [
-        'price_basis' => self::BASIS_BIWEEKLY,
+        'price_basis' => self::BASIS_ONE_TIME,
         'is_featured' => false,
         'position'    => 0,
         'is_active'   => true,
     ];
 
-    /** Plans, add-ons and accessories are always stored as a full price (FULL_PRICE_KINDS). */
+    /**
+     * Every item is entered at its full price (e.g. $1,800). Checkout rolls it
+     * into the loan and shows the biweekly amount, so nobody works it out by
+     * hand. BASIS_BIWEEKLY stays only so deals saved before this still read right.
+     */
     protected static function booted(): void
     {
         static::saving(function (self $product) {
-            if (self::isFullPriceKind($product->kind)) {
-                $product->price_basis = self::BASIS_ONE_TIME;
-            }
+            $product->price_basis = self::BASIS_ONE_TIME;
         });
     }
 

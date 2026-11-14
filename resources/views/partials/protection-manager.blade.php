@@ -66,7 +66,7 @@
                     <form class="pm-inline" wire:submit="savePricing" wire:key="pricing-{{ $product->id }}">
                         <span>Your price for <b>{{ $product->name }}</b></span>
                         <div class="pf-money"><b>$</b><input type="number" step="0.01" min="0" wire:model="pricingAmount" inputmode="decimal" style="width:130px;padding:7px 10px;"></div>
-                        <span style="color:var(--ink-3);font-size:13.5px;">{{ ProtectionProduct::isFullPriceKind($product->kind) ? 'Full price — checkout shows the biweekly amount' : ProtectionProduct::BASES[$product->price_basis] }} · blank shows no price</span>
+                        <span style="color:var(--ink-3);font-size:13.5px;">Full price — checkout shows the biweekly amount · blank shows no price</span>
                         <button type="submit" class="pm-btn primary">Save</button>
                         <button type="button" class="pm-btn" wire:click="cancelPricing">Cancel</button>
                         @error('pricingAmount') <em>{{ $message }}</em> @enderror
