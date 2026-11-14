@@ -123,7 +123,7 @@ class ProtectionProductsTest extends TestCase
             ->call('toggleExtra', 'p' . $tires->id);
 
         $this->assertSame([
-            ['kind' => 'plan', 'name' => 'Safe Bet', 'amount_in_cents' => null, 'price_basis' => 'biweekly'],
+            ['kind' => 'plan', 'name' => 'Safe Bet', 'amount_in_cents' => null, 'price_basis' => 'one_time'],
             ['kind' => 'gap', 'name' => 'GAP protection', 'amount_in_cents' => 1800, 'price_basis' => 'biweekly'],
             ['kind' => 'addon', 'name' => 'Tire & rim cover', 'amount_in_cents' => 1100, 'price_basis' => 'biweekly'],
         ], $checkout->instance()->protectionSnapshot());

@@ -58,6 +58,19 @@ class ProtectionProduct extends Model
         'is_active'   => true,
     ];
 
+    /**
+     * Coverage plans are always entered at their full price. Checkout works out
+     * the biweekly amount by rolling it into the loan; nobody does that math by hand.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (self $product) {
+            if ($product->kind === self::KIND_PLAN) {
+                $product->price_basis = self::BASIS_ONE_TIME;
+            }
+        });
+    }
+
     protected function casts(): array
     {
         return [

@@ -925,11 +925,22 @@ new #[Layout('layouts.checkout')] class extends Component {
      *
      * vehicleBiweekly + taxesBiweekly + the biweekly-priced items sum to estimatedBiweekly (finance).
      */
+    /**
+     * What a one-time-priced item (a coverage plan, an accessory) adds to the
+     * biweekly payment when it's rolled into the loan, HST included, at the
+     * buyer's current term. Shown on the plan cards and in the rail.
+     */
+    public function financedItemBiweekly(?int $amountInCents): float
+    {
+        return $amountInCents === null ? 0.0 : PaymentEstimate::loanBiweekly($amountInCents / 100, $this->termMonths);
+    }
+
     #[Computed]
     public function paymentBreakdown(): array
     {
         $total = $this->estimatedBiweekly;
-        $loanBiweekly = $total - $this->protectionTotals['biweekly'];
+        // The car's share of the loan; one-time items rolled in get their own rail lines.
+        $loanBiweekly = PaymentEstimate::loanBiweekly(max(0, $this->financedDollars - $this->protectionTotals['oneTime']), $this->termMonths);
         $vehicleBiweekly = $loanBiweekly / 1.13;
         $taxesBiweekly = $loanBiweekly - $vehicleBiweekly;
 
@@ -1686,6 +1697,9 @@ new #[Layout('layouts.checkout')] class extends Component {
         .plan-badge { position:absolute; top:-12px; left:18px; font-family:var(--font-display); font-size:13px; font-weight:700; text-transform:uppercase; color:#fff; background:var(--ink); padding:4px 9px; border-radius:5px; white-space:nowrap; }
         .plan-name { font-family:var(--font-display); font-size:23px; font-weight:700; text-transform:uppercase; line-height:1.05; }
         .plan-tag { font-size:14px; color:var(--ink-2); margin:6px 0 4px; min-height:38px; }
+        .plan-price { font-family:var(--font-display); font-size:22px; font-weight:700; line-height:1; margin-top:8px; }
+        .plan-price .per { font-family:var(--font-ui); font-size:13px; font-weight:500; color:var(--ink-3); }
+        .plan-price-note { font-size:13px; color:var(--ink-3); margin-top:5px; }
         .plan-feats { list-style:none; padding:0; margin:12px 0 18px; border-top:1px solid var(--line-strong); }
         .plan-feats li { display:flex; gap:9px; align-items:flex-start; font-size:14px; padding:7px 0; color:var(--ink); border-bottom:1px solid var(--line-strong); }
         .plan-feats li svg { flex-shrink:0; margin-top:2px; }
@@ -2147,6 +2161,14 @@ new #[Layout('layouts.checkout')] class extends Component {
                             @if ($option['popular'])<span class="plan-badge">★ Recommended</span>@endif
                             <div class="plan-name">{!! $icon('shield', 24) !!} {{ $option['name'] }}</div>
                             <div class="plan-tag">{{ $option['tag'] }}</div>
+                            @if ($option['amount'] !== null)
+                                @if ($purchaseType === 'finance')
+                                    <div class="plan-price">+{{ $this->asMoney($this->financedItemBiweekly($option['amount'])) }}<span class="per"> /biweekly · est.</span></div>
+                                    <div class="plan-price-note">{{ $this->centsAsMoney($option['amount']) }} added to your loan</div>
+                                @else
+                                    <div class="plan-price">+{{ $this->centsAsMoney($option['amount']) }}<span class="per"> · est.</span></div>
+                                @endif
+                            @endif
                             <ul class="plan-feats">
                                 @foreach ($option['feats'] as $feat)
                                     <li class="{{ $feat['included'] ? '' : 'off' }}">
@@ -2509,7 +2531,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                                         <div class="rail-line head"><span>HST (13%)</span><span>{{ $this->asMoney($this->paymentBreakdown['taxesBiweekly']) }}</span></div>
                                     </div>
 
-                                    @include('partials.checkout-protection-lines', ['items' => $this->flaggedProtection(), 'financing' => true])
+                                    @include('partials.checkout-protection-lines', ['items' => $this->flaggedProtection(), 'financing' => true, 'termMonths' => $termMonths])
 
                                     @if (count($this->paymentBreakdown['passThroughFees']) > 0)
                                         <div class="rail-group">

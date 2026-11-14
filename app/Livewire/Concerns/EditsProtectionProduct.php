@@ -32,7 +32,7 @@ trait EditsProtectionProduct
     {
         $this->resetProductForm();
         $this->productKind = array_key_exists($kind, ProtectionProduct::KINDS) ? $kind : ProtectionProduct::KIND_ADDON;
-        $this->productBasis = $this->productKind === ProtectionProduct::KIND_ACCESSORY ? ProtectionProduct::BASIS_ONE_TIME : ProtectionProduct::BASIS_BIWEEKLY;
+        $this->productBasis = in_array($this->productKind, [ProtectionProduct::KIND_ACCESSORY, ProtectionProduct::KIND_PLAN], true) ? ProtectionProduct::BASIS_ONE_TIME : ProtectionProduct::BASIS_BIWEEKLY;
         $this->showProductForm = true;
     }
 
@@ -80,7 +80,8 @@ trait EditsProtectionProduct
             'description'     => trim($this->productDescription) ?: null,
             'features'        => $isPlan && $features !== [] ? $features : null,
             'amount_in_cents' => $this->productAmount === '' || $this->productAmount === null ? null : (int) round((float) $this->productAmount * 100),
-            'price_basis'     => $this->productBasis,
+            // Plans are always a full one-time price; checkout works out the biweekly.
+            'price_basis'     => $isPlan ? ProtectionProduct::BASIS_ONE_TIME : $this->productBasis,
             'is_featured'     => $isPlan && $this->productFeatured,
         ];
     }
