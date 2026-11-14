@@ -56,7 +56,7 @@ class CheckoutCoverageTest extends TestCase
         $before = $checkout->instance()->estimatedBiweekly();
         $planBiweekly = PaymentEstimate::loanBiweekly(3000, 72);
 
-        $checkout->assertSee('$3,000 added to your loan')
+        $checkout->assertDontSee('added to your loan')
             ->assertSee('+$' . number_format($planBiweekly, 0))
             ->call('selectWarranty', 'p' . $safeBet->id);
 
@@ -112,7 +112,7 @@ class CheckoutCoverageTest extends TestCase
         $gapBiweekly = PaymentEstimate::loanBiweekly(1800, 72);
 
         $checkout->assertSee('Add GAP')
-            ->assertSee('$1,800 added to your loan')
+            ->assertDontSee('added to your loan')
             ->assertSee('+$' . number_format($gapBiweekly, 0) . '/biweekly')
             ->call('toggleGap')
             ->assertSet('wantsGap', true);
