@@ -109,7 +109,7 @@ class ProtectionProductsTest extends TestCase
     public function test_checkout_keeps_what_was_flagged_at_the_dealerships_prices_and_ignores_made_up_keys(): void
     {
         $tires = ProtectionProduct::defaults()->where('name', 'Tire & rim cover')->sole();
-        $this->dealer->protectionSettings()->create(['protection_product_id' => $tires->id, 'amount_in_cents' => 1100]);
+        $this->dealer->protectionSettings()->create(['protection_product_id' => $tires->id, 'amount_in_cents' => 110000]);
         $safeBet = ProtectionProduct::defaults()->where('name', 'Safe Bet')->sole();
         $this->actingAs(User::factory()->create());
 
@@ -125,7 +125,7 @@ class ProtectionProductsTest extends TestCase
         $this->assertSame([
             ['kind' => 'plan', 'name' => 'Safe Bet', 'amount_in_cents' => null, 'price_basis' => 'one_time'],
             ['kind' => 'gap', 'name' => 'GAP protection', 'amount_in_cents' => 1800, 'price_basis' => 'biweekly'],
-            ['kind' => 'addon', 'name' => 'Tire & rim cover', 'amount_in_cents' => 1100, 'price_basis' => 'biweekly'],
+            ['kind' => 'addon', 'name' => 'Tire & rim cover', 'amount_in_cents' => 110000, 'price_basis' => 'one_time'],
         ], $checkout->instance()->protectionSnapshot());
     }
 

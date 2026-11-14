@@ -935,6 +935,26 @@ new #[Layout('layouts.checkout')] class extends Component {
         return $amountInCents === null ? 0.0 : PaymentEstimate::loanBiweekly($amountInCents / 100, $this->termMonths);
     }
 
+    /**
+     * The price a buyer sees for an item at checkout: a full-price item shows
+     * what it adds per payment when financing, or its full price when paying
+     * in full; a biweekly-priced item (GAP) shows its biweekly figure.
+     */
+    public function itemPriceLabel(array $item): ?string
+    {
+        if ($item['amount'] === null) {
+            return null;
+        }
+
+        if ($item['basis'] === ProtectionProduct::BASIS_BIWEEKLY) {
+            return '+' . $item['price'];
+        }
+
+        return $this->purchaseType === 'finance'
+            ? '+' . $this->asMoney($this->financedItemBiweekly($item['amount'])) . '/biweekly'
+            : '+' . $this->centsAsMoney($item['amount']);
+    }
+
     #[Computed]
     public function paymentBreakdown(): array
     {
@@ -2280,7 +2300,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                                 <div class="extra-name">{{ $extra['name'] }}</div>
                                 <div class="extra-desc">{{ $extra['desc'] }}</div>
                             </div>
-                            <span class="extra-price">{{ $extra['price'] ? '+' . $extra['price'] : '' }}</span>
+                            <span class="extra-price">{{ $this->itemPriceLabel($extra) }}</span>
                         </button>
                     @endforeach
                 </div>
@@ -2300,7 +2320,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                                 <div class="extra-name">{{ $extra['name'] }}</div>
                                 <div class="extra-desc">{{ $extra['desc'] }}</div>
                             </div>
-                            <span class="extra-price">{{ $extra['price'] ? '+' . $extra['price'] : '' }}</span>
+                            <span class="extra-price">{{ $this->itemPriceLabel($extra) }}</span>
                         </button>
                     @endforeach
                 </div>
@@ -2393,7 +2413,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                 <div class="rev-card">
                     <div>
                         <div class="rev-label">{!! $icon('shield', 18) !!} Extras</div>
-                        <div class="rev-value">{{ ($wantsGap || count($selectedExtras) > 0) ? collect($this->flaggedProtection())->reject(fn ($item) => $item['kind'] === 'plan')->map(fn ($item) => $item['name'] . ($item['price'] ? ' ' . $item['price'] : ''))->join(' · ') . ' · in your estimate' : 'None' }}</div>
+                        <div class="rev-value">{{ ($wantsGap || count($selectedExtras) > 0) ? collect($this->flaggedProtection())->reject(fn ($item) => $item['kind'] === 'plan')->map(fn ($item) => trim($item['name'] . ' ' . $this->itemPriceLabel($item)))->join(' · ') . ' · in your estimate' : 'None' }}</div>
                     </div>
                     <button type="button" class="text-link" wire:click="jumpTo(3)">Edit</button>
                 </div>

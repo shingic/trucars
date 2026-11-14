@@ -28,12 +28,12 @@
         @endif
 
         <label class="pf-field">
-            <span>{{ $productKind === ProtectionProduct::KIND_PLAN ? 'Full price' : 'Price buyers see' }} <small>{{ $productKind === ProtectionProduct::KIND_PLAN ? 'checkout shows the biweekly amount' : 'leave blank for none' }}</small></span>
+            <span>{{ ProtectionProduct::isFullPriceKind($productKind) ? 'Full price' : 'Price buyers see' }} <small>{{ ProtectionProduct::isFullPriceKind($productKind) ? 'checkout shows the biweekly amount' : 'leave blank for none' }}</small></span>
             <div class="pf-money"><b>$</b><input type="number" step="0.01" min="0" wire:model="productAmount" inputmode="decimal"></div>
             @error('productAmount') <em>{{ $message }}</em> @enderror
         </label>
 
-        @if ($productKind !== ProtectionProduct::KIND_PLAN)
+        @if (! ProtectionProduct::isFullPriceKind($productKind))
             <label class="pf-field">
                 <span>Priced as</span>
                 <select wire:model="productBasis">

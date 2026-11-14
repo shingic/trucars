@@ -75,4 +75,30 @@ class CheckoutCoverageTest extends TestCase
         $checkout->call('selectWarranty', null);
         $this->assertEqualsWithDelta(29990, $checkout->instance()->cashTotalDollars(), 0.01);
     }
+
+    public function test_add_ons_and_accessories_are_entered_at_full_price_and_gap_stays_biweekly(): void
+    {
+        $tires = ProtectionProduct::defaults()->where('name', 'Tire & rim cover')->sole();
+        $tires->update(['amount_in_cents' => 120000, 'price_basis' => 'biweekly']);
+        $mats = ProtectionProduct::create(['kind' => 'accessory', 'name' => 'Floor mats', 'amount_in_cents' => 30000, 'price_basis' => 'biweekly']);
+        $gap = ProtectionProduct::defaults()->where('kind', 'gap')->first();
+
+        $this->assertSame('one_time', $tires->fresh()->price_basis);
+        $this->assertSame('one_time', $mats->fresh()->price_basis);
+        $this->assertSame('biweekly', $gap->price_basis, 'GAP is untouched for now');
+
+        $checkout = Livewire::test('pages::checkout', ['vehicle' => $this->car]);
+        $checkout->set('stepIndex', $checkout->instance()->indexOfStep('extras'));
+        $before = $checkout->instance()->estimatedBiweekly();
+        $tiresBiweekly = PaymentEstimate::loanBiweekly(1200, 72);
+
+        $checkout->assertSee('+$' . number_format($tiresBiweekly, 0) . '/biweekly')
+            ->call('toggleExtra', 'p' . $tires->id)
+            ->call('toggleExtra', 'p' . $mats->id);
+
+        $this->assertEqualsWithDelta($before + $tiresBiweekly + PaymentEstimate::loanBiweekly(300, 72), $checkout->instance()->estimatedBiweekly(), 0.01);
+
+        $checkout->call('setPurchaseType', 'cash')->assertSee('+$1,200');
+        $this->assertEqualsWithDelta(29990 + 1200 + 300, $checkout->instance()->cashTotalDollars(), 0.01);
+    }
 }
