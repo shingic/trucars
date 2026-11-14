@@ -126,7 +126,7 @@ class ShopperLocationTest extends TestCase
         Livewire::test('pages::marketplace')
             ->call('useBrowserLocation', 49.05, -122.30)
             ->call('clearLocation')
-            ->assertSet('sort', 'newest')
+            ->assertSet('sort', 'recommended')
             ->assertSee('Use my location');
 
         $this->assertNull(session(ShopperLocation::SESSION_KEY));

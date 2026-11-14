@@ -3,6 +3,7 @@
 use App\Models\Vehicle;
 use App\Support\Seo\SeoCatalog;
 use App\Support\VehicleCertification;
+use App\Support\RecommendedOrder;
 use App\Support\ShopperLocation;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -55,7 +56,8 @@ new class extends Component {
     public ?int $yearMax = null;
     public int $kmMax = 200000;
 
-    public string $sort = 'newest';
+    // Dealers take turns (RecommendedOrder), so one big feed import can't bury everyone else.
+    public string $sort = 'recommended';
 
     /*
      * A search landing page (/used-cars/honda/civic, /used-cars/body/suv, …):
@@ -386,8 +388,9 @@ new class extends Component {
             ->when($this->sort === 'price-high', fn (Builder $query) => $query->orderByDesc('price_in_cents'))
             ->when($this->sort === 'km-low', fn (Builder $query) => $query->orderBy('kilometres'))
             ->when($this->sort === 'year-new', fn (Builder $query) => $query->orderByDesc('model_year'))
-            ->when(in_array($this->sort, ['newest', 'nearest'], true), fn (Builder $query) => $query->latest())
+            ->when(in_array($this->sort, ['recommended', 'newest', 'nearest'], true), fn (Builder $query) => $query->latest()->orderByDesc('id'))
             ->get()
+            ->when($this->sort === 'recommended', fn (Collection $vehicles) => RecommendedOrder::apply($vehicles, ShopperLocation::current()))
             ->when($this->sort === 'nearest' && ShopperLocation::current() !== null, fn (Collection $vehicles) => $this->sortNearestFirst($vehicles));
     }
 
@@ -446,7 +449,7 @@ new class extends Component {
         ShopperLocation::clear();
 
         if ($this->sort === 'nearest') {
-            $this->sort = 'newest';
+            $this->sort = 'recommended';
         }
 
         $this->dispatch('shopper-location-updated', label: null);
@@ -639,6 +642,7 @@ new class extends Component {
             <label class="mb-btn mb-sort">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h12M3 12h8M3 18h5M17 6v12m0 0 3-3m-3 3-3-3"/></svg>
                 <select class="bare" wire:model.live="sort">
+                    <option value="recommended">Recommended</option>
                     <option value="newest">Newest</option>
                     <option value="price-low">Price: low to high</option>
                     <option value="price-high">Price: high to low</option>
@@ -842,6 +846,7 @@ new class extends Component {
                         </button>
                     </div>
                     <select class="sort-select" wire:model.live="sort">
+                        <option value="recommended">Recommended</option>
                         <option value="newest">Newest</option>
                         <option value="price-low">Price: low to high</option>
                         <option value="price-high">Price: high to low</option>
