@@ -100,8 +100,8 @@ class DealerPrivacyTest extends TestCase
         $vehicle = $this->vehicle();
 
         Livewire::test('pages::location-gate', ['returnUrl' => url('/cars/' . $vehicle->id)])
-            ->set('postalCode', 'v2t 1a1')
-            ->call('usePostalCode')
+            ->set('place', 'v2t 1a1')
+            ->call('useTyped')
             ->assertHasNoErrors()
             ->assertRedirect(url('/cars/' . $vehicle->id));
 
@@ -118,8 +118,8 @@ class DealerPrivacyTest extends TestCase
         $vehicle = $this->vehicle();
 
         Livewire::test('pages::location-gate', ['returnUrl' => url('/cars/' . $vehicle->id)])
-            ->set('postalCode', 'L3Y 4X1')
-            ->call('usePostalCode')
+            ->set('place', 'L3Y 4X1')
+            ->call('useTyped')
             ->assertHasNoErrors();
 
         $this->assertSame('Newmarket, ON', ShopperLocation::current()['label']);
@@ -139,12 +139,52 @@ class DealerPrivacyTest extends TestCase
         $this->assertSame('L3Y', ShopperLocation::current()['postal_area']);
     }
 
-    public function test_the_prompt_wants_a_postal_code_not_a_city(): void
+    public function test_a_city_works_too_and_is_placed_on_the_map(): void
+    {
+        config(['services.google_places.key' => null]);
+        Http::fake();
+        $vehicle = $this->vehicle();
+
+        Livewire::test('pages::location-gate', ['returnUrl' => url('/cars/' . $vehicle->id)])
+            ->set('place', 'newmarket')
+            ->call('useTyped')
+            ->assertHasNoErrors()
+            ->assertRedirect(url('/cars/' . $vehicle->id));
+
+        $this->assertSame('Newmarket, ON', ShopperLocation::current()['label']);
+        $this->assertNotNull(ShopperLocation::current()['latitude']);
+        $this->get('/cars/' . $vehicle->id)->assertSee('km away');
+        Http::assertNothingSent();
+    }
+
+    public function test_suggestions_as_you_type(): void
+    {
+        $gate = Livewire::test('pages::location-gate');
+
+        $towns = $gate->instance()->suggest('newm');
+        $this->assertSame('Newmarket, ON', $towns[0]['value']);
+        $this->assertSame('Ontario', $towns[0]['hint']);
+
+        $this->assertSame('Montréal', \App\Support\PostalAreas::city('montreal')['city']); // accents don't matter
+
+        $areas = $gate->instance()->suggest('l3x');
+        $this->assertSame('L3X', $areas[0]['value']);
+        $this->assertSame('Newmarket, ON', $areas[0]['hint']);
+
+        $this->assertSame('L3X 3E3', $gate->instance()->suggest('l3x3e3')[0]['value']);
+        $this->assertSame([], $gate->instance()->suggest('n'));
+
+        // Picking one goes straight through.
+        $gate->call('useTyped', 'Newmarket, ON')->assertHasNoErrors();
+        $this->assertSame('Newmarket, ON', ShopperLocation::current()['label']);
+    }
+
+    public function test_nonsense_is_turned_away(): void
     {
         Livewire::test('pages::location-gate')
-            ->set('postalCode', 'Toronto')
-            ->call('usePostalCode')
-            ->assertHasErrors(['postalCode']);
+            ->set('place', '12345')
+            ->call('useTyped')
+            ->assertHasErrors(['place']);
 
         $this->assertNull(ShopperLocation::current());
     }

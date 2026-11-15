@@ -114,6 +114,12 @@ class AddressLookup
         return $this->geocodeCity(['address' => $postalCode, 'components' => 'country:CA']);
     }
 
+    /** @return array{city: string, province: ?string, latitude?: float, longitude?: float}|null a Canadian town by name ("Smithers, BC"), and its centre point */
+    public function cityNamed(string $name): ?array
+    {
+        return $this->geocodeCity(['address' => $name, 'components' => 'country:CA']);
+    }
+
     /**
      * The map point of a street address, for a store's distance to shoppers.
      * Google Geocoding API, same key; null when it's off, fails or can't place it.

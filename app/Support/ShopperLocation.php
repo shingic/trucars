@@ -16,8 +16,8 @@ use App\Models\Rooftop;
  * location"), rounded to ~1 km before it's kept; or a typed city or postal
  * code. The town is looked up for the browser's point and for a postal code
  * (AddressLookup), so the shop can say "for sale in Chilliwack". A postal
- * code is also placed on the map (its centre, rounded to ~1 km), so it gives
- * real kilometres; a typed city still gives a city / province match only.
+ * code or a city is also placed on the map (rounded to ~1 km), so it gives
+ * real kilometres; a city nobody can place still gives a city / province match.
  */
 class ShopperLocation
 {
@@ -89,12 +89,24 @@ class ShopperLocation
         $city = mb_convert_case(trim($parts[1]), MB_CASE_TITLE); // "chilliwack" → "Chilliwack"
         $province = isset($parts[2]) ? CanadianAddress::normalizeProvince($parts[2]) : null;
 
+        // Placed on the map so it gives real kilometres: the town's postal
+        // areas first (offline), then Google for towns that list doesn't name.
+        $place = PostalAreas::city($city, $province)
+            ?? app(AddressLookup::class)->cityNamed($province ? "{$city}, {$province}" : $city);
+
+        if ($place !== null) {
+            $city = $place['city'];
+            $province = $place['province'] ?? $province;
+        }
+
         session()->put(self::SESSION_KEY, array_filter([
-            'source'   => 'manual',
-            'label'    => $province ? "{$city}, {$province}" : $city,
-            'city'     => $city,
-            'province' => $province,
-        ]));
+            'source'    => 'manual',
+            'label'     => $province ? "{$city}, {$province}" : $city,
+            'city'      => $city,
+            'province'  => $province,
+            'latitude'  => isset($place['latitude']) ? round($place['latitude'], 2) : null,
+            'longitude' => isset($place['longitude']) ? round($place['longitude'], 2) : null,
+        ], fn ($value) => $value !== null));
 
         return true;
     }

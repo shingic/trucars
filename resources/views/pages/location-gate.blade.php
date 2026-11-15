@@ -1,6 +1,6 @@
 <?php
 
-use App\Support\CanadianAddress;
+use App\Support\PostalAreas;
 use App\Support\ShopperLocation;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -11,7 +11,8 @@ use Livewire\Component;
 | anonymous until the deposit is paid), so the shop, vehicle pages, campaign
 | storefronts and Saved cars all need it first.
 |
-| A postal code or the browser's location. Both give coordinates, so every
+| A postal code, a city (suggested as they type, from the offline postal
+| area list) or the browser's location. All give coordinates, so every
 | page can show real kilometres. It can't be dismissed until one is given.
 | After that, the header's location opens it again to change it. Kept in the
 | session only (ShopperLocation).
@@ -21,7 +22,8 @@ new class extends Component {
     #[Locked]
     public string $returnUrl = '/';
 
-    public string $postalCode = '';
+    /** What they typed: a postal code or a city. */
+    public string $place = '';
 
     public function mount(?string $returnUrl = null): void
     {
@@ -34,26 +36,39 @@ new class extends Component {
         return ShopperLocation::current() === null;
     }
 
-    public function usePostalCode(): void
+    /**
+     * Suggestions while they type: towns, or postal areas for a postal code.
+     *
+     * @return array<int, array{value: string, label: string, hint: string}>
+     */
+    public function suggest(string $term): array
     {
-        $this->validate(['postalCode' => ['required', 'string', 'max:10']], [
-            'postalCode.required' => 'Enter your postal code.',
-        ], ['postalCode' => 'postal code']);
+        return PostalAreas::suggest(mb_substr($term, 0, 60));
+    }
 
-        if (CanadianAddress::normalizePostalCode($this->postalCode) === null) {
-            $this->addError('postalCode', 'That doesn’t look like a Canadian postal code. Try something like M5V 2T6.');
+    public function useTyped(?string $choice = null): void
+    {
+        if ($choice !== null) {
+            $this->place = mb_substr($choice, 0, 60);
+        }
+
+        $this->validate(['place' => ['required', 'string', 'max:60']], [
+            'place.required' => 'Enter your postal code or city.',
+        ], ['place' => 'postal code or city']);
+
+        if (! ShopperLocation::setManual($this->place)) {
+            $this->addError('place', 'We couldn’t find that. Try a postal code like M5V 2T6 or a city like Newmarket.');
 
             return;
         }
 
-        ShopperLocation::setManual($this->postalCode);
         $this->done();
     }
 
     public function useBrowserLocation($latitude, $longitude): void
     {
         if (! is_numeric($latitude) || ! is_numeric($longitude) || abs((float) $latitude) > 90 || abs((float) $longitude) > 180) {
-            $this->addError('postalCode', 'We couldn’t read your location. Enter your postal code instead.');
+            $this->addError('place', 'We couldn’t read your location. Enter your postal code or city instead.');
 
             return;
         }
@@ -84,19 +99,40 @@ new class extends Component {
          geoError: '',
          locate() {
              this.geoError = '';
-             if (! ('geolocation' in navigator)) { this.geoError = 'Your browser can’t share a location. Enter your postal code instead.'; return; }
+             if (! ('geolocation' in navigator)) { this.geoError = 'Your browser can’t share a location. Enter your postal code or city instead.'; return; }
              this.locating = true;
              navigator.geolocation.getCurrentPosition(
                  (p) => { this.$wire.useBrowserLocation(p.coords.latitude, p.coords.longitude); },
-                 (e) => { this.locating = false; this.geoError = e.code === 1 ? 'Location access was declined. Enter your postal code instead.' : 'We couldn’t get your location. Enter your postal code instead.'; },
+                 (e) => { this.locating = false; this.geoError = e.code === 1 ? 'Location access was declined. Enter your postal code or city instead.' : 'We couldn’t get your location. Enter your postal code or city instead.'; },
                  { timeout: 10000, maximumAge: 600000 },
              );
          },
          close() { if (! this.required) this.open = false; },
+         items: [], listOpen: false, active: -1, seq: 0,
+         async search(term) {
+             const ticket = ++this.seq;
+             if (term.trim().length < 2) { this.closeList(); return; }
+             const items = await this.$wire.suggest(term);
+             if (ticket !== this.seq) return; // a newer keystroke won
+             this.items = items || [];
+             this.active = -1;
+             this.listOpen = this.items.length > 0;
+         },
+         move(step) {
+             if (! this.listOpen) return;
+             this.active = (this.active + step + this.items.length) % this.items.length;
+         },
+         choose(item) {
+             if (! item) return;
+             this.closeList();
+             this.$refs.postal.value = item.value;
+             this.$wire.useTyped(item.value);
+         },
+         closeList() { this.listOpen = false; this.active = -1; },
      }"
      x-init="$watch('open', (value) => { document.documentElement.style.overflow = value ? 'hidden' : ''; if (value) $nextTick(() => $refs.postal?.focus()); }); if (open) { document.documentElement.style.overflow = 'hidden'; $nextTick(() => $refs.postal?.focus()); }"
      @open-location-gate.window="open = true"
-     @keydown.escape.window="close()">
+     @keydown.escape.window="listOpen ? closeList() : close()">
     <style>
         .lg-scrim { position:fixed; inset:0; z-index:90; background:rgba(7,20,55,.62); display:flex; align-items:center; justify-content:center; padding:16px; }
         .lg { position:relative; width:100%; max-width:480px; background:#fff; border-radius:12px; border-top:6px solid var(--primary); padding:30px 30px 26px; box-shadow:0 24px 60px rgba(7,20,55,.28); }
@@ -104,8 +140,16 @@ new class extends Component {
         .lg h2 { font-family:var(--font-display); font-size:32px; font-weight:800; text-transform:uppercase; line-height:1; color:var(--ink); margin:10px 0 10px; }
         .lg p { font-size:15.5px; color:var(--ink-2); line-height:1.5; margin:0 0 20px; }
         .lg-form { display:flex; gap:8px; }
-        .lg-form input { flex:1; min-width:0; font-family:var(--font-display); font-size:22px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--ink); border:2px solid var(--ink); border-radius:8px; padding:11px 14px; background:#fff; }
-        .lg-form input::placeholder { color:var(--ink-3); font-weight:600; letter-spacing:.04em; }
+        .lg-field { position:relative; flex:1; min-width:0; }
+        .lg-form input { width:100%; box-sizing:border-box; font-family:var(--font-display); font-size:21px; font-weight:700; letter-spacing:.02em; color:var(--ink); border:2px solid var(--ink); border-radius:8px; padding:11px 14px; background:#fff; }
+        .lg-form input::placeholder { color:var(--ink-3); font-weight:600; }
+        .lg-list { position:absolute; left:0; right:0; top:calc(100% + 6px); z-index:2; margin:0; padding:6px; list-style:none; background:#fff; border:1px solid var(--line-strong); border-radius:10px; box-shadow:0 14px 34px rgba(7,20,55,.18); max-height:300px; overflow-y:auto; }
+        .lg-list li { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:7px; cursor:pointer; font-size:15.5px; color:var(--ink); }
+        .lg-list li svg { flex-shrink:0; color:var(--ink-3); }
+        .lg-list li b { font-weight:700; }
+        .lg-list li small { font-size:14px; color:var(--ink-3); }
+        .lg-list li.on { background:var(--bg-2); }
+        .lg-list li.on svg { color:var(--primary); }
         .lg-form input:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px var(--primary-soft); }
         .lg-go { flex-shrink:0; background:var(--primary); border:2px solid var(--primary); color:#fff; border-radius:8px; padding:0 20px; font-family:var(--font-display); font-size:17px; font-weight:700; text-transform:uppercase; letter-spacing:.02em; cursor:pointer; }
         .lg-go:hover { background:var(--primary-press); border-color:var(--primary-press); }
@@ -139,14 +183,29 @@ new class extends Component {
                 Before you browse
             </div>
             <h2 id="lg-title">Where are you shopping from?</h2>
-            <p>Every car shows how far it is from you. You pick the car up at the dealership, so choose one that’s close enough to collect.</p>
+            <p>Enter your postal code or city. Every car shows how far it is from you. You pick the car up at the dealership, so choose one that’s close enough to collect.</p>
 
-            <form class="lg-form" wire:submit="usePostalCode">
-                <label for="lg-postal" class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">Your postal code</label>
-                <input id="lg-postal" x-ref="postal" type="text" wire:model="postalCode" placeholder="A1A 1A1" maxlength="10" autocomplete="postal-code" inputmode="text" aria-describedby="lg-postal-err">
-                <button type="submit" class="lg-go" wire:loading.attr="disabled" wire:target="usePostalCode">Show cars</button>
+            <form class="lg-form" wire:submit="useTyped" @click.outside="closeList()">
+                <label for="lg-postal" class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">Your postal code or city</label>
+                <div class="lg-field">
+                    <input id="lg-postal" x-ref="postal" type="text" wire:model="place" placeholder="Postal code or city" maxlength="60" autocomplete="off" inputmode="text"
+                           role="combobox" aria-autocomplete="list" :aria-expanded="listOpen" aria-controls="lg-list" aria-describedby="lg-postal-err"
+                           @input.debounce.150ms="search($event.target.value)"
+                           @keydown.arrow-down.prevent="move(1)" @keydown.arrow-up.prevent="move(-1)"
+                           @keydown.enter="if (listOpen && active >= 0) { $event.preventDefault(); choose(items[active]); }">
+                    <ul id="lg-list" class="lg-list" role="listbox" x-show="listOpen" x-cloak>
+                        <template x-for="(item, i) in items" :key="item.value">
+                            <li role="option" :aria-selected="i === active" :class="{ on: i === active }"
+                                @mousedown.prevent="choose(item)" @mouseenter="active = i">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z"/><circle cx="12" cy="10" r="2.5"/></svg>
+                                <span><b x-text="item.label"></b> <small x-text="item.hint"></small></span>
+                            </li>
+                        </template>
+                    </ul>
+                </div>
+                <button type="submit" class="lg-go" wire:loading.attr="disabled" wire:target="useTyped">Show cars</button>
             </form>
-            @error('postalCode') <p class="lg-err" id="lg-postal-err">{{ $message }}</p> @enderror
+            @error('place') <p class="lg-err" id="lg-postal-err">{{ $message }}</p> @enderror
             <p class="lg-err" x-show="geoError" x-text="geoError" x-cloak></p>
 
             <div class="lg-or">or</div>
