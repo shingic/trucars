@@ -193,6 +193,15 @@ new #[Layout('layouts.dealer')] #[Title('Platform settings')] class extends Comp
         .conn-msg { color:var(--ink-2); }
         @media (max-width:640px) { .conn-row { grid-template-columns:22px 1fr; } .conn-msg { grid-column:2; } .ps-head h1 { font-size:30px; } }
         @media (max-width:640px) { .modes { grid-template-columns:1fr; } }
+        .ps-jump { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 26px; max-width:760px; }
+        .ps-jump a { font-size:13.5px; font-weight:700; color:var(--ink-2); border:1px solid var(--line-strong); border-radius:999px; padding:5px 12px; background:#fff; text-decoration:none; }
+        .ps-jump a:hover { border-color:var(--ink); color:var(--ink); }
+        .ps-section { max-width:760px; margin:0 0 34px; scroll-margin-top:80px; }
+        .ps-section > header { margin:0 0 12px; padding-bottom:8px; border-bottom:2px solid var(--ink); }
+        .ps-section > header h2 { margin:0; font-family:var(--font-display); font-size:24px; font-weight:700; line-height:1.1; text-transform:uppercase; }
+        .ps-section > header p { margin:4px 0 0; font-size:14px; color:var(--ink-3); }
+        .ps-section .pay-card:last-child { margin-bottom:0; }
+        .ps-section .pay-head h2 { font-size:19px; }
     </style>
 @endpush
 
@@ -208,125 +217,178 @@ new #[Layout('layouts.dealer')] #[Title('Platform settings')] class extends Comp
         <div class="ps-status">{{ $statusMessage }}</div>
     @endif
 
-    @php
-        $paymentsMode = \App\Support\PlatformSettings::get(\App\Support\PlatformSettings::PAYMENTS_MODE);
-        $liveReady = app(\App\Support\Deposits::class)->liveReady();
-    @endphp
-    <div class="card pay-card">
-        <div class="pay-head">
-            <div>
-                <h2>Payments</h2>
-                <p>The $150 reservation deposit at checkout.</p>
-            </div>
-            <span class="mode-pill {{ $paymentsMode }}">{{ $paymentsMode === 'live' ? 'Live' : 'Demo' }}</span>
-        </div>
-        <div class="modes">
-            <button type="button" class="mode {{ $paymentsMode !== 'live' ? 'on' : '' }}" wire:click="setPaymentsMode('demo')"
-                    @if ($paymentsMode === 'live') wire:confirm="Switch to demo mode? Buyers can still reserve, but no card will be charged." @endif>
-                <b>Demo</b>
-                <span>Checkout works end to end with a sample card. Nothing is charged — for showing and testing.</span>
-            </button>
-            <button type="button" class="mode {{ $paymentsMode === 'live' ? 'on' : '' }}" wire:click="setPaymentsMode('live')" @disabled(! $liveReady)
-                    @if ($paymentsMode !== 'live') wire:confirm="Switch to live payments? Every reservation will charge a real $150 to the buyer’s card." @endif>
-                <b>Live</b>
-                <span>Real $150 card payments through Stripe.</span>
-            </button>
-        </div>
-        @unless ($liveReady)
-            <div class="keys-note">Live needs the Stripe keys (STRIPE_KEY, STRIPE_SECRET) in the server’s .env.</div>
-        @endunless
+    <nav class="ps-jump" aria-label="Sections">
+        <a href="#checkout">Checkout</a>
+        <a href="#marketplace">Marketplace</a>
+        <a href="#business">Business &amp; contact</a>
+        <a href="#emails">Emails</a>
+    </nav>
 
-        <div class="conn">
-            <div class="conn-head">
-                <b>Stripe connection</b>
-                <button type="button" class="btn-ghost" wire:click="checkConnection" wire:loading.attr="disabled" wire:target="checkConnection">
-                    <span wire:loading.remove wire:target="checkConnection">{{ $connection ? 'Check again' : 'Check connection' }}</span>
-                    <span wire:loading wire:target="checkConnection">Checking…</span>
+    <section class="ps-section" id="checkout">
+        <header>
+            <h2>Checkout</h2>
+            <p>Payments and ID checks. Use demo to show the site without real cards or real ID.</p>
+        </header>
+        @php
+            $paymentsMode = \App\Support\PlatformSettings::get(\App\Support\PlatformSettings::PAYMENTS_MODE);
+            $liveReady = app(\App\Support\Deposits::class)->liveReady();
+        @endphp
+        <div class="card pay-card">
+            <div class="pay-head">
+                <div>
+                    <h2>Payments</h2>
+                    <p>The $150 reservation deposit at checkout.</p>
+                </div>
+                <span class="mode-pill {{ $paymentsMode }}">{{ $paymentsMode === 'live' ? 'Live' : 'Demo' }}</span>
+            </div>
+            <div class="modes">
+                <button type="button" class="mode {{ $paymentsMode !== 'live' ? 'on' : '' }}" wire:click="setPaymentsMode('demo')"
+                        @if ($paymentsMode === 'live') wire:confirm="Switch to demo mode? Buyers can still reserve, but no card will be charged." @endif>
+                    <b>Demo</b>
+                    <span>Checkout works end to end with a sample card. Nothing is charged — for showing and testing.</span>
+                </button>
+                <button type="button" class="mode {{ $paymentsMode === 'live' ? 'on' : '' }}" wire:click="setPaymentsMode('live')" @disabled(! $liveReady)
+                        @if ($paymentsMode !== 'live') wire:confirm="Switch to live payments? Every reservation will charge a real $150 to the buyer’s card." @endif>
+                    <b>Live</b>
+                    <span>Real $150 card payments through Stripe.</span>
                 </button>
             </div>
-            @foreach ($connection as $part => [$ok, $message])
-                <div class="conn-row">
-                    <span class="conn-icon {{ $ok ? 'ok' : 'bad' }}">{{ $ok ? '✓' : '✕' }}</span>
-                    <span class="conn-part">{{ $part }}</span>
-                    <span class="conn-msg">{{ $message }}</span>
+            @unless ($liveReady)
+                <div class="keys-note">Live needs the Stripe keys (STRIPE_KEY, STRIPE_SECRET) in the server’s .env.</div>
+            @endunless
+
+            <div class="conn">
+                <div class="conn-head">
+                    <b>Stripe connection</b>
+                    <button type="button" class="btn-ghost" wire:click="checkConnection" wire:loading.attr="disabled" wire:target="checkConnection">
+                        <span wire:loading.remove wire:target="checkConnection">{{ $connection ? 'Check again' : 'Check connection' }}</span>
+                        <span wire:loading wire:target="checkConnection">Checking…</span>
+                    </button>
                 </div>
-            @endforeach
-        </div>
-    </div>
-
-    @php
-        $marketingOn = \App\Support\PlatformSettings::get(\App\Support\PlatformSettings::MARKETING_EMAILS) === 'on';
-    @endphp
-    <div class="card pay-card">
-        <div class="pay-head">
-            <div>
-                <h2>Emails</h2>
-                <p>Every email TruCars sends, the marketing On/Off switch, pausing a type, previews and the send log now live in the Email Centre.</p>
+                @foreach ($connection as $part => [$ok, $message])
+                    <div class="conn-row">
+                        <span class="conn-icon {{ $ok ? 'ok' : 'bad' }}">{{ $ok ? '✓' : '✕' }}</span>
+                        <span class="conn-part">{{ $part }}</span>
+                        <span class="conn-msg">{{ $message }}</span>
+                    </div>
+                @endforeach
             </div>
-            <span class="mode-pill {{ $marketingOn ? 'live' : 'demo' }}">Marketing {{ $marketingOn ? 'on' : 'off' }}</span>
         </div>
-        <a class="btn-ghost" href="{{ route('admin.emails') }}" wire:navigate style="display:inline-block;margin-top:12px;">Open the Email Centre →</a>
-    </div>
 
-    @php
-        $identityMode = \App\Support\PlatformSettings::get(\App\Support\PlatformSettings::IDENTITY_MODE);
-        $identityLiveReady = app(\App\Support\IdentityChecks::class)->liveReady();
-    @endphp
-    <div class="card pay-card">
-        <div class="pay-head">
-            <div>
-                <h2>ID checks</h2>
-                <p>The licence check at checkout (step 6), through Didit.</p>
+        @php
+            $identityMode = \App\Support\PlatformSettings::get(\App\Support\PlatformSettings::IDENTITY_MODE);
+            $identityLiveReady = app(\App\Support\IdentityChecks::class)->liveReady();
+        @endphp
+        <div class="card pay-card">
+            <div class="pay-head">
+                <div>
+                    <h2>ID checks</h2>
+                    <p>The licence check at checkout (step 6), through Didit.</p>
+                </div>
+                <span class="mode-pill {{ $identityMode }}">{{ $identityMode === 'live' ? 'Live' : 'Demo' }}</span>
             </div>
-            <span class="mode-pill {{ $identityMode }}">{{ $identityMode === 'live' ? 'Live' : 'Demo' }}</span>
-        </div>
-        <div class="modes">
-            <button type="button" class="mode {{ $identityMode !== 'live' ? 'on' : '' }}" wire:click="setIdentityMode('demo')"
-                    @if ($identityMode === 'live') wire:confirm="Switch ID checks to demo mode? Buyers will be verified without showing any ID." @endif>
-                <b>Demo</b>
-                <span>Buyers are verified with one tap — no ID scan. For showing and testing the site.</span>
-            </button>
-            <button type="button" class="mode {{ $identityMode === 'live' ? 'on' : '' }}" wire:click="setIdentityMode('live')" @disabled(! $identityLiveReady)
-                    @if ($identityMode !== 'live') wire:confirm="Switch to live ID checks? Every buyer will scan their licence and take a selfie with Didit, and each check is billed by Didit." @endif>
-                <b>Live</b>
-                <span>Real licence + selfie check with Didit. Billed per check by Didit.</span>
-            </button>
-        </div>
-        @unless ($identityLiveReady)
-            <div class="keys-note">Live needs the Didit keys (DIDIT_API_KEY, DIDIT_WORKFLOW_ID, and DIDIT_WEBHOOK_SECRET) in the server’s .env.</div>
-        @endunless
-
-        <div class="conn">
-            <div class="conn-head">
-                <b>Didit connection</b>
-                <button type="button" class="btn-ghost" wire:click="checkIdentityConnection" wire:loading.attr="disabled" wire:target="checkIdentityConnection">
-                    <span wire:loading.remove wire:target="checkIdentityConnection">{{ $identityConnection ? 'Check again' : 'Check connection' }}</span>
-                    <span wire:loading wire:target="checkIdentityConnection">Checking…</span>
+            <div class="modes">
+                <button type="button" class="mode {{ $identityMode !== 'live' ? 'on' : '' }}" wire:click="setIdentityMode('demo')"
+                        @if ($identityMode === 'live') wire:confirm="Switch ID checks to demo mode? Buyers will be verified without showing any ID." @endif>
+                    <b>Demo</b>
+                    <span>Buyers are verified with one tap — no ID scan. For showing and testing the site.</span>
+                </button>
+                <button type="button" class="mode {{ $identityMode === 'live' ? 'on' : '' }}" wire:click="setIdentityMode('live')" @disabled(! $identityLiveReady)
+                        @if ($identityMode !== 'live') wire:confirm="Switch to live ID checks? Every buyer will scan their licence and take a selfie with Didit, and each check is billed by Didit." @endif>
+                    <b>Live</b>
+                    <span>Real licence + selfie check with Didit. Billed per check by Didit.</span>
                 </button>
             </div>
-            @foreach ($identityConnection as $part => [$ok, $message])
-                <div class="conn-row">
-                    <span class="conn-icon {{ $ok ? 'ok' : 'bad' }}">{{ $ok ? '✓' : '✕' }}</span>
-                    <span class="conn-part">{{ $part }}</span>
-                    <span class="conn-msg">{{ $message }}</span>
+            @unless ($identityLiveReady)
+                <div class="keys-note">Live needs the Didit keys (DIDIT_API_KEY, DIDIT_WORKFLOW_ID, and DIDIT_WEBHOOK_SECRET) in the server’s .env.</div>
+            @endunless
+
+            <div class="conn">
+                <div class="conn-head">
+                    <b>Didit connection</b>
+                    <button type="button" class="btn-ghost" wire:click="checkIdentityConnection" wire:loading.attr="disabled" wire:target="checkIdentityConnection">
+                        <span wire:loading.remove wire:target="checkIdentityConnection">{{ $identityConnection ? 'Check again' : 'Check connection' }}</span>
+                        <span wire:loading wire:target="checkIdentityConnection">Checking…</span>
+                    </button>
+                </div>
+                @foreach ($identityConnection as $part => [$ok, $message])
+                    <div class="conn-row">
+                        <span class="conn-icon {{ $ok ? 'ok' : 'bad' }}">{{ $ok ? '✓' : '✕' }}</span>
+                        <span class="conn-part">{{ $part }}</span>
+                        <span class="conn-msg">{{ $message }}</span>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </section>
+
+    <section class="ps-section" id="marketplace">
+        <header>
+            <h2>Marketplace</h2>
+            <p>What shoppers see on the home page.</p>
+        </header>
+        <form class="card" wire:submit="save">
+            @foreach (['marketplace_headline', 'marketplace_subheadline', 'marketplace_notice'] as $key)
+                @php
+                    [$label, $help, , $maxLength] = \App\Support\PlatformSettings::DEFINITIONS[$key];
+                @endphp
+                <div class="field">
+                    <label for="setting-{{ $key }}">{{ $label }}</label>
+                    @if ($maxLength > 100)
+                        <textarea id="setting-{{ $key }}" wire:model="values.{{ $key }}" maxlength="{{ $maxLength }}" rows="2"></textarea>
+                    @else
+                        <input id="setting-{{ $key }}" type="text" wire:model="values.{{ $key }}" maxlength="{{ $maxLength }}">
+                    @endif
+                    <span class="hint">{{ $help }}</span>
+                    @error("values.{$key}") <span class="err">{{ $message }}</span> @enderror
                 </div>
             @endforeach
-        </div>
-    </div>
+            <div class="end"><button type="submit" class="btn">Save marketplace</button></div>
+        </form>
+    </section>
 
-    <form class="card" wire:submit="save">
-        @foreach (\App\Support\PlatformSettings::DEFINITIONS as $key => [$label, $help, $default, $maxLength])
-            <div class="field">
-                <label for="setting-{{ $key }}">{{ $label }}</label>
-                @if ($maxLength > 100)
-                    <textarea id="setting-{{ $key }}" wire:model="values.{{ $key }}" maxlength="{{ $maxLength }}" rows="2"></textarea>
-                @else
-                    <input id="setting-{{ $key }}" type="text" wire:model="values.{{ $key }}" maxlength="{{ $maxLength }}">
-                @endif
-                <span class="hint">{{ $help }}</span>
-                @error("values.{$key}") <span class="err">{{ $message }}</span> @enderror
+    <section class="ps-section" id="business">
+        <header>
+            <h2>Business &amp; contact</h2>
+            <p>Printed in the footer of every email. The mailing address is required for marketing emails.</p>
+        </header>
+        <form class="card" wire:submit="save">
+            @foreach (['business_mailing_address', 'contact_email', 'contact_phone'] as $key)
+                @php
+                    [$label, $help, , $maxLength] = \App\Support\PlatformSettings::DEFINITIONS[$key];
+                @endphp
+                <div class="field">
+                    <label for="setting-{{ $key }}">{{ $label }}</label>
+                    @if ($maxLength > 100)
+                        <textarea id="setting-{{ $key }}" wire:model="values.{{ $key }}" maxlength="{{ $maxLength }}" rows="2"></textarea>
+                    @else
+                        <input id="setting-{{ $key }}" type="text" wire:model="values.{{ $key }}" maxlength="{{ $maxLength }}">
+                    @endif
+                    <span class="hint">{{ $help }}</span>
+                    @error("values.{$key}") <span class="err">{{ $message }}</span> @enderror
+                </div>
+            @endforeach
+            <div class="end"><button type="submit" class="btn">Save details</button></div>
+        </form>
+    </section>
+
+    <section class="ps-section" id="emails">
+        <header>
+            <h2>Emails</h2>
+            <p>Marketing switch, pausing a type, previews and the send log.</p>
+        </header>
+        @php
+            $marketingOn = \App\Support\PlatformSettings::get(\App\Support\PlatformSettings::MARKETING_EMAILS) === 'on';
+        @endphp
+        <div class="card pay-card">
+            <div class="pay-head">
+                <div>
+                    <h2>Emails</h2>
+                    <p>Every email TruCars sends, the marketing On/Off switch, pausing a type, previews and the send log now live in the Email Centre.</p>
+                </div>
+                <span class="mode-pill {{ $marketingOn ? 'live' : 'demo' }}">Marketing {{ $marketingOn ? 'on' : 'off' }}</span>
             </div>
-        @endforeach
-        <div class="end"><button type="submit" class="btn">Save settings</button></div>
-    </form>
+            <a class="btn-ghost" href="{{ route('admin.emails') }}" wire:navigate style="display:inline-block;margin-top:12px;">Open the Email Centre →</a>
+        </div>
+    </section>
 </div>
