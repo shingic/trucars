@@ -49,6 +49,33 @@ class DiditClient
     }
 
     /**
+     * Didit's full PDF report for a decided session: document images, the
+     * details read from the ID, liveness and face match. Rendered fresh on
+     * each call (slow for media-heavy sessions).
+     *
+     * @throws RequestException
+     */
+    public function reportPdf(string $sessionId): string
+    {
+        return $this->http()->timeout(60)->accept('application/pdf')
+            ->get('/v3/session/' . rawurlencode($sessionId) . '/generate-pdf/')->throw()->body();
+    }
+
+    /**
+     * One of the decision's media files, from its short-lived presigned URL.
+     *
+     * @return array{0: string, 1: string} bytes, content type
+     *
+     * @throws RequestException
+     */
+    public function media(string $presignedUrl): array
+    {
+        $response = Http::timeout(20)->get($presignedUrl)->throw();
+
+        return [$response->body(), $response->header('Content-Type') ?: 'image/jpeg'];
+    }
+
+    /**
      * Is the key accepted? Asks for a session that can't exist: 404 means
      * Didit took the key, 401/403 means it didn't.
      *

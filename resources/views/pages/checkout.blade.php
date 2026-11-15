@@ -2534,7 +2534,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                             @if ($identityDemo)
                                 This site is in demo mode, so no ID scan is needed — tap below to carry on.
                             @else
-                                You'll scan your driver's licence and take a quick selfie with our identity partner, Didit. Your scan is encrypted, never shared with the dealership, and kept only as long as the law requires.
+                                You'll scan your driver's licence and take a quick selfie with our identity partner, Didit. Your scan is encrypted and shared only with the dealership you reserve with, after you pay the deposit, to complete your paperwork.
                             @endif
                         </p>
                     @endif

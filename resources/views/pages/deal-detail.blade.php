@@ -1113,6 +1113,7 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
                             <span>{!! $svg('pin') !!} {{ collect([$deal->street_address, $deal->city, $deal->province, $deal->postal_code])->filter()->implode(', ') }}</span>
                         @endif
                     </div>
+                    @include('partials.identity-photos', ['deal' => $deal, 'mediaUrl' => fn (string $part) => route('dealer.deal.identity', [$deal, $part])])
                 </div>
 
                 <div class="card">

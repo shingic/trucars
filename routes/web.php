@@ -199,6 +199,12 @@ Route::domain($staffDomain)->group(function () {
         ->middleware(EnsureUserIsStaff::class)
         ->name('dealer.deal');
 
+    // The buyer's ID photos / Didit report for this deal (e.g. for Dealertrack).
+    Route::get('/deals/{deal}/id/{part}', [\App\Http\Controllers\IdentityMediaController::class, 'forDealer'])
+        ->whereIn('part', array_keys(\App\Http\Controllers\IdentityMediaController::PARTS))
+        ->middleware(EnsureUserIsStaff::class)
+        ->name('dealer.deal.identity');
+
 
     // The dealership's own inventory — fenced to the signed-in staff member's dealer.
     Route::livewire('/inventory', 'pages::dealer-inventory')
@@ -338,6 +344,12 @@ Route::domain($adminDomain)->group(function () {
         ->whereNumber('deal')
         ->middleware([EnsureCommandCentreAccess::class, 'can:reservations.view'])
         ->name('admin.reservations.show');
+
+    Route::get('/reservations/{deal}/id/{part}', [\App\Http\Controllers\IdentityMediaController::class, 'forCommandCentre'])
+        ->whereNumber('deal')
+        ->whereIn('part', array_keys(\App\Http\Controllers\IdentityMediaController::PARTS))
+        ->middleware([EnsureCommandCentreAccess::class, 'can:reservations.view'])
+        ->name('admin.reservations.identity');
 
     Route::livewire('/settings', 'pages::admin-settings')
         ->middleware([EnsureCommandCentreAccess::class, 'can:settings.manage'])

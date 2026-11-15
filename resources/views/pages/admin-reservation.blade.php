@@ -189,6 +189,7 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
                     @endunless
                 @endif
             </div>
+            @include('partials.identity-photos', ['deal' => $deal, 'mediaUrl' => fn (string $part) => route('admin.reservations.identity', [$deal->id, $part])])
         </div>
 
         @can('reservations.refund')
