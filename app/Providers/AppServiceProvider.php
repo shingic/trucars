@@ -9,6 +9,7 @@ use App\Http\Middleware\TreatNonCustomersAsGuests;
 use App\Models\User;
 use App\Support\Permission;
 use Illuminate\Auth\Middleware\Authorize;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
@@ -38,6 +39,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Email building blocks: <x-email::layout>, <x-email::button>, … (resources/views/mail/components).
+        Blade::anonymousComponentPath(resource_path('views/mail/components'), 'email');
+
         // Livewire component actions arrive at /livewire/update, not the page's
         // route, so route middleware wouldn't run for them on its own. Marking
         // these persistent re-applies them to every action on a page that had

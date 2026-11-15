@@ -46,6 +46,18 @@ final class PlatformSettings
             '',
             200,
         ],
+        'contact_email' => [
+            'Contact email',
+            'Shown in the footer of every email, e.g. hello@trucars.ca. Leave empty to hide it.',
+            '',
+            120,
+        ],
+        'contact_phone' => [
+            'Contact phone',
+            'Shown in the footer of every email. Leave empty to hide it.',
+            '',
+            40,
+        ],
     ];
 
     /**

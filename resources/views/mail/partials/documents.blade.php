@@ -1,15 +1,16 @@
-{{-- A checklist of documents for a buyer email. Takes $documents (DealDocument rows). --}}
-@php($font = "font-family:'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;")
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#FFFFFF; border:1px solid #D5D7DD; border-top:2px solid #071437;">
+{{-- A checklist of documents for a buyer email. Takes $documents (DealDocument rows) and $deal. --}}
+@use('App\Support\Email\Theme', 'T')
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:10px 0 8px;">
+    <tr>
+        <td style="padding:0 0 10px; border-bottom:1px solid {{ T::LINE }}; {!! T::FONT !!} font-size:12px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:{{ T::TEXT }};">Still needed</td>
+    </tr>
     @foreach ($documents as $document)
         <tr>
-            <td style="padding:{{ $loop->first ? '16px' : '10px' }} 20px {{ $loop->last ? '16px' : '0' }};">
-                <p style="margin:0; {{ $font }} font-size:15px; font-weight:700; color:#071437;">{{ $document->name }}</p>
-                <p style="margin:2px 0 0; {{ $font }} font-size:13px; line-height:1.5; color:#4B5675;">{{ $document->status }}</p>
+            <td style="padding:13px 0; border-bottom:1px solid {{ T::LINE }}; {!! T::FONT !!} font-size:15px; line-height:1.5;">
+                <span style="font-weight:700; color:{{ T::INK }};">{{ $document->name }}</span><br>
+                <span style="font-size:14px; color:{{ T::MUTED }};">{{ $document->status }}</span>
             </td>
         </tr>
     @endforeach
 </table>
-<p style="margin:12px 0 0; {{ $font }} font-size:13px; line-height:1.55; color:#78829D;">
-    A PDF or a clear phone photo works. Files go straight to {{ $deal->seller_name }} and are kept private.
-</p>
+<x-email::text small>A PDF or a clear phone photo works. Files go straight to {{ $deal->seller_name }} and are kept private.</x-email::text>
