@@ -38,6 +38,7 @@ class SavedCarMarketingTest extends TestCase
         Mail::fake();
         Carbon::setTestNow(Carbon::parse('2026-11-04 11:00', 'America/Toronto'));
         PlatformSettings::put('business_mailing_address', '100 King St W, Toronto, ON M5X 1A9', null);
+        PlatformSettings::put(PlatformSettings::MARKETING_EMAILS, PlatformSettings::MARKETING_ON, null);
 
         $dealer = $this->makeDealer();
         $this->car = $this->carFor($dealer, 'Outlander', 3299000);
@@ -207,6 +208,39 @@ class SavedCarMarketingTest extends TestCase
 
         $this->actingAs(User::factory()->create(['role' => User::ROLE_INTERNAL_STAFF, 'permissions' => [Permission::CUSTOMERS_VIEW]]));
         Livewire::test('pages::admin-shoppers')->assertForbidden();
+    }
+
+    public function test_the_marketing_switch_stops_everything_and_needs_the_address_to_go_on(): void
+    {
+        $this->save();
+        Carbon::setTestNow(now()->addDays(4));
+
+        PlatformSettings::put(PlatformSettings::MARKETING_EMAILS, PlatformSettings::MARKETING_OFF, null);
+        $this->run_();
+        $this->artisan('saved:send-alerts')->expectsOutputToContain('switched off');
+        $this->artisan('checkouts:send-recovery')->expectsOutputToContain('switched off');
+        Mail::assertNothingSent();
+
+        $this->actingAs(User::factory()->owner()->create());
+        PlatformSettings::put('business_mailing_address', '', null);
+        Livewire::test('pages::admin-settings')->call('setMarketingEmails', 'on')->assertSee('Add the business mailing address');
+        $this->assertSame('off', PlatformSettings::get(PlatformSettings::MARKETING_EMAILS));
+
+        PlatformSettings::put('business_mailing_address', '100 King St W, Toronto, ON M5X 1A9', null);
+        Livewire::test('pages::admin-settings')->call('setMarketingEmails', 'on')->assertSee('Marketing emails on');
+        $this->assertSame('on', PlatformSettings::get(PlatformSettings::MARKETING_EMAILS));
+        $this->assertDatabaseHas('audit_logs', ['action' => 'settings.updated']);
+
+        $this->run_();
+        Mail::assertSent(SavedCarAlertMail::class);
+    }
+
+    public function test_marketing_emails_are_off_until_switched_on(): void
+    {
+        \Illuminate\Support\Facades\DB::table('platform_settings')->where('key', PlatformSettings::MARKETING_EMAILS)->delete();
+        \Illuminate\Support\Facades\Cache::flush();
+
+        $this->assertSame('off', PlatformSettings::get(PlatformSettings::MARKETING_EMAILS));
     }
 
     private function save(): void

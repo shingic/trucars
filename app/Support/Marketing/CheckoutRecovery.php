@@ -44,6 +44,10 @@ class CheckoutRecovery
 
     public static function blockedReason(): ?string
     {
+        if (PlatformSettings::get(PlatformSettings::MARKETING_EMAILS) !== PlatformSettings::MARKETING_ON) {
+            return 'Marketing emails are switched off in Platform settings.';
+        }
+
         if (blank(PlatformSettings::get('business_mailing_address'))) {
             return 'Set the business mailing address in Platform settings. Canada\'s anti-spam law requires it in every marketing email.';
         }

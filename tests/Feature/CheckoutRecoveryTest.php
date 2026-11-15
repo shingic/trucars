@@ -39,6 +39,7 @@ class CheckoutRecoveryTest extends TestCase
         Mail::fake();
         Carbon::setTestNow(Carbon::parse('2026-11-04 11:00', 'America/Toronto'));
         PlatformSettings::put('business_mailing_address', '100 King St W, Toronto, ON M5X 1A9', null);
+        PlatformSettings::put(PlatformSettings::MARKETING_EMAILS, PlatformSettings::MARKETING_ON, null);
 
         $this->car = $this->carFor($this->makeDealer(), 'Outlander', 3299000, 'SUV');
         $this->shopper = User::factory()->create(['name' => 'Sam Shopper', 'email' => 'sam@example.com']);

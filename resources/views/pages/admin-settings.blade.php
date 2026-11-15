@@ -93,6 +93,34 @@ new #[Layout('layouts.dealer')] #[Title('Platform settings')] class extends Comp
             : 'ID checks in demo mode — buyers are verified without showing ID.';
     }
 
+    /**
+     * Marketing emails: checkout reminders and saved-car emails. Off stops
+     * them all at once; on needs the business mailing address (CASL).
+     */
+    public function setMarketingEmails(string $state): void
+    {
+        Gate::authorize(Permission::SETTINGS_MANAGE);
+        abort_unless(in_array($state, [PlatformSettings::MARKETING_ON, PlatformSettings::MARKETING_OFF], true), 422);
+
+        if ($state === PlatformSettings::MARKETING_ON && blank(PlatformSettings::get('business_mailing_address'))) {
+            $this->statusMessage = 'Add the business mailing address below first — Canada’s anti-spam law requires it in every marketing email. Still off.';
+
+            return;
+        }
+
+        $before = PlatformSettings::get(PlatformSettings::MARKETING_EMAILS);
+        if ($before === $state) {
+            return;
+        }
+
+        PlatformSettings::put(PlatformSettings::MARKETING_EMAILS, $state, auth()->id());
+        AuditLog::record('settings.updated', null, [PlatformSettings::MARKETING_EMAILS => $before], [PlatformSettings::MARKETING_EMAILS => $state]);
+
+        $this->statusMessage = $state === PlatformSettings::MARKETING_ON
+            ? 'Marketing emails on — checkout reminders and saved-car emails will start going out.'
+            : 'Marketing emails off — nothing more goes out until you switch them back on.';
+    }
+
     /** @var array<string, array{0: bool, 1: string}> */
     public array $identityConnection = [];
 
@@ -251,6 +279,37 @@ new #[Layout('layouts.dealer')] #[Title('Platform settings')] class extends Comp
                 </div>
             @endforeach
         </div>
+    </div>
+
+    @php
+        $marketingOn = \App\Support\PlatformSettings::get(\App\Support\PlatformSettings::MARKETING_EMAILS) === 'on';
+        $hasAddress = filled(\App\Support\PlatformSettings::get('business_mailing_address'));
+        $marketingSentToday = \App\Models\MarketingEmail::where('sent_at', '>=', now()->startOfDay())->count();
+    @endphp
+    <div class="card pay-card">
+        <div class="pay-head">
+            <div>
+                <h2>Marketing emails</h2>
+                <p>Checkout reminders and saved-car emails (price drops, a saved car gone, “still thinking?”). Receipts and reservation emails always go out.</p>
+            </div>
+            <span class="mode-pill {{ $marketingOn ? 'live' : 'demo' }}">{{ $marketingOn ? 'On' : 'Off' }}</span>
+        </div>
+        <div class="modes">
+            <button type="button" class="mode {{ $marketingOn ? '' : 'on' }}" wire:click="setMarketingEmails('off')"
+                    @if ($marketingOn) wire:confirm="Switch marketing emails off? Nothing more goes out until you switch them back on." @endif>
+                <b>Off</b>
+                <span>No checkout reminders or saved-car emails are sent.</span>
+            </button>
+            <button type="button" class="mode {{ $marketingOn ? 'on' : '' }}" wire:click="setMarketingEmails('on')" @disabled(! $hasAddress)
+                    @unless ($marketingOn) wire:confirm="Switch marketing emails on? Shoppers who are due an email will start getting them within 15 minutes (8am–9pm Toronto time)." @endunless>
+                <b>On</b>
+                <span>Sent automatically to shoppers who haven’t switched them off.</span>
+            </button>
+        </div>
+        @unless ($hasAddress)
+            <div class="keys-note">On needs the business mailing address (below) — it’s printed in every marketing email.</div>
+        @endunless
+        <div class="keys-note" style="margin-top:8px;">{{ $marketingSentToday }} marketing {{ $marketingSentToday === 1 ? 'email' : 'emails' }} sent today.</div>
     </div>
 
     @php

@@ -67,6 +67,15 @@ final class PlatformSettings
     public const IDENTITY_DEMO = 'demo';
     public const IDENTITY_LIVE = 'live';
 
+    /**
+     * Marketing emails (checkout reminders, saved-car emails): on or off.
+     * Off until someone deliberately switches them on. Its own control on the
+     * settings page; see CheckoutRecovery::blockedReason().
+     */
+    public const MARKETING_EMAILS = 'marketing_emails';
+    public const MARKETING_ON = 'on';
+    public const MARKETING_OFF = 'off';
+
     /** When the last signed Didit webhook arrived (set by DiditWebhookController). */
     public const DIDIT_WEBHOOK_LAST_SEEN = 'didit_webhook_last_seen';
 
@@ -76,6 +85,7 @@ final class PlatformSettings
             // Demo until someone deliberately switches to live payments.
             self::PAYMENTS_MODE => (string) config('services.stripe.default_mode', self::PAYMENTS_DEMO),
             self::IDENTITY_MODE => (string) config('services.didit.default_mode', self::IDENTITY_DEMO),
+            self::MARKETING_EMAILS => self::MARKETING_OFF,
             default             => self::DEFINITIONS[$key][2] ?? '',
         };
 
