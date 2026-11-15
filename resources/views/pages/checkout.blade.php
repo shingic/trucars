@@ -242,6 +242,10 @@ new #[Layout('layouts.checkout')] class extends Component {
     #[Locked]
     public ?int $switchFromDraftId = null;
 
+    /** Set when a trade-in was brought over from another checkout: "from your Elantra checkout". */
+    #[Locked]
+    public ?string $tradeBroughtFrom = null;
+
     private function draftKey(): string
     {
         return 'checkout_draft.' . auth()->id() . '.' . $this->vehicle->id;
@@ -488,6 +492,7 @@ new #[Layout('layouts.checkout')] class extends Component {
         // the shopper lands on the condition page and gets a fresh estimate.
         if ($this->wantsTrade === true && filled($this->tradeMake)) {
             $this->tradeSubStep = 'condition';
+            $this->tradeBroughtFrom = $this->carName($previous->vehicle);
         }
         $this->setPurchaseType($this->purchaseType);
 
@@ -547,6 +552,32 @@ new #[Layout('layouts.checkout')] class extends Component {
         $this->wantsTrade = true;
         $this->clearTradeEstimate();
         $this->tradeSubStep = 'condition'; // check nothing's changed, then this dealer values it
+        $this->tradeBroughtFrom = $draft->vehicle ? $this->carName($draft->vehicle) : '';
+        $this->resetErrorBag();
+        $this->dispatch('checkout-step-changed');
+    }
+
+    private function carName(?\App\Models\Vehicle $car): string
+    {
+        return $car ? trim("{$car->model_year} {$car->make} {$car->model}") : '';
+    }
+
+    /** From the "brought over" note: fix the year, model or kilometres first. */
+    public function editTradeDetails(): void
+    {
+        $this->tradeBroughtFrom = null;
+        $this->tradeSubStep = 'details';
+        $this->resetErrorBag();
+        $this->dispatch('checkout-step-changed');
+    }
+
+    /** From the "brought over" note: not this car, back to the trade-in choice. */
+    public function chooseAnotherTrade(): void
+    {
+        $this->tradeBroughtFrom = null;
+        $this->wantsTrade = null;
+        $this->tradeSubStep = 'choice';
+        $this->clearTradeEstimate();
         $this->resetErrorBag();
         $this->dispatch('checkout-step-changed');
     }
@@ -728,6 +759,7 @@ new #[Layout('layouts.checkout')] class extends Component {
             $this->validateTradeCondition();
             $this->buildTradeEstimate();
             $this->tradeSubStep = 'estimate';
+            $this->tradeBroughtFrom = null;
             $this->dispatch('checkout-step-changed');
 
             return false;
@@ -2033,6 +2065,15 @@ new #[Layout('layouts.checkout')] class extends Component {
             .saved-go { width:100%; justify-content:center; padding-top:10px; border-top:1px solid var(--line); }
         }
 
+        /* condition: a trade-in brought over from another checkout */
+        .brought { display:flex; gap:14px; align-items:flex-start; margin:0 0 22px; padding:16px 18px; border-radius:12px; background:var(--primary-soft); border:1px solid var(--primary-line); }
+        .brought .saved-ic { background:#fff; }
+        .brought-body { display:flex; flex-direction:column; gap:4px; min-width:0; }
+        .brought-body b { font-size:16px; color:var(--ink); }
+        .brought-body > span { font-size:14px; line-height:1.5; color:var(--ink-2); }
+        .brought-links { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:4px; font-size:14px; }
+        .brought-links .text-link { font-weight:700; color:var(--primary-press); }
+
         /* estimate: the tax a trade saves */
         .tax-credit { display:flex; gap:14px; align-items:flex-start; margin-top:12px; padding:16px 18px; border-radius:10px; background:#E7F8F1; border:1px solid #B9E8D3; }
         .tax-ic { width:36px; height:36px; flex-shrink:0; border-radius:50%; display:grid; place-items:center; background:#0B7355; color:#fff; font-family:var(--font-display); font-size:19px; font-weight:700; }
@@ -2357,6 +2398,20 @@ new #[Layout('layouts.checkout')] class extends Component {
                     <div class="step-meta">Step 1 · Your trade</div>
                     <h1 class="h1">How's it holding up?</h1>
                     <p class="lede">Honest answers keep your estimate realistic — the dealership confirms everything when they inspect the car.</p>
+                    @if ($tradeBroughtFrom !== null)
+                        <div class="brought">
+                            <span class="saved-ic">{!! $icon('car', 24) !!}</span>
+                            <div class="brought-body">
+                                <b>Your {{ trim($tradeYear . ' ' . $tradeMake . ' ' . $tradeModel) }} came with you</b>
+                                <span>{{ number_format((int) $tradeKilometres) }} km{{ $tradeBroughtFrom !== '' ? ', from your ' . $tradeBroughtFrom . ' checkout' : '' }}. Your answers are filled in below. Check they’re still right, then see this dealership’s estimate.</span>
+                                <span class="brought-links">
+                                    <button type="button" class="text-link" wire:click="editTradeDetails">Update kilometres or details</button>
+                                    <span aria-hidden="true">·</span>
+                                    <button type="button" class="text-link" wire:click="chooseAnotherTrade">Not this car</button>
+                                </span>
+                            </div>
+                        </div>
+                    @endif
 
                     <div class="section-label">{!! $icon('gauge', 24) !!} Condition</div>
                     <div class="field">

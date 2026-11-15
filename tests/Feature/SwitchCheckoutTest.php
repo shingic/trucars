@@ -70,7 +70,13 @@ class SwitchCheckoutTest extends TestCase
             ->assertSet('tradeMake', 'Honda')
             ->assertSet('tradeSubStep', 'condition')       // re-valued for this car's dealer
             ->assertSet('tradeEstimatePointInCents', null)
-            ->assertSet('stepIndex', 0);
+            ->assertSet('stepIndex', 0)
+            ->assertSee('Your 2015 Honda Civic came with you')
+            ->assertSee('from your 2024 Ford Mustang checkout')
+            ->call('chooseAnotherTrade')
+            ->assertSet('tradeSubStep', 'choice')
+            ->assertSet('wantsTrade', null)
+            ->assertDontSee('came with you');
 
         $this->assertSame(CheckoutDraft::STATUS_REPLACED, CheckoutDraft::where('vehicle_id', $this->mustang->id)->value('status'));
         $this->assertSame(CheckoutDraft::STATUS_ACTIVE, CheckoutDraft::where('vehicle_id', $this->gle->id)->value('status'));
