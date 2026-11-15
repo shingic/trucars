@@ -37,6 +37,8 @@
     <p class="idp-note">Demo ID check — no ID photos.</p>
 @elseif ($idCheck && $deal->stage === 'cancelled')
     <p class="idp-note">ID photos are hidden on a cancelled reservation.</p>
+@elseif ($idCheck === null)
+    <p class="idp-note">No ID photos — this reservation was made before live ID checks were switched on.</p>
 @endif
 
 @once
