@@ -113,6 +113,10 @@ new #[Layout('layouts.checkout')] class extends Component {
      */
     private function emailWelcome(User $buyer): void
     {
+        if (\App\Support\Email\Catalogue::paused('welcome')) {
+            return; // paused in the Email Centre
+        }
+
         try {
             Mail::to($buyer->email)->send(new BuyerWelcome($buyer));
         } catch (\Throwable $sendFailure) {

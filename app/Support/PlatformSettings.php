@@ -76,6 +76,9 @@ final class PlatformSettings
     public const MARKETING_ON = 'on';
     public const MARKETING_OFF = 'off';
 
+    /** Email types staff paused in the Email Centre (JSON list of App\Support\Email\Catalogue slugs). */
+    public const EMAIL_TYPES_PAUSED = 'email_types_paused';
+
     /** When the last signed Didit webhook arrived (set by DiditWebhookController). */
     public const DIDIT_WEBHOOK_LAST_SEEN = 'didit_webhook_last_seen';
 

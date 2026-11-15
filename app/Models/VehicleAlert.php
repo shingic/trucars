@@ -40,6 +40,11 @@ class VehicleAlert extends Model
             return 0;
         }
 
+        // Paused by staff in the Email Centre: the alerts stay waiting for when it's back on.
+        if (\App\Support\Email\Catalogue::paused('back_on_sale')) {
+            return 0;
+        }
+
         $sent = 0;
 
         self::query()->where('vehicle_id', $vehicle->id)->whereNull('notified_at')->with('user')->each(function (VehicleAlert $alert) use ($vehicle, &$sent) {

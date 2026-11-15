@@ -21,3 +21,6 @@ Schedule::command('checkouts:send-recovery')->everyFifteenMinutes()->withoutOver
 
 // Emails about saved cars: price drops, a saved car gone, a nudge 3 days after saving.
 Schedule::command('saved:send-alerts')->everyFifteenMinutes()->withoutOverlapping();
+
+// The Email Centre's log keeps 12 months.
+Schedule::command('email-log:prune')->daily();

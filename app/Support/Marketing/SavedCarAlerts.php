@@ -96,8 +96,10 @@ class SavedCarAlerts
 
         $wantsDrops = $user->wantsEmail(EmailTypes::PRICE_DROPS);
         $wantsUpdates = $user->wantsEmail(EmailTypes::SAVED_CAR_UPDATES);
-        $drops = $wantsDrops ? $drops : [];
-        [$gone, $still] = $wantsUpdates ? [$gone, $still] : [[], []];
+        $paused = fn (string $kind) => \App\Support\Email\Catalogue::paused($kind);
+        $drops = $wantsDrops && ! $paused('saved_price_drop') ? $drops : [];
+        $gone = $wantsUpdates && ! $paused('saved_gone') ? $gone : [];
+        $still = $wantsUpdates && ! $paused('saved_still_available') ? $still : [];
 
         if ($drops === [] && $gone === [] && $still === []) {
             return false;

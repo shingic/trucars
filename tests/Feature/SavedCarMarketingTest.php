@@ -223,11 +223,11 @@ class SavedCarMarketingTest extends TestCase
 
         $this->actingAs(User::factory()->owner()->create());
         PlatformSettings::put('business_mailing_address', '', null);
-        Livewire::test('pages::admin-settings')->call('setMarketingEmails', 'on')->assertSee('Add the business mailing address');
+        Livewire::test('pages::admin-emails')->call('setMarketingEmails', 'on')->assertSee('Add the business mailing address');
         $this->assertSame('off', PlatformSettings::get(PlatformSettings::MARKETING_EMAILS));
 
         PlatformSettings::put('business_mailing_address', '100 King St W, Toronto, ON M5X 1A9', null);
-        Livewire::test('pages::admin-settings')->call('setMarketingEmails', 'on')->assertSee('Marketing emails on');
+        Livewire::test('pages::admin-emails')->call('setMarketingEmails', 'on')->assertSee('Marketing emails on');
         $this->assertSame('on', PlatformSettings::get(PlatformSettings::MARKETING_EMAILS));
         $this->assertDatabaseHas('audit_logs', ['action' => 'settings.updated']);
 

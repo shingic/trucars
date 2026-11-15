@@ -110,8 +110,9 @@ class CheckoutRecovery
             return false;
         }
 
-        // Switched this type off on their email preferences: skip it (a later stage of another type may still go).
-        if (! $user->wantsEmail(EmailTypes::forKind($due))) {
+        // Paused by staff in the Email Centre, or switched off on their email
+        // preferences: skip it (a later stage may still go).
+        if (\App\Support\Email\Catalogue::paused($due) || ! $user->wantsEmail(EmailTypes::forKind($due))) {
             return false;
         }
 

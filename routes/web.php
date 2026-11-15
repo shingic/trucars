@@ -351,6 +351,12 @@ Route::domain($adminDomain)->group(function () {
 
     // Shoppers who haven't paid a deposit belong to the platform: they're only
     // ever shown here, never in the dealer portal.
+    // Every email the platform sends: counts, previews, pausing (marketing.view;
+    // changes need settings.manage, checked in the page).
+    Route::livewire('/emails', 'pages::admin-emails')
+        ->middleware([EnsureCommandCentreAccess::class, 'can:marketing.view'])
+        ->name('admin.emails');
+
     // Everyone who signed up, their saved cars and email status (marketing.view).
     Route::livewire('/shoppers', 'pages::admin-shoppers')
         ->middleware([EnsureCommandCentreAccess::class, 'can:marketing.view'])

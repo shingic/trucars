@@ -23,6 +23,12 @@ class RemindOutstandingDocuments extends Command
 
     public function handle(): int
     {
+        if (\App\Support\Email\Catalogue::paused('documents_reminder')) {
+            $this->warn('Paused in the Email Centre.');
+
+            return self::SUCCESS;
+        }
+
         $deals = Deal::withoutGlobalScopes()
             ->whereNotIn('stage', ['cancelled', 'delivered'])
             ->whereHas('documents', fn ($documents) => $documents->outstanding()
