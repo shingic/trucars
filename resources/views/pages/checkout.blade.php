@@ -222,9 +222,10 @@ new #[Layout('layouts.checkout')] class extends Component {
     ];
 
     /**
-     * What follows the shopper to a new car when they switch checkouts: who
-     * they are, their trade-in (re-estimated for the new dealer) and how
-     * they want to pay. Extras, warranty and pickup belong to the old car.
+     * Fields a saved checkout can hand to another car. Switching cars brings
+     * who they are and how they want to pay; the trade fields are only used
+     * when they pick "Your car from last time" (useSavedTrade). Extras,
+     * warranty and pickup belong to the old car.
      */
     private const CARRY_OVER_FIELDS = [
         'wantsTrade',
@@ -480,19 +481,16 @@ new #[Layout('layouts.checkout')] class extends Component {
             return;
         }
 
-        foreach (array_intersect_key((array) $previous->data, array_flip(self::CARRY_OVER_FIELDS)) as $field => $value) {
+        // Who they are and how they want to pay come along. The trade-in
+        // doesn't: they start at "Got a car to trade?", where it's offered
+        // under "Your car from last time" for them to pick, or not.
+        $personal = array_filter(self::CARRY_OVER_FIELDS, fn ($field) => ! str_starts_with($field, 'trade') && $field !== 'wantsTrade');
+        foreach (array_intersect_key((array) $previous->data, array_flip($personal)) as $field => $value) {
             try {
                 $this->{$field} = $value;
             } catch (\TypeError) {
                 // A field whose type changed since it was saved: keep the default.
             }
-        }
-
-        // A trade-in comes along as answers; this car's dealer values it, so
-        // the shopper lands on the condition page and gets a fresh estimate.
-        if ($this->wantsTrade === true && filled($this->tradeMake)) {
-            $this->tradeSubStep = 'condition';
-            $this->tradeBroughtFrom = $this->carName($previous->vehicle);
         }
         $this->setPurchaseType($this->purchaseType);
 
@@ -2262,7 +2260,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                 </a>
                 <h2 id="switch-title">Start a new checkout?</h2>
                 <p>You’re partway through reserving the <b>{{ $previousName }}</b> (you stopped at {{ $previous->stepLabel() }}). Starting with the <b>{{ $newName }}</b> will end that one.</p>
-                <p class="switch-note">Your details and trade-in come with you, so you won’t have to type them again.</p>
+                <p class="switch-note">Your details come with you, so you won’t have to type them again. If you added a trade-in, you can pick it again on the next screen.</p>
                 <div class="switch-cars">
                     @foreach ([[$previousCar, 'Previous vehicle'], [$vehicle, 'New vehicle']] as [$switchCar, $switchLabel])
                         <figure>

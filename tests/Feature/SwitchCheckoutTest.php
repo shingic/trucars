@@ -61,25 +61,35 @@ class SwitchCheckoutTest extends TestCase
     {
         $this->partwayThroughTheMustang();
 
-        Livewire::test('pages::checkout', ['vehicle' => $this->gle])
+        $checkout = Livewire::test('pages::checkout', ['vehicle' => $this->gle])
             ->call('startNewCheckout')
             ->assertDontSee('Start a new checkout?')
             ->assertSet('phone', '(647) 555-0123')
             ->assertSet('city', 'Newmarket')
             ->assertSet('purchaseType', 'cash')
-            ->assertSet('tradeMake', 'Honda')
-            ->assertSet('tradeSubStep', 'condition')       // re-valued for this car's dealer
-            ->assertSet('tradeEstimatePointInCents', null)
+            // The trade-in is theirs to choose: offered, not filled in.
             ->assertSet('stepIndex', 0)
+            ->assertSet('tradeSubStep', 'choice')
+            ->assertSet('wantsTrade', null)
+            ->assertSet('tradeMake', '')
+            ->assertSee('Got a car to trade?')
+            ->assertSee('Your car from last time')
+            ->assertSee('2015 Honda Civic');
+
+        $this->assertSame(CheckoutDraft::STATUS_REPLACED, CheckoutDraft::where('vehicle_id', $this->mustang->id)->value('status'));
+        $this->assertSame(CheckoutDraft::STATUS_ACTIVE, CheckoutDraft::where('vehicle_id', $this->gle->id)->value('status'));
+
+        // Picking it fills it in and explains where it came from.
+        $checkout->call('useSavedTrade', CheckoutDraft::where('vehicle_id', $this->mustang->id)->value('id'))
+            ->assertSet('tradeMake', 'Honda')
+            ->assertSet('tradeSubStep', 'condition')
+            ->assertSet('tradeEstimatePointInCents', null)
             ->assertSee('Your 2015 Honda Civic came with you')
             ->assertSee('from your 2024 Ford Mustang checkout')
             ->call('chooseAnotherTrade')
             ->assertSet('tradeSubStep', 'choice')
             ->assertSet('wantsTrade', null)
             ->assertDontSee('came with you');
-
-        $this->assertSame(CheckoutDraft::STATUS_REPLACED, CheckoutDraft::where('vehicle_id', $this->mustang->id)->value('status'));
-        $this->assertSame(CheckoutDraft::STATUS_ACTIVE, CheckoutDraft::where('vehicle_id', $this->gle->id)->value('status'));
     }
 
     public function test_no_question_when_it_isnt_needed(): void
