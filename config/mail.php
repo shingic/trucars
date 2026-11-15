@@ -115,4 +115,18 @@ return [
         'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'Laravel')),
     ],
 
+    /*
+    | Marketing email (checkout reminders, saved-car and back-on-sale alerts)
+    | has its own sender: Postmark's broadcast stream, so complaints and
+    | unsubscribes there never touch transactional mail, and optionally its
+    | own from-address. See App\Mail\Concerns\SendsAsMarketing.
+    */
+    'marketing' => [
+        'stream' => env('MAIL_MARKETING_STREAM', 'broadcast'),
+        'from' => [
+            'address' => env('MAIL_MARKETING_FROM_ADDRESS'),
+            'name' => env('MAIL_MARKETING_FROM_NAME'),
+        ],
+    ],
+
 ];

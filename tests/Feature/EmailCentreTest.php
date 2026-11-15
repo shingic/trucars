@@ -74,6 +74,25 @@ class EmailCentreTest extends TestCase
         $this->assertSame('Welcome to TruCars', EmailLog::first()->subject);
     }
 
+    public function test_marketing_goes_through_its_own_postmark_stream(): void
+    {
+        config(['mail.default' => 'array', 'mail.marketing.from.address' => 'news@trucars.test', 'mail.marketing.from.name' => 'TruCars Picks']);
+        $buyer = User::factory()->create();
+        $draft = CheckoutDraft::create(['user_id' => $buyer->id, 'vehicle_id' => $this->car->id, 'step_key' => 'plan', 'data' => [], 'last_active_at' => now()]);
+
+        Mail::to($buyer)->send(new CheckoutRecoveryMail($draft->load(['user', 'vehicle']), 'recovery_1d'));
+        Mail::to($buyer)->send(new BuyerWelcome($buyer));
+
+        [$marketing, $welcome] = array_map(fn ($sent) => $sent->getOriginalMessage(), app('mailer')->getSymfonyTransport()->messages()->all());
+
+        $this->assertSame('broadcast', $marketing->getHeaders()->get('X-PM-Message-Stream')?->getBodyAsString());
+        $this->assertSame('recovery_1d', $marketing->getHeaders()->get('X-Tag')?->getBodyAsString());
+        $this->assertSame('news@trucars.test', $marketing->getFrom()[0]->getAddress());
+
+        $this->assertNull($welcome->getHeaders()->get('X-PM-Message-Stream'));
+        $this->assertNotSame('news@trucars.test', $welcome->getFrom()[0]->getAddress());
+    }
+
     public function test_pausing_one_checkout_stage_stops_only_that_stage(): void
     {
         Mail::fake();

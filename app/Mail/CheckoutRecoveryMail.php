@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\URL;
 class CheckoutRecoveryMail extends Mailable
 {
     use Queueable, SerializesModels;
+    use \App\Mail\Concerns\SendsAsMarketing;
 
     public string $firstName;
 
@@ -40,6 +41,7 @@ class CheckoutRecoveryMail extends Mailable
         $car = $draft->vehicle;
         $this->firstName = (string) str((string) $draft->user->name)->trim()->before(' ') ?: 'there';
         $this->carName = trim("{$car->model_year} {$car->make} {$car->model}");
+        $this->sendAsMarketing($kind);
         $this->unsubscribeUrl = URL::signedRoute('marketing.unsubscribe.type', ['user' => $draft->user_id, 'type' => EmailTypes::forKind($kind)]);
         $this->suggestions = match ($kind) {
             'recovery_1d' => Recommendations::similarTo($car, 3, $draft->shopper_location),
@@ -50,7 +52,7 @@ class CheckoutRecoveryMail extends Mailable
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: match ($this->kind) {
+        return new Envelope(from: self::marketingFrom(), subject: match ($this->kind) {
             'recovery_1h' => "Your {$this->carName} is waiting",
             'recovery_1d' => "Still available: {$this->carName}",
             'recovery_3d' => "Hold the {$this->carName} for \$150, fully refundable",

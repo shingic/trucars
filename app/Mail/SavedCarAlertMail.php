@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\URL;
 class SavedCarAlertMail extends Mailable
 {
     use Queueable, SerializesModels;
+    use \App\Mail\Concerns\SendsAsMarketing;
 
     public string $firstName;
 
@@ -41,6 +42,7 @@ class SavedCarAlertMail extends Mailable
         public Collection $still,
         public Collection $suggestions,
     ) {
+        $this->sendAsMarketing($kind);
         $this->firstName = (string) str((string) $user->name)->trim()->before(' ') ?: 'there';
     }
 
@@ -48,7 +50,7 @@ class SavedCarAlertMail extends Mailable
     {
         $name = fn (Vehicle $car) => trim("{$car->model_year} {$car->make} {$car->model}");
 
-        return new Envelope(subject: match ($this->kind) {
+        return new Envelope(from: self::marketingFrom(), subject: match ($this->kind) {
             'saved_price_drop' => $this->drops->count() === 1
                 ? 'Price drop: ' . $name($this->drops->first()['car']) . ' is now ' . $this->drops->first()['car']->display_price
                 : 'Price drops on ' . $this->drops->count() . ' cars you saved',

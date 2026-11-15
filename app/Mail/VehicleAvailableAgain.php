@@ -16,17 +16,20 @@ use Illuminate\Queue\SerializesModels;
 class VehicleAvailableAgain extends Mailable
 {
     use Queueable, SerializesModels;
+    use \App\Mail\Concerns\SendsAsMarketing;
 
     public string $firstName;
 
     public function __construct(public User $buyer, public Vehicle $vehicle)
     {
+        $this->sendAsMarketing('back_on_sale');
         $this->firstName = (string) str($buyer->name)->trim()->before(' ');
     }
 
     public function envelope(): Envelope
     {
         return new Envelope(
+            from: self::marketingFrom(),
             subject: "It's available again — {$this->vehicle->model_year} {$this->vehicle->make} {$this->vehicle->model}",
         );
     }

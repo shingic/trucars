@@ -218,6 +218,7 @@ new #[Layout('layouts.dealer')] #[Title('Email Centre')] class extends Component
                         @if ($email['type'])
                             <span class="meta">{{ $optedOut[$email['type']] ?? 0 }} switched off “{{ \App\Support\Marketing\EmailTypes::label($email['type']) }}”</span>
                         @endif
+                        <span class="meta">Sender: {{ $isMarketing ? 'Marketing (Postmark “' . config('mail.marketing.stream') . '” stream)' : 'Transactional' }}</span>
                         <button type="button" class="em-link" wire:click="showPreview('{{ $slug }}')">Preview</button>
                     </span>
                     <span>{{ $email['audience'] }}</span>
