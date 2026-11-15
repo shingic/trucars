@@ -194,7 +194,7 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
         .chips .ico { width:19px; height:19px; stroke-width:2; }
         .stage figure { margin:0; position:relative; min-height:620px; background:var(--primary-press); }
         .stage .feature-photo { position:absolute; inset:0; overflow:hidden; }
-        .feature-photo > img { width:100%; height:100%; object-fit:cover; object-position:35% center; }
+        .feature-photo > img { width:100%; height:100%; object-fit:cover; object-position:40% center; }
         .feature-cert, .shop-all { display:none; }
         .fact em { display:none; }
         /* dealer photos carry a vendor badge along the bottom edge; the frame trims it off */
@@ -326,7 +326,7 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
             .chips a:first-child .ride .glass, .chips a:first-child .ride .hub { fill:#E9F3FF; }
             .stage figure { min-height:0; margin:8px 16px 0; background:#fff; border-radius:14px; overflow:hidden; box-shadow:0 10px 28px rgba(7,20,55,.10); border:1px solid #EEF0F5; }
             .stage .feature-photo { position:relative; inset:auto; aspect-ratio:4/2.6; background:var(--bg-2); }
-            .feature-photo > img { object-position:70% center; }
+            .feature-photo > img { object-position:55% center; }
             .feature-cert { display:inline-flex; align-items:center; gap:7px; position:absolute; z-index:1; top:12px; left:12px; background:var(--ink); color:#fff; font-family:var(--font-display); font-size:14px; font-weight:600; letter-spacing:.02em; text-transform:uppercase; padding:6px 11px 6px 9px; border-radius:8px; }
             .feature-cert .ico { width:17px; height:17px; stroke-width:2; }
             .pictured { position:static; width:auto; box-shadow:none; border-radius:0; padding:14px 16px 16px 18px; gap:12px; }
@@ -390,15 +390,15 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
              is an illustration of a listing, not a car for sale; it opens the shop. --}}
         <figure class="feature">
             <div class="feature-photo">
-                <img src="{{ asset('images/hero-maxima.jpg') }}" alt="A white Nissan Maxima parked on a sunny street">
+                <img src="{{ asset('images/hero-tacoma.webp') }}" alt="A tan 2026 Toyota Tacoma on a gravel country road at sunset" width="2000" height="1125" fetchpriority="high">
                 <span class="feature-cert">{!! $icon('shield') !!} Certified pre-owned</span>
             </div>
             <a class="pictured" href="{{ route('shop') }}" wire:navigate>
                 <div class="pictured-main">
                     <small>Certified pre-owned</small>
-                    <strong>2018 Nissan Maxima SR</strong>
-                    <div class="meta">48,200 km<i>|</i>Mississauga, ON</div>
-                    <b>$27,495</b>
+                    <strong>2026 Toyota Tacoma</strong>
+                    <div class="meta">6,800 km<i>|</i>Mississauga, ON</div>
+                    <b>$58,995</b>
                 </div>
                 <span class="go"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 6 6 6-6 6"/></svg></span>
             </a>
