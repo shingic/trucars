@@ -92,6 +92,41 @@ class SwitchCheckoutTest extends TestCase
         Livewire::test('pages::checkout', ['vehicle' => $this->gle])->assertDontSee('Start a new checkout?');
     }
 
+    public function test_a_trade_in_from_an_earlier_checkout_is_offered_and_fills_in(): void
+    {
+        $this->partwayThroughTheMustang();
+        CheckoutDraft::where('vehicle_id', $this->mustang->id)->update(['status' => CheckoutDraft::STATUS_REPLACED]);
+
+        $checkout = Livewire::test('pages::checkout', ['vehicle' => $this->gle])
+            ->assertSee('Your car from last time')
+            ->assertSee('2015 Honda Civic')
+            ->assertSee('140,000 km')
+            ->assertSee('A different car');
+
+        $draftId = CheckoutDraft::where('vehicle_id', $this->mustang->id)->value('id');
+        $checkout->call('useSavedTrade', $draftId)
+            ->assertSet('wantsTrade', true)
+            ->assertSet('tradeMake', 'Honda')
+            ->assertSet('tradeKilometres', 140000)
+            ->assertSet('tradeSubStep', 'condition')
+            ->assertSet('tradeEstimatePointInCents', null)
+            ->assertSet('phone', ''); // only the trade-in, nothing else
+
+        // Someone else's draft can't be pulled in.
+        $stranger = User::factory()->create();
+        $theirs = CheckoutDraft::create(['user_id' => $stranger->id, 'vehicle_id' => $this->mustang->id, 'step_key' => 'plan', 'last_active_at' => now(),
+            'data' => ['wantsTrade' => true, 'tradeMake' => 'BMW', 'tradeModel' => 'X5']]);
+        Livewire::test('pages::checkout', ['vehicle' => $this->gle])->call('useSavedTrade', $theirs->id)->assertSet('tradeMake', fn ($make) => $make !== 'BMW');
+    }
+
+    public function test_the_tax_a_trade_saves_by_province(): void
+    {
+        $this->assertSame(76076, \App\Support\TradeTaxCredit::savingsInCents('ON', 585200));
+        $this->assertSame(29260, \App\Support\TradeTaxCredit::savingsInCents('AB', 585200));
+        $this->assertSame(87634, \App\Support\TradeTaxCredit::savingsInCents('QC', 585200));
+        $this->assertSame('HST', \App\Support\TradeTaxCredit::taxName('ON'));
+    }
+
     private function partwayThroughTheMustang(): void
     {
         CheckoutDraft::create([

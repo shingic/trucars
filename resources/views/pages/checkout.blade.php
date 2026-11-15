@@ -495,6 +495,73 @@ new #[Layout('layouts.checkout')] class extends Component {
         session()->forget('checkout_draft.' . auth()->id() . '.' . $previous->vehicle_id);
     }
 
+    /**
+     * Cars this shopper described as a trade-in in an earlier checkout, newest
+     * first, one per car. Offered at the trade step so they pick instead of
+     * typing it all again.
+     *
+     * @return array<int, array{id: int, title: string, kilometres: int, when: string, from: string}>
+     */
+    public function savedTrades(): array
+    {
+        if (! auth()->check() || ! auth()->user()->isCustomer()) {
+            return [];
+        }
+
+        return \App\Models\CheckoutDraft::query()
+            ->where('user_id', auth()->id())->where('vehicle_id', '!=', $this->vehicle->id)
+            ->with('vehicle')->orderByDesc('last_active_at')->limit(20)->get()
+            ->filter(fn ($draft) => ($draft->data['wantsTrade'] ?? null) === true && filled($draft->data['tradeMake'] ?? null) && filled($draft->data['tradeModel'] ?? null))
+            ->unique(fn ($draft) => mb_strtolower(($draft->data['tradeYear'] ?? '') . '|' . $draft->data['tradeMake'] . '|' . $draft->data['tradeModel']))
+            ->take(3)
+            ->map(fn ($draft) => [
+                'id'         => $draft->id,
+                'title'      => trim(($draft->data['tradeYear'] ?? '') . ' ' . $draft->data['tradeMake'] . ' ' . $draft->data['tradeModel'] . ' ' . ($draft->data['tradeTrim'] ?? '')),
+                'kilometres' => (int) ($draft->data['tradeKilometres'] ?? 0),
+                'when'       => $draft->last_active_at?->format('M j') ?? '',
+                'from'       => $draft->vehicle ? trim("{$draft->vehicle->model_year} {$draft->vehicle->make} {$draft->vehicle->model}") : '',
+            ])
+            ->values()->all();
+    }
+
+    /** They picked a car from savedTrades(): fill it in, then confirm its condition. */
+    public function useSavedTrade(int $draftId): void
+    {
+        $draft = collect($this->savedTrades())->firstWhere('id', $draftId) !== null
+            ? \App\Models\CheckoutDraft::where('user_id', auth()->id())->find($draftId)
+            : null;
+
+        if ($draft === null) {
+            return;
+        }
+
+        $tradeFields = array_filter(self::CARRY_OVER_FIELDS, fn ($field) => str_starts_with($field, 'trade'));
+        foreach (array_intersect_key((array) $draft->data, array_flip($tradeFields)) as $field => $value) {
+            try {
+                $this->{$field} = $value;
+            } catch (\TypeError) {
+                // A field whose type changed since it was saved: keep the default.
+            }
+        }
+
+        $this->wantsTrade = true;
+        $this->clearTradeEstimate();
+        $this->tradeSubStep = 'condition'; // check nothing's changed, then this dealer values it
+        $this->resetErrorBag();
+        $this->dispatch('checkout-step-changed');
+    }
+
+    /** The tax the trade saves (on the middle of its estimate), in this dealership's province. */
+    public function tradeTaxSavingsInCents(): int
+    {
+        return \App\Support\TradeTaxCredit::savingsInCents($this->dealerProvince(), (int) $this->tradeEstimatePointInCents);
+    }
+
+    public function dealerProvince(): ?string
+    {
+        return \App\Support\CanadianAddress::normalizeProvince(($this->vehicle->rooftop ?? $this->vehicle->dealer)?->province);
+    }
+
     private function leaveIfReserved(): bool
     {
         if (! $this->vehicle->isReserved()) {
@@ -1947,6 +2014,30 @@ new #[Layout('layouts.checkout')] class extends Component {
         .choice-ic { display:grid; place-items:center; color:var(--ink); flex-shrink:0; }
         .choice.is-on .choice-ic { color:var(--primary); }
         .choice.no-cover { margin-top:16px; }
+
+        /* trade step: cars they entered in an earlier checkout */
+        .saved-trades { margin:0 0 22px; padding:16px; border-radius:12px; background:var(--primary-soft); border:1px solid var(--primary-line); }
+        .saved-head { font-family:var(--font-display); font-size:15px; font-weight:700; text-transform:uppercase; letter-spacing:.02em; color:var(--ink-2); margin:0 0 10px 2px; }
+        .saved-trade { display:flex; align-items:center; gap:14px; width:100%; text-align:left; background:#fff; border:1.5px solid transparent; border-radius:10px; padding:14px 16px; margin-bottom:8px; cursor:pointer; box-shadow:0 2px 8px rgba(7,20,55,.06); transition:border-color .15s ease, box-shadow .15s ease; }
+        .saved-trade:hover { border-color:var(--primary); box-shadow:0 6px 18px rgba(27,132,255,.16); }
+        .saved-trade:disabled { opacity:.6; cursor:wait; }
+        .saved-ic { width:48px; height:48px; flex-shrink:0; border-radius:10px; display:grid; place-items:center; background:var(--primary-soft); color:var(--primary); }
+        .saved-body { flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; }
+        .saved-body b { font-size:16.5px; color:var(--ink); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .saved-body small { font-size:13.5px; color:var(--ink-2); line-height:1.4; }
+        .saved-go { display:inline-flex; align-items:center; gap:6px; flex-shrink:0; font-size:14.5px; font-weight:700; color:var(--primary); white-space:nowrap; }
+        .saved-trade:hover .saved-go { color:var(--primary-press); }
+        .saved-note { margin:6px 2px 0; font-size:13px; color:var(--ink-2); }
+        @media (max-width:560px) {
+            .saved-trade { flex-wrap:wrap; }
+            .saved-go { width:100%; justify-content:center; padding-top:10px; border-top:1px solid var(--line); }
+        }
+
+        /* estimate: the tax a trade saves */
+        .tax-credit { display:flex; gap:14px; align-items:flex-start; margin-top:12px; padding:16px 18px; border-radius:10px; background:#E7F8F1; border:1px solid #B9E8D3; }
+        .tax-ic { width:36px; height:36px; flex-shrink:0; border-radius:50%; display:grid; place-items:center; background:#0B7355; color:#fff; font-family:var(--font-display); font-size:19px; font-weight:700; }
+        .tax-credit b { display:block; font-size:15.5px; color:#0B5C45; margin-bottom:3px; }
+        .tax-credit div > span { font-size:13.5px; line-height:1.5; color:#1B6B53; }
         .section-label .ic-line { color:var(--ink); margin-right:6px; vertical-align:-0.18em; }
         .rev-label .ic-line { color:var(--ink); margin-right:5px; vertical-align:-0.22em; }
         .plan-name .ic-line { display:block; color:var(--ink-3); margin-bottom:8px; }
@@ -2196,10 +2287,28 @@ new #[Layout('layouts.checkout')] class extends Component {
                     <h1 class="h1">Got a car to trade?</h1>
                     <p class="lede">Add it now and roll its value into your deal — lowering your price and the tax you pay. We'll give you a preliminary estimate today; the dealership confirms the final number after inspecting it.</p>
 
+                    @php $savedTrades = $this->savedTrades(); @endphp
+                    @if ($savedTrades)
+                        <div class="saved-trades">
+                            <div class="saved-head">Your car{{ count($savedTrades) > 1 ? 's' : '' }} from last time</div>
+                            @foreach ($savedTrades as $saved)
+                                <button type="button" class="saved-trade" wire:click="useSavedTrade({{ $saved['id'] }})" wire:loading.attr="disabled" wire:target="useSavedTrade">
+                                    <span class="saved-ic">{!! $icon('car', 26) !!}</span>
+                                    <span class="saved-body">
+                                        <b>{{ $saved['title'] }}</b>
+                                        <small>{{ number_format($saved['kilometres']) . ' km' . ($saved['from'] ? ' · added ' . $saved['when'] . ' with the ' . $saved['from'] : '') }}</small>
+                                    </span>
+                                    <span class="saved-go">Use this car <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+                                </button>
+                            @endforeach
+                            <p class="saved-note">You’ll check its condition and kilometres, then this dealership gives you its own estimate.</p>
+                        </div>
+                    @endif
+
                     <button type="button" class="choice {{ $wantsTrade === true ? 'is-on' : '' }}" wire:click="setWantsTrade(true)">
                         <span class="radio"></span>
                         <span class="choice-ic">{!! $icon('trade', 30) !!}</span>
-                        <div><div class="choice-title">Yes, value my car</div><div class="choice-sub">A few quick questions — preliminary estimate in about a minute</div></div>
+                        <div><div class="choice-title">{{ $savedTrades ? 'A different car' : 'Yes, value my car' }}</div><div class="choice-sub">A few quick questions — preliminary estimate in about a minute</div></div>
                     </button>
                     <button type="button" class="choice {{ $wantsTrade === false ? 'is-on' : '' }}" wire:click="setWantsTrade(false)">
                         <span class="radio"></span>
@@ -2364,6 +2473,20 @@ new #[Layout('layouts.checkout')] class extends Component {
                             </div>
                         @endforeach
                     </div>
+
+                    @if ($this->tradeTaxSavingsInCents() > 0)
+                        @php
+                            $taxProvince = $this->dealerProvince() ?? 'ON';
+                            $taxName = \App\Support\TradeTaxCredit::taxName($taxProvince);
+                        @endphp
+                        <div class="tax-credit">
+                            <span class="tax-ic">%</span>
+                            <div>
+                                <b>Trading in also saves you about {{ $this->centsAsMoney($this->tradeTaxSavingsInCents()) }} in {{ $taxName }}</b>
+                                <span>{{ \App\Support\CanadianAddress::PROVINCES[$taxProvince] ?? 'Your province' }} charges {{ $taxName }} on the price minus your trade-in, so it comes off the tax you pay at the dealership. Based on the middle of your range.</span>
+                            </div>
+                        </div>
+                    @endif
 
                     @if ($this->tradeLienInCents() > 0)
                         <div class="card" style="padding:18px 20px;margin-top:12px;background:var(--primary-soft);border-color:var(--primary-line);">
