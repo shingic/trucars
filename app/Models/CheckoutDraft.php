@@ -18,6 +18,7 @@ class CheckoutDraft extends Model
     public const STATUS_ACTIVE = 'active';
     public const STATUS_RESERVED = 'reserved';   // they paid: it's a deal now
     public const STATUS_CAR_GONE = 'car_gone';   // someone else reserved the car
+    public const STATUS_REPLACED = 'replaced';   // they started a checkout on another car instead
 
     /** Checkout step keys, as the buyer saw them. */
     public const STEP_LABELS = [

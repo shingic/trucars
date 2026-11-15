@@ -28,6 +28,7 @@ new #[Layout('layouts.dealer')] #[Title('Unfinished checkouts')] class extends C
         CheckoutDraft::STATUS_ACTIVE   => 'Following up',
         CheckoutDraft::STATUS_CAR_GONE => 'Car gone',
         CheckoutDraft::STATUS_RESERVED => 'Reserved',
+        CheckoutDraft::STATUS_REPLACED => 'Switched cars',
     ];
 
     public string $status = CheckoutDraft::STATUS_ACTIVE;

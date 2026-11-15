@@ -221,6 +221,27 @@ new #[Layout('layouts.checkout')] class extends Component {
         'handoverMode', 'pickupSpotIndex', 'handoverDate', 'handoverTimeSlot',
     ];
 
+    /**
+     * What follows the shopper to a new car when they switch checkouts: who
+     * they are, their trade-in (re-estimated for the new dealer) and how
+     * they want to pay. Extras, warranty and pickup belong to the old car.
+     */
+    private const CARRY_OVER_FIELDS = [
+        'wantsTrade',
+        'tradeYear', 'tradeMake', 'tradeModel', 'tradeTrim', 'tradeKilometres', 'tradeExteriorColour', 'tradeKeyCount', 'tradeFeatures',
+        'tradeExteriorCondition', 'tradeInteriorCondition', 'tradeTireCondition', 'tradeMechanicalCondition', 'tradeAccidentHistory',
+        'tradeOwnerCount', 'tradeTitleStatus', 'tradeWasSmokedIn', 'tradeCarriedPets', 'tradeHasAftermarketMods', 'tradeLienOwing', 'tradeNotes',
+        'firstName', 'lastName', 'email', 'phone', 'streetAddress', 'city', 'province', 'postalCode',
+        'purchaseType', 'termMonths', 'downPayment',
+    ];
+
+    /**
+     * Set while asking "start a new checkout?": the shopper is partway
+     * through another car. Nothing is saved for this car until they choose.
+     */
+    #[Locked]
+    public ?int $switchFromDraftId = null;
+
     private function draftKey(): string
     {
         return 'checkout_draft.' . auth()->id() . '.' . $this->vehicle->id;
@@ -234,7 +255,7 @@ new #[Layout('layouts.checkout')] class extends Component {
      */
     public function dehydrate(): void
     {
-        if (! auth()->check() || ! auth()->user()->isCustomer() || $this->dealReference !== null) {
+        if (! auth()->check() || ! auth()->user()->isCustomer() || $this->dealReference !== null || $this->switchFromDraftId !== null) {
             return;
         }
 
@@ -331,6 +352,9 @@ new #[Layout('layouts.checkout')] class extends Component {
         $this->handoverDate = $this->handoverDateOptions()[0]['date'] ?? null;
         $this->keepTimeSlotAvailable();
 
+        // Partway through another car? Ask before starting this one.
+        $this->switchFromDraftId = $this->otherCheckout()?->id;
+
         // Came back after a refresh: pick up where they left off.
         $this->restoreDraft();
         $this->syncIdentity();
@@ -402,6 +426,75 @@ new #[Layout('layouts.checkout')] class extends Component {
      * tell them now, at the next step, not at the payment. Their own
      * reservation sends them to My Garage instead.
      */
+    /**
+     * The shopper's unfinished checkout on another car, if this car is a new
+     * start for them. Only one they actually got going on (past the first
+     * question) and whose car can still be bought.
+     */
+    private function otherCheckout(): ?\App\Models\CheckoutDraft
+    {
+        if (! auth()->user()->isCustomer()) {
+            return null;
+        }
+
+        $startedThisCar = session()->has($this->draftKey())
+            || \App\Models\CheckoutDraft::where('user_id', auth()->id())->where('vehicle_id', $this->vehicle->id)->active()->exists();
+
+        if ($startedThisCar) {
+            return null;
+        }
+
+        return \App\Models\CheckoutDraft::query()
+            ->where('user_id', auth()->id())->where('vehicle_id', '!=', $this->vehicle->id)->active()
+            ->with('vehicle')->orderByDesc('last_active_at')->limit(5)->get()
+            ->first(fn ($draft) => $draft->vehicle !== null && $draft->vehicle->isListed() && ! $draft->vehicle->isReserved()
+                && ((int) ($draft->data['stepIndex'] ?? 0) > 0 || ($draft->data['tradeSubStep'] ?? 'choice') !== 'choice'));
+    }
+
+    /** The checkout being asked about, for the "start a new checkout?" box. */
+    public function previousCheckout(): ?\App\Models\CheckoutDraft
+    {
+        return $this->switchFromDraftId === null ? null
+            : \App\Models\CheckoutDraft::with('vehicle')->where('user_id', auth()->id())->find($this->switchFromDraftId);
+    }
+
+    /** "Keep previous": back to the other car, where they left off. */
+    public function keepPreviousCheckout(): void
+    {
+        $previous = $this->previousCheckout();
+
+        $this->redirectRoute('checkout', ['vehicle' => $previous?->vehicle_id ?? $this->vehicle->id], navigate: true);
+    }
+
+    /** "Start new checkout": the other one ends, and their details come along. */
+    public function startNewCheckout(): void
+    {
+        $previous = $this->previousCheckout();
+        $this->switchFromDraftId = null;
+
+        if ($previous === null || $previous->status !== \App\Models\CheckoutDraft::STATUS_ACTIVE) {
+            return;
+        }
+
+        foreach (array_intersect_key((array) $previous->data, array_flip(self::CARRY_OVER_FIELDS)) as $field => $value) {
+            try {
+                $this->{$field} = $value;
+            } catch (\TypeError) {
+                // A field whose type changed since it was saved: keep the default.
+            }
+        }
+
+        // A trade-in comes along as answers; this car's dealer values it, so
+        // the shopper lands on the condition page and gets a fresh estimate.
+        if ($this->wantsTrade === true && filled($this->tradeMake)) {
+            $this->tradeSubStep = 'condition';
+        }
+        $this->setPurchaseType($this->purchaseType);
+
+        $previous->update(['status' => \App\Models\CheckoutDraft::STATUS_REPLACED]);
+        session()->forget('checkout_draft.' . auth()->id() . '.' . $previous->vehicle_id);
+    }
+
     private function leaveIfReserved(): bool
     {
         if (! $this->vehicle->isReserved()) {
@@ -420,6 +513,10 @@ new #[Layout('layouts.checkout')] class extends Component {
 
     public function goNext(): void
     {
+        if ($this->switchFromDraftId !== null) {
+            return;
+        }
+
         if ($this->stepKey() !== 'done' && $this->dealReference === null && $this->leaveIfReserved()) {
             return;
         }
@@ -1784,6 +1881,35 @@ new #[Layout('layouts.checkout')] class extends Component {
 
 @push('styles')
     <style>
+        .switch-scrim { position:fixed; inset:0; z-index:95; background:rgba(7,20,55,.62); display:flex; align-items:center; justify-content:center; padding:16px; }
+        .switch { position:relative; width:100%; max-width:620px; max-height:calc(100vh - 32px); overflow-y:auto; background:#fff; border-radius:14px; padding:30px 30px 26px; box-shadow:0 24px 60px rgba(7,20,55,.28); }
+        .switch h2 { font-family:var(--font-display); font-size:30px; font-weight:700; text-transform:uppercase; line-height:1; color:var(--ink); margin:0 40px 14px 0; }
+        .switch p { font-size:16px; line-height:1.55; color:var(--ink-2); margin:0 0 10px; }
+        .switch p b { color:var(--ink); }
+        .switch-note { font-size:14.5px !important; color:var(--ink-3) !important; }
+        .switch-x { position:absolute; top:16px; right:16px; width:38px; height:38px; display:grid; place-items:center; border-radius:8px; color:var(--ink-2); }
+        .switch-x:hover { background:var(--bg-2); color:var(--ink); }
+        .switch-cars { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin:20px 0 22px; }
+        .switch-cars figure { margin:0; }
+        .switch-photo { aspect-ratio:4/3; border-radius:10px; overflow:hidden; background:var(--bg-2); }
+        .switch-photo img { width:100%; height:107%; object-fit:cover; object-position:center 40%; display:block; }
+        .switch-cars figcaption { margin-top:8px; font-size:15px; font-weight:700; color:var(--ink); line-height:1.3; }
+        .switch-cars figcaption small { display:block; font-size:12.5px; font-weight:600; letter-spacing:.04em; text-transform:uppercase; color:var(--ink-3); margin-bottom:2px; }
+        .switch-actions { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+        .switch-actions button { height:52px; border-radius:10px; font-size:16px; font-weight:700; cursor:pointer; }
+        .switch-keep { background:#fff; border:1.5px solid var(--line-strong); color:var(--ink); }
+        .switch-keep:hover { border-color:var(--ink); }
+        .switch-new { background:var(--primary); border:1.5px solid var(--primary); color:#fff; }
+        .switch-new:hover { background:var(--primary-press); border-color:var(--primary-press); }
+        .switch-actions button:disabled { opacity:.6; cursor:wait; }
+        @media (max-width:520px) {
+            .switch-scrim { align-items:flex-end; padding:0; }
+            .switch { border-radius:14px 14px 0 0; padding:24px 16px calc(20px + env(safe-area-inset-bottom)); max-height:92vh; }
+            .switch h2 { font-size:25px; }
+            .switch-cars { gap:10px; }
+            .switch-actions { grid-template-columns:1fr; }
+            .switch-new { order:-1; }
+        }
         [x-cloak] { display:none !important; }
         .field-error { color:#D81A48; font-size:13px; font-weight:600; margin:7px 0 0; }
 
@@ -1991,6 +2117,39 @@ new #[Layout('layouts.checkout')] class extends Component {
 @endpush
 
 <div id="checkout-app" x-data @checkout-step-changed.window="window.scrollTo({ top: 0, behavior: 'smooth' })">
+    @if ($previous = $this->previousCheckout())
+        @php
+            $previousCar = $previous->vehicle;
+            $previousName = trim("{$previousCar->model_year} {$previousCar->make} {$previousCar->model}" . ($previousCar->trim ? " {$previousCar->trim}" : ''));
+            $newName = trim("{$vehicle->model_year} {$vehicle->make} {$vehicle->model}" . ($vehicle->trim ? " {$vehicle->trim}" : ''));
+        @endphp
+        <div class="switch-scrim" x-data="{ init() { document.documentElement.style.overflow = 'hidden' }, destroy() { document.documentElement.style.overflow = '' } }">
+            <div class="switch" role="dialog" aria-modal="true" aria-labelledby="switch-title">
+                <a href="{{ url('/cars/' . $vehicle->id) }}" wire:navigate class="switch-x" aria-label="Back to the car">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                </a>
+                <h2 id="switch-title">Start a new checkout?</h2>
+                <p>You’re partway through reserving the <b>{{ $previousName }}</b> (you stopped at {{ $previous->stepLabel() }}). Starting with the <b>{{ $newName }}</b> will end that one.</p>
+                <p class="switch-note">Your details and trade-in come with you, so you won’t have to type them again.</p>
+                <div class="switch-cars">
+                    @foreach ([[$previousCar, 'Previous vehicle'], [$vehicle, 'New vehicle']] as [$switchCar, $switchLabel])
+                        <figure>
+                            <div class="switch-photo">
+                                @if ($switchCar->primary_photo_url)
+                                    <img src="{{ $switchCar->primary_photo_url }}" alt="">
+                                @endif
+                            </div>
+                            <figcaption><small>{{ $switchLabel }}</small>{{ $switchCar->model_year }} {{ $switchCar->make }} {{ $switchCar->model }}</figcaption>
+                        </figure>
+                    @endforeach
+                </div>
+                <div class="switch-actions">
+                    <button type="button" class="switch-keep" wire:click="keepPreviousCheckout" wire:loading.attr="disabled">Keep previous</button>
+                    <button type="button" class="switch-new" wire:click="startNewCheckout" wire:loading.attr="disabled">Start new checkout</button>
+                </div>
+            </div>
+        </div>
+    @endif
     <header class="top">
         <div class="top-inner">
             <a href="{{ $this->exitUrl() }}" class="brand"><span class="wordmark">Tru<b>Cars</b></span></a>
