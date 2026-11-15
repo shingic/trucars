@@ -28,6 +28,7 @@ new class extends Component {
             // Open floor: only cars that are actually live (published, active
             // dealer), same rule as checkout. Not browsable by guessing an id.
             abort_unless($vehicle->isListed(), 404);
+            $this->resumeTracking();
 
             return;
         }
@@ -50,6 +51,7 @@ new class extends Component {
 
         $this->campaignToken = $token;
         View::share('referredCampaign', $campaign);
+        $this->resumeTracking();
     }
 
     /**
@@ -382,6 +384,91 @@ new class extends Component {
         $user = auth()->user();
 
         return $user !== null && \App\Models\VehicleAlert::where(['user_id' => $user->id, 'vehicle_id' => $this->vehicle->id])->whereNull('notified_at')->exists();
+    }
+
+    /** Session key: a guest tapped "Track price" and was sent to sign in. */
+    private const TRACK_AFTER_LOGIN = 'track_price_after_login';
+
+    /**
+     * "Track price": save the car and make sure price-drop emails are on, so
+     * a drop of $250 or more from today's price is emailed (SavedCarAlerts).
+     * Guests sign in first and come back to the car already tracked. A second
+     * tap stops tracking, which unsaves it: tracking is saving, with the
+     * reason spelled out.
+     */
+    public function toggleTrackPrice(): void
+    {
+        $user = auth()->user();
+
+        if ($user !== null && $user->dealer_id !== null) {
+            return;
+        }
+
+        if ($user === null) {
+            session()->put(self::TRACK_AFTER_LOGIN, $this->vehicle->id);
+            session()->put('url.intended', $this->campaignToken !== null
+                ? route('campaign.vehicle', ['token' => $this->campaignToken, 'vehicle' => $this->vehicle->id])
+                : url('/cars/' . $this->vehicle->id));
+            $this->redirect(route('buyer.login'));
+
+            return;
+        }
+
+        if ($this->isTrackingPrice()) {
+            $user->favouriteVehicles()->detach($this->vehicle->id);
+        } else {
+            $this->track($user);
+        }
+
+        $this->resolvedIsSaved = null;
+        $this->dispatch('favourites-updated', count: $user->favouriteVehicles()->count());
+    }
+
+    /** Saved, and price-drop emails are on for them. */
+    public function isTrackingPrice(): bool
+    {
+        $user = auth()->user();
+
+        return $this->isSaved() && $user->wantsEmail(\App\Support\Marketing\EmailTypes::PRICE_DROPS);
+    }
+
+    /** Back from signing in after tapping "Track price" as a guest. */
+    private function resumeTracking(): void
+    {
+        $user = auth()->user();
+
+        if ($user !== null && $user->dealer_id === null && session()->pull(self::TRACK_AFTER_LOGIN) === $this->vehicle->id) {
+            $this->track($user);
+        }
+    }
+
+    private function track(\App\Models\User $user): void
+    {
+        $price = $this->vehicle->price_in_cents;
+
+        // Today's price is what a drop is measured from.
+        if ($user->hasFavourited($this->vehicle)) {
+            \Illuminate\Support\Facades\DB::table('favourites')->where(['user_id' => $user->id, 'vehicle_id' => $this->vehicle->id])->update(['alerted_price_in_cents' => $price]);
+        } else {
+            $user->favouriteVehicles()->attach($this->vehicle->id, ['alerted_price_in_cents' => $price]);
+        }
+
+        // Asking for price alerts is asking for this one type. Someone who had
+        // unsubscribed from everything gets price drops back, and nothing else.
+        if ($user->marketing_unsubscribed_at !== null) {
+            $user->email_preferences = ['off' => array_values(array_diff(array_keys(\App\Support\Marketing\EmailTypes::ALL), [\App\Support\Marketing\EmailTypes::PRICE_DROPS]))];
+            $user->marketing_unsubscribed_at = null;
+        } else {
+            $user->setEmailType(\App\Support\Marketing\EmailTypes::PRICE_DROPS, true);
+        }
+
+        if ($user->isDirty()) {
+            $before = ['off' => (array) ($user->getOriginal('email_preferences')['off'] ?? []), 'all_off' => $user->getOriginal('marketing_unsubscribed_at') !== null];
+            $user->save();
+            \App\Models\AuditLog::record('marketing.preferences_updated', $user, $before, ['off' => $user->emailTypesOff(), 'all_off' => false, 'via' => 'track_price', 'vehicle_id' => $this->vehicle->id]);
+        }
+
+        $this->resolvedIsSaved = true;
     }
 
     public function favouriteIsVisible(): bool
@@ -758,7 +845,24 @@ new class extends Component {
             <div class="buy-card">
                 <div class="buy-top">
                     <div class="buy-pricelabel">TruCars price</div>
-                    <div class="buy-price">{{ $vehicle->display_price }}</div>
+                    <div class="buy-price-row">
+                        <div class="buy-price">{{ $vehicle->display_price }}</div>
+                        @if ($this->favouriteIsVisible() && ! $reserved)
+                            @php $tracking = $this->isTrackingPrice(); @endphp
+                            <button type="button" class="track-btn {{ $tracking ? 'on' : '' }}" wire:click="toggleTrackPrice"
+                                    wire:loading.attr="disabled" wire:target="toggleTrackPrice"
+                                    aria-pressed="{{ $tracking ? 'true' : 'false' }}"
+                                    title="{{ $tracking ? 'Tap to stop tracking this car' : 'Email me if the price drops' }}">
+                                @if ($tracking)
+                                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                                    Tracking price
+                                @else
+                                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                                    Track price
+                                @endif
+                            </button>
+                        @endif
+                    </div>
                     <div class="price-disclosure">
                         @if ($this->distanceKm() !== null)
                             <a class="pd-row pd-dist" href="#distance">
@@ -822,6 +926,7 @@ new class extends Component {
                     @if ($this->favouriteIsVisible())
                         <button type="button"
                                 class="btn btn-save"
+                                wire:key="save-{{ $this->isSaved() ? 'on' : 'off' }}"
                                 x-data="{ saved: @js($this->isSaved()) }"
                                 :class="{ 'is-saved': saved }"
                                 x-on:click="saved = !saved; $wire.toggleFavourite()"
@@ -852,6 +957,7 @@ new class extends Component {
             @if ($this->favouriteIsVisible())
                 <button type="button"
                         class="sb-save"
+                        wire:key="sb-save-{{ $this->isSaved() ? 'on' : 'off' }}"
                         x-data="{ saved: @js($this->isSaved()) }"
                         :class="{ 'is-saved': saved }"
                         x-on:click="saved = !saved; $wire.toggleFavourite()"
@@ -1046,6 +1152,12 @@ new class extends Component {
         .buy-top { padding:18px 20px 16px; }
         .buy-pricelabel { font-family:var(--font-display); font-size:16px; font-weight:600; text-transform:uppercase; color:var(--ink-2); }
         .buy-price { font-family:var(--font-display); font-size:54px; font-weight:700; line-height:1; margin-top:2px; }
+        .buy-price-row { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+        .track-btn { display:inline-flex; align-items:center; gap:7px; flex-shrink:0; height:42px; padding:0 16px; border:1.5px solid var(--ink); border-radius:999px; background:#fff; color:var(--ink); font-size:15px; font-weight:700; cursor:pointer; transition:background .15s ease, color .15s ease; }
+        .track-btn:hover { background:var(--ink); color:#fff; }
+        .track-btn.on { border-color:#0B7355; color:#0B7355; }
+        .track-btn.on:hover { background:#E7F8F1; color:#0B7355; }
+        .track-btn:disabled { opacity:.6; cursor:wait; }
         .price-disclosure { margin-top:14px; border-top:1px dashed var(--line-strong); }
         .pd-row { display:flex; align-items:center; gap:8px; font-size:14.5px; color:var(--ink); font-weight:500; padding:10px 0; border-bottom:1px dashed var(--line-strong); }
         .pd-row svg { color:var(--ink-3); flex-shrink:0; }
