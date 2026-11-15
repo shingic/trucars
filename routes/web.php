@@ -76,6 +76,31 @@ Route::domain($publicDomain)->middleware(TreatNonCustomersAsGuests::class)->grou
     Route::livewire('/cars/{vehicle}/reserve', 'pages::checkout')
         ->name('checkout');
 
+    // Back from Didit's hosted ID check: read the decision, return to checkout.
+    Route::get('/cars/{vehicle}/reserve/identity', function (\App\Models\Vehicle $vehicle, \Illuminate\Http\Request $request, \App\Support\IdentityChecks $checks) {
+        $verification = \App\Models\IdentityVerification::query()
+            ->where('user_id', $request->user()->id)
+            ->where('provider', \App\Models\IdentityVerification::PROVIDER_DIDIT)
+            ->when($request->filled('verificationSessionId'), fn ($query) => $query->where('session_id', (string) $request->query('verificationSessionId')))
+            ->latest('id')
+            ->first();
+
+        if ($verification !== null) {
+            try {
+                $checks->refresh($verification);
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Didit decision fetch failed', ['session_id' => $verification->session_id, 'error' => $e->getMessage()]);
+            }
+        }
+
+        return redirect()->route('checkout', $vehicle);
+    })->middleware('auth')->name('identity.return');
+
+    // Didit's ID-check status changes (signed; no session or CSRF).
+    Route::post('/didit/webhook', \App\Http\Controllers\DiditWebhookController::class)
+        ->withoutMiddleware(TreatNonCustomersAsGuests::class)
+        ->name('didit.webhook');
+
     // Stripe's events for the $150 deposit (signed; no session or CSRF).
     Route::post('/stripe/webhook', \App\Http\Controllers\StripeWebhookController::class)
         ->withoutMiddleware(TreatNonCustomersAsGuests::class)

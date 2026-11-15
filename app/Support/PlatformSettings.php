@@ -59,11 +59,23 @@ final class PlatformSettings
     /** When the last signed Stripe webhook arrived (set by StripeWebhookController). */
     public const STRIPE_WEBHOOK_LAST_SEEN = 'stripe_webhook_last_seen';
 
+    /**
+     * ID checks at checkout: demo (approved on the spot, no ID) or live
+     * (Didit). Its own control on the settings page; see IdentityChecks::demo().
+     */
+    public const IDENTITY_MODE = 'identity_mode';
+    public const IDENTITY_DEMO = 'demo';
+    public const IDENTITY_LIVE = 'live';
+
+    /** When the last signed Didit webhook arrived (set by DiditWebhookController). */
+    public const DIDIT_WEBHOOK_LAST_SEEN = 'didit_webhook_last_seen';
+
     public static function get(string $key): string
     {
         $default = match ($key) {
             // Demo until someone deliberately switches to live payments.
             self::PAYMENTS_MODE => (string) config('services.stripe.default_mode', self::PAYMENTS_DEMO),
+            self::IDENTITY_MODE => (string) config('services.didit.default_mode', self::IDENTITY_DEMO),
             default             => self::DEFINITIONS[$key][2] ?? '',
         };
 

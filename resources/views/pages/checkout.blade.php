@@ -4,6 +4,7 @@ use App\Mail\ReservationConfirmed;
 use App\Mail\ReservationSubmitted;
 use App\Models\Deal;
 use App\Models\DepositPayment;
+use App\Models\IdentityVerification;
 use App\Models\ProtectionProduct;
 use App\Models\User;
 use App\Models\Vehicle;
@@ -12,6 +13,7 @@ use App\Services\Valuation\TradeValuation;
 use App\Support\AddressLookup;
 use App\Support\CampaignAttribution;
 use App\Support\Deposits;
+use App\Support\IdentityChecks;
 use App\Support\PaymentEstimate;
 use Livewire\Component;
 use Livewire\Attributes\Computed;
@@ -178,7 +180,15 @@ new #[Layout('layouts.checkout')] class extends Component {
     ];
 
     // ----- Identity & reservation -----
+    // Always read from the buyer's ID check on the server (syncIdentity), never
+    // kept in the draft or taken from the browser.
+    #[Locked]
     public bool $identityVerified = false;
+    #[Locked]
+    public ?string $identityStatus = null;   // null = not started; else Didit's status
+    #[Locked]
+    public bool $identityDemo = true;
+    public string $identityError = '';
     public ?string $dealReference = null;
 
     // ----- The $150 deposit (Stripe) -----
@@ -208,7 +218,7 @@ new #[Layout('layouts.checkout')] class extends Component {
         'tradeEstimateProviderKey', 'tradeEstimatedAt',
         'firstName', 'lastName', 'email', 'phone', 'streetAddress', 'city', 'province', 'postalCode',
         'purchaseType', 'termMonths', 'downPayment', 'warrantyPlan', 'wantsGap', 'selectedExtras',
-        'handoverMode', 'pickupSpotIndex', 'handoverDate', 'handoverTimeSlot', 'identityVerified',
+        'handoverMode', 'pickupSpotIndex', 'handoverDate', 'handoverTimeSlot',
     ];
 
     private function draftKey(): string
@@ -323,6 +333,7 @@ new #[Layout('layouts.checkout')] class extends Component {
 
         // Came back after a refresh: pick up where they left off.
         $this->restoreDraft();
+        $this->syncIdentity();
     }
 
     /* ---------------------------------------------------------------------
@@ -449,6 +460,13 @@ new #[Layout('layouts.checkout')] class extends Component {
         if (Deposits::vehicleIsTaken($this->vehicle)) {
             $this->paymentClientSecret = null;
             $this->paymentError = 'Sorry — this car was just reserved by someone else. You haven’t been charged.';
+
+            return;
+        }
+
+        if ($this->identityForReservation() === null) {
+            $this->paymentClientSecret = null;
+            $this->paymentError = 'We still need to confirm your ID before you pay. Go back to the ID check step.';
 
             return;
         }
@@ -740,10 +758,78 @@ new #[Layout('layouts.checkout')] class extends Component {
         return ($this->extrasCatalog[$extraKey]['kind'] ?? null) === ProtectionProduct::KIND_GAP;
     }
 
-    public function verifyIdentity(): void
+    /** Where the buyer's ID check stands, from the server's record. */
+    private function syncIdentity(): ?IdentityVerification
     {
-        // Stub for the identity partner (Persona / Paays — vendor still to be chosen).
-        $this->identityVerified = true;
+        $checks = app(IdentityChecks::class);
+        $verification = auth()->check() ? $checks->current(auth()->user()) : null;
+
+        $this->identityDemo = $checks->demo();
+        $this->identityStatus = $verification?->status;
+        $this->identityVerified = $verification?->passes() ?? false;
+
+        return $verification;
+    }
+
+    /**
+     * Demo mode: verified on the spot, no ID asked for. Live: off to Didit's
+     * hosted check, which sends the buyer back to identity.return and from
+     * there to this step (the draft keeps their place).
+     */
+    public function verifyIdentity(IdentityChecks $checks): void
+    {
+        $this->identityError = '';
+
+        if ($checks->demo()) {
+            $checks->approveDemo(auth()->user());
+            $this->syncIdentity();
+
+            return;
+        }
+
+        try {
+            $verification = $checks->start(auth()->user(), route('identity.return', $this->vehicle));
+        } catch (\Throwable $e) {
+            Log::error('Didit session failed', ['user_id' => auth()->id(), 'error' => $e->getMessage()]);
+            $this->identityError = 'We couldn’t start the ID check just now. Please try again in a moment.';
+
+            return;
+        }
+
+        $this->redirect($verification->session_url);
+    }
+
+    /** Still waiting on Didit: ask again. */
+    public function checkIdentityAgain(IdentityChecks $checks): void
+    {
+        $this->identityError = '';
+        $verification = $this->syncIdentity();
+
+        if ($verification !== null && ! $verification->isDemo()) {
+            try {
+                $checks->refresh($verification);
+            } catch (\Throwable $e) {
+                Log::warning('Didit decision fetch failed', ['session_id' => $verification->session_id, 'error' => $e->getMessage()]);
+                $this->identityError = 'We couldn’t reach our ID partner. Please try again in a moment.';
+            }
+            $this->syncIdentity();
+        }
+    }
+
+    /**
+     * The check the reservation is made with, re-read at that moment so the
+     * step can't be skipped. Demo mode approves anyone who hasn't done it.
+     */
+    private function identityForReservation(): ?IdentityVerification
+    {
+        $checks = app(IdentityChecks::class);
+        $verification = $checks->current(auth()->user());
+
+        if ($verification?->passes()) {
+            return $verification;
+        }
+
+        return $checks->demo() ? $checks->approveDemo(auth()->user()) : null;
     }
 
     /* ---------------------------------------------------------------------
@@ -1382,6 +1468,14 @@ new #[Layout('layouts.checkout')] class extends Component {
             return;
         }
 
+        $identity = $this->identityForReservation();
+        if ($identity === null) {
+            // Any deposit already taken never becomes a reservation, so it's refunded (deposits:reconcile).
+            $this->paymentError = 'We still need to confirm your ID before reserving. Go back to the ID check step — if your card was charged, it’s refunded automatically.';
+
+            return;
+        }
+
         try {
             $paid = $deposits->confirm($payment);
         } catch (\Throwable $e) {
@@ -1397,7 +1491,7 @@ new #[Layout('layouts.checkout')] class extends Component {
             return;
         }
 
-        $newDeal = DB::transaction(function () use ($payment) {
+        $newDeal = DB::transaction(function () use ($payment, $identity) {
             // One car, one reservation: lock the car while checking it's free.
             Vehicle::whereKey($this->vehicle->id)->lockForUpdate()->first();
             $payment = DepositPayment::lockForUpdate()->find($payment->id);
@@ -1437,7 +1531,8 @@ new #[Layout('layouts.checkout')] class extends Component {
                 'handover_mode'         => $this->handoverMode,
                 'pickup_location'       => $this->handoverLocationLabel(),
                 'pickup_at'             => $this->handoverAt()?->copy()->utc(),
-                'identity_verified_at'  => now(),
+                'identity_verified_at'     => $identity->isApproved() ? ($identity->decided_at ?? now()) : null,
+                'identity_verification_id' => $identity->id,
             ]);
 
             if ($this->wantsTrade === true) {
@@ -1807,6 +1902,10 @@ new #[Layout('layouts.checkout')] class extends Component {
 
         .id-card { max-width:460px; margin:8px auto 0; text-align:center; padding:28px 28px 30px; border:1.5px solid var(--ink); border-radius:10px; background:#fff; }
         .id-illus { display:flex; justify-content:center; margin:0 auto 14px; }
+        .id-demo { display:inline-block; margin:0 auto 14px; padding:4px 10px; border-radius:999px; background:#FFF8DD; color:#7A4E00; font-size:12px; font-weight:600; }
+        .id-msg { font-size:13.5px; max-width:380px; margin:0 auto 18px; color:var(--ink); }
+        .id-msg.ok { color:#0F7B4F; font-weight:600; }
+        .id-msg.bad { color:#B42318; }
 
         /* review: ruled rows under an ink rule */
         .rev-card { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:15px 0; margin:0; border-bottom:1px solid var(--line-strong); background:none; }
@@ -2405,14 +2504,59 @@ new #[Layout('layouts.checkout')] class extends Component {
                 <p class="lede" style="text-align:center;">A quick, encrypted licence check keeps your purchase secure and the registration clean. Under a minute.</p>
 
                 <div class="id-card">
+                    @if ($identityDemo)
+                        <div class="id-demo">Demo mode — no ID needed</div>
+                    @endif
                     <div class="id-illus">
                         <svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.6"><rect x="2" y="5" width="20" height="14" rx="2"/><circle cx="8" cy="12" r="2"/><path d="M13 10h5M13 14h5"/></svg>
                     </div>
-                    <p class="muted" style="font-size:13.5px;max-width:380px;margin:0 auto 18px;">Verified through our trusted identity partner. Your scan is encrypted, never shared, and kept only as long as the law requires.</p>
-                    <button type="button" class="btn {{ $identityVerified ? 'btn-soft' : 'btn-primary' }} btn-block btn-lg" wire:click="verifyIdentity" wire:loading.attr="disabled" wire:target="verifyIdentity">
-                        <span wire:loading.remove wire:target="verifyIdentity">{{ $identityVerified ? "✓ You're verified" : 'Verify my licence' }}</span>
-                        <span wire:loading wire:target="verifyIdentity">Verifying…</span>
-                    </button>
+
+                    @php
+                        $idState = match (true) {
+                            $identityVerified && $identityStatus === \App\Models\IdentityVerification::IN_REVIEW => 'review',
+                            $identityVerified => 'verified',
+                            in_array($identityStatus, [\App\Models\IdentityVerification::NOT_STARTED, \App\Models\IdentityVerification::IN_PROGRESS, \App\Models\IdentityVerification::RESUBMITTED], true) => 'waiting',
+                            $identityStatus !== null => 'failed',
+                            default => 'start',
+                        };
+                    @endphp
+
+                    @if ($idState === 'verified')
+                        <p class="id-msg ok">✓ You're verified{{ $identityDemo ? ' (demo)' : '' }}. Carry on.</p>
+                    @elseif ($idState === 'review')
+                        <p class="id-msg">Your ID is with our partner for a quick manual review. You can still reserve — we'll let you know if anything else is needed.</p>
+                    @elseif ($idState === 'waiting')
+                        <p class="id-msg">We haven't heard back about your ID check yet. Finished it? Check again. Didn't finish? Pick up where you left off.</p>
+                    @elseif ($idState === 'failed')
+                        <p class="id-msg bad">We couldn't confirm your ID that time. Make sure your licence is valid, the photo is sharp and glare-free, then try again.</p>
+                    @else
+                        <p class="muted" style="font-size:13.5px;max-width:380px;margin:0 auto 18px;">
+                            @if ($identityDemo)
+                                This site is in demo mode, so no ID scan is needed — tap below to carry on.
+                            @else
+                                You'll scan your driver's licence and take a quick selfie with our identity partner, Didit. Your scan is encrypted, never shared with the dealership, and kept only as long as the law requires.
+                            @endif
+                        </p>
+                    @endif
+
+                    @if ($identityError !== '')
+                        <p class="id-msg bad">{{ $identityError }}</p>
+                    @endif
+
+                    @if ($idState === 'verified' || $idState === 'review')
+                        <button type="button" class="btn btn-soft btn-block btn-lg" disabled>{{ $idState === 'review' ? 'ID under review' : "✓ You're verified" }}</button>
+                    @else
+                        <button type="button" class="btn btn-primary btn-block btn-lg" wire:click="verifyIdentity" wire:loading.attr="disabled" wire:target="verifyIdentity">
+                            <span wire:loading.remove wire:target="verifyIdentity">{{ match ($idState) { 'waiting' => 'Continue my ID check', 'failed' => 'Try again', default => 'Verify my licence' } }}</span>
+                            <span wire:loading wire:target="verifyIdentity">{{ $identityDemo ? 'Verifying…' : 'Opening the ID check…' }}</span>
+                        </button>
+                        @if ($idState === 'waiting')
+                            <button type="button" class="btn btn-ghost btn-block" style="margin-top:10px;" wire:click="checkIdentityAgain" wire:loading.attr="disabled" wire:target="checkIdentityAgain">
+                                <span wire:loading.remove wire:target="checkIdentityAgain">Check again</span>
+                                <span wire:loading wire:target="checkIdentityAgain">Checking…</span>
+                            </button>
+                        @endif
+                    @endif
                 </div>
 
             @elseif ($this->stepKey() === 'review')
@@ -2458,7 +2602,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                 <div class="rev-card">
                     <div>
                         <div class="rev-label">{!! $icon('id', 18) !!} Identity</div>
-                        <div class="rev-value">{{ $identityVerified ? 'Verified' : 'Not verified' }}</div>
+                        <div class="rev-value">{{ ! $identityVerified ? 'Not verified' : ($identityStatus === \App\Models\IdentityVerification::IN_REVIEW ? 'Under review' : 'Verified') }}</div>
                     </div>
                     <button type="button" class="text-link" wire:click="jumpTo(5)">Edit</button>
                 </div>

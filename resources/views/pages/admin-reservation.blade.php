@@ -168,7 +168,26 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
         <div class="card">
             <div class="card-head">Identity</div>
             <div class="kv">
+                @php($idCheck = $deal->identityVerification)
                 <span class="k">Verified</span><span>{{ $deal->identity_verified_at ? $deal->identity_verified_at->format('M j, Y') : 'No' }}</span>
+                @if ($idCheck)
+                    <span class="k">ID check</span><span>{{ $idCheck->label() }}{{ $idCheck->isDemo() ? '' : ' · Didit' }}</span>
+                    @if ($idCheck->first_name || $idCheck->last_name)
+                        <span class="k">Name on ID</span>
+                        <span>
+                            {{ trim($idCheck->first_name . ' ' . $idCheck->last_name) }}
+                            @if ($idCheck->nameDiffersFrom($deal->first_name, $deal->last_name))
+                                <b style="color:#B42318;"> — doesn’t match the checkout name</b>
+                            @endif
+                        </span>
+                    @endif
+                    @if ($idCheck->document_type)
+                        <span class="k">Document</span><span>{{ $idCheck->document_type }}{{ $idCheck->document_expires_on ? ' · expires ' . $idCheck->document_expires_on->format('M j, Y') : '' }}</span>
+                    @endif
+                    @unless ($idCheck->isDemo())
+                        <span class="k">Didit session</span><span style="font-family:monospace;font-size:12px;">{{ $idCheck->session_id }}</span>
+                    @endunless
+                @endif
             </div>
         </div>
 

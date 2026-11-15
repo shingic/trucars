@@ -24,6 +24,17 @@ return [
         'default_mode'   => env('PAYMENTS_DEFAULT_MODE', 'demo'),
     ],
 
+    // Didit ID checks at checkout (App\Support\IdentityChecks). Key from
+    // Business Console → Developers → API keys; the workflow (ID + liveness +
+    // face match) id; the webhook destination's secret. Until Platform
+    // settings → ID checks says otherwise, demo: no ID asked for.
+    'didit' => [
+        'api_key'        => env('DIDIT_API_KEY'),
+        'workflow_id'    => env('DIDIT_WORKFLOW_ID'),
+        'webhook_secret' => env('DIDIT_WEBHOOK_SECRET'),
+        'default_mode'   => env('IDENTITY_DEFAULT_MODE', 'demo'),
+    ],
+
     // CARFAX Canada vehicle history on the vehicle page (App\Services\Carfax).
     // Each dealership's own CARFAX account id is set in Command Centre ›
     // Dealer › Integrations. These are the platform's API credentials.

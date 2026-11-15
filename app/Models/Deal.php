@@ -51,7 +51,7 @@ class Deal extends Model
         'first_name', 'last_name', 'email', 'phone',
         'street_address', 'city', 'province', 'postal_code',
         'handover_mode', 'pickup_location', 'pickup_at',
-        'identity_verified_at',
+        'identity_verified_at', 'identity_verification_id',
         'financing_lender', 'financing_apr', 'financing_term_months', 'financing_payment_in_cents', 'financing_frequency',
         'financing_amount_in_cents', 'financing_down_payment_in_cents', 'financing_first_payment_on', 'financing_conditions', 'financing_approved_at',
     ];
@@ -175,6 +175,12 @@ class Deal extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /** The ID check this reservation was made with (Didit, or a demo approval). */
+    public function identityVerification(): BelongsTo
+    {
+        return $this->belongsTo(IdentityVerification::class);
     }
 
     public function tradeIn(): HasOne

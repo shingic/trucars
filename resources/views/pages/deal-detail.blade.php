@@ -1096,6 +1096,8 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
                         <h3>Customer</h3>
                         @if ($deal->identity_verified_at)
                             <span class="tone good">{!! $svg('check') !!} Identity verified</span>
+                        @elseif ($deal->identityVerification?->isInReview())
+                            <span class="tone warn">ID under review</span>
                         @else
                             <span class="tone warn">Not verified</span>
                         @endif

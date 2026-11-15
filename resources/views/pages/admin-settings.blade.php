@@ -2,6 +2,7 @@
 
 use App\Models\AuditLog;
 use App\Support\Deposits;
+use App\Support\IdentityChecks;
 use App\Support\Permission;
 use App\Support\PlatformSettings;
 use Illuminate\Support\Facades\Gate;
@@ -61,6 +62,51 @@ new #[Layout('layouts.dealer')] #[Title('Platform settings')] class extends Comp
     {
         Gate::authorize(Permission::SETTINGS_MANAGE);
         $this->connection = $deposits->connectionReport();
+    }
+
+    /**
+     * ID checks. Demo: buyers are verified on the spot with no ID — for
+     * showing the site. Live: a real licence + selfie check through Didit,
+     * only possible once the Didit keys are set.
+     */
+    public function setIdentityMode(string $mode, IdentityChecks $checks): void
+    {
+        Gate::authorize(Permission::SETTINGS_MANAGE);
+        abort_unless(in_array($mode, [PlatformSettings::IDENTITY_DEMO, PlatformSettings::IDENTITY_LIVE], true), 422);
+
+        if ($mode === PlatformSettings::IDENTITY_LIVE && ! $checks->liveReady()) {
+            $this->statusMessage = 'Live ID checks need the Didit keys in the server’s .env first (DIDIT_API_KEY and DIDIT_WORKFLOW_ID). Still in demo mode.';
+
+            return;
+        }
+
+        $before = PlatformSettings::get(PlatformSettings::IDENTITY_MODE);
+        if ($before === $mode) {
+            return;
+        }
+
+        PlatformSettings::put(PlatformSettings::IDENTITY_MODE, $mode, auth()->id());
+        AuditLog::record('settings.updated', null, [PlatformSettings::IDENTITY_MODE => $before], [PlatformSettings::IDENTITY_MODE => $mode]);
+
+        $this->statusMessage = $mode === PlatformSettings::IDENTITY_LIVE
+            ? 'Live ID checks on — buyers now scan their licence with Didit at checkout.'
+            : 'ID checks in demo mode — buyers are verified without showing ID.';
+    }
+
+    /** @var array<string, array{0: bool, 1: string}> */
+    public array $identityConnection = [];
+
+    public function checkIdentityConnection(IdentityChecks $checks): void
+    {
+        Gate::authorize(Permission::SETTINGS_MANAGE);
+
+        $lastSeen = PlatformSettings::get(PlatformSettings::DIDIT_WEBHOOK_LAST_SEEN);
+        $this->identityConnection = [
+            'API key'  => $checks->checkConnection(),
+            'Webhook'  => config('services.didit.webhook_secret')
+                ? [$lastSeen !== '', $lastSeen !== '' ? 'Last received ' . \Illuminate\Support\Carbon::parse($lastSeen)->diffForHumans() . '.' : 'Secret set; nothing received yet. Use “Try Webhook” in Didit’s console.']
+                : [false, 'DIDIT_WEBHOOK_SECRET isn’t set — results still arrive when buyers return from Didit, but not if they close the tab.'],
+        ];
     }
 
     public function save(): void
@@ -198,6 +244,52 @@ new #[Layout('layouts.dealer')] #[Title('Platform settings')] class extends Comp
                 </button>
             </div>
             @foreach ($connection as $part => [$ok, $message])
+                <div class="conn-row">
+                    <span class="conn-icon {{ $ok ? 'ok' : 'bad' }}">{{ $ok ? '✓' : '✕' }}</span>
+                    <span class="conn-part">{{ $part }}</span>
+                    <span class="conn-msg">{{ $message }}</span>
+                </div>
+            @endforeach
+        </div>
+    </div>
+
+    @php
+        $identityMode = \App\Support\PlatformSettings::get(\App\Support\PlatformSettings::IDENTITY_MODE);
+        $identityLiveReady = app(\App\Support\IdentityChecks::class)->liveReady();
+    @endphp
+    <div class="card pay-card">
+        <div class="pay-head">
+            <div>
+                <h2>ID checks</h2>
+                <p>The licence check at checkout (step 6), through Didit.</p>
+            </div>
+            <span class="mode-pill {{ $identityMode }}">{{ $identityMode === 'live' ? 'Live' : 'Demo' }}</span>
+        </div>
+        <div class="modes">
+            <button type="button" class="mode {{ $identityMode !== 'live' ? 'on' : '' }}" wire:click="setIdentityMode('demo')"
+                    @if ($identityMode === 'live') wire:confirm="Switch ID checks to demo mode? Buyers will be verified without showing any ID." @endif>
+                <b>Demo</b>
+                <span>Buyers are verified with one tap — no ID scan. For showing and testing the site.</span>
+            </button>
+            <button type="button" class="mode {{ $identityMode === 'live' ? 'on' : '' }}" wire:click="setIdentityMode('live')" @disabled(! $identityLiveReady)
+                    @if ($identityMode !== 'live') wire:confirm="Switch to live ID checks? Every buyer will scan their licence and take a selfie with Didit, and each check is billed by Didit." @endif>
+                <b>Live</b>
+                <span>Real licence + selfie check with Didit. Billed per check by Didit.</span>
+            </button>
+        </div>
+        @unless ($identityLiveReady)
+            <div class="keys-note">Live needs the Didit keys (DIDIT_API_KEY, DIDIT_WORKFLOW_ID, and DIDIT_WEBHOOK_SECRET) in the server’s .env.</div>
+        @endunless
+
+        <div class="conn">
+            <div class="conn-head">
+                <b>Didit connection</b>
+                <button type="button" class="btn-ghost" wire:click="checkIdentityConnection" wire:loading.attr="disabled" wire:target="checkIdentityConnection">
+                    <span wire:loading.remove wire:target="checkIdentityConnection">{{ $identityConnection ? 'Check again' : 'Check connection' }}</span>
+                    <span wire:loading wire:target="checkIdentityConnection">Checking…</span>
+                </button>
+            </div>
+            @foreach ($identityConnection as $part => [$ok, $message])
                 <div class="conn-row">
                     <span class="conn-icon {{ $ok ? 'ok' : 'bad' }}">{{ $ok ? '✓' : '✕' }}</span>
                     <span class="conn-part">{{ $part }}</span>
