@@ -51,6 +51,7 @@ class User extends Authenticatable
             'suspended_at' => 'datetime',
             'permissions' => 'array',
             'marketing_unsubscribed_at' => 'datetime',
+            'email_preferences' => 'array',
         ];
     }
 
@@ -64,6 +65,29 @@ class User extends Authenticatable
     public function acceptsMarketing(): bool
     {
         return $this->isCustomer() && $this->email_verified_at !== null && $this->marketing_unsubscribed_at === null && $this->suspended_at === null;
+    }
+
+    /** This type of marketing email (App\Support\Marketing\EmailTypes) is wanted. */
+    public function wantsEmail(string $type): bool
+    {
+        return $this->acceptsMarketing() && ! in_array($type, $this->emailTypesOff(), true);
+    }
+
+    /** @return array<int, string> the marketing types this shopper switched off */
+    public function emailTypesOff(): array
+    {
+        return array_values(array_filter((array) ($this->email_preferences['off'] ?? []), 'is_string'));
+    }
+
+    /** Switch one marketing type on or off (saved by the caller). */
+    public function setEmailType(string $type, bool $on): void
+    {
+        $off = array_values(array_diff($this->emailTypesOff(), [$type]));
+        if (! $on) {
+            $off[] = $type;
+        }
+
+        $this->email_preferences = ['off' => $off];
     }
 
     public const ROLE_CUSTOMER = 'customer';

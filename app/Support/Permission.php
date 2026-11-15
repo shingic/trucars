@@ -24,6 +24,7 @@ final class Permission
     public const STAFF_MANAGE = 'staff.manage';
     public const SETTINGS_MANAGE = 'settings.manage';
     public const AUDIT_VIEW = 'audit.view';
+    public const MARKETING_VIEW = 'marketing.view';
 
     /** Key → [label, what it allows]. Order is display order. */
     public const DEFINITIONS = [
@@ -38,6 +39,7 @@ final class Permission
         self::STAFF_MANAGE        => ['TruCars staff — manage', 'Invite internal staff and change their access.'],
         self::SETTINGS_MANAGE     => ['Platform settings', 'Change platform-wide settings, including brands and their CPO checklists and offers.'],
         self::AUDIT_VIEW          => ['Audit log — view', 'Read the record of sensitive actions.'],
+        self::MARKETING_VIEW      => ['Shoppers — view', 'Browse everyone who signed up, their saved cars and email preferences.'],
     ];
 
     /** Holding the key on the left implies holding those on the right. */
@@ -47,6 +49,7 @@ final class Permission
         self::DEALERS_MANAGE   => [self::DEALERS_VIEW],
         self::DEALER_USERS_MANAGE => [self::DEALERS_VIEW],
         self::INVENTORY_MANAGE    => [self::DEALERS_VIEW],
+        self::MARKETING_VIEW      => [self::CUSTOMERS_VIEW],
     ];
 
     /**

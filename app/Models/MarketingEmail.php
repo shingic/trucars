@@ -14,6 +14,9 @@ class MarketingEmail extends Model
         'recovery_1d' => 'Still available + similar cars',
         'recovery_3d' => 'Refundable deposit reminder',
         'recovery_7d' => 'Recommended cars',
+        'saved_price_drop'      => 'Price drop on a saved car',
+        'saved_gone'            => 'Saved car gone + similar cars',
+        'saved_still_available' => 'Saved car still available',
     ];
 
     protected $fillable = ['user_id', 'checkout_draft_id', 'kind', 'sent_at'];

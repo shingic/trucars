@@ -85,7 +85,7 @@ class CheckoutRecovery
         $user = $draft->user;
         $car = $draft->vehicle;
 
-        if ($user === null || ! $user->acceptsMarketing()) {
+        if ($user === null || ! $user->acceptsMarketing() || ! Consent::implied($user)) {
             return false;
         }
 
@@ -103,6 +103,11 @@ class CheckoutRecovery
             ->keys()->last(); // a late run sends only the latest stage due, never a backlog
 
         if ($due === null) {
+            return false;
+        }
+
+        // Switched this type off on their email preferences: skip it (a later stage of another type may still go).
+        if (! $user->wantsEmail(EmailTypes::forKind($due))) {
             return false;
         }
 

@@ -46,7 +46,10 @@ class VehicleAlert extends Model
             // Marked first so a retry can never email twice.
             $alert->forceFill(['notified_at' => now()])->save();
 
-            if ($alert->user === null) {
+            // Asked for it with the bell, so no consent window applies — but it's still theirs to switch off.
+            if ($alert->user === null
+                || $alert->user->marketing_unsubscribed_at !== null
+                || in_array(\App\Support\Marketing\EmailTypes::AVAILABILITY, $alert->user->emailTypesOff(), true)) {
                 return;
             }
 

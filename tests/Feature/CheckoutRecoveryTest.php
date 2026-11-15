@@ -117,7 +117,8 @@ class CheckoutRecoveryTest extends TestCase
                 && $mail->suggestions->count() === 1
                 && str_contains($html, 'Similar cars near you')
                 && str_contains($html, '100 King St W, Toronto')
-                && str_contains($html, 'Unsubscribe')
+                && str_contains($html, '/email/unsubscribe/')
+                && str_contains($html, 'Manage email preferences or unsubscribe from all')
                 && ! str_contains(strtolower($html), 'chilliwack mitsubishi');
         });
     }

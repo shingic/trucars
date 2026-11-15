@@ -60,6 +60,29 @@ Route::domain($publicDomain)->middleware(TreatNonCustomersAsGuests::class)->grou
         return request()->isMethod('post') ? response()->noContent() : view('marketing-unsubscribed');
     })->middleware('signed')->withoutMiddleware(TreatNonCustomersAsGuests::class)->name('marketing.unsubscribe');
 
+    // "Unsubscribe from this type of email" — the link in each marketing email
+    // and its List-Unsubscribe header. Signed, so it needs no sign-in.
+    Route::match(['get', 'post'], '/email/unsubscribe/{user}/{type}', function (\App\Models\User $user, string $type) {
+        abort_unless(\App\Support\Marketing\EmailTypes::exists($type), 404);
+
+        if (! in_array($type, $user->emailTypesOff(), true)) {
+            $before = $user->emailTypesOff();
+            $user->setEmailType($type, false);
+            $user->save();
+            \App\Models\AuditLog::record('marketing.preferences_updated', $user, ['off' => $before], ['off' => $user->emailTypesOff()]);
+        }
+
+        return request()->isMethod('post') ? response()->noContent() : view('marketing-unsubscribed', [
+            'typeLabel'      => \App\Support\Marketing\EmailTypes::label($type),
+            'preferencesUrl' => \Illuminate\Support\Facades\URL::signedRoute('email.preferences', $user),
+        ]);
+    })->middleware('signed')->withoutMiddleware(TreatNonCustomersAsGuests::class)->name('marketing.unsubscribe.type');
+
+    // Manage email preferences: one switch per type of marketing email. A
+    // signed link from any marketing email or from My Garage; no sign-in.
+    Route::livewire('/email/preferences/{user}', 'pages::email-preferences')
+        ->middleware('signed')->withoutMiddleware(TreatNonCustomersAsGuests::class)->name('email.preferences');
+
     Route::get('/sitemap.xml', \App\Http\Controllers\SitemapController::class)->name('sitemap');
     Route::get('/robots.txt', fn () => response("User-agent: *\nDisallow: /livewire/\n\nSitemap: " . route('sitemap') . "\n", 200, ['Content-Type' => 'text/plain']));
     Route::livewire('/how-it-works', 'pages::how-it-works')->name('how-it-works');
@@ -328,6 +351,11 @@ Route::domain($adminDomain)->group(function () {
 
     // Shoppers who haven't paid a deposit belong to the platform: they're only
     // ever shown here, never in the dealer portal.
+    // Everyone who signed up, their saved cars and email status (marketing.view).
+    Route::livewire('/shoppers', 'pages::admin-shoppers')
+        ->middleware([EnsureCommandCentreAccess::class, 'can:marketing.view'])
+        ->name('admin.shoppers');
+
     Route::livewire('/checkouts', 'pages::admin-checkouts')
         ->middleware([EnsureCommandCentreAccess::class, 'can:customers.view'])
         ->name('admin.checkouts');

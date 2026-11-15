@@ -22,7 +22,12 @@
     <div class="card">
         <span class="wordmark">Tru<b>Cars</b></span>
         <h1>You're unsubscribed</h1>
-        <p>We won't send you any more marketing emails. You'll still get emails about a reservation you make, like your receipt and pickup details.</p>
+        @isset($typeLabel)
+            <p>We won't send you any more <b>{{ strtolower($typeLabel) }}</b>. Your other email settings haven't changed.</p>
+            <p><a href="{{ $preferencesUrl }}">Manage email preferences or unsubscribe from all</a></p>
+        @else
+            <p>We won't send you any more marketing emails. You'll still get emails about a reservation you make, like your receipt and pickup details.</p>
+        @endisset
         <p><a href="{{ route('shop') }}">Back to the cars</a></p>
     </div>
 </main>

@@ -4,6 +4,7 @@ namespace App\Mail;
 
 use App\Models\CheckoutDraft;
 use App\Models\Vehicle;
+use App\Support\Marketing\EmailTypes;
 use App\Support\Marketing\Recommendations;
 use App\Support\ShopperLocation;
 use Illuminate\Bus\Queueable;
@@ -39,7 +40,7 @@ class CheckoutRecoveryMail extends Mailable
         $car = $draft->vehicle;
         $this->firstName = (string) str((string) $draft->user->name)->trim()->before(' ') ?: 'there';
         $this->carName = trim("{$car->model_year} {$car->make} {$car->model}");
-        $this->unsubscribeUrl = URL::signedRoute('marketing.unsubscribe', ['user' => $draft->user_id]);
+        $this->unsubscribeUrl = URL::signedRoute('marketing.unsubscribe.type', ['user' => $draft->user_id, 'type' => EmailTypes::forKind($kind)]);
         $this->suggestions = match ($kind) {
             'recovery_1d' => Recommendations::similarTo($car, 3, $draft->shopper_location),
             'recovery_7d' => Recommendations::similarTo($car, 6, $draft->shopper_location),

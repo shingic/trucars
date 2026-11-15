@@ -502,6 +502,7 @@ new #[Layout('layouts.checkout')] class extends Component {
             <span class="sep">·</span>
             <span class="garage-word">My Garage</span>
             <div class="g-account">
+                <a class="g-signout" href="{{ \Illuminate\Support\Facades\URL::signedRoute('email.preferences', Auth::user()) }}" style="text-decoration:none;">Email preferences</a>
                 <button type="button" class="g-signout" wire:click="signOut">Sign out</button>
                 <span class="g-avatar">{{ Auth::user()->initials }}</span>
             </div>

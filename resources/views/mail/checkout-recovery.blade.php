@@ -124,17 +124,11 @@
                     </tr>
                 @endif
 
-                <tr>
-                    <td style="padding:28px 36px 34px;">
-                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
-                            <td style="border-top:2px solid #071437; padding-top:18px; {{ $font }} font-size:12.5px; line-height:1.6; color:#78829D;">
-                                You're getting this because you started reserving a car on {{ $brand }}. Once you reserve, these follow-ups stop.<br>
-                                {{ $brand }} · {{ \App\Support\PlatformSettings::get('business_mailing_address') }}<br>
-                                <a href="{{ $unsubscribeUrl }}" target="_blank" style="color:#4B5675; text-decoration:underline;">Unsubscribe from marketing emails</a>
-                            </td>
-                        </tr></table>
-                    </td>
-                </tr>
+                @include('mail.partials.marketing-footer', [
+                    'user'   => $draft->user,
+                    'type'   => \App\Support\Marketing\EmailTypes::forKind($kind),
+                    'reason' => "You're getting this because you started reserving a car on {$brand}. Once you reserve, these follow-ups stop.",
+                ])
             </table>
         </td>
     </tr>

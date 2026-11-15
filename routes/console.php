@@ -18,3 +18,6 @@ Schedule::command('deals:remind-documents')->hourly()->between('9:00', '19:00')-
 
 // Follow-ups to shoppers who started a checkout but didn't pay the deposit.
 Schedule::command('checkouts:send-recovery')->everyFifteenMinutes()->withoutOverlapping();
+
+// Emails about saved cars: price drops, a saved car gone, a nudge 3 days after saving.
+Schedule::command('saved:send-alerts')->everyFifteenMinutes()->withoutOverlapping();

@@ -53,6 +53,20 @@ new #[Layout('layouts.dealer')] #[Title('Customer')] class extends Component {
         return $this->customer()->deals()->with(['vehicle', 'dealer'])->latest()->get();
     }
 
+    /** Saved cars, newest save first, with the price when saved (or last emailed about). */
+    public function savedCars(): Collection
+    {
+        return $this->customer()->favouriteVehicles()
+            ->withPivot(['alerted_price_in_cents', 'created_at'])
+            ->with(['dealer', 'rooftop'])
+            ->get();
+    }
+
+    public function marketingEmails(): Collection
+    {
+        return \App\Models\MarketingEmail::where('user_id', $this->customerId)->orderByDesc('sent_at')->limit(20)->get();
+    }
+
     public function notes(): Collection
     {
         return $this->customer()->supportNotes()->with('author')->get();
@@ -181,6 +195,54 @@ new #[Layout('layouts.dealer')] #[Title('Customer')] class extends Component {
                 <span><span class="pill warn">Suspended</span></span>
             @endif
         </div>
+    </div>
+
+    <div class="card">
+        <div class="card-head"><span class="ttl">Saved cars</span></div>
+        @forelse ($this->savedCars() as $car)
+            @php($then = $car->pivot->alerted_price_in_cents)
+            @php($status = $car->isReservedBy($customer) ? 'Reserved by them' : ($car->isReserved() ? 'Reserved by someone else' : (! $car->isListed() ? 'Sold / removed' : 'Listed')))
+            <div class="row" wire:key="saved-{{ $car->id }}">
+                <div>
+                    <div><b>{{ $car->model_year }} {{ $car->make }} {{ $car->model }}</b> · {{ $car->display_price }}
+                        @if ($then && $then !== $car->price_in_cents)
+                            <span class="meta" style="display:inline">(was ${{ number_format($then / 100) }})</span>
+                        @endif
+                    </div>
+                    <div class="meta">Saved {{ \Illuminate\Support\Carbon::parse($car->pivot->created_at)->format('M j, Y') }} · {{ $status }} · {{ $car->dealer?->name }} (internal only)</div>
+                </div>
+                <a href="{{ url('/cars/' . $car->id) }}" target="_blank" rel="noopener">View →</a>
+            </div>
+        @empty
+            <div class="empty">No saved cars.</div>
+        @endforelse
+    </div>
+
+    @php($typesOff = $customer->emailTypesOff())
+    @php($consentUntil = \App\Support\Marketing\Consent::expiresAt($customer))
+    <div class="card">
+        <div class="card-head"><span class="ttl">Marketing emails</span></div>
+        <div class="kv">
+            <span class="k">Preferences</span>
+            <span>
+                @if ($customer->marketing_unsubscribed_at)
+                    Unsubscribed from all ({{ $customer->marketing_unsubscribed_at->format('M j, Y') }})
+                @elseif ($typesOff === [])
+                    All on
+                @else
+                    Off: {{ collect($typesOff)->map(fn ($type) => \App\Support\Marketing\EmailTypes::label($type))->implode(', ') }}
+                @endif
+            </span>
+            <span class="k">Can email until</span>
+            <span>{{ $consentUntil ? $consentUntil->format('M j, Y') : '—' }}<span class="meta" style="display:block;font-size:13px;color:var(--ink-3);">Implied consent (CASL): 6 months from their last sign-up, save or checkout; 2 years from a reservation.</span></span>
+        </div>
+        @forelse ($this->marketingEmails() as $email)
+            <div class="row" wire:key="mkt-{{ $email->id }}">
+                <div>{{ $email->label() }}<div class="meta">{{ $email->sent_at->format('M j, Y g:i a') }} UTC</div></div>
+            </div>
+        @empty
+            <div class="empty">No marketing emails sent yet.</div>
+        @endforelse
     </div>
 
     <div class="card">

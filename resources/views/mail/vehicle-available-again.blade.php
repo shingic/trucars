@@ -82,19 +82,11 @@
                 </tr>
 
                 {{-- Footer --}}
-                <tr>
-                    <td style="padding:28px 36px 36px;">
-                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                            <tr>
-                                <td style="border-top:2px solid #071437; padding-top:20px;">
-                                    <p style="margin:0; {{ $font }} font-size:13px; line-height:1.6; color:#78829D;">
-                                        Sent once, because you tapped the bell on this car. We won't email you about it again.
-                                    </p>
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
+                @include('mail.partials.marketing-footer', [
+                    'user'   => $buyer,
+                    'type'   => \App\Support\Marketing\EmailTypes::AVAILABILITY,
+                    'reason' => "Sent once, because you tapped the bell on this car. We won't email you about it again.",
+                ])
 
             </table>
 
