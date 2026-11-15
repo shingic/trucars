@@ -1380,6 +1380,7 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
                     <div class="sect-body">
                         <div class="kv">
                             <div class="row"><span class="k">Trade vehicle</span><span class="v">{{ $deal->tradeIn->model_year }} {{ $deal->tradeIn->make }} {{ $deal->tradeIn->model }}{{ $deal->tradeIn->trim ? ' ' . $deal->tradeIn->trim : '' }}</span></div>
+                            @if ($deal->tradeIn->vin)<div class="row"><span class="k">VIN</span><span class="v" style="font-family:var(--font-mono, ui-monospace, Menlo, monospace);letter-spacing:.04em;">{{ $deal->tradeIn->vin }}</span></div>@endif
                             <div class="row"><span class="k">Odometer</span><span class="v">{{ number_format($deal->tradeIn->kilometres) }} km</span></div>
                             @if ($deal->tradeIn->exterior_colour)<div class="row"><span class="k">Colour</span><span class="v">{{ ucfirst($deal->tradeIn->exterior_colour) }}</span></div>@endif
                             <div class="row"><span class="k">Accident history</span><span class="v">{{ ucwords(str_replace('_', ' ', $deal->tradeIn->accident_history ?? 'not stated')) }}</span></div>

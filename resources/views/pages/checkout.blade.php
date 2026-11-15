@@ -55,6 +55,12 @@ new #[Layout('layouts.checkout')] class extends Component {
     public string $tradeMake = '';
     public string $tradeModel = '';
     public string $tradeTrim = '';
+    /** Kept once a VIN lookup filled the car in; it goes to the dealer with the trade-in. */
+    public string $tradeVin = '';
+    /** The "paste your VIN" box, and what the lookup said. */
+    public string $tradeVinInput = '';
+    public string $tradeVinMessage = '';
+    public bool $tradeVinFound = false;
     public $tradeKilometres = '';
     public string $tradeExteriorColour = '';
     public string $tradeKeyCount = '2';
@@ -211,7 +217,7 @@ new #[Layout('layouts.checkout')] class extends Component {
      */
     private const DRAFT_FIELDS = [
         'stepIndex', 'wantsTrade', 'tradeSubStep',
-        'tradeYear', 'tradeMake', 'tradeModel', 'tradeTrim', 'tradeKilometres', 'tradeExteriorColour', 'tradeKeyCount', 'tradeFeatures',
+        'tradeYear', 'tradeMake', 'tradeModel', 'tradeTrim', 'tradeVin', 'tradeKilometres', 'tradeExteriorColour', 'tradeKeyCount', 'tradeFeatures',
         'tradeExteriorCondition', 'tradeInteriorCondition', 'tradeTireCondition', 'tradeMechanicalCondition', 'tradeAccidentHistory',
         'tradeOwnerCount', 'tradeTitleStatus', 'tradeWasSmokedIn', 'tradeCarriedPets', 'tradeHasAftermarketMods', 'tradeLienOwing', 'tradeNotes',
         'tradeEstimatePointInCents', 'tradeEstimateLowInCents', 'tradeEstimateHighInCents', 'tradeEstimateLines', 'tradeEstimateBreakdown',
@@ -229,7 +235,7 @@ new #[Layout('layouts.checkout')] class extends Component {
      */
     private const CARRY_OVER_FIELDS = [
         'wantsTrade',
-        'tradeYear', 'tradeMake', 'tradeModel', 'tradeTrim', 'tradeKilometres', 'tradeExteriorColour', 'tradeKeyCount', 'tradeFeatures',
+        'tradeYear', 'tradeMake', 'tradeModel', 'tradeTrim', 'tradeVin', 'tradeKilometres', 'tradeExteriorColour', 'tradeKeyCount', 'tradeFeatures',
         'tradeExteriorCondition', 'tradeInteriorCondition', 'tradeTireCondition', 'tradeMechanicalCondition', 'tradeAccidentHistory',
         'tradeOwnerCount', 'tradeTitleStatus', 'tradeWasSmokedIn', 'tradeCarriedPets', 'tradeHasAftermarketMods', 'tradeLienOwing', 'tradeNotes',
         'firstName', 'lastName', 'email', 'phone', 'streetAddress', 'city', 'province', 'postalCode',
@@ -548,6 +554,7 @@ new #[Layout('layouts.checkout')] class extends Component {
         }
 
         $this->wantsTrade = true;
+        $this->tradeVinInput = $this->tradeVin;
         $this->clearTradeEstimate();
         $this->tradeSubStep = 'condition'; // check nothing's changed, then this dealer values it
         $this->tradeBroughtFrom = $draft->vehicle ? $this->carName($draft->vehicle) : '';
@@ -765,6 +772,62 @@ new #[Layout('layouts.checkout')] class extends Component {
 
         // Sub-step 'estimate' — the questionnaire is complete, carry on.
         return true;
+    }
+
+    /**
+     * "Paste your VIN": fills year, make, model and trim from the free NHTSA
+     * decoder. The shopper can still change anything it filled in.
+     */
+    public function lookUpTradeVin(): void
+    {
+        $vin = \App\Services\Vin\VinDecoder::clean($this->tradeVinInput);
+        $this->tradeVinFound = false;
+        $this->resetErrorBag('tradeVinInput');
+
+        if (strlen($vin) !== 17 || ! \App\Services\Vin\VinDecoder::isValid($vin)) {
+            $this->tradeVinMessage = strlen($vin) !== 17
+                ? 'A VIN is 17 letters and numbers. You typed ' . strlen($vin) . '.'
+                : 'That VIN doesn’t add up. Check for a mistyped character (VINs never use I, O or Q).';
+
+            return;
+        }
+
+        $throttle = 'vin:' . auth()->id();
+        if (\Illuminate\Support\Facades\RateLimiter::tooManyAttempts($throttle, 20)) {
+            $this->tradeVinMessage = 'Too many lookups for now. Fill in the car below instead.';
+
+            return;
+        }
+        \Illuminate\Support\Facades\RateLimiter::hit($throttle, 600);
+
+        $car = app(\App\Services\Vin\VinDecoder::class)->decode($vin);
+        if ($car === null) {
+            $this->tradeVinMessage = 'We couldn’t find that VIN. Fill in the car below instead.';
+
+            return;
+        }
+
+        $this->tradeYear = $car['year'];
+        $this->tradeMake = $car['make'];
+        $this->tradeModel = $car['model'];
+        $this->tradeTrim = mb_substr($car['trim'], 0, 60);
+        $this->tradeVin = $vin;
+        $this->tradeVinInput = $vin;
+        $this->tradeVinFound = true;
+        $this->tradeVinMessage = "Found it: {$car['year']} {$car['make']} {$car['model']}" . ($car['trim'] !== '' ? " {$car['trim']}" : '') . '. Check it’s right, then add the kilometres.';
+    }
+
+    /** The looked-up VIN, unless they changed the car afterwards so it no longer matches. */
+    private function tradeVinForDeal(): ?string
+    {
+        if ($this->tradeVin === '' || ! \App\Services\Vin\VinDecoder::isValid($this->tradeVin)) {
+            return null;
+        }
+
+        $car = \Illuminate\Support\Facades\Cache::get('vin:' . $this->tradeVin);
+
+        return $car === null || ((int) $car['year'] === (int) $this->tradeYear && strcasecmp($car['make'], $this->tradeMake) === 0)
+            ? $this->tradeVin : null;
     }
 
     protected function validateTradeDetails(): void
@@ -1735,6 +1798,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                     'make'                          => $this->tradeMake,
                     'model'                         => $this->tradeModel,
                     'trim'                          => $this->tradeTrim !== '' ? $this->tradeTrim : null,
+                    'vin'                           => $this->tradeVinForDeal(),
                     'kilometres'                    => (int) $this->tradeKilometres,
                     'condition'                     => $this->overallTradeCondition(),
                     'lien_owing_in_cents'           => $this->tradeLienInCents(),
@@ -2072,6 +2136,24 @@ new #[Layout('layouts.checkout')] class extends Component {
         .brought-links { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-top:4px; font-size:14px; }
         .brought-links .text-link { font-weight:700; color:var(--primary-press); }
 
+        /* trade details: look the car up by VIN */
+        .vin-box { margin:0 0 6px; padding:18px; border-radius:12px; border:1.5px dashed var(--primary-line); background:var(--primary-soft); }
+        .vin-head { display:flex; flex-direction:column; gap:3px; margin-bottom:12px; }
+        .vin-head b { font-size:16px; color:var(--ink); }
+        .vin-head span { font-size:13.5px; line-height:1.45; color:var(--ink-2); }
+        .vin-row { display:flex; gap:8px; }
+        .vin-input { flex:1; min-width:0; font-family:var(--font-mono, ui-monospace, Menlo, monospace); letter-spacing:.08em; text-transform:uppercase; background:#fff; }
+        .vin-input::placeholder { font-family:var(--font-ui); letter-spacing:0; text-transform:none; }
+        .vin-go { flex-shrink:0; padding:0 20px; border-radius:8px; background:var(--ink); color:#fff; font-size:15px; font-weight:700; cursor:pointer; white-space:nowrap; }
+        .vin-go:hover { background:var(--primary-press); }
+        .vin-go:disabled { opacity:.6; cursor:wait; }
+        .vin-msg { display:flex; align-items:center; gap:7px; margin:10px 0 0; font-size:14px; font-weight:600; }
+        .vin-msg.ok { color:#0B7355; }
+        .vin-msg.bad { color:#D81A48; }
+        .vin-or { display:flex; align-items:center; gap:12px; margin:18px 0 16px; font-size:13px; font-weight:600; color:var(--ink-3); }
+        .vin-or::before, .vin-or::after { content:""; flex:1; height:1px; background:var(--line-strong); }
+        @media (max-width:520px) { .vin-row { flex-direction:column; } .vin-go { height:48px; } }
+
         /* estimate: the tax a trade saves */
         .tax-credit { display:flex; gap:14px; align-items:flex-start; margin-top:12px; padding:16px 18px; border-radius:10px; background:#E7F8F1; border:1px solid #B9E8D3; }
         .tax-ic { width:36px; height:36px; flex-shrink:0; border-radius:50%; display:grid; place-items:center; background:#0B7355; color:#fff; font-family:var(--font-display); font-size:19px; font-weight:700; }
@@ -2360,6 +2442,30 @@ new #[Layout('layouts.checkout')] class extends Component {
                     <div class="step-meta">Step 1 · Your trade</div>
                     <h1 class="h1">Tell us about your trade</h1>
                     <p class="lede">The more you share, the closer your estimate lands to the dealership's final number — no surprises at handover.</p>
+
+                    <div class="vin-box">
+                        <div class="vin-head">
+                            <b>Have your VIN? We’ll fill this in for you.</b>
+                            <span>It’s on the driver’s side of the windshield, inside the driver’s door frame, or on your ownership papers.</span>
+                        </div>
+                        <div class="vin-row">
+                            <label for="trade-vin" class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">VIN</label>
+                            <input id="trade-vin" type="text" class="field-input vin-input" wire:model="tradeVinInput" maxlength="24"
+                                   placeholder="17 letters and numbers" autocomplete="off" autocapitalize="characters" spellcheck="false"
+                                   wire:keydown.enter.prevent="lookUpTradeVin">
+                            <button type="button" class="vin-go" wire:click="lookUpTradeVin" wire:loading.attr="disabled" wire:target="lookUpTradeVin">
+                                <span wire:loading.remove wire:target="lookUpTradeVin">Look it up</span>
+                                <span wire:loading wire:target="lookUpTradeVin">Looking…</span>
+                            </button>
+                        </div>
+                        @if ($tradeVinMessage !== '')
+                            <p class="vin-msg {{ $tradeVinFound ? 'ok' : 'bad' }}" role="status">
+                                @if ($tradeVinFound)<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>@endif
+                                {{ $tradeVinMessage }}
+                            </p>
+                        @endif
+                    </div>
+                    <div class="vin-or"><span>or type it in</span></div>
 
                     <div class="trade-grid">
                         <div class="field"><label class="field-label">Year</label><input type="number" class="field-input" wire:model="tradeYear" placeholder="2019">@error('tradeYear') <p class="field-error">{{ $message }}</p> @enderror</div>

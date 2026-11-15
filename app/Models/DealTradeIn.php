@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class DealTradeIn extends Model
 {
     protected $fillable = [
-        'deal_id', 'model_year', 'make', 'model', 'trim',
+        'deal_id', 'model_year', 'make', 'model', 'trim', 'vin',
         'kilometres', 'condition', 'lien_owing_in_cents', 'customer_notes',
 
         // Questionnaire (self-reported by the customer in checkout)
