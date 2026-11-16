@@ -397,6 +397,7 @@ Route::domain($adminDomain)->group(function () {
         Route::livewire('/settings/brands', 'pages::admin-brands')->name('admin.brands');
         Route::livewire('/settings/brands/{brand}', 'pages::admin-brand')->whereNumber('brand')->name('admin.brands.show');
         Route::livewire('/settings/brands/{brand}/checklist', 'pages::admin-brand-checklist')->whereNumber('brand')->name('admin.brands.checklist');
+        Route::livewire('/settings/brands/{brand}/benefits', 'pages::admin-brand-benefits')->whereNumber('brand')->name('admin.brands.benefits');
         Route::livewire('/settings/brands/{brand}/offers', 'pages::admin-brand-offers')->whereNumber('brand')->name('admin.brands.offers');
         Route::livewire('/settings/brands/{brand}/offers/new', 'pages::admin-offer')->whereNumber('brand')->name('admin.brands.offers.create');
         Route::livewire('/settings/brands/{brand}/offers/{offer}', 'pages::admin-offer')->whereNumber(['brand', 'offer'])->name('admin.brands.offers.edit');

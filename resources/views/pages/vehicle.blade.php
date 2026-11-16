@@ -157,6 +157,21 @@ new class extends Component {
         return $this->resolvedCertification;
     }
 
+    protected ?\App\Support\CertifiedBenefits $resolvedBenefits = null;
+    protected bool $benefitsResolved = false;
+
+    /** The brand's certified program benefits, for manufacturer-certified cars only. */
+    public function certifiedBenefits(): ?\App\Support\CertifiedBenefits
+    {
+        if (! $this->benefitsResolved) {
+            $this->vehicle->loadMissing('dealer.brand');
+            $this->resolvedBenefits = \App\Support\CertifiedBenefits::for($this->vehicle);
+            $this->benefitsResolved = true;
+        }
+
+        return $this->resolvedBenefits;
+    }
+
     /** Where the shopper said they are (session only), or null. */
     public function shopperLocation(): ?array
     {
@@ -737,6 +752,39 @@ new class extends Component {
                 </dl>
             </div>
 
+            @if ($program = $this->certifiedBenefits())
+                <div class="vdp-section" id="certified-benefits">
+                    <div class="cpo">
+                        <div class="cpo-head">
+                            <span class="cpo-seal"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 8 9 8 9s8-4 8-9V6Z"/><path d="m9 12 2 2 4-4"/></svg></span>
+                            <div>
+                                <h2>{{ $program->programName }}</h2>
+                                <p>This car is certified under {{ $program->brandName }}’s own program, so it comes with:</p>
+                            </div>
+                        </div>
+                        <ul class="cpo-list">
+                            @foreach ($program->benefits as $benefit)
+                                <li>
+                                    <span class="cpo-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">{!! \App\Support\CertifiedBenefits::icon($benefit['icon']) !!}</svg></span>
+                                    <div>
+                                        <div class="t">{{ $benefit['title'] }}</div>
+                                        @if ($benefit['detail'] !== '')<div class="s">{{ $benefit['detail'] }}</div>@endif
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ul>
+                        @if ($program->finePrint || $program->sourceUrl)
+                            <div class="cpo-fine">
+                                @if ($program->finePrint)<p>{{ $program->finePrint }}</p>@endif
+                                @if ($program->sourceUrl)
+                                    <p>Program terms are set by {{ $program->brandName }} and can change. Full details at <a href="{{ $program->sourceUrl }}" target="_blank" rel="noopener noreferrer">{{ $program->sourceHost() }}</a>.</p>
+                                @endif
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            @endif
+
             @if ($cert = $this->certification())
                 <div class="vdp-section">
                     <div class="cert-block" x-data="{ certDetails: false }" :class="{ 'is-expanded': certDetails }">
@@ -882,7 +930,9 @@ new class extends Component {
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>
                             <div>
                                 <div class="t">{{ $cert->badge }}</div>
-                                <div class="s">{{ $cert->pointCount }}-point inspection</div>
+                                <div class="s">{{ $cert->pointCount }}-point inspection
+                                    @if ($this->certifiedBenefits()) · <a href="#certified-benefits">{{ count($this->certifiedBenefits()->benefits) }} {{ $this->certifiedBenefits()->brandName }} benefits</a> @endif
+                                </div>
                             </div>
                         </div>
                     @endif
@@ -1084,6 +1134,21 @@ new class extends Component {
         .qm dd { margin:2px 0 0; font-family:var(--font-display); font-size:20px; font-weight:700; line-height:1.15; }
 
         .vdp-section { padding:34px 0 0; }
+        .cpo { border:1px solid var(--line-strong); border-top:3px solid var(--ink); border-radius:10px; background:#fff; padding:22px 24px 20px; }
+        .cpo-head { display:flex; gap:14px; align-items:flex-start; margin-bottom:16px; }
+        .cpo-seal { width:44px; height:44px; border-radius:10px; background:var(--ink); color:#fff; display:grid; place-items:center; flex-shrink:0; }
+        .vdp-section .cpo-head h2 { margin:0; font-family:var(--font-display); font-size:26px; font-weight:700; text-transform:uppercase; line-height:1.05; }
+        .cpo-head p { margin:4px 0 0; font-size:15px; color:var(--ink-2); }
+        .cpo-list { list-style:none; margin:0; padding:0; display:grid; grid-template-columns:1fr 1fr; gap:0 28px; }
+        .cpo-list li { display:flex; gap:12px; align-items:flex-start; padding:13px 0; border-top:1px solid var(--line-strong); }
+        .cpo-ic { width:36px; height:36px; border-radius:9px; background:var(--primary-soft); color:var(--primary-press); display:grid; place-items:center; flex-shrink:0; }
+        .cpo-list .t { font-size:15px; font-weight:700; color:var(--ink); line-height:1.3; }
+        .cpo-list .s { font-size:14px; color:var(--ink-2); margin-top:2px; line-height:1.4; }
+        .cpo-fine { margin-top:14px; padding-top:12px; border-top:1px dashed var(--line-strong); font-size:12.5px; color:var(--ink-3); line-height:1.5; }
+        .cpo-fine p { margin:0 0 6px; white-space:pre-line; }
+        .cpo-fine p:last-child { margin-bottom:0; }
+        .cpo-fine a { color:var(--ink-2); text-decoration:underline; text-underline-offset:2px; }
+        .buy-cert-mini .s a { color:var(--primary-press); font-weight:600; text-decoration:underline; text-underline-offset:2px; }
         .vdp-section h2 { font-family:var(--font-display); font-size:26px; font-weight:700; text-transform:uppercase; margin:0 0 10px; }
 
         /* the dealer's inspection checklist, as a ruled sheet with green ticks */
@@ -1231,6 +1296,9 @@ new class extends Component {
             .vdp-section h2 { font-size:23px; }
             .cert-head h3 { font-size:22px; }
             .cert-benefits { grid-template-columns:1fr; }
+            .cpo { padding:18px 16px 16px; }
+            .vdp-section .cpo-head h2 { font-size:22px; }
+            .cpo-list { grid-template-columns:1fr; }
             .cert-head p { display:none; }
             .cben .s { display:none; }
             .cert-block.is-expanded .cben .s { display:block; }

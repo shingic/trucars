@@ -1,6 +1,6 @@
 {{--
     Header and tabs for one brand's settings. Expects $brand (App\Models\Brand)
-    and $activeTab: overview | checklist | offers.
+    and $activeTab: overview | checklist | benefits | offers.
 --}}
 <style>
     .bh { display:flex; align-items:center; gap:16px; margin-bottom:20px; }
@@ -31,6 +31,10 @@
     <a href="{{ route('admin.brands.checklist', $brand) }}" wire:navigate class="{{ $activeTab === 'checklist' ? 'on' : '' }}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-4a1 1 0 0 1-1-1Z"/><path d="m9 14 2 2 4-4"/></svg>
         CPO checklist
+    </a>
+    <a href="{{ route('admin.brands.benefits', $brand) }}" wire:navigate class="{{ $activeTab === 'benefits' ? 'on' : '' }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 8 9 8 9s8-4 8-9V6Z"/><path d="m9 12 2 2 4-4"/></svg>
+        Certified benefits
     </a>
     <a href="{{ route('admin.brands.offers', $brand) }}" wire:navigate class="{{ $activeTab === 'offers' ? 'on' : '' }}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8Z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>

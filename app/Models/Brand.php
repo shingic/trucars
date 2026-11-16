@@ -15,7 +15,34 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Brand extends Model
 {
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'cpo_program_name', 'cpo_benefits', 'cpo_fine_print', 'cpo_source_url', 'cpo_checked_on', 'cpo_benefits_live'];
+
+    protected function casts(): array
+    {
+        return [
+            'cpo_benefits'      => 'array',
+            'cpo_checked_on'    => 'date',
+            'cpo_benefits_live' => 'boolean',
+        ];
+    }
+
+    /**
+     * The certified program benefits as clean rows (blank titles dropped).
+     *
+     * @return array<int, array{icon: string, title: string, detail: string}>
+     */
+    public function certifiedBenefitRows(): array
+    {
+        return collect($this->cpo_benefits ?? [])
+            ->map(fn ($row) => [
+                'icon'   => array_key_exists($row['icon'] ?? '', \App\Support\CertifiedBenefits::ICONS) ? $row['icon'] : 'check',
+                'title'  => trim((string) ($row['title'] ?? '')),
+                'detail' => trim((string) ($row['detail'] ?? '')),
+            ])
+            ->filter(fn ($row) => $row['title'] !== '')
+            ->values()
+            ->all();
+    }
 
     public function dealers(): HasMany
     {

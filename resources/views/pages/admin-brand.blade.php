@@ -138,6 +138,26 @@ new #[Layout('layouts.dealer')] #[Title('Brand')] class extends Component {
             @endforelse
         </div>
 
+        @php $benefits = $brand->certifiedBenefitRows(); @endphp
+        <div class="card wide">
+            <div class="card-head">
+                <div><div class="t">Certified benefits</div><div class="s">What {{ $brand->name }}’s certified program gives the buyer, shown on manufacturer-certified cars</div></div>
+                <div class="spacer"></div>
+                <a href="{{ route('admin.brands.benefits', $brand) }}" wire:navigate>{{ $benefits === [] ? 'Set up →' : 'Edit →' }}</a>
+            </div>
+            @if ($benefits === [])
+                <div class="empty">None yet — certified {{ $brand->name }} cars show only the inspection checklist.</div>
+            @else
+                <div class="row">
+                    <span class="grow">
+                        <div class="nm">{{ count($benefits) }} {{ count($benefits) === 1 ? 'benefit' : 'benefits' }}{{ $brand->cpo_checked_on ? ' · checked ' . $brand->cpo_checked_on->format('M j, Y') : '' }}</div>
+                        <div class="meta">{{ collect($benefits)->pluck('title')->take(4)->implode(' · ') }}{{ count($benefits) > 4 ? ' …' : '' }}</div>
+                    </span>
+                    <span class="pill {{ $brand->cpo_benefits_live ? 'live' : '' }}">{{ $brand->cpo_benefits_live ? 'Live' : 'Off' }}</span>
+                </div>
+            @endif
+        </div>
+
         <div class="card wide">
             <div class="card-head">
                 <div><div class="t">{{ $brand->name }} dealers · {{ $dealers->count() }}</div><div class="s">They all follow the settings above. Set a dealer’s brand on its profile.</div></div>
