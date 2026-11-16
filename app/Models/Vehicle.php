@@ -58,6 +58,9 @@ class Vehicle extends Model
             'is_certified' => 'boolean',
             'is_manufacturer_certified' => 'boolean',
             'photos' => 'array',
+            'first_listed_at' => 'datetime',
+            'price_dropped_at' => 'datetime',
+            'price_before_drop_in_cents' => 'integer',
         ];
     }
 
@@ -74,6 +77,11 @@ class Vehicle extends Model
         static::saving(function (Vehicle $vehicle) {
             $vehicle->placeAtRooftop();
             $vehicle->photo_count = count(array_filter((array) $vehicle->photos));
+            $vehicle->notePriceChange();
+
+            if ($vehicle->is_published && $vehicle->first_listed_at === null) {
+                $vehicle->first_listed_at = now();
+            }
 
             if (! $vehicle->is_published || ! $vehicle->isDirty(['is_published', 'dealer_id', 'rooftop_id'])) {
                 return;
@@ -88,6 +96,83 @@ class Vehicle extends Model
                 ]);
             }
         });
+    }
+
+    /**
+     * A price cut starts (or deepens) a "Price dropped" run, remembering the
+     * price before it. A rise back to that price or above ends it.
+     */
+    private function notePriceChange(): void
+    {
+        if (! $this->exists || ! $this->isDirty('price_in_cents')) {
+            return;
+        }
+
+        $was = (int) $this->getOriginal('price_in_cents');
+        $now = (int) $this->price_in_cents;
+
+        if ($now < $was) {
+            $runIsCurrent = $this->price_dropped_at !== null
+                && $this->price_dropped_at->gt(now()->subDays(config('site.price_drop_days')));
+            if (! $runIsCurrent || $this->price_before_drop_in_cents === null) {
+                $this->price_before_drop_in_cents = $was;
+            }
+            $this->price_dropped_at = now();
+        } elseif ($this->price_before_drop_in_cents !== null && $now >= $this->price_before_drop_in_cents) {
+            $this->price_before_drop_in_cents = null;
+            $this->price_dropped_at = null;
+        }
+    }
+
+    /**
+     * The one tag a car wears on its card and photo, or null: a recent price
+     * cut first, then "Popular" (only once a threshold is set), then "Just listed".
+     *
+     * @return array{kind: string, label: string}|null
+     */
+    public function momentumTag(): ?array
+    {
+        $cut = (int) $this->price_before_drop_in_cents - (int) $this->price_in_cents;
+        if ($this->price_dropped_at !== null
+            && $this->price_dropped_at->gt(now()->subDays(config('site.price_drop_days')))
+            && $cut >= config('site.price_drop_min_cents')) {
+            return ['kind' => 'drop', 'label' => 'Price dropped $' . number_format(intdiv($cut, 100))];
+        }
+
+        $threshold = config('site.hot_views_threshold');
+        if ($threshold && $this->id && \Illuminate\Support\Facades\DB::table('vehicle_views')
+            ->where('vehicle_id', $this->id)->where('viewed_on', today()->toDateString())->count() >= $threshold) {
+            return ['kind' => 'hot', 'label' => 'Popular today'];
+        }
+
+        if ($this->first_listed_at !== null && $this->first_listed_at->gt(now()->subDays(config('site.just_listed_days')))) {
+            return ['kind' => 'new', 'label' => 'Just listed'];
+        }
+
+        return null;
+    }
+
+    /**
+     * Count a shopper's visit: one per visitor per car per day. Staff, dealer
+     * users and bots aren't counted.
+     */
+    public function recordView(\Illuminate\Http\Request $request): void
+    {
+        $user = $request->user();
+        if ($user !== null && ($user->isDealerStaff() || $user->isInternalStaff())) {
+            return;
+        }
+
+        if (preg_match('/bot|crawl|spider|slurp|preview|headless|lighthouse|curl|wget|python|httpclient|facebookexternalhit/i', (string) $request->userAgent()) || ! $request->hasSession()) {
+            return;
+        }
+
+        \Illuminate\Support\Facades\DB::table('vehicle_views')->insertOrIgnore([
+            'vehicle_id' => $this->id,
+            'visitor' => sha1($request->session()->getId()),
+            'viewed_on' => today()->toDateString(),
+            'created_at' => now(),
+        ]);
     }
 
     private function placeAtRooftop(): void

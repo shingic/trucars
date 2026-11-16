@@ -28,6 +28,7 @@ new class extends Component {
             // Open floor: only cars that are actually live (published, active
             // dealer), same rule as checkout. Not browsable by guessing an id.
             abort_unless($vehicle->isListed(), 404);
+            $vehicle->recordView(request());
             $this->resumeTracking();
 
             return;
@@ -51,6 +52,7 @@ new class extends Component {
 
         $this->campaignToken = $token;
         View::share('referredCampaign', $campaign);
+        $vehicle->recordView(request());
         $this->resumeTracking();
     }
 
@@ -557,6 +559,9 @@ new class extends Component {
                                 <span class="dot"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>
                                 {{ $this->certification()->badge }}
                             </span>
+                        @endif
+                        @if (! $reserved && ($tag = $vehicle->momentumTag()))
+                            <span class="gallery-badge momentum is-{{ $tag['kind'] }}">{{ $tag['label'] }}</span>
                         @endif
                     </div>
 
@@ -1081,6 +1086,8 @@ new class extends Component {
         .gallery-badge .dot { width:16px; height:16px; border-radius:5px; background:var(--good); display:grid; place-items:center; }
         .gallery-badge.reserved { background:var(--ink); color:#fff; }
         .gallery-badge.reserved .dot { background:transparent; }
+        .gallery-badge.momentum { background:var(--primary); color:#fff; border-radius:0 0 10px 0; }
+        .gallery-badge.momentum.is-drop { background:#0B7355; }
 
         .ghero-fs { position:absolute; z-index:3; top:10px; right:10px; width:40px; height:40px; border:none; border-radius:8px; background:var(--ink); color:#fff; display:grid; place-items:center; cursor:pointer; }
         .ghero-fs:hover { background:var(--primary); }

@@ -24,3 +24,6 @@ Schedule::command('saved:send-alerts')->everyFifteenMinutes()->withoutOverlappin
 
 // The Email Centre's log keeps 12 months.
 Schedule::command('email-log:prune')->daily();
+
+// Car view counts keep 90 days.
+Schedule::command('vehicles:views --prune')->daily();

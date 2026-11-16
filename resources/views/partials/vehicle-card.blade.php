@@ -48,6 +48,8 @@
         .vcard-tags > span { font-family:var(--font-display); font-size:13.5px; font-weight:600; text-transform:uppercase; padding:3px 9px; max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .vcard-reserved { background:var(--ink); color:#fff; }
         .vcard-offer { background:var(--primary); color:#fff; }
+        .vcard-momentum { background:var(--primary); color:#fff; }
+        .vcard-momentum.is-drop { background:#0B7355; }
         .vcard-badge { background:#fff; color:var(--ink); display:inline-flex; align-items:center; gap:5px; }
         .vcard-badge svg { color:var(--good); flex-shrink:0; }
         .vcard-fav { position:absolute; top:8px; right:8px; z-index:2; width:34px; height:34px; border-radius:8px; background:#fff; display:grid; place-items:center; color:var(--ink-2); }
@@ -102,6 +104,9 @@
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5"><path d="M20 6 9 17l-5-5"/></svg>
                     {{ $badgeLabel }}
                 </span>
+            @endif
+            @if (! $reserved && ($tag = $vehicle->momentumTag()))
+                <span class="vcard-momentum is-{{ $tag['kind'] }}">{{ $tag['label'] }}</span>
             @endif
         </div>
         @if ($favouritesAreVisible)
