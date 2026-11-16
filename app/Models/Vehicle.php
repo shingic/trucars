@@ -17,6 +17,9 @@ use Illuminate\Validation\ValidationException;
 
 class Vehicle extends Model
 {
+    /** Fewer photos than this is a placeholder or a promo banner, not a listing. */
+    public const MIN_PHOTOS = 4;
+
     use CleansText;
 
     /** Text columns kept as clean UTF-8 (see CleansText). */
@@ -70,6 +73,7 @@ class Vehicle extends Model
     {
         static::saving(function (Vehicle $vehicle) {
             $vehicle->placeAtRooftop();
+            $vehicle->photo_count = count(array_filter((array) $vehicle->photos));
 
             if (! $vehicle->is_published || ! $vehicle->isDirty(['is_published', 'dealer_id', 'rooftop_id'])) {
                 return;
@@ -132,13 +136,14 @@ class Vehicle extends Model
      * dealers, at open rooftops. A dealer switched back to draft, or a store
      * marked closed, drops off without anyone having to unpublish each car.
      * Reserved cars stay listed — shown as reserved, with a bell to hear if
-     * the deal falls through. A car with no photos isn't shown at all; it
-     * comes back by itself once a feed brings its photos.
+     * the deal falls through. A car with fewer than MIN_PHOTOS photos (none,
+     * a placeholder, a promo banner) isn't shown at all; it comes back by
+     * itself once a feed brings real photos.
      */
     public function scopeListed(Builder $query): void
     {
         $query->where('vehicles.is_published', true)
-            ->whereNotNull('vehicles.photos')->whereNotIn('vehicles.photos', ['[]', '', 'null'])
+            ->where('vehicles.photo_count', '>=', self::MIN_PHOTOS)
             ->whereHas('dealer', fn (Builder $dealer) => $dealer->where('status', Dealer::STATUS_ACTIVE))
             ->whereDoesntHave('rooftop', fn (Builder $rooftop) => $rooftop->where('is_active', false));
     }
@@ -173,9 +178,10 @@ class Vehicle extends Model
         return $this->is_published && $this->hasPhotos() && $this->dealer?->isActive() && $this->rooftop?->is_active !== false;
     }
 
+    /** Enough real photos to be shown to shoppers. */
     public function hasPhotos(): bool
     {
-        return array_filter((array) $this->photos) !== [];
+        return count(array_filter((array) $this->photos)) >= self::MIN_PHOTOS;
     }
 
     /** Where the car is — its rooftop's city, e.g. "Chilliwack, BC". */

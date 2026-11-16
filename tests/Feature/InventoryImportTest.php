@@ -217,9 +217,9 @@ class InventoryImportTest extends TestCase
     public function test_one_command_onboards_a_store_live_with_its_brand(): void
     {
         $this->import([
-            $this->row('ROOF-N', 'VIN00000000000001', ['dealer_name' => 'Newmarket Nissan', 'make' => 'Nissan', 'dealer_latitude' => '', 'dealer_longitude' => '', 'photos' => 'https://media.test/1.webp|https://media.test/2.webp',
+            $this->row('ROOF-N', 'VIN00000000000001', ['dealer_name' => 'Newmarket Nissan', 'make' => 'Nissan', 'dealer_latitude' => '', 'dealer_longitude' => '', 'photos' => $this->photoList('a'),
                 'dealer_address' => '17385 Leslie St', 'dealer_city' => 'Newmarket', 'dealer_region_code' => 'ON', 'dealer_postal_code' => 'L3Y 9A3']),
-            $this->row('ROOF-N', 'VIN00000000000002', ['dealer_name' => 'Newmarket Nissan', 'make' => 'Hyundai', 'photos' => 'https://media.test/3.webp', 'dealer_city' => 'Newmarket', 'dealer_region_code' => 'ON', 'dealer_postal_code' => 'L3Y 9A3']),
+            $this->row('ROOF-N', 'VIN00000000000002', ['dealer_name' => 'Newmarket Nissan', 'make' => 'Hyundai', 'photos' => $this->photoList('b'), 'dealer_city' => 'Newmarket', 'dealer_region_code' => 'ON', 'dealer_postal_code' => 'L3Y 9A3']),
         ], ['--brand' => 'nissan', '--activate' => true, '--publish' => true])
             ->expectsOutputToContain('Activated: Newmarket Nissan is live.')
             ->expectsOutputToContain('Published: 2 new cars')
@@ -232,7 +232,7 @@ class InventoryImportTest extends TestCase
         // No coordinates in the feed: placed from its postal area.
         $this->assertEqualsWithDelta(44.06, $dealer->latitude, 0.1);
         $this->assertSame(2, Vehicle::listed()->count());
-        $this->assertSame(['https://media.test/1.webp', 'https://media.test/2.webp'], Vehicle::where('make', 'Nissan')->sole()->photos);
+        $this->assertCount(4, Vehicle::where('make', 'Nissan')->sole()->photos);
         $this->assertTrue(Vehicle::where('make', 'Nissan')->sole()->is_manufacturer_certified);
         $this->assertFalse(Vehicle::where('make', 'Hyundai')->sole()->is_manufacturer_certified);
 
@@ -252,8 +252,50 @@ class InventoryImportTest extends TestCase
         $this->assertFalse($car->isListed());
         $this->get('/cars/' . $car->id)->assertNotFound();
 
-        $this->import([$this->row('ROOF-A', 'VIN00000000000001', ['photos' => 'https://media.test/1.webp'])])->assertSuccessful();
+        // One or two pictures is a placeholder or a banner, not a listing.
+        $this->import([$this->row('ROOF-A', 'VIN00000000000001', ['photos' => 'https://media.test/1.webp|https://media.test/2.webp'])])->assertSuccessful();
+        $this->assertSame(0, Vehicle::listed()->count());
+
+        $this->import([$this->row('ROOF-A', 'VIN00000000000001', ['photos' => $this->photoList('a')])])->assertSuccessful();
         $this->assertSame(1, Vehicle::listed()->count());
+    }
+
+    public function test_promo_images_shared_between_cars_are_dropped(): void
+    {
+        $promo = 'https://media.edealer.ca/w_1920,h_1440,q_75,c_l,v1/inventory/AUTOTRADER-BADGE.webp';
+        $promoSmall = 'https://media.edealer.ca/w_640,h_480,q_75,c_l,v1/inventory/AUTOTRADER-BADGE.webp';
+
+        $this->import([
+            $this->row('ROOF-A', 'VIN00000000000001', ['photos' => $this->photoList('a') . '|' . $promo]),
+            $this->row('ROOF-A', 'VIN00000000000002', ['photos' => $this->photoList('b', 2) . '|' . $promoSmall]),
+            // A new car carrying the same badge still counts as "another car".
+            $this->row('ROOF-A', 'VIN00000000000003', ['condition' => 'NEW', 'certified' => 'FALSE', 'photos' => $promo]),
+        ])->assertSuccessful();
+
+        $this->assertSame($this->photoListArray('a'), Vehicle::where('vin', 'VIN00000000000001')->sole()->photos);
+        // Two real photos once the badge is gone: too few to show.
+        $this->assertCount(2, Vehicle::where('vin', 'VIN00000000000002')->sole()->photos);
+        $this->assertFalse(Vehicle::where('vin', 'VIN00000000000002')->sole()->hasPhotos());
+    }
+
+    public function test_photos_named_the_same_in_each_cars_folder_are_kept(): void
+    {
+        $this->import([
+            $this->row('ROOF-A', 'VIN00000000000001', ['photos' => 'https://cdn.test/VIN1/1.jpg|https://cdn.test/VIN1/2.jpg|https://cdn.test/VIN1/3.jpg|https://cdn.test/VIN1/4.jpg']),
+            $this->row('ROOF-A', 'VIN00000000000002', ['photos' => 'https://cdn.test/VIN2/1.jpg|https://cdn.test/VIN2/2.jpg|https://cdn.test/VIN2/3.jpg|https://cdn.test/VIN2/4.jpg']),
+        ])->assertSuccessful();
+
+        $this->assertSame(4, Vehicle::where('vin', 'VIN00000000000002')->sole()->photo_count);
+    }
+
+    private function photoList(string $car, int $count = 4): string
+    {
+        return implode('|', $this->photoListArray($car, $count));
+    }
+
+    private function photoListArray(string $car, int $count = 4): array
+    {
+        return array_map(fn ($n) => "https://media.edealer.ca/w_1920,h_1440,q_75,c_l,v1/inventory/{$car}-{$n}.webp", range(1, $count));
     }
 
     private function row(string $rooftopId, string $vin, array $overrides = []): array

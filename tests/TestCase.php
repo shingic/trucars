@@ -18,12 +18,19 @@ abstract class TestCase extends BaseTestCase
         $this->stripe = new FakeDepositGateway;
         $this->app->instance(DepositGateway::class, $this->stripe);
 
-        // Cars without photos aren't listed, so test cars get one unless a
-        // test sets photos itself (e.g. 'photos' => [] to test exactly that).
+        // Cars with too few photos aren't listed, so test cars get enough
+        // unless a test sets photos itself (e.g. 'photos' => [] to test that).
         \App\Models\Vehicle::creating(function (\App\Models\Vehicle $vehicle) {
             if (! array_key_exists('photos', $vehicle->getAttributes())) {
-                $vehicle->photos = ['https://photos.test/car.jpg'];
+                $vehicle->photos = self::photosFor((string) $vehicle->vin);
+                $vehicle->photo_count = count($vehicle->photos);
             }
         });
+    }
+
+    /** Enough photos for a car to be listed, all under one name. */
+    public static function photosFor(string $name): array
+    {
+        return array_map(fn ($n) => "https://example.test/{$name}/{$n}.jpg", range(1, \App\Models\Vehicle::MIN_PHOTOS));
     }
 }

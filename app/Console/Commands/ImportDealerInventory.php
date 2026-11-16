@@ -45,6 +45,8 @@ class ImportDealerInventory extends Command
         $delimiter = $this->detectDelimiter($fileHandle);
         $headerColumns = array_map(fn ($column) => FeedText::clean($column), fgetcsv($fileHandle, separator: $delimiter, escape: "\\") ?: []);
 
+        $sharedPhotos = $this->photosOnMoreThanOneCar($fileHandle, $delimiter, $headerColumns);
+
         $dealer = null;
         $rooftop = null;
         $feedRooftopId = null;
@@ -153,7 +155,7 @@ class ImportDealerInventory extends Command
                 'transmission'   => $row['transmission'] ?: null,
                 'drivetrain'     => $row['drivetrain'] ?: null,
                 'fuel_type'      => $row['fuel_type'] ?: null,
-                'photos'         => $this->splitPhotoUrls($row['photos']),
+                'photos'         => $this->ownPhotos($row, $sharedPhotos),
                 'is_certified'   => $this->looksCertifiable($condition, $modelYear, $kilometres),
                 'is_manufacturer_certified' => $this->isFlaggedManufacturerCertified($row, $condition, $dealer),
             ]);
@@ -497,6 +499,74 @@ class ImportDealerInventory extends Command
         }
 
         return (int) round(((float) $clean) * 100);
+    }
+
+    /**
+     * Images that appear on more than one car in the file — the dealer's
+     * promo slides, award badges, "every CPO car includes" panels. They're
+     * not pictures of the car, so no car keeps them. Leaves the file
+     * positioned just after the header.
+     *
+     * @param  array<int, string>  $headerColumns
+     * @return array<string, true>
+     */
+    private function photosOnMoreThanOneCar($fileHandle, string $delimiter, array $headerColumns): array
+    {
+        $start = ftell($fileHandle);
+        $carsByPhoto = [];
+
+        while (($values = fgetcsv($fileHandle, separator: $delimiter, escape: "\\")) !== false) {
+            if (count($values) !== count($headerColumns)) {
+                continue;
+            }
+
+            $row = array_combine($headerColumns, array_map(fn ($value) => FeedText::clean($value), $values));
+            $vin = strtoupper(trim($row['vin'] ?? ''));
+
+            foreach (array_unique(array_map([$this, 'photoKey'], $this->splitPhotoUrls($row['photos'] ?? ''))) as $key) {
+                $carsByPhoto[$key][$vin] = true;
+            }
+        }
+
+        fseek($fileHandle, $start);
+
+        return array_map(fn () => true, array_filter($carsByPhoto, fn ($cars) => count($cars) > 1));
+    }
+
+    /**
+     * This car's own photos: none when the feed says they're the maker's
+     * stock images, and never an image other cars share.
+     *
+     * @param  array<string, string>  $row
+     * @param  array<string, true>  $sharedPhotos
+     * @return array<int, string>
+     */
+    private function ownPhotos(array $row, array $sharedPhotos): array
+    {
+        if (str_contains(strtolower($row['photo_source'] ?? ''), 'stock')) {
+            return [];
+        }
+
+        return array_values(array_filter(
+            array_unique($this->splitPhotoUrls($row['photos'])),
+            fn (string $url) => ! isset($sharedPhotos[$this->photoKey($url)]),
+        ));
+    }
+
+    /**
+     * The image itself: host and path, minus the CDN's resize/quality segments
+     * ("w_1920,h_1440,q_75,c_l", "v1"), so the same image at two sizes matches.
+     * The whole path, not just the file name — some feeds name every car's
+     * photos 1.jpg, 2.jpg… in a folder per car.
+     */
+    private function photoKey(string $url): string
+    {
+        $segments = array_filter(
+            explode('/', (string) parse_url($url, PHP_URL_PATH)),
+            fn (string $segment) => $segment !== '' && ! str_contains($segment, ',') && preg_match('/^v\d+$/', $segment) !== 1,
+        );
+
+        return strtolower(parse_url($url, PHP_URL_HOST) . '/' . implode('/', $segments));
     }
 
     /**

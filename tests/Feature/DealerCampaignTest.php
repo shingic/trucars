@@ -146,8 +146,8 @@ class DealerCampaignTest extends TestCase
 
     public function test_a_google_referrer_alone_does_not_scope_the_marketplace(): void
     {
-        $this->cpoVehicle($this->dealer, ['model' => 'Outlander', 'photos' => ['https://example.test/outlander.jpg']]);
-        $this->cpoVehicle($this->rival, ['model' => 'Eclipse Cross', 'photos' => ['https://example.test/eclipse.jpg']]);
+        $this->cpoVehicle($this->dealer, ['model' => 'Outlander', 'photos' => self::photosFor('outlander')]);
+        $this->cpoVehicle($this->rival, ['model' => 'Eclipse Cross', 'photos' => self::photosFor('eclipse')]);
         $this->campaign($this->dealer, ['source' => 'google_ads']);
 
         $this->withHeader('Referer', 'https://www.google.com/')

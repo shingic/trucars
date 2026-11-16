@@ -26,8 +26,8 @@ class HomepageTest extends TestCase
 
     public function test_visitors_land_on_the_homepage_not_the_shop(): void
     {
-        $this->car(['model' => 'Outlander', 'body_type' => 'SUV', 'photos' => ['https://example.test/outlander.jpg']]);
-        $this->car(['model' => 'Hidden Mirage', 'is_published' => false, 'photos' => ['https://example.test/mirage.jpg']]);
+        $this->car(['model' => 'Outlander', 'body_type' => 'SUV', 'photos' => self::photosFor('outlander')]);
+        $this->car(['model' => 'Hidden Mirage', 'is_published' => false, 'photos' => self::photosFor('mirage')]);
         $this->car(['model' => 'Photoless Lancer', 'photos' => []]);
 
         $this->get('/')
@@ -47,12 +47,12 @@ class HomepageTest extends TestCase
     public function test_the_closing_photo_rotates_through_every_dealer(): void
     {
         $other = $this->makeDealer(['name' => 'Valley Nissan']);
-        $this->car(['model' => 'Outlander', 'photos' => ['https://example.test/outlander.jpg']]);
+        $this->car(['model' => 'Outlander', 'photos' => self::photosFor('outlander')]);
         $this->car(['model' => 'NoPhoto', 'photos' => []]);
         $other->vehicles()->create([
             'vin' => Str::upper(Str::random(17)), 'model_year' => 2022, 'make' => 'Nissan', 'model' => 'Rogue',
             'kilometres' => 30000, 'price_in_cents' => 2899000, 'condition' => 'USED', 'is_published' => true,
-            'photos' => ['https://example.test/rogue.jpg'],
+            'photos' => self::photosFor('rogue'),
         ]);
 
         $seen = collect(range(1, 30))->map(fn () => Livewire::test('pages::home')->viewData('closer')?->model)->unique();
@@ -67,10 +67,10 @@ class HomepageTest extends TestCase
         $other->vehicles()->create([
             'vin' => Str::upper(Str::random(17)), 'model_year' => 2020, 'make' => 'Nissan', 'model' => 'Rogue',
             'kilometres' => 30000, 'price_in_cents' => 2899000, 'condition' => 'USED', 'is_published' => true,
-            'photos' => ['https://example.test/rogue.jpg'], 'created_at' => now()->subDay(),
+            'photos' => self::photosFor('rogue'), 'created_at' => now()->subDay(),
         ]);
         foreach (range(1, 12) as $i) {
-            $this->car(['model' => "Outlander {$i}", 'photos' => ["https://example.test/{$i}.jpg"]]);
+            $this->car(['model' => "Outlander {$i}", 'photos' => self::photosFor("car{$i}")]);
         }
 
         foreach (range(1, 5) as $visit) {
