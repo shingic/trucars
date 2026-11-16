@@ -773,9 +773,13 @@ new class extends Component {
                                 </li>
                             @endforeach
                         </ul>
-                        @if ($program->finePrint || $program->sourceUrl)
+                        @if ($program->finePrint || $program->sourceUrl || $program->hasFootnoteMarks())
                             <div class="cpo-fine">
-                                @if ($program->finePrint)<p>{{ $program->finePrint }}</p>@endif
+                                @if ($program->finePrint)
+                                    <p>{{ $program->finePrint }}</p>
+                                @elseif ($program->hasFootnoteMarks())
+                                    <p>*, **, † Conditions apply. Ask the dealership for {{ $program->brandName }}’s full program terms.</p>
+                                @endif
                                 @if ($program->sourceUrl)
                                     <p>Program terms are set by {{ $program->brandName }} and can change. Full details at <a href="{{ $program->sourceUrl }}" target="_blank" rel="noopener noreferrer">{{ $program->sourceHost() }}</a>.</p>
                                 @endif

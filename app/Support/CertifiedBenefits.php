@@ -76,6 +76,12 @@ final class CertifiedBenefits
         return (self::ICONS[$key] ?? self::ICONS['check'])[1];
     }
 
+    /** Whether any benefit carries a footnote mark (*, †, ‡) that needs explaining. */
+    public function hasFootnoteMarks(): bool
+    {
+        return collect($this->benefits)->contains(fn ($row) => preg_match('/[*†‡]/u', $row['title'] . $row['detail']) === 1);
+    }
+
     /** "toyota.ca" from the source link, for a short credit line. */
     public function sourceHost(): ?string
     {

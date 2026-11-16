@@ -24,9 +24,9 @@ return new class extends Migration
             $table->boolean('cpo_benefits_live')->default(false)->after('cpo_checked_on');
         });
 
-        // Toyota, from Toyota's certified program list. Hidden until the fine
-        // print and source link are added and it's switched on.
-        DB::table('brands')->whereRaw('lower(name) = ?', ['toyota'])->update(['cpo_benefits' => json_encode([
+        // Toyota, from Toyota's certified program list. Live from the start;
+        // the fine print and source link get added in the Command Centre.
+        DB::table('brands')->whereRaw('lower(name) = ?', ['toyota'])->update(['cpo_benefits_live' => true, 'cpo_benefits' => json_encode([
             ['icon' => 'coverage', 'title' => 'Powertrain & roadside assistance coverage', 'detail' => 'Minimum 6 months / 10,000 km'],
             ['icon' => 'deductible', 'title' => 'Zero deductible', 'detail' => ''],
             ['icon' => 'exchange', 'title' => 'Exchange privilege*', 'detail' => '7 days / 1,500 km'],

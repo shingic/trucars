@@ -27,11 +27,18 @@ class CertifiedBenefitsTest extends TestCase
         $this->toyota = Brand::where('name', 'Toyota')->firstOrFail();
     }
 
-    public function test_toyota_comes_prefilled_but_off(): void
+    public function test_toyota_comes_prefilled_and_live(): void
     {
         $this->assertCount(8, $this->toyota->certifiedBenefitRows());
         $this->assertSame('Exchange privilege*', $this->toyota->certifiedBenefitRows()[2]['title']);
-        $this->assertFalse($this->toyota->cpo_benefits_live);
+        $this->assertTrue($this->toyota->cpo_benefits_live);
+
+        // No fine print entered yet: the marks still point somewhere.
+        $car = $this->makeDealer(['name' => 'NEWMARKET TOYOTA', 'franchise_make' => 'Toyota'])->vehicles()->create([
+            'vin' => Str::upper(Str::random(17)), 'model_year' => 2023, 'make' => 'Toyota', 'model' => 'RAV4', 'body_type' => 'SUV',
+            'kilometres' => 30000, 'price_in_cents' => 3899000, 'condition' => 'USED', 'is_published' => true, 'is_manufacturer_certified' => true,
+        ]);
+        Livewire::test('pages::vehicle', ['vehicle' => $car])->assertSee('Exchange privilege*')->assertSee('Conditions apply');
     }
 
     public function test_only_manufacturer_certified_cars_of_the_brand_show_them(): void
@@ -69,6 +76,8 @@ class CertifiedBenefitsTest extends TestCase
     public function test_turning_on_needs_the_brand_page_and_a_checked_date(): void
     {
         $this->actingAs(User::factory()->owner()->create());
+
+        $this->toyota->update(['cpo_benefits_live' => false]);
 
         Livewire::test('pages::admin-brand-benefits', ['brand' => $this->toyota])
             ->assertSee('Exchange privilege*')
