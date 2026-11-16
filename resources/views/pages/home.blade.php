@@ -11,7 +11,7 @@ use Livewire\Component;
 | shop. Everything on it is live: the counts, the cars and the photos are
 | read from what's actually listed (published cars at active dealers).
 */
-new #[Title('Trumo — Real dealers. Real prices.')] class extends Component {
+new #[Title('Certified Pre-Owned Cars, All-In Prices | Trumo')] class extends Component {
     public string $q = '';
 
     /** The search box opens the shop with the search already applied. */
