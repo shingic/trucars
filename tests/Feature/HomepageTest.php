@@ -28,7 +28,7 @@ class HomepageTest extends TestCase
     {
         $this->car(['model' => 'Outlander', 'body_type' => 'SUV', 'photos' => ['https://example.test/outlander.jpg']]);
         $this->car(['model' => 'Hidden Mirage', 'is_published' => false, 'photos' => ['https://example.test/mirage.jpg']]);
-        $this->car(['model' => 'Photoless Lancer']);
+        $this->car(['model' => 'Photoless Lancer', 'photos' => []]);
 
         $this->get('/')
             ->assertOk()
@@ -48,7 +48,7 @@ class HomepageTest extends TestCase
     {
         $other = $this->makeDealer(['name' => 'Valley Nissan']);
         $this->car(['model' => 'Outlander', 'photos' => ['https://example.test/outlander.jpg']]);
-        $this->car(['model' => 'NoPhoto']);
+        $this->car(['model' => 'NoPhoto', 'photos' => []]);
         $other->vehicles()->create([
             'vin' => Str::upper(Str::random(17)), 'model_year' => 2022, 'make' => 'Nissan', 'model' => 'Rogue',
             'kilometres' => 30000, 'price_in_cents' => 2899000, 'condition' => 'USED', 'is_published' => true,

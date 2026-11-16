@@ -42,6 +42,7 @@
         .tag.off { background:var(--bg-2); color:var(--ink-3); border:1px solid var(--line-strong); }
         .tag.held { background:#FFF8DD; color:#7A4E00; }
         .tag.cert { background:var(--ink); color:#fff; }
+        .tag.nophoto { background:#FFF1E6; color:#B54708; }
         .empty { margin-top:12px; padding:14px 16px; font-size:14px; color:var(--ink-2); border:1.5px dashed var(--line-strong); border-radius:8px; }
         .pages { margin-top:14px; }
         @media (max-width:980px){ .v-row { grid-template-columns:24px 64px 1fr auto; } .v-row .hide-sm { display:none; } }
@@ -98,6 +99,7 @@
                 <span>
                     <span class="tag {{ $vehicle->is_published ? 'live' : 'off' }}">{{ $vehicle->is_published ? 'Published' : 'Unpublished' }}</span>
                     @if ($vehicle->is_reserved) <span class="tag held">Reserved</span> @endif
+                    @if ($vehicle->is_published && ! $vehicle->hasPhotos()) <span class="tag nophoto" title="Hidden from shoppers until the feed sends photos">No photos · hidden</span> @endif
                 </span>
                 <span style="text-align:right">
                     @if ($canManage)

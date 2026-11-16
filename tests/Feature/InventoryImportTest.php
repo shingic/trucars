@@ -217,9 +217,9 @@ class InventoryImportTest extends TestCase
     public function test_one_command_onboards_a_store_live_with_its_brand(): void
     {
         $this->import([
-            $this->row('ROOF-N', 'VIN00000000000001', ['dealer_name' => 'Newmarket Nissan', 'make' => 'Nissan', 'dealer_latitude' => '', 'dealer_longitude' => '',
+            $this->row('ROOF-N', 'VIN00000000000001', ['dealer_name' => 'Newmarket Nissan', 'make' => 'Nissan', 'dealer_latitude' => '', 'dealer_longitude' => '', 'photos' => 'https://media.test/1.webp|https://media.test/2.webp',
                 'dealer_address' => '17385 Leslie St', 'dealer_city' => 'Newmarket', 'dealer_region_code' => 'ON', 'dealer_postal_code' => 'L3Y 9A3']),
-            $this->row('ROOF-N', 'VIN00000000000002', ['dealer_name' => 'Newmarket Nissan', 'make' => 'Hyundai', 'dealer_city' => 'Newmarket', 'dealer_region_code' => 'ON', 'dealer_postal_code' => 'L3Y 9A3']),
+            $this->row('ROOF-N', 'VIN00000000000002', ['dealer_name' => 'Newmarket Nissan', 'make' => 'Hyundai', 'photos' => 'https://media.test/3.webp', 'dealer_city' => 'Newmarket', 'dealer_region_code' => 'ON', 'dealer_postal_code' => 'L3Y 9A3']),
         ], ['--brand' => 'nissan', '--activate' => true, '--publish' => true])
             ->expectsOutputToContain('Activated: Newmarket Nissan is live.')
             ->expectsOutputToContain('Published: 2 new cars')
@@ -232,12 +232,28 @@ class InventoryImportTest extends TestCase
         // No coordinates in the feed: placed from its postal area.
         $this->assertEqualsWithDelta(44.06, $dealer->latitude, 0.1);
         $this->assertSame(2, Vehicle::listed()->count());
+        $this->assertSame(['https://media.test/1.webp', 'https://media.test/2.webp'], Vehicle::where('make', 'Nissan')->sole()->photos);
         $this->assertTrue(Vehicle::where('make', 'Nissan')->sole()->is_manufacturer_certified);
         $this->assertFalse(Vehicle::where('make', 'Hyundai')->sole()->is_manufacturer_certified);
 
         // A brand that doesn't match the dealer's is refused, not switched.
         $this->import([$this->row('ROOF-N', 'VIN00000000000001', ['dealer_name' => 'Newmarket Nissan'])], ['--brand' => 'Infiniti'])->assertFailed();
         $this->assertSame('Nissan', $dealer->fresh()->franchise_make);
+    }
+
+    public function test_a_car_without_photos_is_never_shown_and_comes_back_with_them(): void
+    {
+        $this->import([$this->row('ROOF-A', 'VIN00000000000001', ['photos' => ''])], ['--publish' => true])->assertSuccessful();
+        Dealer::sole()->update(['status' => Dealer::STATUS_ACTIVE]);
+
+        $car = Vehicle::sole();
+        $this->assertTrue($car->is_published);
+        $this->assertSame(0, Vehicle::listed()->count());
+        $this->assertFalse($car->isListed());
+        $this->get('/cars/' . $car->id)->assertNotFound();
+
+        $this->import([$this->row('ROOF-A', 'VIN00000000000001', ['photos' => 'https://media.test/1.webp'])])->assertSuccessful();
+        $this->assertSame(1, Vehicle::listed()->count());
     }
 
     private function row(string $rooftopId, string $vin, array $overrides = []): array

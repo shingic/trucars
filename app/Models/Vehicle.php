@@ -132,11 +132,13 @@ class Vehicle extends Model
      * dealers, at open rooftops. A dealer switched back to draft, or a store
      * marked closed, drops off without anyone having to unpublish each car.
      * Reserved cars stay listed — shown as reserved, with a bell to hear if
-     * the deal falls through.
+     * the deal falls through. A car with no photos isn't shown at all; it
+     * comes back by itself once a feed brings its photos.
      */
     public function scopeListed(Builder $query): void
     {
         $query->where('vehicles.is_published', true)
+            ->whereNotNull('vehicles.photos')->whereNotIn('vehicles.photos', ['[]', '', 'null'])
             ->whereHas('dealer', fn (Builder $dealer) => $dealer->where('status', Dealer::STATUS_ACTIVE))
             ->whereDoesntHave('rooftop', fn (Builder $rooftop) => $rooftop->where('is_active', false));
     }
@@ -168,7 +170,12 @@ class Vehicle extends Model
 
     public function isListed(): bool
     {
-        return $this->is_published && $this->dealer?->isActive() && $this->rooftop?->is_active !== false;
+        return $this->is_published && $this->hasPhotos() && $this->dealer?->isActive() && $this->rooftop?->is_active !== false;
+    }
+
+    public function hasPhotos(): bool
+    {
+        return array_filter((array) $this->photos) !== [];
     }
 
     /** Where the car is — its rooftop's city, e.g. "Chilliwack, BC". */
