@@ -214,6 +214,32 @@ class InventoryImportTest extends TestCase
         $this->assertSame('4×4', $vehicle->fresh()->drivetrain);
     }
 
+    public function test_one_command_onboards_a_store_live_with_its_brand(): void
+    {
+        $this->import([
+            $this->row('ROOF-N', 'VIN00000000000001', ['dealer_name' => 'Newmarket Nissan', 'make' => 'Nissan', 'dealer_latitude' => '', 'dealer_longitude' => '',
+                'dealer_address' => '17385 Leslie St', 'dealer_city' => 'Newmarket', 'dealer_region_code' => 'ON', 'dealer_postal_code' => 'L3Y 9A3']),
+            $this->row('ROOF-N', 'VIN00000000000002', ['dealer_name' => 'Newmarket Nissan', 'make' => 'Hyundai', 'dealer_city' => 'Newmarket', 'dealer_region_code' => 'ON', 'dealer_postal_code' => 'L3Y 9A3']),
+        ], ['--brand' => 'nissan', '--activate' => true, '--publish' => true])
+            ->expectsOutputToContain('Activated: Newmarket Nissan is live.')
+            ->expectsOutputToContain('Published: 2 new cars')
+            ->assertSuccessful();
+
+        $dealer = Dealer::sole();
+        $this->assertSame('Nissan', $dealer->franchise_make);
+        $this->assertTrue($dealer->isActive());
+        $this->assertSame('America/Toronto', $dealer->timezone);
+        // No coordinates in the feed: placed from its postal area.
+        $this->assertEqualsWithDelta(44.06, $dealer->latitude, 0.1);
+        $this->assertSame(2, Vehicle::listed()->count());
+        $this->assertTrue(Vehicle::where('make', 'Nissan')->sole()->is_manufacturer_certified);
+        $this->assertFalse(Vehicle::where('make', 'Hyundai')->sole()->is_manufacturer_certified);
+
+        // A brand that doesn't match the dealer's is refused, not switched.
+        $this->import([$this->row('ROOF-N', 'VIN00000000000001', ['dealer_name' => 'Newmarket Nissan'])], ['--brand' => 'Infiniti'])->assertFailed();
+        $this->assertSame('Nissan', $dealer->fresh()->franchise_make);
+    }
+
     private function row(string $rooftopId, string $vin, array $overrides = []): array
     {
         return $overrides + [

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Models\Brand;
 use App\Models\Dealer;
 use App\Models\Rooftop;
 use App\Models\Vehicle;
@@ -18,7 +19,10 @@ class ImportDealerInventory extends Command
         {--dealer= : Link the feed to this existing dealer id (e.g. one created before rooftop ids were stored)}
         {--new-dealer : Create a new dealer even though one with the same name already exists}
         {--new-rooftop : With --dealer, add the feed as another rooftop of that dealer}
-        {--keep-missing : Leave cars that are no longer in the feed as they are (default: unpublish them)}';
+        {--keep-missing : Leave cars that are no longer in the feed as they are (default: unpublish them)}
+        {--brand= : Set the dealer franchise brand (e.g. Nissan) before importing, so its certified cars count as manufacturer CPO}
+        {--publish : Publish the cars this import adds, instead of leaving them for review}
+        {--activate : Make the dealer live once its address is complete}';
 
     protected $description = 'Import a dealer inventory CSV into the dealers and vehicles tables';
 
@@ -56,6 +60,9 @@ class ImportDealerInventory extends Command
         $vinsInFeed = [];
         $rowsForRooftop = 0;
 
+        /** @var array<int, int> cars this run added, for --publish */
+        $newVehicleIds = [];
+
         while (($rowValues = fgetcsv($fileHandle, separator: $delimiter, escape: "\\")) !== false) {
             if (count($rowValues) !== count($headerColumns)) {
                 continue; // a malformed line — leave it out rather than guess
@@ -77,6 +84,12 @@ class ImportDealerInventory extends Command
                 }
 
                 $dealer = $rooftop->dealer;
+
+                if ($this->option('brand') !== null && ! $this->applyBrand($dealer)) {
+                    fclose($fileHandle);
+
+                    return self::FAILURE;
+                }
             }
 
             // One file, one rooftop. A row from another rooftop isn't this
@@ -153,7 +166,12 @@ class ImportDealerInventory extends Command
                 $newCount++;
             }
 
+            $isNew = ! $vehicle->exists;
             $vehicle->save();
+
+            if ($isNew) {
+                $newVehicleIds[] = $vehicle->id;
+            }
 
             $importedCount++;
         }
@@ -176,7 +194,7 @@ class ImportDealerInventory extends Command
             $this->warn('Dealer address incomplete (missing: ' . implode(', ', $rooftop->missingAddressFields()) . ') — its vehicles can’t be published until an admin completes it.');
         }
 
-        $this->info("Imported / updated: {$importedCount} vehicles ({$newCount} new, unpublished until reviewed)");
+        $this->info("Imported / updated: {$importedCount} vehicles ({$newCount} new" . ($this->option('publish') ? ')' : ', unpublished until reviewed)'));
         $this->line("Skipped (not certified pre-owned): {$skippedForNotCpo}");
         $this->line("Skipped (no price): {$skippedForNoPrice}");
         $this->line("Skipped (not a car): {$skippedForNotACar}");
@@ -191,7 +209,77 @@ class ImportDealerInventory extends Command
 
         $this->unpublishCarsMissingFromFeed($rooftop, $vinsInFeed, $rowsForRooftop);
 
+        if ($this->option('activate')) {
+            $this->activate($dealer->fresh());
+        }
+
+        if ($this->option('publish')) {
+            $this->publishNew($newVehicleIds, $rooftop);
+        }
+
         return self::SUCCESS;
+    }
+
+    /** --brand: link the dealer to its franchise brand; never silently switch one already set. */
+    private function applyBrand(Dealer $dealer): bool
+    {
+        $brand = Brand::whereRaw('lower(name) = ?', [mb_strtolower(trim((string) $this->option('brand')))])->first();
+
+        if ($brand === null) {
+            $this->error("No brand called “{$this->option('brand')}”. Add it under Platform settings › Brands first.");
+
+            return false;
+        }
+
+        if ($dealer->brand_id !== null && (int) $dealer->brand_id !== $brand->id) {
+            $this->error("{$dealer->name} is already a {$dealer->franchise_make} dealer. Change its brand on the dealer profile if that's wrong.");
+
+            return false;
+        }
+
+        if ($dealer->brand_id === null) {
+            $dealer->update(['brand_id' => $brand->id]);
+            $this->info("Brand: {$brand->name}");
+        }
+
+        return true;
+    }
+
+    /** --activate: live once the address and time zone are there (the same rule as the dealer page). */
+    private function activate(Dealer $dealer): void
+    {
+        if ($dealer->isActive()) {
+            return;
+        }
+
+        if (! $dealer->hasCompleteAddress() || blank($dealer->timezone)) {
+            $this->warn("Not activated: {$dealer->name}'s address is incomplete. Finish it on the dealer page.");
+
+            return;
+        }
+
+        $dealer->update(['status' => Dealer::STATUS_ACTIVE]);
+        \App\Models\AuditLog::record('dealer.activated_by_import', $dealer, null, ['status' => Dealer::STATUS_ACTIVE]);
+        $this->info("Activated: {$dealer->name} is live.");
+    }
+
+    /** @param  array<int, int>  $vehicleIds */
+    private function publishNew(array $vehicleIds, Rooftop $rooftop): void
+    {
+        if (! $rooftop->hasCompleteAddress()) {
+            $this->warn('Not published: the store address is incomplete.');
+
+            return;
+        }
+
+        $published = 0;
+
+        foreach (Vehicle::whereKey($vehicleIds)->get() as $vehicle) {
+            $vehicle->update(['is_published' => true]);
+            $published++;
+        }
+
+        $this->info("Published: {$published} new " . ($published === 1 ? 'car' : 'cars'));
     }
 
     /**
@@ -343,6 +431,13 @@ class ImportDealerInventory extends Command
         if ($latitude !== null && $longitude !== null && abs($latitude) <= 90 && abs($longitude) <= 180 && ($latitude != 0.0 || $longitude != 0.0)) {
             $fromFeed['latitude'] = $latitude;
             $fromFeed['longitude'] = $longitude;
+        }
+
+        // No coordinates in the feed: the centre of the store's postal area
+        // (a few km at most), so distances work. An admin can refine them.
+        if (! isset($fromFeed['latitude']) && $postalCode !== null && ($area = \App\Support\PostalAreas::forPostalCode($postalCode)) !== null) {
+            $fromFeed['latitude'] = $area['latitude'];
+            $fromFeed['longitude'] = $area['longitude'];
         }
 
         foreach ($fromFeed as $field => $value) {
