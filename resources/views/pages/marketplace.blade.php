@@ -310,6 +310,42 @@ new class extends Component {
         return SeoCatalog::apply(Vehicle::query()->listed(), $this->landingFilters)->count();
     }
 
+    /** Within this many km a car counts as near the shopper (pickup only). */
+    public const NEAR_KM = 300;
+
+    /**
+     * Where the cars are compared with where the shopper is, so the headline
+     * never claims cars are "in" a town they're thousands of km from. Null
+     * without a shopper location. Typed places without coordinates count a
+     * car as near only when it's in the same town.
+     *
+     * @return array{total: int, near: int, provinces: array<int, string>, nearestKm: ?float}|null
+     */
+    #[Computed]
+    public function reach(): ?array
+    {
+        $location = ShopperLocation::current();
+
+        if ($location === null) {
+            return null;
+        }
+
+        $places = SeoCatalog::apply(Vehicle::query()->listed(), $this->landingFilters)
+            ->with(['rooftop', 'dealer'])->get()
+            ->map(fn (Vehicle $vehicle) => $vehicle->locatedAt());
+
+        $distances = $places->map(fn ($place) => ShopperLocation::distanceKm($location, $place));
+
+        return [
+            'total'     => $places->count(),
+            'near'      => $places->keys()->filter(fn ($i) => $distances[$i] !== null
+                ? $distances[$i] <= self::NEAR_KM
+                : ShopperLocation::proximityRank($location, $places[$i]) === 0)->count(),
+            'provinces' => $places->filter()->pluck('province')->filter()->unique()->sort()->values()->all(),
+            'nearestKm' => $distances->filter(fn ($km) => $km !== null)->min(),
+        ];
+    }
+
     /**
      * How many filters the buyer currently has applied — drives the mobile
      * "Filters" button badge so they can see at a glance that the sheet is
@@ -567,12 +603,22 @@ new class extends Component {
             $shopperTown = isset($shopperLocation['city'])
                 ? $shopperLocation['city'] . (isset($shopperLocation['province']) ? ', ' . (\App\Support\CanadianAddress::PROVINCES[$shopperLocation['province']] ?? $shopperLocation['province']) : '')
                 : null;
+            // Only say "near <town>" when every car is near it. When none are,
+            // name the provinces the cars are in instead (if just one or two).
+            $reach = $this->reach;
+            $provinceNames = collect($reach['provinces'] ?? [])->map(fn ($code) => \App\Support\CanadianAddress::PROVINCES[$code] ?? $code);
+            $placeSuffix = '';
+            if ($reach !== null && $shopperTown !== null && $reach['total'] > 0 && $reach['near'] === $reach['total']) {
+                $placeSuffix = ' near ' . $shopperTown;
+            } elseif ($reach !== null && $reach['near'] === 0 && $provinceNames->isNotEmpty() && $provinceNames->count() <= 2) {
+                $placeSuffix = ' in ' . $provinceNames->implode(' & ');
+            }
         @endphp
         <h1 class="srp-title">
             @if ($landingType !== null)
-                {{ number_format($this->totalCount) }} Certified Pre-owned {{ $landingHeading }}{{ $landingType === 'price' ? '' : ' for Sale' }}{{ $landingPlace ? ' in ' . $landingPlace : ($shopperTown ? ' in ' . $shopperTown : '') }}
-            @elseif (isset($shopperLocation['city']))
-                {{ number_format($this->totalCount) }} Certified Pre-owned {{ $this->totalCount === 1 ? 'Car' : 'Cars' }} for Sale in {{ $shopperLocation['city'] }}{{ isset($shopperLocation['province']) ? ', ' . (\App\Support\CanadianAddress::PROVINCES[$shopperLocation['province']] ?? $shopperLocation['province']) : '' }}
+                {{ number_format($this->totalCount) }} Certified Pre-owned {{ $landingHeading }}{{ $landingType === 'price' ? '' : ' for Sale' }}{{ $landingPlace ? ' in ' . $landingPlace : $placeSuffix }}
+            @elseif ($shopperLocation !== null)
+                {{ number_format($this->totalCount) }} Certified Pre-owned {{ $this->totalCount === 1 ? 'Car' : 'Cars' }} for Sale{{ $placeSuffix }}
             @else
                 {{ \App\Support\PlatformSettings::get('marketplace_headline') }}
             @endif
@@ -623,6 +669,23 @@ new class extends Component {
             <span class="loc-note" x-show="geoError" x-text="geoError" x-cloak></span>
             @error('locationInput') <span class="loc-note">{{ $message }}</span> @enderror
         </div>
+        @if ($reach !== null && $reach['total'] > 0 && $reach['near'] < $reach['total'] && ! $landingPlace)
+            @php
+                $where = $provinceNames->count() <= 2 ? $provinceNames->implode(' & ') : 'other provinces';
+                $closest = $reach['nearestKm'] !== null && $reach['nearestKm'] > self::NEAR_KM ? ' — the closest is about ' . number_format(round($reach['nearestKm'], -1)) . ' km away' : '';
+                $town = $shopperTown ?? 'you';
+            @endphp
+            <div class="reach-note" role="status">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>
+                <p>
+                    @if ($reach['near'] === 0)
+                        <b>None of our cars are near {{ $town }} yet.</b> They’re at dealerships in {{ $where }}{{ $closest }}. Every car is picked up at its dealership.
+                    @else
+                        <b>{{ number_format($reach['near']) }} of {{ number_format($reach['total']) }} {{ $reach['near'] === 1 ? 'is' : 'are' }} within {{ self::NEAR_KM }} km of {{ $town }}.</b> The rest are further away — every car is picked up at its dealership. Sort by <button type="button" class="reach-link" wire:click="$set('sort', 'nearest')">nearest first</button> to see the close ones.
+                    @endif
+                </p>
+            </div>
+        @endif
     </header>
 
     <!-- mobile-only: search + filters + sort toolbar (inventory leads, filters fold into a sheet) -->
@@ -929,7 +992,12 @@ new class extends Component {
         .srp-crumbs a { color:var(--ink-2); font-weight:600; }
         .srp-notice { background:#E9F3FF; border-left:4px solid var(--primary); border-radius:10px; color:var(--ink); padding:10px 14px; font-size:14.5px; font-weight:600; margin-bottom:18px; }
 
-        .loc-bar { display:flex; align-items:center; flex-wrap:wrap; gap:8px 10px; margin-top:16px; font-size:14px; color:var(--ink-2); }
+.reach-note { display:flex; gap:10px; align-items:flex-start; margin-top:12px; padding:11px 14px; background:var(--primary-soft); border-left:3px solid var(--primary); border-radius:6px; font-size:14px; color:var(--ink-2); line-height:1.5; max-width:820px; }
+        .reach-note svg { color:var(--primary-press); flex-shrink:0; margin-top:1px; }
+        .reach-note p { margin:0; }
+        .reach-note b { color:var(--ink); }
+        .reach-link { font-weight:700; color:var(--primary-press); text-decoration:underline; text-underline-offset:2px; }
+                .loc-bar { display:flex; align-items:center; flex-wrap:wrap; gap:8px 10px; margin-top:16px; font-size:14px; color:var(--ink-2); }
         .loc-pin { color:var(--ink); flex-shrink:0; }
         .loc-current b { color:var(--ink); }
         .loc-link { font-size:14px; font-weight:700; color:var(--primary-press); padding:0; text-decoration:underline; text-underline-offset:3px; }

@@ -124,7 +124,8 @@ class DealerPrivacyTest extends TestCase
 
         $this->assertSame('Newmarket, ON', ShopperLocation::current()['label']);
         $this->get('/cars/' . $vehicle->id)->assertSee('km away')->assertSee('From Newmarket, ON · L3Y 4X1');
-        $this->get(route('shop'))->assertSee('for Sale in Newmarket, Ontario');
+        // The car is in BC: say so rather than "in Newmarket".
+        $this->get(route('shop'))->assertSee('for Sale in British Columbia')->assertSee('None of our cars are near Newmarket, Ontario yet.')->assertDontSee('for Sale in Newmarket');
         Http::assertNothingSent();
     }
 

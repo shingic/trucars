@@ -55,7 +55,9 @@ class ShopperLocationTest extends TestCase
             ->assertSet('sort', 'nearest')
             ->assertSeeInOrder(['Chilliwack Outlander', 'Toronto Corolla'])
             ->assertSee('Abbotsford, BC · V2S')
-            ->assertSee('for Sale in Abbotsford, British Columbia')
+            // One car is close, one is across the country: no "in Abbotsford" headline.
+            ->assertDontSee('for Sale in Abbotsford')
+            ->assertSee('1 of 2 is within 300 km of Abbotsford, British Columbia.')
             ->assertSee(' km');
 
         // Rounded to ~1 km before it's kept; session only.
@@ -71,11 +73,12 @@ class ShopperLocationTest extends TestCase
             ->assertHasNoErrors()
             ->assertSet('sort', 'nearest')
             ->assertSee('Toronto, ON · M5V 2T6')
-            ->assertSee('for Sale in Toronto, Ontario')
+            ->assertDontSee('for Sale in Toronto')
+            ->assertSee('1 of 2 is within 300 km of Toronto, Ontario.')
             ->assertSeeInOrder(['Toronto Corolla', 'Chilliwack Outlander']);
     }
 
-    public function test_the_shoppers_town_is_named_in_the_headline(): void
+    public function test_the_headline_only_says_near_when_every_car_is_near(): void
     {
         config(['services.google_places.key' => 'AIza-test']);
         Http::fake(['maps.googleapis.com/maps/api/geocode/*' => Http::response(['results' => [[
@@ -87,14 +90,21 @@ class ShopperLocationTest extends TestCase
 
         Livewire::test('pages::marketplace')
             ->call('useBrowserLocation', 49.0504, -122.3045)
-            ->assertSee('Certified Pre-owned Cars for Sale in Abbotsford')
+            ->assertSee('within 300 km of Abbotsford')
             ->assertSee('Abbotsford, BC')
             ->assertSeeInOrder(['Chilliwack Outlander', 'Toronto Corolla']);
 
         Livewire::test('pages::marketplace')
             ->set('locationInput', 'chilliwack')
             ->call('setManualLocation')
-            ->assertSee('Certified Pre-owned Cars for Sale in Chilliwack');
+            ->assertDontSee('for Sale in Chilliwack');
+
+        // With the Toronto car gone, everything is close.
+        Vehicle::where('model', 'Toronto Corolla')->update(['is_published' => false]);
+        Livewire::test('pages::marketplace')
+            ->call('useBrowserLocation', 49.0504, -122.3045)
+            ->assertSee('Certified Pre-owned Car for Sale near Abbotsford, British Columbia')
+            ->assertDontSee('within 300 km');
     }
 
     public function test_typed_city_ranks_that_city_first(): void
