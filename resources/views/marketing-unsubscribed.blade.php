@@ -20,7 +20,7 @@
 <body>
 <main>
     <div class="card">
-        <span class="wordmark">Tru<b>Cars</b></span>
+        @include('partials.logo', ['variant' => 'dark', 'height' => 40])
         <h1>You're unsubscribed</h1>
         @isset($typeLabel)
             <p>We won't send you any more <b>{{ strtolower($typeLabel) }}</b>. Your other email settings haven't changed.</p>

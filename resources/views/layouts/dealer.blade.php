@@ -84,7 +84,7 @@
         @media (max-width:880px){
             :root { --sidebar-w:72px; }
             .sb-brand { justify-content:center; padding:18px 0 16px; }
-            .wordmark { display:none; } .wordmark-short { display:block; font-size:22px; }
+            .wordmark { display:none; } .wordmark-short { display:block; }
             .sb-group-label, .nav-item .nav-label, .sb-foot .meta, .sb-switch { display:none; }
             .nav-item { justify-content:center; padding:11px; gap:0; }
             .sb-foot { justify-content:center; }
@@ -116,8 +116,8 @@
 <div class="app">
     <aside class="sidebar">
         <div class="sb-brand">
-            <span class="wordmark">Tru<b>Cars</b></span>
-            <span class="wordmark-short" aria-hidden="true">T<b>C</b></span>
+            <span class="wordmark">@include('partials.logo', ['variant' => 'light', 'height' => 46])</span>
+            <span class="wordmark-short"><img src="{{ asset('images/trumo-icon.svg') }}" alt="{{ config('site.name') }}" width="34" height="34" style="display:block;border-radius:8px;"></span>
         </div>
 
         <nav class="sb-scroll">

@@ -107,7 +107,7 @@ new #[Layout('layouts.checkout')] #[Title('Email preferences · TruCars')] class
     </style>
 
     <header class="ep-top">
-        <div class="ep-top-inner"><a href="{{ route('shop') }}" class="wordmark">Tru<b>Cars</b></a></div>
+        <div class="ep-top-inner"><a href="{{ route('shop') }}" style="display:inline-block;">@include('partials.logo', ['variant' => 'dark', 'height' => 36])</a></div>
     </header>
 
     <main class="ep">

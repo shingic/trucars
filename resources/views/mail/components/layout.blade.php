@@ -1,5 +1,5 @@
 {{--
-    The frame for every email: wordmark and lane line, a white card holding
+    The frame for every email: the logo (PNG: email apps don't show SVG), a white card holding
     the slot, then the footer. Props:
       title       <title>, also a fallback preheader
       preheader   inbox preview line
@@ -54,27 +54,7 @@
                 <tr>
                     <td style="padding:0 0 28px;">
                         <a href="{{ $site }}" target="_blank" style="text-decoration:none;">
-                            <table role="presentation" cellpadding="0" cellspacing="0" border="0">
-                                <tr>
-                                    <td style="{!! T::FONT !!} font-size:40px; line-height:1; letter-spacing:0.01em; color:{{ T::INK }};"><span style="font-weight:400;">TRU</span><span style="font-weight:800;">CARS</span></td>
-                                </tr>
-                                <tr>
-                                    <td style="padding-top:8px; font-size:0; line-height:0;">
-                                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
-                                            <tr>
-                                                @for ($i = 0; $i < 4; $i++)
-                                                    <td width="16" height="3" style="width:16px; height:3px; background-color:{{ T::ACCENT }}; font-size:0; line-height:0;">&nbsp;</td>
-                                                    <td width="7" height="3" style="width:7px; height:3px; font-size:0; line-height:0;">&nbsp;</td>
-                                                @endfor
-                                                <td height="3" style="height:3px; background-color:{{ T::ACCENT }}; font-size:0; line-height:0;">&nbsp;</td>
-                                            </tr>
-                                        </table>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="padding-top:9px; {!! T::FONT !!} font-size:10px; font-weight:600; line-height:1; letter-spacing:0.42em; text-transform:uppercase; color:{{ T::TEXT }};">Certified pre-owned</td>
-                                </tr>
-                            </table>
+                            <img src="{{ asset('images/trumo-cpo-600.png') }}" alt="{{ $brand }}, certified pre-owned" width="210" height="85" style="display:block; width:210px; height:auto; border:0; outline:none;">
                         </a>
                     </td>
                 </tr>
