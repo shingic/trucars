@@ -57,6 +57,7 @@ class ImportDealerInventory extends Command
         $skippedForOtherRooftop = 0;
         $skippedForVinOnOtherRooftop = 0;
         $skippedForNotCpo = 0;
+        $skippedForNew = 0;
 
         /** @var array<string, true> every VIN this rooftop's rows mention, imported or not (non-CPO rows excepted) */
         $vinsInFeed = [];
@@ -108,6 +109,14 @@ class ImportDealerInventory extends Command
             // one already listed comes off the marketplace below.
             if (! $this->isCertifiedPreOwned($row)) {
                 $skippedForNotCpo++;
+                continue;
+            }
+
+            // Some feeds send brand-new cars as "Used" + certified, with a
+            // placeholder odometer (e.g. 90 km). A car that's barely been
+            // driven is new, not pre-owned, so it's turned away too.
+            if ($this->isReallyNew($row)) {
+                $skippedForNew++;
                 continue;
             }
 
@@ -198,6 +207,7 @@ class ImportDealerInventory extends Command
 
         $this->info("Imported / updated: {$importedCount} vehicles ({$newCount} new" . ($this->option('publish') ? ')' : ', unpublished until reviewed)'));
         $this->line("Skipped (not certified pre-owned): {$skippedForNotCpo}");
+        $this->line('Skipped (new car sent as used, under ' . self::NEW_CAR_MAX_KM . " km): {$skippedForNew}");
         $this->line("Skipped (no price): {$skippedForNoPrice}");
         $this->line("Skipped (not a car): {$skippedForNotACar}");
         $this->line("Skipped (another rooftop in the file): {$skippedForOtherRooftop}");
@@ -575,6 +585,17 @@ class ImportDealerInventory extends Command
     private function splitPhotoUrls(string $photos): array
     {
         return array_values(array_filter(array_map('trim', explode('|', $photos))));
+    }
+
+    /** Under this many km a car is new, whatever the feed calls it. */
+    public const NEW_CAR_MAX_KM = 500;
+
+    /** @param  array<string, string>  $row */
+    private function isReallyNew(array $row): bool
+    {
+        $km = trim((string) ($row['mileage'] ?? ''));
+
+        return $km !== '' && (int) $km < self::NEW_CAR_MAX_KM;
     }
 
     /**

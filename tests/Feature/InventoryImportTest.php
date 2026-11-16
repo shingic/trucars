@@ -106,6 +106,27 @@ class InventoryImportTest extends TestCase
         $this->assertSame(['USED'], Vehicle::distinct()->pluck('condition')->all());
     }
 
+    public function test_a_new_car_sent_as_used_and_certified_is_turned_away(): void
+    {
+        $this->import([
+            $this->row('ROOF-A', 'VIN0000000000CPO1', ['mileage' => '6201']),
+            $this->row('ROOF-A', 'VIN0000000000NEW1', ['condition' => 'Used', 'certified' => 'true', 'mileage' => '90']),
+        ])->assertSuccessful()->expectsOutputToContain('Skipped (new car sent as used, under 500 km): 1');
+
+        $this->assertSame(['VIN0000000000CPO1'], Vehicle::pluck('vin')->all());
+    }
+
+    public function test_a_listed_new_car_comes_off_once_the_rule_sees_it(): void
+    {
+        $this->import([$this->row('ROOF-A', 'VIN00000000000001'), $this->row('ROOF-A', 'VIN00000000000002')]);
+        Vehicle::query()->update(['is_published' => true]);
+
+        $this->import([$this->row('ROOF-A', 'VIN00000000000001'), $this->row('ROOF-A', 'VIN00000000000002', ['mileage' => '90'])])->assertSuccessful();
+
+        $this->assertTrue(Vehicle::where('vin', 'VIN00000000000001')->sole()->is_published);
+        $this->assertFalse(Vehicle::where('vin', 'VIN00000000000002')->sole()->is_published);
+    }
+
     public function test_a_listed_car_the_feed_stops_calling_certified_comes_off_the_marketplace(): void
     {
         $this->import([$this->row('ROOF-A', 'VIN00000000000001')]);
