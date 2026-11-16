@@ -31,7 +31,12 @@ class CarfaxService
         $accountId = trim((string) $dealer?->carfax_account_id);
         $vin = strtoupper(trim((string) $vehicle->vin));
 
-        if (! $dealer?->carfax_enabled || $accountId === '' || ! preg_match('/^[A-HJ-NPR-Z0-9]{17}$/', $vin)) {
+        // Sample mode (beta): every car gets a clearly labelled sample, no dealer setup needed.
+        if (self::isSample() && $accountId === '') {
+            $accountId = 'sample';
+        }
+
+        if ((! self::isSample() && ! $dealer?->carfax_enabled) || $accountId === '' || ! preg_match('/^[A-HJ-NPR-Z0-9]{17}$/', $vin)) {
             return null;
         }
 
@@ -52,6 +57,12 @@ class CarfaxService
         }
 
         return $report;
+    }
+
+    /** True while CARFAX_DRIVER=fake: the section shows made-up figures, labelled as a sample. */
+    public static function isSample(): bool
+    {
+        return config('services.carfax.driver') === 'fake';
     }
 
     /** Drop cached reports for a dealer's cars, e.g. after its CARFAX account changes. */

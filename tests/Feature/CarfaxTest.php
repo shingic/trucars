@@ -85,6 +85,26 @@ class CarfaxTest extends TestCase
         $this->assertSame([['DLR-4471', self::VIN]], $this->lookups);
     }
 
+    public function test_sample_mode_shows_a_labelled_sample_on_every_car_without_dealer_setup(): void
+    {
+        config(['services.carfax.driver' => 'fake']);
+        $vehicle = $this->vehicle();
+
+        $this->get('/cars/' . $vehicle->id)
+            ->assertOk()
+            ->assertSee('Vehicle history')
+            ->assertSee('Sample report')
+            ->assertSee("These figures are not this car's real history.", false)
+            ->assertDontSee('The full report has dates, damage amounts and liens.');
+    }
+
+    public function test_a_real_report_has_no_sample_label(): void
+    {
+        $this->enableCarfax('DLR-4471');
+
+        $this->get('/cars/' . $this->vehicle()->id)->assertOk()->assertDontSee('Sample report');
+    }
+
     public function test_reports_are_cached_between_page_views(): void
     {
         $this->enableCarfax('DLR-4471');

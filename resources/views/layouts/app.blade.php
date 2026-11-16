@@ -67,9 +67,9 @@
         .wordmark { font-family:var(--font-display); font-size:24px; font-weight:800; line-height:1; text-transform:uppercase; letter-spacing:.01em; color:var(--ink); white-space:nowrap; }
         .wordmark b { font-weight:800; color:var(--primary); }
         .nav-links { display:flex; align-items:center; gap:22px; }
-        .nav-links a { font-family:var(--font-display); font-size:18px; font-weight:600; text-transform:uppercase; color:var(--ink-2); text-decoration:none; padding:4px 0; border-bottom:2px solid transparent; }
-        .nav-links a.active, .nav-links a:hover { color:var(--ink); }
-        .nav-links a.active { border-bottom-color:var(--primary); }
+        .nav-links a { font-family:var(--font-display); font-size:18px; font-weight:600; text-transform:uppercase; color:var(--ink-2); text-decoration:none; padding:4px 0; }
+        .nav-links a:hover { color:var(--ink); }
+        .nav-links a.active { color:var(--primary); }
         .nav-right { margin-left:auto; display:flex; align-items:center; gap:16px; }
         .nav-loc { display:flex; align-items:center; gap:7px; font-size:13.5px; color:var(--ink-2); font-weight:600; background:none; border:none; padding:6px 4px; font-family:inherit; cursor:pointer; border-radius:6px; }
         .nav-loc:hover { color:var(--ink); }

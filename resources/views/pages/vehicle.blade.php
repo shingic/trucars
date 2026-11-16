@@ -791,14 +791,19 @@ new class extends Component {
 
             @if ($cert = $this->certification())
                 <div class="vdp-section">
-                    <div class="cert-block" x-data="{ certDetails: false }" :class="{ 'is-expanded': certDetails }">
-                        <div class="cert-head">
-                            <div class="cert-headtext">
-                                <h3>{{ $cert->name }}</h3>
-                                <div class="cert-by">{{ $cert->pointCount }}-point inspection by the selling dealership</div>
-                                @if ($cert->summary) <p>{{ $cert->summary }}</p> @endif
-                            </div>
-                        </div>
+                    {{-- Closed by default: the checklist is there for shoppers who want it, not in everyone's way. --}}
+                    <div class="cert-block" x-data="{ certOpen: false, certDetails: false }" :class="{ 'is-expanded': certDetails, 'is-open': certOpen }">
+                        <button type="button" class="cert-toggle" x-on:click="certOpen = ! certOpen" :aria-expanded="certOpen.toString()" aria-controls="cert-body" aria-expanded="false">
+                            <span class="cert-headtext">
+                                <span class="cert-title">{{ $cert->name }}</span>
+                                <span class="cert-by">{{ $cert->pointCount }}-point inspection by the selling dealership</span>
+                            </span>
+                            <span class="cert-toggle-label" x-text="certOpen ? 'Hide' : 'View checklist'">View checklist</span>
+                            <svg class="cert-chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 9 6 6 6-6"/></svg>
+                        </button>
+
+                        <div id="cert-body" class="cert-body" x-show="certOpen" x-cloak>
+                        @if ($cert->summary) <p class="cert-summary">{{ $cert->summary }}</p> @endif
 
                         {{-- Every point on the dealer's checklist, by section. --}}
                         <div class="cert-benefits">
@@ -819,6 +824,7 @@ new class extends Component {
                             <span x-text="certDetails ? 'Hide points' : 'See all {{ $cert->pointCount }} points'">See all {{ $cert->pointCount }} points</span>
                             <svg class="cert-more-chev" :class="{ 'is-up': certDetails }" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 9 6 6 6-6"/></svg>
                         </button>
+                        </div>
                     </div>
                 </div>
             @endif
@@ -831,7 +837,11 @@ new class extends Component {
                 @endphp
                 <div class="vdp-section">
                     <h2>Vehicle history</h2>
+                    @php $cfxSample = \App\Services\Carfax\CarfaxService::isSample(); @endphp
                     <div class="cfx">
+                        @if ($cfxSample)
+                            <div class="cfx-sample">Sample report · Beta. These figures are not this car's real history.</div>
+                        @endif
                         <div class="cfx-head">
                             <img class="cfx-logo" src="{{ asset('images/carfax-canada.png') }}" alt="CARFAX Canada" width="160" height="23">
                             @if ($carfax->reportUrl)
@@ -871,7 +881,11 @@ new class extends Component {
                             </ul>
                         @endif
 
-                        <p class="cfx-note">From CARFAX Canada. The full report has dates, damage amounts and liens.</p>
+                        @if ($cfxSample)
+                            <p class="cfx-note">CARFAX Canada reports are being connected. Ask the dealership for this car's real report.</p>
+                        @else
+                            <p class="cfx-note">From CARFAX Canada. The full report has dates, damage amounts and liens.</p>
+                        @endif
                     </div>
                 </div>
             @endif
@@ -1156,11 +1170,16 @@ new class extends Component {
         .vdp-section h2 { font-family:var(--font-display); font-size:26px; font-weight:700; text-transform:uppercase; margin:0 0 10px; }
 
         /* the dealer's inspection checklist, as a ruled sheet with green ticks */
-        .cert-head { padding:0 0 14px; }
-        .cert-headtext { min-width:0; }
-        .cert-head h3 { margin:0; font-family:var(--font-display); font-size:26px; font-weight:700; text-transform:uppercase; }
-        .cert-head .cert-by { font-size:15px; font-weight:600; color:#0B7355; margin-top:2px; }
-        .cert-head p { font-size:15px; color:var(--ink-2); margin:8px 0 0; line-height:1.55; max-width:640px; }
+        .cert-block { border:1.5px solid var(--line-strong); border-radius:8px; }
+        .cert-toggle { width:100%; display:flex; align-items:center; gap:14px; padding:16px 18px; background:none; text-align:left; cursor:pointer; color:var(--ink); }
+        .cert-headtext { min-width:0; flex:1; display:flex; flex-direction:column; }
+        .cert-title { font-family:var(--font-display); font-size:20px; font-weight:700; text-transform:uppercase; line-height:1.1; }
+        .cert-by { font-size:14.5px; font-weight:600; color:#0B7355; margin-top:3px; }
+        .cert-toggle-label { font-size:14.5px; font-weight:700; text-decoration:underline; text-underline-offset:3px; white-space:nowrap; }
+        .cert-chev { flex-shrink:0; transition:transform .2s ease; }
+        .cert-block.is-open .cert-chev { transform:rotate(180deg); }
+        .cert-body { padding:0 18px 16px; }
+        .cert-summary { font-size:15px; color:var(--ink-2); margin:0 0 14px; line-height:1.55; max-width:640px; }
         .cben-count { font-family:var(--font-display); font-size:16px; font-weight:600; color:var(--ink-3); margin-left:6px; }
         .cben-points { margin:4px 0 0; padding-left:0; list-style:none; line-height:1.55; }
         .cben-points li { padding:2px 0; }
@@ -1176,6 +1195,7 @@ new class extends Component {
 
         /* CARFAX: one tight card, logo up top, the four facts in a row */
         .cfx { border:1.5px solid var(--line-strong); border-radius:8px; padding:14px 16px 12px; }
+        .cfx-sample { margin:0 0 12px; padding:7px 10px; border-radius:6px; background:#FFF4E5; color:#8A4B00; font-size:13px; font-weight:700; }
         .cfx-head { display:flex; align-items:center; justify-content:space-between; gap:12px; }
         .cfx-logo { display:block; height:22px; width:auto; }
         .cfx-link { display:inline-flex; align-items:center; gap:5px; flex-shrink:0; font-size:14px; font-weight:700; color:var(--primary-press); text-decoration:none; padding:6px 10px; border-radius:6px; background:var(--primary-soft); }
@@ -1298,12 +1318,15 @@ new class extends Component {
             .qm:nth-child(n+3) { border-top:1px solid var(--line-strong); }
             .vdp-section { padding-top:28px; }
             .vdp-section h2 { font-size:23px; }
-            .cert-head h3 { font-size:22px; }
+            .cert-title { font-size:18px; }
+            .cert-toggle { padding:14px; gap:10px; }
+            .cert-toggle-label { display:none; }
+            .cert-body { padding:0 14px 14px; }
             .cert-benefits { grid-template-columns:1fr; }
             .cpo { padding:18px 16px 16px; }
             .vdp-section .cpo-head h2 { font-size:22px; }
             .cpo-list { grid-template-columns:1fr; }
-            .cert-head p { display:none; }
+            .cert-summary { display:none; }
             .cben .s { display:none; }
             .cert-block.is-expanded .cben .s { display:block; }
             .specs { grid-template-columns:1fr; }

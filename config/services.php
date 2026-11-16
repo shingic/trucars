@@ -38,7 +38,7 @@ return [
     // CARFAX Canada vehicle history on the vehicle page (App\Services\Carfax).
     // Each dealership's own CARFAX account id is set in Command Centre ›
     // Dealer › Integrations. These are the platform's API credentials.
-    // driver: 'null' (off), 'fake' (sample data, local only), 'carfax_canada'.
+    // driver: 'null' (off), 'fake' (labelled sample data on every car, for the beta), 'carfax_canada'.
     'carfax' => [
         'driver'   => env('CARFAX_DRIVER', 'null'),
         'base_url' => env('CARFAX_BASE_URL'),
