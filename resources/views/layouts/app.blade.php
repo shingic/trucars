@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
+    @include('partials.gtm-head')
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     {{-- Pages share $seo (title, description, canonical, robots, json-ld) for search engines and link previews. --}}
     @php
@@ -182,6 +183,7 @@
     </style>
 </head>
 <body>
+@include('partials.gtm-body')
 @php
     // Shared by a dealer campaign page (storefront or car) for this render. The
     // referred experience keeps every "shop" link on that dealer's storefront
