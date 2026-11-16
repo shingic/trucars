@@ -119,7 +119,7 @@ class Dealer extends Model
         return $this->status === self::STATUS_ACTIVE;
     }
 
-    /** Suspended by TruCars: cars unlisted and staff locked out of the portal. */
+    /** Suspended by Trumo: cars unlisted and staff locked out of the portal. */
     public function isSuspended(): bool
     {
         return $this->status === self::STATUS_SUSPENDED;
@@ -226,13 +226,13 @@ class Dealer extends Model
      * scope still guards top-level DealerFee queries (e.g. editing a fee by id
      * in settings), which is where cross-dealer protection actually matters.
      */
-    /** Protection products this dealership added itself (TruCars defaults have no dealer). */
+    /** Protection products this dealership added itself (Trumo defaults have no dealer). */
     public function protectionProducts(): HasMany
     {
         return $this->hasMany(ProtectionProduct::class);
     }
 
-    /** This dealership's choices about the TruCars default protection products. */
+    /** This dealership's choices about the Trumo default protection products. */
     public function protectionSettings(): HasMany
     {
         return $this->hasMany(DealerProtectionSetting::class);

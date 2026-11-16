@@ -14,7 +14,7 @@ use Stripe\Webhook;
 use UnexpectedValueException;
 
 /**
- * Stripe → TruCars. Keeps deposit rows in step with Stripe even when the
+ * Stripe → Trumo. Keeps deposit rows in step with Stripe even when the
  * buyer's browser never reports back, and records refunds made straight in
  * the Stripe dashboard. Only signed events are accepted.
  */

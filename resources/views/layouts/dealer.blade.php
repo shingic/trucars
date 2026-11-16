@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @include('partials.favicons')
-    <title>{{ $title ?? 'Reservations' }} · TruCars</title>
+    <title>{{ $title ?? 'Reservations' }} · Trumo</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -44,7 +44,7 @@
         .sidebar { width:var(--sidebar-w); flex-shrink:0; background:var(--ink); color:#fff; display:flex; flex-direction:column; height:100vh; position:sticky; top:0; }
 
         .sb-brand { display:flex; align-items:center; gap:11px; padding:18px 20px 16px; }
-        /* the TruCars wordmark: condensed caps, "Cars" in blue */
+        /* the Trumo wordmark: condensed caps, "Cars" in blue */
         .wordmark, .wordmark-short { font-family:var(--font-display); font-size:24px; font-weight:800; line-height:1; text-transform:uppercase; letter-spacing:.01em; color:#fff; white-space:nowrap; }
         .wordmark b, .wordmark-short b { font-weight:800; color:var(--primary-bright); }
         .wordmark-short { display:none; }
@@ -232,7 +232,7 @@
                         @can('staff.manage')
                             <a href="{{ route('admin.staff') }}" class="nav-item {{ request()->routeIs('admin.staff') ? 'on' : '' }}">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0M17 11a3 3 0 1 0 0-6M22 21a6 6 0 0 0-4-5.6"/></svg>
-                                <span class="nav-label">TruCars staff</span>
+                                <span class="nav-label">Trumo staff</span>
                             </a>
                         @endcan
                         @can('settings.manage')
@@ -256,7 +256,7 @@
             <span class="av">{{ collect(explode(' ', auth()->user()->name))->take(2)->map(fn ($namePart) => mb_strtoupper(mb_substr($namePart, 0, 1)))->implode('') }}</span>
             <div class="meta">
                 <div class="nm">{{ auth()->user()->name }}</div>
-                <div class="rl">{{ auth()->user()->portalDealer()?->name ?? (auth()->user()->isOwner() ? 'TruCars owner' : (auth()->user()->isInternalStaff() ? 'TruCars staff' : '')) }}</div>
+                <div class="rl">{{ auth()->user()->portalDealer()?->name ?? (auth()->user()->isOwner() ? 'Trumo owner' : (auth()->user()->isInternalStaff() ? 'Trumo staff' : '')) }}</div>
             </div>
         </div>
     </aside>

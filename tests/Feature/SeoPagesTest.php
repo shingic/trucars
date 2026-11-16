@@ -34,7 +34,7 @@ class SeoPagesTest extends TestCase
     {
         $this->get('/used-cars/honda/civic')
             ->assertOk()
-            ->assertSee('<title>Used Honda Civic for Sale | Certified Pre-owned | TruCars</title>', false)
+            ->assertSee('<title>Used Honda Civic for Sale | Certified Pre-owned | Trumo</title>', false)
             ->assertSee('<link rel="canonical" href="' . url('/used-cars/honda/civic') . '">', false)
             ->assertSee('4 Certified Pre-owned Honda Civics for Sale')
             ->assertSee('Shop 4 certified pre-owned honda civics, priced all-in from $19,000')
@@ -50,7 +50,7 @@ class SeoPagesTest extends TestCase
         $this->get('/used-cars/under-20000')->assertOk()->assertSee('2 Certified Pre-owned Cars Under $20,000');
         $this->get('/used-cars/in/chilliwack-bc')->assertOk()
             ->assertSee('6 Certified Pre-owned Cars for Sale in Chilliwack, BC')
-            ->assertSee('<title>Used Cars for Sale in Chilliwack, BC | Certified Pre-owned | TruCars</title>', false);
+            ->assertSee('<title>Used Cars for Sale in Chilliwack, BC | Certified Pre-owned | Trumo</title>', false);
     }
 
     public function test_pages_that_dont_exist_are_not_found(): void
@@ -66,7 +66,7 @@ class SeoPagesTest extends TestCase
     {
         $this->get(route('shop'))
             ->assertOk()
-            ->assertSeeInOrder(['Why buy your next car from TruCars?', 'Popular Models', 'Used Honda Civic for Sale', 'Popular Locations', 'Used Cars for Sale in Chilliwack, BC', '<footer'], false)
+            ->assertSeeInOrder(['Why buy your next car from Trumo?', 'Popular Models', 'Used Honda Civic for Sale', 'Popular Locations', 'Used Cars for Sale in Chilliwack, BC', '<footer'], false)
             ->assertSee(url('/used-cars/honda/civic'), false)
             ->assertDontSee('Used Honda CR-V for Sale')   // one car: not linked
             ->assertDontSee('Used Toyota for Sale');
@@ -76,7 +76,7 @@ class SeoPagesTest extends TestCase
     {
         $this->get('/used-cars/honda/civic')
             ->assertOk()
-            ->assertSee('Why buy your next Honda Civic from TruCars?')
+            ->assertSee('Why buy your next Honda Civic from Trumo?')
             ->assertDontSee('>Used Honda Civic for Sale</a>', false)
             ->assertSee('>Used Honda for Sale</a>', false);
     }
@@ -119,7 +119,7 @@ class SeoPagesTest extends TestCase
         $car = Vehicle::where('model', 'RAV4')->first();
 
         $response = $this->get('/cars/' . $car->id)->assertOk()
-            ->assertSee('for Sale in Chilliwack, BC | TruCars</title>', false)
+            ->assertSee('for Sale in Chilliwack, BC | Trumo</title>', false)
             ->assertSee('"@type":"Car"', false)
             ->assertSee('"priceCurrency":"CAD"', false)
             ->assertSee('<link rel="canonical" href="' . url('/cars/' . $car->id) . '">', false);

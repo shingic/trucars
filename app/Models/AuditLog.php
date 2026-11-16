@@ -69,7 +69,7 @@ class AuditLog extends Model
             $target instanceof Dealer => $target->name,
             $target instanceof Offer  => $target->make . ' · ' . $target->title,
             $target instanceof InspectionProgram => $target->name,
-            $target instanceof ProtectionProduct => $target->name . ($target->dealer_id ? '' : ' (TruCars default)'),
+            $target instanceof ProtectionProduct => $target->name . ($target->dealer_id ? '' : ' (Trumo default)'),
             isset($target->email)     => $target->email,
             default                   => null,
         };

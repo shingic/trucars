@@ -84,7 +84,7 @@ class OwnerAccessTest extends TestCase
     {
         $owner = User::factory()->owner()->create(['email' => 'owner@trucars.ca']);
 
-        $this->get(route('admin.login'))->assertOk()->assertSee('TruCars Command Centre');
+        $this->get(route('admin.login'))->assertOk()->assertSee('Trumo Command Centre');
 
         Livewire::test('pages::login', ['portal' => 'owner'])
             ->set('email', 'owner@trucars.ca')->set('password', 'password')
@@ -239,7 +239,7 @@ class OwnerAccessTest extends TestCase
         $this->assertDatabaseMissing('dealer_invitations', ['token_hash' => $token]);
 
         auth()->logout();
-        $this->get($acceptUrl)->assertOk()->assertSee('Join Chilliwack Mitsubishi on TruCars');
+        $this->get($acceptUrl)->assertOk()->assertSee('Join Chilliwack Mitsubishi on Trumo');
 
         Livewire::test('pages::accept-invitation', ['token' => $token])
             ->set('password', 'a-strong-password')

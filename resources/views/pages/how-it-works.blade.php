@@ -6,7 +6,7 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 
 /*
-| How TruCars works, start to finish, for shoppers. Static content — kept in
+| How Trumo works, start to finish, for shoppers. Static content — kept in
 | step with the actual flow: listing → reserve ($150, refundable) → ID check,
 | documents and the dealer’s call → financing approval → insurance → pickup
 | at the dealership. The deposit wording mirrors checkout; change both together.
@@ -14,7 +14,7 @@ use Livewire\Component;
 | The worked example at the top is a real car on the marketplace right now,
 | with its real price. With nothing listed, it is simply left out.
 */
-new #[Title('How it works — TruCars')] class extends Component {
+new #[Title('How it works — Trumo')] class extends Component {
     public function featuredCar(): ?Vehicle
     {
         return Vehicle::query()->listed()->with(['dealer', 'rooftop'])->latest()->limit(20)->get()
@@ -115,7 +115,7 @@ new #[Title('How it works — TruCars')] class extends Component {
 
     <header class="hw-top {{ $car ? '' : 'no-car' }}">
         <div class="hw-top-copy">
-            <h1>How buying a car on TruCars works</h1>
+            <h1>How buying a car on Trumo works</h1>
             <p>Every car here is sold by a licensed dealership at the price on the listing. You reserve it online, the dealership finishes the deal with you, and you drive away.</p>
             <ol class="hw-jump" aria-label="Steps">
                 <li><a href="#find"><b>1</b><span>Find a car</span><small>No account needed</small></a></li>
@@ -211,10 +211,10 @@ new #[Title('How it works — TruCars')] class extends Component {
     <section class="hw-section hw-price" id="price">
         <div>
             <h2>What the listed price includes</h2>
-            <p class="muted">Dealers on TruCars list an all-in price. Their own costs are already in it, and only government charges are added. Checkout shows every line for the car you’ve chosen before you pay anything.</p>
+            <p class="muted">Dealers on Trumo list an all-in price. Their own costs are already in it, and only government charges are added. Checkout shows every line for the car you’ve chosen before you pay anything.</p>
         </div>
         <div class="hw-sticker">
-            <header><span>Price sheet</span><span>TruCars</span></header>
+            <header><span>Price sheet</span><span>Trumo</span></header>
             <div class="grp">In the listed price</div>
             <div class="line"><span>The car</span><span></span></div>
             <div class="line"><span>Freight and pre-delivery inspection</span><span>where charged</span></div>
@@ -243,7 +243,7 @@ new #[Title('How it works — TruCars')] class extends Component {
         </section>
         <section id="seller">
             <h2 style="font-size:28px; margin:0 0 8px">Who you’re buying from</h2>
-            <p>TruCars doesn’t own any of the cars. Each one is sold by the dealership named on the listing, which is licensed in its province. They handle your financing, paperwork and handover, and they’re the ones who give you the keys.</p>
+            <p>Trumo doesn’t own any of the cars. Each one is sold by a dealership licensed in its province, and you get their details when you reserve. They handle your financing, paperwork and handover, and they’re the ones who give you the keys.</p>
             <p class="muted">Questions about a specific car are best asked to that dealership. My Garage shows which one is handling your purchase.</p>
         </section>
     </div>

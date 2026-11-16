@@ -108,7 +108,7 @@ class Deposits
             $intent = $this->gateway->createIntent(
                 self::AMOUNT_IN_CENTS,
                 self::CURRENCY,
-                "TruCars refundable reservation deposit — {$vehicle->model_year} {$vehicle->make} {$vehicle->model} (VIN {$vehicle->vin})",
+                "Trumo refundable reservation deposit — {$vehicle->model_year} {$vehicle->make} {$vehicle->model} (VIN {$vehicle->vin})",
                 $buyer->email,
                 ['deposit_payment_id' => (string) $payment->id, 'user_id' => (string) $buyer->id, 'vehicle_id' => (string) $vehicle->id],
                 'deposit-' . $payment->id,
@@ -185,7 +185,7 @@ class Deposits
      * car goes back on sale, the trail and audit log record who and why, and
      * the buyer is emailed. Returns whether a card deposit was refunded.
      *
-     * $byDealer words it as the dealership declining; otherwise TruCars cancelled it.
+     * $byDealer words it as the dealership declining; otherwise Trumo cancelled it.
      */
     public function cancelReservation(Deal $deal, string $reason, bool $byDealer, ?string $noteToBuyer = null): bool
     {
@@ -200,7 +200,7 @@ class Deposits
 
         $before = $deal->stage;
         $deal->forceFill(['stage' => 'cancelled'])->save();
-        $deal->recordActivity('system', ($byDealer ? 'Reservation declined by the dealership — ' : 'Reservation cancelled by TruCars — ') . $reason, auth()->user()?->name);
+        $deal->recordActivity('system', ($byDealer ? 'Reservation declined by the dealership — ' : 'Reservation cancelled by Trumo — ') . $reason, auth()->user()?->name);
         AuditLog::record($byDealer ? 'reservation.declined' : 'reservation.cancelled', $deal, ['stage' => $before], [
             'stage' => 'cancelled', 'reason' => $reason, 'deposit_refunded' => $payment?->fresh()->status === DepositPayment::STATUS_REFUNDED,
         ]);

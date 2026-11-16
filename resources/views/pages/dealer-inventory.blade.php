@@ -71,9 +71,9 @@ new #[Layout('layouts.dealer')] #[Title('Inventory')] class extends Component {
     <div class="iv-head"><h1>Inventory</h1></div>
 
     <p class="iv-note">
-        Your cars as they come from your inventory feed. Publish the ones you want on TruCars; upload a fresh export any time to update prices, kilometres and photos.
-        @unless ($inventoryDealer->isActive()) <b>Your dealership isn't live on TruCars yet, so published cars won't show until TruCars activates it.</b> @endunless
-        @unless ($inventoryDealer->hasCompleteAddress()) <b>Your dealership address is incomplete, so cars can't be published yet — contact TruCars to complete it.</b> @endunless
+        Your cars as they come from your inventory feed. Publish the ones you want on Trumo; upload a fresh export any time to update prices, kilometres and photos.
+        @unless ($inventoryDealer->isActive()) <b>Your dealership isn't live on Trumo yet, so published cars won't show until Trumo activates it.</b> @endunless
+        @unless ($inventoryDealer->hasCompleteAddress()) <b>Your dealership address is incomplete, so cars can't be published yet — contact Trumo to complete it.</b> @endunless
     </p>
 
     @include('partials.inventory-manager')

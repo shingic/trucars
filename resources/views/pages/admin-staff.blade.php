@@ -16,7 +16,7 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 
 /*
-| Command Centre — TruCars' internal staff and what each may do.
+| Command Centre — Trumo's internal staff and what each may do.
 |
 | Needs staff.manage (the owner has it; staff only if granted). Rules that
 | stop access from creeping upwards, all enforced here on the server:
@@ -26,7 +26,7 @@ use Livewire\Component;
 | Owners are only ever made from the console (users:make-owner). Every change
 | is written to the audit log.
 */
-new #[Layout('layouts.dealer')] #[Title('TruCars staff')] class extends Component {
+new #[Layout('layouts.dealer')] #[Title('Trumo staff')] class extends Component {
     public string $inviteName = '';
     public string $inviteEmail = '';
     /** @var array<int, string> */
@@ -86,7 +86,7 @@ new #[Layout('layouts.dealer')] #[Title('TruCars staff')] class extends Componen
             'invitePermissions'   => ['array'],
             'invitePermissions.*' => [Rule::in(Permission::all())],
         ], [
-            'inviteEmail.unique' => 'That email already has a TruCars account. Staff need their own work email.',
+            'inviteEmail.unique' => 'That email already has a Trumo account. Staff need their own work email.',
         ], ['inviteName' => 'name', 'inviteEmail' => 'email']);
 
         $permissions = $this->withinGrantable($this->invitePermissions);
@@ -237,7 +237,7 @@ new #[Layout('layouts.dealer')] #[Title('TruCars staff')] class extends Componen
 @push('crumb')
     <span>Command Centre</span>
     <span>›</span>
-    <span class="cur">TruCars staff</span>
+    <span class="cur">Trumo staff</span>
 @endpush
 
 @push('styles')
@@ -291,7 +291,7 @@ new #[Layout('layouts.dealer')] #[Title('TruCars staff')] class extends Componen
 
 <div>
     <div class="st-head">
-        <h1>TruCars staff</h1>
+        <h1>Trumo staff</h1>
         <p>People who can sign in to the Command Centre, and what each can do. Staff join by invitation and set their own password. Customer support access covers helping customers — not dealers, staff or platform settings.</p>
     </div>
 

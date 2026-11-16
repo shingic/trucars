@@ -31,10 +31,10 @@ class EnsureUserIsStaff
         }
 
         abort_unless($user->isDealerStaff(), 403, 'This area is for dealer staff.');
-        abort_if($user->isSuspended(), 403, 'This account has been suspended. Contact TruCars.');
-        abort_if($user->dealer?->isSuspended(), 403, 'This dealership’s portal access is suspended. Contact TruCars.');
-        abort_if($user->accessibleRooftopIds() === [], 403, 'You don’t have access to any stores yet. Contact TruCars.');
-        abort_if($user->portalDealer()?->isSuspended(), 403, 'This dealership’s portal access is suspended. Contact TruCars.');
+        abort_if($user->isSuspended(), 403, 'This account has been suspended. Contact Trumo.');
+        abort_if($user->dealer?->isSuspended(), 403, 'This dealership’s portal access is suspended. Contact Trumo.');
+        abort_if($user->accessibleRooftopIds() === [], 403, 'You don’t have access to any stores yet. Contact Trumo.');
+        abort_if($user->portalDealer()?->isSuspended(), 403, 'This dealership’s portal access is suspended. Contact Trumo.');
 
         return $next($request);
     }

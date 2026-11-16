@@ -12,9 +12,9 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 
 /*
-| Dealer campaigns — trackable TruCars links a dealer places in their own ads
+| Dealer campaigns — trackable Trumo links a dealer places in their own ads
 | and posts. No ad platform is touched from here: nothing is published, bought
-| or synced. The dealer copies the link; TruCars resolves it and tracks results.
+| or synced. The dealer copies the link; Trumo resolves it and tracks results.
 |
 | What a dealer can't set is decided for them: the dealership and franchise
 | brand come from the signed-in account, eligible stock from
@@ -273,7 +273,7 @@ new #[Layout('layouts.dealer')] #[Title('Campaigns')] class extends Component {
     protected function activationBlocker(Campaign $campaign): ?string
     {
         if (blank($this->franchiseMake)) {
-            return "TruCars hasn't confirmed your franchise brand yet, so none of your stock can be shown as manufacturer certified. Drafts are fine — activation unlocks once it's confirmed.";
+            return "Trumo hasn't confirmed your franchise brand yet, so none of your stock can be shown as manufacturer certified. Drafts are fine — activation unlocks once it's confirmed.";
         }
 
         if ($campaign->targetsVehicle()) {
@@ -425,7 +425,7 @@ new #[Layout('layouts.dealer')] #[Title('Campaigns')] class extends Component {
         <div>
             <h1>Campaigns</h1>
             <p>
-                Create a trackable TruCars link for your own Facebook, Instagram or Google ads, your website, or email.
+                Create a trackable Trumo link for your own Facebook, Instagram or Google ads, your website, or email.
                 Shoppers who follow it see only your published, manufacturer-certified pre-owned vehicles — and every
                 reservation they make is credited to the campaign.
             </p>
@@ -453,7 +453,7 @@ new #[Layout('layouts.dealer')] #[Title('Campaigns')] class extends Component {
     @if (blank($this->franchiseMake))
         <div class="cmp-alert">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg>
-            <span>Your franchise brand hasn't been confirmed by TruCars yet, so no vehicles qualify as manufacturer CPO. You can prepare drafts now; contact TruCars to confirm your franchise and certified-inventory feed.</span>
+            <span>Your franchise brand hasn't been confirmed by Trumo yet, so no vehicles qualify as manufacturer CPO. You can prepare drafts now; contact Trumo to confirm your franchise and certified-inventory feed.</span>
         </div>
     @endif
 
@@ -493,7 +493,7 @@ new #[Layout('layouts.dealer')] #[Title('Campaigns')] class extends Component {
                                 <button type="button" class="chip {{ $campaignSource === $sourceKey ? 'on' : '' }}" wire:click="$set('campaignSource', '{{ $sourceKey }}')">{{ $source['label'] }}</button>
                             @endforeach
                         </div>
-                        <span class="hint">Only sets the tracking tags on your link. TruCars doesn't connect to or post on these platforms.</span>
+                        <span class="hint">Only sets the tracking tags on your link. Trumo doesn't connect to or post on these platforms.</span>
                         @error('campaignSource') <span class="err">{{ $message }}</span> @enderror
                     </div>
 
@@ -529,7 +529,7 @@ new #[Layout('layouts.dealer')] #[Title('Campaigns')] class extends Component {
                     @endif
 
                     <div class="field">
-                        <span class="lbl">TruCars rules for referred shoppers</span>
+                        <span class="lbl">Trumo rules for referred shoppers</span>
                         <div class="locked">
                             <div class="locked-row">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
@@ -552,7 +552,7 @@ new #[Layout('layouts.dealer')] #[Title('Campaigns')] class extends Component {
                                 <span class="v">Off</span>
                             </div>
                         </div>
-                        <span class="hint">Set by TruCars on every campaign. You remain the seller of record.</span>
+                        <span class="hint">Set by Trumo on every campaign. You remain the seller of record.</span>
                     </div>
 
                     <div class="field">

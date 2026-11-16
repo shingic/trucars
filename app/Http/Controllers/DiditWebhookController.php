@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Log;
 use stdClass;
 
 /**
- * Didit → TruCars. A status change on an ID check (status.updated). Only
+ * Didit → Trumo. A status change on an ID check (status.updated). Only
  * signed, fresh requests are accepted, and even then the decision is read
  * back from Didit's API rather than taken from the payload.
  *

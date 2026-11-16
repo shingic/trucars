@@ -272,7 +272,7 @@ Route::domain($staffDomain)->group(function () {
 |--------------------------------------------------------------------------
 | Command Centre (admin host)
 |--------------------------------------------------------------------------
-| TruCars' own workspace: the owner and internal staff (support, operations).
+| Trumo's own workspace: the owner and internal staff (support, operations).
 | Its own host (ADMIN_DOMAIN, default admin.<app host>) gives it a host-only
 | session apart from the marketplace and the dealer portal.
 |

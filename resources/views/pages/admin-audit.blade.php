@@ -69,7 +69,7 @@ new #[Layout('layouts.dealer')] #[Title('Audit log')] class extends Component {
         <h1>Audit log</h1>
         <select wire:model.live="actionFilter" aria-label="Filter">
             <option value="">All actions</option>
-            <option value="staff.">TruCars staff</option>
+            <option value="staff.">Trumo staff</option>
             <option value="owner.">Owner access</option>
             <option value="dealer.">Dealers</option>
             <option value="dealer_user.">Dealer users</option>

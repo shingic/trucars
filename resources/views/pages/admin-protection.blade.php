@@ -11,7 +11,7 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 
 /*
-| Command Centre — Settings › Protection & add-ons. The TruCars default list
+| Command Centre — Settings › Protection & add-ons. The Trumo default list
 | every dealership starts with: coverage plans, GAP, add-ons and accessories.
 | Dealerships can hide a default or set their own price for it, and add their
 | own items (managed on their dealer page or in their portal). settings.manage.

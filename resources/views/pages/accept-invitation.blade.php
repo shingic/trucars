@@ -140,11 +140,11 @@ new #[Layout('layouts.auth')] class extends Component {
     @if (! $isUsable)
         <h1 class="inv-title">This invitation can't be used</h1>
         <div class="inv-note">
-            It may have expired, been used already, or been replaced by a newer invitation. Ask your TruCars contact to send a fresh one.
+            It may have expired, been used already, or been replaced by a newer invitation. Ask your Trumo contact to send a fresh one.
             If you already set up your account, <a href="{{ route('dealer.login') }}">sign in here</a>.
         </div>
     @else
-        <h1 class="inv-title">Join {{ $dealerName }} on TruCars</h1>
+        <h1 class="inv-title">Join {{ $dealerName }} on Trumo</h1>
         <p class="inv-lead">Choose a password to finish setting up your dealer portal account.</p>
 
         <form wire:submit="accept">

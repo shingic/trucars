@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     @include('partials.favicons')
-    <title>{{ $title ?? 'Reserve your car · TruCars' }}</title>
+    <title>{{ $title ?? 'Reserve your car · Trumo' }}</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -196,7 +196,7 @@
             .btn-primary.btn-lg { font-size:18px; }
             .h1 { font-size:30px; }
         }
-        /* the TruCars wordmark: condensed caps, "Cars" in blue */
+        /* the Trumo wordmark: condensed caps, "Cars" in blue */
         .wordmark { font-family:var(--font-display); font-size:24px; font-weight:800; line-height:1; text-transform:uppercase; letter-spacing:.01em; color:var(--ink); white-space:nowrap; }
         .wordmark b { font-weight:800; color:var(--primary); }
         /* form controls: one flat, square look everywhere instead of each browser's own.

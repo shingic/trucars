@@ -15,7 +15,7 @@ class MakeOwnerUser extends Command
         {--name= : Name for a new account}
         {--revoke : Turn an owner back into a customer account}';
 
-    protected $description = 'Create or promote a TruCars owner (admin host) account';
+    protected $description = 'Create or promote a Trumo owner (admin host) account';
 
     /**
      * Deliberately console-only. role isn't mass-assignable and no screen grants
@@ -57,7 +57,7 @@ class MakeOwnerUser extends Command
             }
 
             $user = new User([
-                'name'     => $this->option('name') ?: 'TruCars owner',
+                'name'     => $this->option('name') ?: 'Trumo owner',
                 'email'    => $email,
                 'password' => $password,
             ]);
@@ -70,7 +70,7 @@ class MakeOwnerUser extends Command
         $user->forceFill(['role' => User::ROLE_OWNER, 'permissions' => null, 'suspended_at' => null])->save();
         AuditLog::record('owner.granted', $user, ['role' => $previousRole], ['role' => User::ROLE_OWNER]);
 
-        $this->info("{$email} is a TruCars owner. Sign in to the Command Centre at " . route('admin.login') . '.');
+        $this->info("{$email} is a Trumo owner. Sign in to the Command Centre at " . route('admin.login') . '.');
 
         return self::SUCCESS;
     }

@@ -39,7 +39,7 @@ class UserFactory extends Factory
         return $this->state(fn () => ['role' => \App\Models\User::ROLE_DEALER_STAFF, 'dealer_id' => $dealer->id]);
     }
 
-    /** A TruCars owner (admin host). */
+    /** A Trumo owner (admin host). */
     public function owner(): static
     {
         return $this->state(fn () => ['role' => \App\Models\User::ROLE_OWNER]);

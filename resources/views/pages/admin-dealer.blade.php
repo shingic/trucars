@@ -24,7 +24,7 @@ use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Storage;
 
 /*
-| TruCars admin — create or edit one selling dealer and its rooftops. The
+| Trumo admin — create or edit one selling dealer and its rooftops. The
 | dealer's own address is its main store (mirrored onto the primary rooftop);
 | further stores are added on the Location tab.
 |
@@ -679,7 +679,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
 
     /**
      * Invite someone to this dealer's portal. The account is only created when
-     * they accept and choose a password. An email that already has any TruCars
+     * they accept and choose a password. An email that already has any Trumo
      * account is refused — an existing customer is never quietly turned into staff.
      */
     public function inviteStaff(): void
@@ -693,7 +693,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
             'inviteName'  => ['required', 'string', 'max:120'],
             'inviteEmail' => ['required', 'email', 'max:160', Rule::unique('users', 'email')],
         ], [
-            'inviteEmail.unique' => 'That email already has a TruCars account. Dealer staff need their own work email.',
+            'inviteEmail.unique' => 'That email already has a Trumo account. Dealer staff need their own work email.',
         ], ['inviteName' => 'name', 'inviteEmail' => 'email']);
 
         if ($dealer->isSuspended()) {
@@ -834,7 +834,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         $this->status = $this->savedStatus = $status;
         $this->resetErrorBag('status');
         $this->statusMessage = match ($status) {
-            Dealer::STATUS_ACTIVE    => "{$dealer->name} is live. Its published cars appear on TruCars.",
+            Dealer::STATUS_ACTIVE    => "{$dealer->name} is live. Its published cars appear on Trumo.",
             Dealer::STATUS_SUSPENDED => "{$dealer->name} is suspended. Its cars are unlisted and its staff can't sign in.",
             default                  => "{$dealer->name} is back to draft. None of its cars are listed.",
         };
@@ -1246,7 +1246,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
                         <div class="field w6">
                             <div class="status-toggle">
                                 <button type="button" class="status-opt {{ $status === 'draft' ? 'on' : '' }}" wire:click="$set('status', 'draft')"><div class="k">Draft</div><div class="d">Being set up — none of its cars are listed</div></button>
-                                <button type="button" class="status-opt {{ $status === 'active' ? 'on' : '' }}" wire:click="$set('status', 'active')"><div class="k">Active</div><div class="d">Live — its published cars appear on TruCars</div></button>
+                                <button type="button" class="status-opt {{ $status === 'active' ? 'on' : '' }}" wire:click="$set('status', 'active')"><div class="k">Active</div><div class="d">Live — its published cars appear on Trumo</div></button>
                             </div>
                             @error('status') <span class="err">{{ $message }}</span> @enderror
                         </div>
@@ -1701,7 +1701,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
                         <div class="status-pick" x-data="{ open: false }" @click.outside="open = false">
                             <button type="button" class="sp-current" @click="open = ! open"><i class="st-dot st-{{ $dealer->status }}"></i>{{ \App\Models\Dealer::STATUS_LABELS[$dealer->status] }} <span class="sp-chev">{!! $icon('<path d="m6 9 6 6 6-6"/>', 15) !!}</span></button>
                             <div class="sp-menu" x-show="open" x-cloak x-transition>
-                                @foreach (['active' => 'Live — published cars appear on TruCars', 'draft' => 'Being set up — no cars listed', 'suspended' => 'Cars unlisted, staff locked out'] as $value => $detail)
+                                @foreach (['active' => 'Live — published cars appear on Trumo', 'draft' => 'Being set up — no cars listed', 'suspended' => 'Cars unlisted, staff locked out'] as $value => $detail)
                                     @continue($value === $dealer->status)
                                     <button type="button" wire:click="changeStatus('{{ $value }}')" wire:confirm="Change {{ $displayName }} to {{ \App\Models\Dealer::STATUS_LABELS[$value] }}? {{ $detail }}." @click="open = false">
                                         <i class="st-dot st-{{ $value }}"></i><span><b>{{ \App\Models\Dealer::STATUS_LABELS[$value] }}</b><small>{{ $detail }}</small></span>
@@ -1713,7 +1713,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
                         <div class="sp-current static"><i class="st-dot st-{{ $dealer->status }}"></i>{{ \App\Models\Dealer::STATUS_LABELS[$dealer->status] }}</div>
                     @endif
                     @error('status') <div class="err" style="margin-top:8px">{{ $message }}</div> @enderror
-                    <div class="side-note">{{ ['active' => 'Live — published cars appear on TruCars.', 'draft' => 'Draft — none of its cars are listed yet.', 'suspended' => 'Suspended — cars unlisted, staff can’t sign in.'][$dealer->status] ?? '' }}</div>
+                    <div class="side-note">{{ ['active' => 'Live — published cars appear on Trumo.', 'draft' => 'Draft — none of its cars are listed yet.', 'suspended' => 'Suspended — cars unlisted, staff can’t sign in.'][$dealer->status] ?? '' }}</div>
                 </div>
 
                 <div class="side-card">

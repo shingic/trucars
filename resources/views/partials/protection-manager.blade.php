@@ -31,7 +31,7 @@
                     <div class="pm-main">
                         <div class="pm-name">
                             {{ $product->name }}
-                            <span class="pm-tag {{ $row['own'] ? 'own' : '' }}">{{ $row['own'] ? 'Yours' : 'TruCars default' }}</span>
+                            <span class="pm-tag {{ $row['own'] ? 'own' : '' }}">{{ $row['own'] ? 'Yours' : 'Trumo default' }}</span>
                             @if ($product->is_featured) <span class="pm-tag star">Recommended</span> @endif
                             @unless ($row['shown']) <span class="pm-tag off">Hidden from buyers</span> @endunless
                         </div>
@@ -44,7 +44,7 @@
                     </div>
                     <div class="pm-price {{ $row['price'] ? '' : 'none' }}">
                         {{ $row['price'] ?? 'No price shown' }}
-                        @if ($row['repriced']) <small>Your price · TruCars: {{ $row['basePrice'] ?? 'none' }}</small> @endif
+                        @if ($row['repriced']) <small>Your price · Trumo: {{ $row['basePrice'] ?? 'none' }}</small> @endif
                     </div>
                     @if ($canManage)
                         <div class="pm-actions">
@@ -54,7 +54,7 @@
                             @else
                                 <button type="button" class="pm-btn" wire:click="startPricing({{ $product->id }})">Set your price</button>
                                 @if ($row['repriced'])
-                                    <button type="button" class="pm-btn" wire:click="resetPricing({{ $product->id }})">Use TruCars price</button>
+                                    <button type="button" class="pm-btn" wire:click="resetPricing({{ $product->id }})">Use Trumo price</button>
                                 @endif
                                 <button type="button" class="pm-btn" wire:click="toggleDefault({{ $product->id }})">{{ $row['shown'] ? 'Hide' : 'Show' }}</button>
                             @endif

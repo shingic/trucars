@@ -9,7 +9,7 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-/** The reservation is off, declined by the dealership or cancelled by TruCars, and whether the $150 went back. */
+/** The reservation is off, declined by the dealership or cancelled by Trumo, and whether the $150 went back. */
 class ReservationCancelled extends Mailable
 {
     use Queueable, SerializesModels;

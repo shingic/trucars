@@ -88,7 +88,7 @@ class ImportDealerInventory extends Command
 
             $rowsForRooftop++;
 
-            // TruCars lists certified pre-owned cars only. New cars and plain
+            // Trumo lists certified pre-owned cars only. New cars and plain
             // used cars are turned away, and don't count as "in the feed" — so
             // one already listed comes off the marketplace below.
             if (! $this->isCertifiedPreOwned($row)) {
@@ -413,7 +413,7 @@ class ImportDealerInventory extends Command
     }
 
     /**
-     * Certified pre-owned, the only kind of car TruCars lists: the feed flags it
+     * Certified pre-owned, the only kind of car Trumo lists: the feed flags it
      * certified and it isn't new, or the feed's condition itself says CPO.
      *
      * @param  array<string, string>  $row

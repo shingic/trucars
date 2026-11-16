@@ -59,7 +59,7 @@ new #[Layout('layouts.auth')] class extends Component {
         if (! $credentialsMatched) {
             RateLimiter::hit($this->throttleKey());
             $this->addError('email', $this->portal === 'owner'
-                ? 'Those credentials don’t match a TruCars staff account.'
+                ? 'Those credentials don’t match a Trumo staff account.'
                 : 'Those credentials don’t match any dealer account.');
 
             return;
@@ -77,7 +77,7 @@ new #[Layout('layouts.auth')] class extends Component {
 
     /**
      * Back to the page that sent them here — but only if it's on this portal's
-     * own host. A "return to" URL left over from another TruCars site is ignored.
+     * own host. A "return to" URL left over from another Trumo site is ignored.
      */
     private function landingUrl(): string
     {
@@ -189,9 +189,9 @@ new #[Layout('layouts.auth')] class extends Component {
         <div class="auth-mobile-brand">@include('partials.logo', ['variant' => 'dark', 'height' => 40])</div>
 
         <div class="auth-form" x-data="{ showPassword: false }">
-            <span class="auth-kicker">{{ $portal === 'owner' ? 'TruCars Command Centre' : 'Dealer desk' }}</span>
+            <span class="auth-kicker">{{ $portal === 'owner' ? 'Trumo Command Centre' : 'Dealer desk' }}</span>
             <h2 class="auth-title">Welcome back</h2>
-            <p class="auth-lead">{{ $portal === 'owner' ? 'Sign in with your TruCars staff account.' : 'Sign in to manage your reservations and inquiries.' }}</p>
+            <p class="auth-lead">{{ $portal === 'owner' ? 'Sign in with your Trumo staff account.' : 'Sign in to manage your reservations and inquiries.' }}</p>
 
             <form wire:submit="signIn" class="auth-fields">
                 <div class="auth-field">
@@ -229,6 +229,6 @@ new #[Layout('layouts.auth')] class extends Component {
             </form>
         </div>
 
-        <p class="auth-legal">TruCars · {{ $portal === 'owner' ? 'TruCars staff only' : 'Dealer access only' }}</p>
+        <p class="auth-legal">Trumo · {{ $portal === 'owner' ? 'Trumo staff only' : 'Dealer access only' }}</p>
     </main>
 </div>

@@ -24,7 +24,7 @@ class DealerInvitationMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'You’re invited to the ' . ucwords(strtolower($this->invitation->dealer->name)) . ' portal on TruCars',
+            subject: 'You’re invited to the ' . ucwords(strtolower($this->invitation->dealer->name)) . ' portal on Trumo',
         );
     }
 

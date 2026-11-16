@@ -161,7 +161,7 @@ new class extends Component {
         <p class="cs-sub">
             {{ $this->totalCount }} manufacturer-certified {{ $this->totalCount === 1 ? 'vehicle' : 'vehicles' }}
             @if ($this->dealer->city) · {{ $this->dealer->city }} @endif
-            · Sold by {{ ucwords(strtolower($this->dealer->name)) }}, reserved online through TruCars
+            · Sold by {{ ucwords(strtolower($this->dealer->name)) }}, reserved online through Trumo
         </p>
     </header>
 

@@ -20,7 +20,7 @@ class StaffInvitationMail extends Mailable
 
     public function envelope(): Envelope
     {
-        return new Envelope(subject: 'You’re invited to the TruCars Command Centre');
+        return new Envelope(subject: 'You’re invited to the Trumo Command Centre');
     }
 
     public function content(): Content

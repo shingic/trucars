@@ -15,7 +15,7 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 
 /*
-| Settings › Brands › CPO checklist (settings.manage). TruCars types the
+| Settings › Brands › CPO checklist (settings.manage). Trumo types the
 | brand's inspection points in here; they show on every dealer of the brand's
 | cars as "N-point inspection", with every point listed. A brand normally has
 | one checklist; a second can cover a different set of cars (e.g. all used

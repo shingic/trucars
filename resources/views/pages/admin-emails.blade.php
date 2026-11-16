@@ -14,7 +14,7 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 
 /*
-| Command Centre — the Email Centre: every email TruCars sends, how many went
+| Command Centre — the Email Centre: every email Trumo sends, how many went
 | out, a preview of each, the marketing On/Off switch and pausing one type.
 | Viewing needs marketing.view; changing anything needs settings.manage and is
 | audited. Previews are built from a made-up shopper (Catalogue::preview).
@@ -164,7 +164,7 @@ new #[Layout('layouts.dealer')] #[Title('Email Centre')] class extends Component
 <div>
     <div class="em-head">
         <h1>Email Centre</h1>
-        <p>Every email TruCars sends: when it goes out, who gets it, how many went out, and what it looks like. Marketing emails can be switched off all at once or paused one by one. Emails a reservation or a sign-in depends on are always on.</p>
+        <p>Every email Trumo sends: when it goes out, who gets it, how many went out, and what it looks like. Marketing emails can be switched off all at once or paused one by one. Emails a reservation or a sign-in depends on are always on.</p>
     </div>
 
     @if ($statusMessage !== '')

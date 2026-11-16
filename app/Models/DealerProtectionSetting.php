@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * One dealership's choice about one TruCars default protection product:
+ * One dealership's choice about one Trumo default protection product:
  * whether buyers see it at that dealership, and the dealership's own price.
  * No row means the default is shown at the default price.
  */

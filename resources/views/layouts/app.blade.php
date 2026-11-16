@@ -62,7 +62,7 @@
         /* 1240px of content plus the 24px side padding, to match the vehicle page */
         .nav-inner.is-narrow, .site-foot-inner.is-narrow { max-width:1288px; }
         .brand { display:flex; align-items:center; text-decoration:none; }
-        /* the TruCars wordmark: condensed caps, "Cars" in blue */
+        /* the Trumo wordmark: condensed caps, "Cars" in blue */
         .wordmark { font-family:var(--font-display); font-size:24px; font-weight:800; line-height:1; text-transform:uppercase; letter-spacing:.01em; color:var(--ink); white-space:nowrap; }
         .wordmark b { font-weight:800; color:var(--primary); }
         .nav-links { display:flex; align-items:center; gap:22px; }
@@ -399,7 +399,7 @@
             <a href="{{ route('how-it-works') }}" wire:navigate>How it works</a>
             @guest <a href="{{ route('buyer.login') }}" wire:navigate>Sign in</a> @endguest
         </nav>
-        <span class="site-foot-legal">© {{ date('Y') }} TruCars. Every price is all-in, with freight, prep and dealer fees included. HST and licensing are extra. Postal area data from <a href="https://www.geonames.org/" target="_blank" rel="noopener" style="color:inherit;">GeoNames</a> (CC BY 4.0).</span>
+        <span class="site-foot-legal">© {{ date('Y') }} Trumo. Every price is all-in, with freight, prep and dealer fees included. HST and licensing are extra. Postal area data from <a href="https://www.geonames.org/" target="_blank" rel="noopener" style="color:inherit;">GeoNames</a> (CC BY 4.0).</span>
     </div>
 </footer>
 

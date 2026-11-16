@@ -15,7 +15,7 @@ use Livewire\Component;
 | the page opens and the account id is locked after that. Every change is
 | audited. Transactional email can't be switched off.
 */
-new #[Layout('layouts.checkout')] #[Title('Email preferences · TruCars')] class extends Component {
+new #[Layout('layouts.checkout')] #[Title('Email preferences · Trumo')] class extends Component {
     #[Locked]
     public int $userId;
 

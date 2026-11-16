@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
- * An inspection checklist, set up by TruCars in the Command Centre. Shown on
+ * An inspection checklist, set up by Trumo in the Command Centre. Shown on
  * used cars as "N-point inspection" with every point listed — N is just the
  * number of points entered.
  *

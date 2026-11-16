@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Response;
 class EnsureCommandCentreAccess
 {
     /**
-     * The Command Centre (admin host) is for TruCars' owner and internal staff
+     * The Command Centre (admin host) is for Trumo's owner and internal staff
      * only — never customers or dealer users, and never a suspended account.
      * What each person may do inside it is decided per page and per action by
      * permission gates (`can:` route middleware, Gate::authorize in components).
@@ -28,7 +28,7 @@ class EnsureCommandCentreAccess
             return redirect()->route('admin.login');
         }
 
-        abort_unless($user->canUseCommandCentre(), 403, 'This area is for TruCars staff.');
+        abort_unless($user->canUseCommandCentre(), 403, 'This area is for Trumo staff.');
 
         return $next($request);
     }

@@ -40,7 +40,7 @@ class DealSeeder extends Seeder
             'identity_verified_at'  => now()->subMinutes(45),
         ]);
 
-        $financedDeal->recordActivity('system', 'Reservation created through TruCars checkout.');
+        $financedDeal->recordActivity('system', 'Reservation created through Trumo checkout.');
         $financedDeal->recordActivity('system', '$150 refundable deposit held.');
         $financedDeal->recordActivity('system', 'Identity verified.');
         $financedDeal->recordActivity('sms', 'Hi Amara — your ' . $vehicles[0]->model_year . ' ' . $vehicles[0]->make . ' ' . $vehicles[0]->model . ' is reserved! Reference ' . $financedDeal->reference . '. The dealership will reach out shortly.', null, 'outbound');
@@ -60,7 +60,7 @@ class DealSeeder extends Seeder
             'postal_code'    => 'L5G 1C9',
         ]);
 
-        $cashDeal->recordActivity('system', 'Reservation created through TruCars checkout.');
+        $cashDeal->recordActivity('system', 'Reservation created through Trumo checkout.');
         $cashDeal->recordActivity('system', '$150 refundable deposit held.');
         $cashDeal->recordActivity('status', 'Stage moved to Contacted.', 'Dealer');
     }

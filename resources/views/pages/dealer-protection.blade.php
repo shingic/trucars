@@ -8,7 +8,7 @@ use Livewire\Component;
 
 /*
 | Dealer portal — Protection & add-ons. What this dealership's buyers can flag
-| at checkout: the TruCars defaults (shown or hidden, at the TruCars price or
+| at checkout: the Trumo defaults (shown or hidden, at the Trumo price or
 | the dealership's own) and the dealership's own items. Shared with the
 | Command Centre's dealer tab (ManagesDealerProtection).
 */

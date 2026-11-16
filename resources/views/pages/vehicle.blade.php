@@ -844,7 +844,7 @@ new class extends Component {
         <aside class="buy-rail">
             <div class="buy-card">
                 <div class="buy-top">
-                    <div class="buy-pricelabel">TruCars price</div>
+                    <div class="buy-pricelabel">Trumo price</div>
                     <div class="buy-price-row">
                         <div class="buy-price">{{ $vehicle->display_price }}</div>
                         @if ($this->favouriteIsVisible() && ! $reserved)

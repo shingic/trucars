@@ -7,11 +7,11 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 
 /*
-| The public homepage — where someone who finds TruCars lands before they
+| The public homepage — where someone who finds Trumo lands before they
 | shop. Everything on it is live: the counts, the cars and the photos are
 | read from what's actually listed (published cars at active dealers).
 */
-new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
+new #[Title('Trumo — Real dealers. Real prices.')] class extends Component {
     public string $q = '';
 
     /** The search box opens the shop with the search already applied. */
@@ -135,7 +135,7 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
 
     $faqs = [
         ['Can I negotiate the price?', 'There’s nothing to haggle over. The price on the listing is the dealership’s price, with freight, prep and fees already in it. HST and licensing are the only things added.'],
-        ['Who am I actually buying from?', 'The licensed dealership named on the listing. TruCars is where you find the car and reserve it; the dealership sells it to you, and their registration number is on every listing.'],
+        ['Who am I actually buying from?', 'A dealership licensed by its province’s dealer regulator. Trumo is where you find the car and reserve it; the dealership sells it to you. Their name, address and licence number are in your confirmation as soon as you reserve.'],
         ['Is the price really all-in?', 'Yes. Freight, pre-delivery prep, dealer admin and regulator fees are already in the price you see. HST and licensing are the only things added.'],
         ['What does the $150 deposit do?', 'It takes the car off the market while you finish up, and it comes off the price when you buy. It’s refundable any time before you pick the car up.'],
         ['How do I get the car?', 'You pick it up at the dealership. Every car shows how far it is from you, and you choose the day and time window when you reserve.'],
@@ -408,7 +408,7 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
     <div class="facts">
         <div class="fact"><span class="fact-ic">{!! $icon('tag') !!}</span><div><b>All-in prices</b><span>No hidden fees. Freight, prep and dealer fees included.</span><em>Freight and fees included.</em></div></div>
         <div class="fact fact-cert"><span class="fact-ic">{!! $icon('shield') !!}</span><div><b>Certified vehicles</b><span>Inspected and backed by real dealerships.</span><em>Inspected and dealer-backed.</em></div></div>
-        <div class="fact fact-dealers"><span class="fact-ic">{!! $icon('store') !!}</span><div><b>Licensed dealers only</b><span>Every listing names the licensed dealership selling it.</span></div></div>
+        <div class="fact fact-dealers"><span class="fact-ic">{!! $icon('store') !!}</span><div><b>Licensed dealers only</b><span>Every car is sold by a dealership licensed in its province. You get their details when you reserve.</span></div></div>
         <div class="fact"><span class="fact-ic">{!! $icon('dollar') !!}</span><div><b>Hold it for $150</b><span>Refundable until you pick it up.</span><em>Refundable until you pick it up.</em></div></div>
     </div>
 
@@ -419,7 +419,7 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
     @if ($mix->isNotEmpty())
         <section class="wide-only">
             <div class="sec-head">
-                <div><h2>On the lot now</h2><p>A mix from our dealers. It changes every visit.</p></div>
+                <div><h2>On the lot now</h2></div>
                 <a href="{{ route('shop') }}" wire:navigate>See all {{ number_format($carCount) }} {{ $carCount === 1 ? 'car' : 'cars' }} →</a>
             </div>
             <div class="cars">
@@ -443,7 +443,7 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
     <section class="calm">
         <div>
             <h2>No haggling. No pressure.</h2>
-            <p>Every price on TruCars is set by the dealership and shown up front, with the fees already in it. Decide on your own time, from your own couch.</p>
+            <p>Every price on Trumo is set by the dealership and shown up front, with the fees already in it. Decide on your own time, from your own couch.</p>
         </div>
         <div class="heard">
             <small>Heard at the sales desk</small>
@@ -451,14 +451,14 @@ new #[Title('TruCars — Real dealers. Real prices.')] class extends Component {
             <div class="said">This price is only good today.</div>
             <div class="said">Freight and admin are extra, of course.</div>
             <div class="said">What would it take to get you into this car today?</div>
-            <div class="reply"><b>On TruCars</b>The price on the listing is the price, fees included. Take your time, and hold it for $150 if you want to think it over.</div>
+            <div class="reply"><b>On Trumo</b>The price on the listing is the price, fees included. Take your time, and hold it for $150 if you want to think it over.</div>
         </div>
     </section>
 
     {{-- SHOP BY --}}
     @if ($bodyTypes->isNotEmpty())
         <section class="wide-only">
-            <div class="sec-head"><div><h2>What are you after?</h2><p>Pick a type and we'll show you what's on the lot.</p></div></div>
+            <div class="sec-head"><div><h2>What are you after?</h2></div></div>
             <div class="garage">
                 @foreach ($bodyTypes as $body => $total)
                     <a class="bay" href="{{ route('shop', ['body' => [$body]]) }}" wire:navigate>

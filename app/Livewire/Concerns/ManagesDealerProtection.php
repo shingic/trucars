@@ -10,7 +10,7 @@ use App\Models\DealerProtectionSetting;
 use App\Models\ProtectionProduct;
 
 /**
- * One dealership's protection menu: which TruCars defaults its buyers see and
+ * One dealership's protection menu: which Trumo defaults its buyers see and
  * at what price, plus the items it added itself. Shared by the dealer portal
  * page and the Command Centre's dealer tab so both behave the same.
  *
@@ -37,7 +37,7 @@ trait ManagesDealerProtection
         return Dealer::findOrFail($this->protectionDealerId());
     }
 
-    /** Show or hide a TruCars default for this dealership's buyers. */
+    /** Show or hide a Trumo default for this dealership's buyers. */
     public function toggleDefault(int $productId): void
     {
         $this->authorizeProtectionManage();
@@ -67,7 +67,7 @@ trait ManagesDealerProtection
         $this->resetErrorBag();
     }
 
-    /** Set this dealership's own price for a default. Blank goes back to the TruCars price. */
+    /** Set this dealership's own price for a default. Blank goes back to the Trumo price. */
     public function savePricing(): void
     {
         $this->authorizeProtectionManage();

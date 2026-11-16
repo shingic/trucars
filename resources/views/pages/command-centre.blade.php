@@ -308,7 +308,7 @@ new #[Layout('layouts.dealer')] #[Title('Command Centre')] class extends Compone
     <div class="cc-top">
         <div>
             <h1>{{ $this->greeting() }}, {{ \Illuminate\Support\Str::before($user->name, ' ') }}</h1>
-            <p>{{ now(config('app.timezone'))->format('l, F j') }} · here’s how TruCars is doing.</p>
+            <p>{{ now(config('app.timezone'))->format('l, F j') }} · here’s how Trumo is doing.</p>
         </div>
         <div class="spacer"></div>
         <div class="cc-actions">

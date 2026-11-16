@@ -1827,7 +1827,7 @@ new #[Layout('layouts.checkout')] class extends Component {
             }
 
             // The opening activity trail the dealer sees the moment this lands.
-            $deal->recordActivity('system', 'Reservation created through TruCars checkout.');
+            $deal->recordActivity('system', 'Reservation created through Trumo checkout.');
 
             // Campaign attribution is stamped on by the Deal model as it's created.
             if ($deal->campaign_id !== null) {
@@ -1860,7 +1860,7 @@ new #[Layout('layouts.checkout')] class extends Component {
             $deal->recordActivity(
                 'sms',
                 'Hi ' . $this->firstName . ' — your ' . $this->vehicle->model_year . ' ' . $this->vehicle->make . ' ' . $this->vehicle->model
-                . ' is reserved! Reference ' . $deal->reference . '. The dealership will reach out shortly to confirm financing and next steps. — TruCars',
+                . ' is reserved! Reference ' . $deal->reference . '. The dealership will reach out shortly to confirm financing and next steps. — Trumo',
                 null,
                 'outbound',
             );
@@ -3066,7 +3066,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                             </div>
                         </div>
                     @elseif ($paymentClientSecret)
-                        {{-- Stripe's own card form (an iframe): card details go straight to Stripe, never through TruCars. --}}
+                        {{-- Stripe's own card form (an iframe): card details go straight to Stripe, never through Trumo. --}}
                         <div id="deposit-element" class="deposit-element" wire:ignore><div class="deposit-loading">Loading secure card form…</div></div>
                     @endif
                     <p id="deposit-error" class="field-error pay-error" role="alert" @if ($paymentError === '') hidden @endif>{{ $paymentError }}</p>

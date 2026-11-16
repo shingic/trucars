@@ -16,7 +16,7 @@ use Illuminate\Support\Collection;
  * (PaymentEstimate); nothing is charged online, and the dealership's F&I
  * office confirms the final numbers after the reservation.
  *
- * No dealer_id = a TruCars default, offered at every dealership. A dealership
+ * No dealer_id = a Trumo default, offered at every dealership. A dealership
  * can hide a default or set its own price for it (DealerProtectionSetting),
  * and can add items of its own (dealer_id set).
  *
@@ -87,7 +87,7 @@ class ProtectionProduct extends Model
         return $this->hasMany(DealerProtectionSetting::class);
     }
 
-    /** TruCars defaults: the rows no dealer owns. */
+    /** Trumo defaults: the rows no dealer owns. */
     public function scopeDefaults(Builder $query): Builder
     {
         return $query->whereNull('dealer_id');

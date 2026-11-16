@@ -109,13 +109,13 @@ class User extends Authenticatable
         return $this->role === self::ROLE_DEALER_STAFF && $this->dealer_id !== null;
     }
 
-    /** The TruCars owner: every Command Centre permission, and controls staff access. */
+    /** The Trumo owner: every Command Centre permission, and controls staff access. */
     public function isOwner(): bool
     {
         return $this->role === self::ROLE_OWNER;
     }
 
-    /** TruCars' own employees (support, operations) — never a customer or dealer user. */
+    /** Trumo's own employees (support, operations) — never a customer or dealer user. */
     public function isInternalStaff(): bool
     {
         return $this->role === self::ROLE_INTERNAL_STAFF;
@@ -169,7 +169,7 @@ class User extends Authenticatable
         return $code;
     }
 
-    /** Internal notes TruCars support keeps on this customer. */
+    /** Internal notes Trumo support keeps on this customer. */
     public function supportNotes(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(CustomerSupportNote::class, 'customer_user_id')->latest();

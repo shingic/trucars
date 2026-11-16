@@ -8,7 +8,7 @@ use Livewire\Component;
 
 /*
 | Dealer portal — Offers (read-only). The current and upcoming offers of the
-| dealer's brand, set up by TruCars. They apply to every dealer of the brand
+| dealer's brand, set up by Trumo. They apply to every dealer of the brand
 | the same way, so there's nothing to switch on here.
 */
 new #[Layout('layouts.dealer')] #[Title('Offers')] class extends Component {
@@ -68,11 +68,11 @@ new #[Layout('layouts.dealer')] #[Title('Offers')] class extends Component {
 <div>
     <div class="do-head">
         <h1>{{ $dealer->franchise_make ? $dealer->franchise_make . ' offers' : 'Offers' }}</h1>
-        <p>Set up by TruCars for every {{ $dealer->franchise_make ?: 'brand' }} dealer. They show on your eligible cars automatically, only within their dates.</p>
+        <p>Set up by Trumo for every {{ $dealer->franchise_make ?: 'brand' }} dealer. They show on your eligible cars automatically, only within their dates.</p>
     </div>
 
     @if (! $dealer->brand_id)
-        <div class="empty">Your dealership’s brand hasn’t been set yet. Contact TruCars.</div>
+        <div class="empty">Your dealership’s brand hasn’t been set yet. Contact Trumo.</div>
     @elseif ($offers->isEmpty())
         <div class="empty">No {{ $dealer->franchise_make }} offers are running or scheduled right now.</div>
     @else

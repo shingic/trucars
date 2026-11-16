@@ -14,7 +14,7 @@ use Livewire\Component;
 /*
 | Command Centre — one reservation (reservations.view). Shows the seller as
 | frozen at reserve time and the handover in the dealer's own timezone.
-| Opening it is audited. The dealer owns the sale; the one thing TruCars does
+| Opening it is audited. The dealer owns the sale; the one thing Trumo does
 | here is cancel a reservation and refund the $150 deposit it holds
 | (reservations.refund) — the buyer's right any time before delivery.
 */
@@ -214,7 +214,7 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
             @forelse ($deal->activities as $activity)
                 <div class="act">
                     {{ $activity->body }}
-                    <div class="meta">{{ $activity->kind }} · {{ $activity->author_name ?? 'TruCars' }} · {{ $activity->created_at->format('M j, Y g:i a') }} UTC</div>
+                    <div class="meta">{{ $activity->kind }} · {{ $activity->author_name ?? 'Trumo' }} · {{ $activity->created_at->format('M j, Y g:i a') }} UTC</div>
                 </div>
             @empty
                 <div class="act">No activity.</div>

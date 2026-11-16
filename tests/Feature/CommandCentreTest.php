@@ -186,7 +186,7 @@ class CommandCentreTest extends TestCase
         $this->assertNull(User::where('email', 'sam@trucars.ca')->first());
 
         auth()->logout();
-        $this->get($url)->assertOk()->assertSee('Join the TruCars Command Centre');
+        $this->get($url)->assertOk()->assertSee('Join the Trumo Command Centre');
 
         Livewire::test('pages::accept-staff-invitation', ['token' => $token])
             ->set('password', 'a-strong-password')

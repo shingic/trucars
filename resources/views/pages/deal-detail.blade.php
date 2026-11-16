@@ -288,7 +288,7 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
             $deposits->cancelReservation($this->deal, trim($this->declineReason), byDealer: true, noteToBuyer: trim($this->declineNote) ?: null);
         } catch (\Throwable $refundFailure) {
             report($refundFailure);
-            $this->addError('declineReason', 'The refund didn’t go through, so nothing was changed. Try again in a minute, or contact TruCars.');
+            $this->addError('declineReason', 'The refund didn’t go through, so nothing was changed. Try again in a minute, or contact Trumo.');
 
             return;
         }
@@ -1147,7 +1147,7 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
                 <div class="latest">
                     <div>
                         <div class="act-body">{{ $latest->body }}</div>
-                        <div class="act-meta">{{ $latest->author_name ?? 'TruCars' }} · {{ $latest->created_at->diffForHumans() }}</div>
+                        <div class="act-meta">{{ $latest->author_name ?? 'Trumo' }} · {{ $latest->created_at->diffForHumans() }}</div>
                     </div>
                     <button type="button" class="link-btn" wire:click="$set('tab', 'activity')">View activity {!! $svg('arrow') !!}</button>
                 </div>
@@ -1510,7 +1510,7 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
                         <span class="act-dot {{ $activity->kind }}"></span>
                         <div>
                             <div class="act-body">{{ $activity->body }}</div>
-                            <div class="act-meta">{{ $activity->author_name ?? 'TruCars' }} · {{ $activity->created_at->diffForHumans() }}</div>
+                            <div class="act-meta">{{ $activity->author_name ?? 'Trumo' }} · {{ $activity->created_at->diffForHumans() }}</div>
                         </div>
                     </div>
                 @empty

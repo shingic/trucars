@@ -15,10 +15,10 @@
 <x-email::layout title="Your reservation is confirmed"
     :preheader="'Your ' . $carName . ' is reserved, reference ' . $deal->reference . '. Your ' . $deposit . ' deposit is refundable and credited to your purchase.'"
     :link="route('garage')"
-    reason="Sent because you placed a reservation at TruCars.">
+    reason="Sent because you placed a reservation at Trumo.">
     <x-email::photo :src="$vehicle->primary_photo_url" :alt="$carName" />
     <x-email::heading>Your {{ $carName }} is reserved</x-email::heading>
-    <x-email::text>Hi {{ $deal->first_name }}, thanks for reserving with TruCars. Your car is locked in. Here's your full reservation, what's in your price, and what happens next.</x-email::text>
+    <x-email::text>Hi {{ $deal->first_name }}, thanks for reserving with Trumo. Your car is locked in. Here's your full reservation, what's in your price, and what happens next.</x-email::text>
     <x-email::callout lead="What happens next:">{{ $deal->seller_name }}'s finance office reaches out shortly to confirm your real financing terms.</x-email::callout>
 
     <x-email::details label="Reservation" :rows="[
@@ -57,5 +57,5 @@
     ]" />
 
     <x-email::button :url="route('garage')">View your reservation</x-email::button>
-    <x-email::text small>TruCars handles your reservation and checkout. {{ $deal->seller_name }} owns the vehicle, the financing and the handover, confirms the exact handover time with you, and confirms all final figures before anything is signed. Your reference is {{ $deal->reference }}.</x-email::text>
+    <x-email::text small>Trumo handles your reservation and checkout. {{ $deal->seller_name }} owns the vehicle, the financing and the handover, confirms the exact handover time with you, and confirms all final figures before anything is signed. Your reference is {{ $deal->reference }}.</x-email::text>
 </x-email::layout>

@@ -34,5 +34,5 @@
     ]" />
 
     <x-email::button :url="route('dealer.login')">Open your console</x-email::button>
-    <x-email::text small>TruCars originated this reservation and handled checkout. You own the vehicle, the financing and the delivery, and confirm all final figures with the buyer before anything is signed.</x-email::text>
+    <x-email::text small>Trumo originated this reservation and handled checkout. You own the vehicle, the financing and the delivery, and confirm all final figures with the buyer before anything is signed.</x-email::text>
 </x-email::layout>

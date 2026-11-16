@@ -76,7 +76,7 @@ final class Catalogue
 
         // Staff & dealers
         'dealer_invitation' => ['name' => 'Dealer staff invitation', 'group' => self::GROUP_STAFF, 'trigger' => 'When someone is invited to a dealership’s portal.', 'audience' => 'Dealer staff', 'mailable' => DealerInvitationMail::class, 'kind' => null, 'type' => null, 'pausable' => false],
-        'staff_invitation' => ['name' => 'TruCars staff invitation', 'group' => self::GROUP_STAFF, 'trigger' => 'When someone is invited to the Command Centre.', 'audience' => 'TruCars staff', 'mailable' => StaffInvitationMail::class, 'kind' => null, 'type' => null, 'pausable' => false],
+        'staff_invitation' => ['name' => 'Trumo staff invitation', 'group' => self::GROUP_STAFF, 'trigger' => 'When someone is invited to the Command Centre.', 'audience' => 'Trumo staff', 'mailable' => StaffInvitationMail::class, 'kind' => null, 'type' => null, 'pausable' => false],
     ];
 
     /** The catalogue slug for a sent mailable (and its kind, for multi-stage ones). */

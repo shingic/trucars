@@ -71,12 +71,12 @@ class EmailCentreTest extends TestCase
 
         $this->assertSame(['welcome', 'recovery_3d'], EmailLog::orderBy('id')->pluck('type')->all());
         $this->assertSame($buyer->id, EmailLog::first()->user_id);
-        $this->assertSame('Welcome to TruCars', EmailLog::first()->subject);
+        $this->assertSame('Welcome to Trumo', EmailLog::first()->subject);
     }
 
     public function test_marketing_goes_through_its_own_postmark_stream(): void
     {
-        config(['mail.default' => 'array', 'mail.marketing.from.address' => 'news@trucars.test', 'mail.marketing.from.name' => 'TruCars Picks']);
+        config(['mail.default' => 'array', 'mail.marketing.from.address' => 'news@trucars.test', 'mail.marketing.from.name' => 'Trumo Picks']);
         $buyer = User::factory()->create();
         $draft = CheckoutDraft::create(['user_id' => $buyer->id, 'vehicle_id' => $this->car->id, 'step_key' => 'plan', 'data' => [], 'last_active_at' => now()]);
 

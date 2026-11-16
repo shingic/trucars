@@ -12,9 +12,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 /**
- * A dealer's trackable TruCars link. The dealer places it in their own ad or
- * post; TruCars never publishes it anywhere. Whoever follows the link lands in
- * a TruCars experience scoped to this dealer's eligible manufacturer-CPO stock,
+ * A dealer's trackable Trumo link. The dealer places it in their own ad or
+ * post; Trumo never publishes it anywhere. Whoever follows the link lands in
+ * a Trumo experience scoped to this dealer's eligible manufacturer-CPO stock,
  * at one of its stores when rooftop_id is set.
  *
  * The public URL carries only the token. Dealer, destination and status are

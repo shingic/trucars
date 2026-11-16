@@ -7,7 +7,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-/** An internal note TruCars support keeps on a customer account. Never customer- or dealer-facing. */
+/** An internal note Trumo support keeps on a customer account. Never customer- or dealer-facing. */
 class CustomerSupportNote extends Model
 {
     protected $fillable = ['customer_user_id', 'author_user_id', 'body'];

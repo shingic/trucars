@@ -9,7 +9,7 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 
 /*
-| TruCars admin — every dealer record, with the ones that still need an address
+| Trumo admin — every dealer record, with the ones that still need an address
 | (and so can't publish cars) flagged. Needs dealers.view (route `can:` middleware, mount, and every action).
 */
 new #[Layout('layouts.dealer')] #[Title('Dealers')] class extends Component {

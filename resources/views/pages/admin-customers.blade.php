@@ -17,7 +17,7 @@ use Livewire\Component;
 |
 | Search-first by design: nothing is listed until support searches for a
 | specific person, results are capped, and every search is audited. Only
-| customer accounts are searchable — never dealer staff or TruCars staff.
+| customer accounts are searchable — never dealer staff or Trumo staff.
 */
 new #[Layout('layouts.dealer')] #[Title('Customers')] class extends Component {
     private const MAX_RESULTS = 25;

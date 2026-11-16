@@ -36,7 +36,7 @@ final class Permission
         self::DEALERS_MANAGE      => ['Dealers — manage', 'Create, edit, activate and suspend dealers.'],
         self::DEALER_USERS_MANAGE => ['Dealer users — manage', 'Invite, suspend and reinstate dealer staff.'],
         self::INVENTORY_MANAGE    => ['Inventory — manage', 'Import dealer feeds and publish or unpublish vehicles.'],
-        self::STAFF_MANAGE        => ['TruCars staff — manage', 'Invite internal staff and change their access.'],
+        self::STAFF_MANAGE        => ['Trumo staff — manage', 'Invite internal staff and change their access.'],
         self::SETTINGS_MANAGE     => ['Platform settings', 'Change platform-wide settings, including brands and their CPO checklists and offers.'],
         self::AUDIT_VIEW          => ['Audit log — view', 'Read the record of sensitive actions.'],
         self::MARKETING_VIEW      => ['Shoppers — view', 'Browse everyone who signed up, their saved cars and email preferences.'],
