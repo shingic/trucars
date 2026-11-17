@@ -44,7 +44,7 @@
     @endif
 
     @if ($kind === 'recovery_3d')
-        <x-email::callout lead="Why reserve now:">the price is all-in (freight, prep and dealer fees included; only HST and licensing are added), the $150 is refundable any time before pickup, and you choose the pickup day. The car is inspected and certified first.</x-email::callout>
+        <x-email::callout lead="Why reserve now:">the price is all-in (freight, prep and dealer fees included; only {{ $car->salesTax()['excludes'] }} and licensing are added), the $150 is refundable any time before pickup, and you choose the pickup day. The car is inspected and certified first.</x-email::callout>
     @endif
 
     <x-email::button :url="$resume">{{ $copy['cta'] }}</x-email::button>

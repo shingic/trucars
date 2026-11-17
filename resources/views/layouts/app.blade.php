@@ -401,7 +401,7 @@
             <a href="{{ route('how-it-works') }}" wire:navigate>How it works</a>
             @guest <a href="{{ route('buyer.login') }}" wire:navigate>Sign in</a> @endguest
         </nav>
-        <span class="site-foot-legal">© {{ date('Y') }} Trumo. Every price is all-in, with freight, prep and dealer fees included. HST and licensing are extra. Postal area data from <a href="https://www.geonames.org/" target="_blank" rel="noopener" style="color:inherit;">GeoNames</a> (CC BY 4.0).</span>
+        <span class="site-foot-legal">© {{ date('Y') }} Trumo. Every price is all-in, with freight, prep and dealer fees included. Sales tax and licensing are extra. Postal area data from <a href="https://www.geonames.org/" target="_blank" rel="noopener" style="color:inherit;">GeoNames</a> (CC BY 4.0).</span>
     </div>
 </footer>
 

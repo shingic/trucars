@@ -7,7 +7,7 @@
     <x-email::callout lead="No purchase started:">creating an account is free. Reserving a car is always a separate step you choose to take.</x-email::callout>
     <x-email::section>What you can do now</x-email::section>
     <x-email::steps :items="[
-        'Browse cars with all-in pricing. Certified cars list every inspection point, and the number you see is the number you pay (before HST and licensing).',
+        'Browse cars with all-in pricing. Certified cars list every inspection point, and the number you see is the number you pay (before sales tax and licensing).',
         'Reserve in minutes. A $150 fully refundable deposit holds your exact car, and it comes off the purchase price. It isn\'t an extra charge.',
         'Track everything in My Garage. Your deal status, documents and financing stay in one place, start to finish.',
     ]" />

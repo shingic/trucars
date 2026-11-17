@@ -6,7 +6,7 @@
     $copy = match ($kind) {
         'saved_price_drop' => [
             'headline' => $drops->count() === 1 ? 'A car you saved just got cheaper' : 'Cars you saved just got cheaper',
-            'intro'    => "Good news, {$firstName}. Prices are all-in, so what you see is what you pay before HST and licensing.",
+            'intro'    => "Good news, {$firstName}. Prices are all-in, so what you see is what you pay before sales tax and licensing.",
         ],
         'saved_gone' => [
             'headline' => 'Gone, but these are close',

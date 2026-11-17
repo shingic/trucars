@@ -54,7 +54,7 @@ class CheckoutCoverageTest extends TestCase
         $checkout = Livewire::test('pages::checkout', ['vehicle' => $this->car]);
         $checkout->set('stepIndex', $checkout->instance()->indexOfStep('plan'));
         $before = $checkout->instance()->estimatedBiweekly();
-        $planBiweekly = PaymentEstimate::loanBiweekly(3000, 72);
+        $planBiweekly = PaymentEstimate::loanBiweekly(3000, 72, 0.12);
 
         $checkout->assertDontSee('added to your loan')
             ->assertSee('+$' . number_format($planBiweekly, 0))
@@ -66,7 +66,7 @@ class CheckoutCoverageTest extends TestCase
 
         // A longer term spreads the plan thinner.
         $checkout->call('adjustTerm', 1);
-        $this->assertEqualsWithDelta(PaymentEstimate::loanBiweekly(3000, 84), $checkout->instance()->financedItemBiweekly(300000), 0.01);
+        $this->assertEqualsWithDelta(PaymentEstimate::loanBiweekly(3000, 84, 0.12), $checkout->instance()->financedItemBiweekly(300000), 0.01);
 
         // Paying in full adds the full price.
         $checkout->call('setPurchaseType', 'cash');
@@ -88,13 +88,13 @@ class CheckoutCoverageTest extends TestCase
         $checkout = Livewire::test('pages::checkout', ['vehicle' => $this->car]);
         $checkout->set('stepIndex', $checkout->instance()->indexOfStep('extras'));
         $before = $checkout->instance()->estimatedBiweekly();
-        $tiresBiweekly = PaymentEstimate::loanBiweekly(1200, 72);
+        $tiresBiweekly = PaymentEstimate::loanBiweekly(1200, 72, 0.12);
 
         $checkout->assertSee('+$' . number_format($tiresBiweekly, 0) . '/biweekly')
             ->call('toggleExtra', 'p' . $tires->id)
             ->call('toggleExtra', 'p' . $mats->id);
 
-        $this->assertEqualsWithDelta($before + $tiresBiweekly + PaymentEstimate::loanBiweekly(300, 72), $checkout->instance()->estimatedBiweekly(), 0.01);
+        $this->assertEqualsWithDelta($before + $tiresBiweekly + PaymentEstimate::loanBiweekly(300, 72, 0.12), $checkout->instance()->estimatedBiweekly(), 0.01);
 
         $checkout->call('setPurchaseType', 'cash')->assertSee('+$1,200');
         $this->assertEqualsWithDelta(29990 + 1200 + 300, $checkout->instance()->cashTotalDollars(), 0.01);
@@ -109,7 +109,7 @@ class CheckoutCoverageTest extends TestCase
         $checkout = Livewire::test('pages::checkout', ['vehicle' => $this->car]);
         $checkout->set('stepIndex', $checkout->instance()->indexOfStep('extras'));
         $before = $checkout->instance()->estimatedBiweekly();
-        $gapBiweekly = PaymentEstimate::loanBiweekly(1800, 72);
+        $gapBiweekly = PaymentEstimate::loanBiweekly(1800, 72, 0.12);
 
         $checkout->assertSee('Add GAP')
             ->assertDontSee('added to your loan')

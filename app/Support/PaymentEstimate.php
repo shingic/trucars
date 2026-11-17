@@ -9,7 +9,8 @@ use App\Models\ProtectionProduct;
 /**
  * The illustrative payment math checkout and My Garage share, so both show the
  * same number. The dealership's finance office sets the real rate; these are
- * estimates only (7.5% APR, 13% HST, $0 down unless the buyer enters one).
+ * estimates only (7.5% APR, the dealership's province's sales tax, $0 down unless
+ * the buyer enters one).
  *
  * Protection products the buyer added count at the dealership's prices:
  *  - one-time prices (accessories, a lump-sum plan) are rolled into the amount
@@ -21,10 +22,8 @@ final class PaymentEstimate
 {
     public const APR = 0.075;
 
-    public const HST = 0.13;
-
     /** Biweekly payment on an amount financed (before tax) over a term. */
-    public static function loanBiweekly(float $financedDollars, int $termMonths): float
+    public static function loanBiweekly(float $financedDollars, int $termMonths, float $taxRate): float
     {
         $periods = ($termMonths / 12) * 26;
 
@@ -34,7 +33,7 @@ final class PaymentEstimate
 
         $rate = self::APR / 26;
 
-        return $financedDollars * (1 + self::HST) * $rate / (1 - pow(1 + $rate, -$periods));
+        return $financedDollars * (1 + $taxRate) * $rate / (1 - pow(1 + $rate, -$periods));
     }
 
     /**
@@ -62,10 +61,10 @@ final class PaymentEstimate
     }
 
     /** The full biweekly estimate: the loan (car plus one-time items, less down) plus biweekly items. */
-    public static function biweekly(float $priceDollars, float $downDollars, int $termMonths, array $items): float
+    public static function biweekly(float $priceDollars, float $downDollars, int $termMonths, array $items, float $taxRate): float
     {
         $totals = self::protectionTotals($items);
 
-        return self::loanBiweekly(max(0, $priceDollars + $totals['oneTime'] - $downDollars), $termMonths) + $totals['biweekly'];
+        return self::loanBiweekly(max(0, $priceDollars + $totals['oneTime'] - $downDollars), $termMonths, $taxRate) + $totals['biweekly'];
     }
 }

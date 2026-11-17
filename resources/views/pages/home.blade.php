@@ -134,9 +134,9 @@ new #[Title('Certified Pre-Owned Cars, All-In Prices | Trumo')] class extends Co
     $icon = fn (string $name): string => '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true">' . $icons[$name] . '</svg>';
 
     $faqs = [
-        ['Can I negotiate the price?', 'There’s nothing to haggle over. The price on the listing is the dealership’s price, with freight, prep and fees already in it. HST and licensing are the only things added.'],
+        ['Can I negotiate the price?', 'There’s nothing to haggle over. The price on the listing is the dealership’s price, with freight, prep and fees already in it. Sales tax and licensing are the only things added.'],
         ['Who am I actually buying from?', 'A dealership licensed by its province’s dealer regulator. Trumo is where you find the car and reserve it; the dealership sells it to you. Their name, address and licence number are in your confirmation as soon as you reserve.'],
-        ['Is the price really all-in?', 'Yes. Freight, pre-delivery prep, dealer admin and regulator fees are already in the price you see. HST and licensing are the only things added.'],
+        ['Is the price really all-in?', 'Yes. Freight, pre-delivery prep, dealer admin and regulator fees are already in the price you see. Sales tax and licensing are the only things added.'],
         ['What does the $150 deposit do?', 'It takes the car off the market while you finish up, and it comes off the price when you buy. It’s refundable any time before you pick the car up.'],
         ['How do I get the car?', 'You pick it up at the dealership. Every car shows how far it is from you, and you choose the day and time window when you reserve.'],
         ['What does “certified” mean on a listing?', 'It means the car is covered by the dealer’s or manufacturer’s inspection checklist, and the listing shows every point that’s checked, not just a number.'],

@@ -14,7 +14,7 @@
                     $item['amount'] === null          => 'Dealer will quote',
                     $biweeklyPriced && ! $financing   => 'With financing',
                     $biweeklyPriced                   => '+' . $dollars . '/bw',
-                    $financing                        => '+$' . number_format(\App\Support\PaymentEstimate::loanBiweekly($item['amount'] / 100, $termMonths ?? 72), 0) . '/bw',
+                    $financing                        => '+$' . number_format(\App\Support\PaymentEstimate::loanBiweekly($item['amount'] / 100, $termMonths ?? 72, $taxRate ?? 0.13), 0) . '/bw',
                     default                           => '+' . $dollars,
                 };
             @endphp

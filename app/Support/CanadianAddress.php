@@ -52,14 +52,6 @@ class CanadianAddress
         'YT' => 'America/Whitehorse',
     ];
 
-    /** The licensing body named next to a dealer's registration number. */
-    private const DEALER_REGULATORS = [
-        'AB' => 'AMVIC',
-        'BC' => 'VSA',
-        'ON' => 'OMVIC',
-        'QC' => 'OPC',
-    ];
-
     /** First letter of a postal code → province (X is shared by NT and NU). */
     private const POSTAL_PREFIX_PROVINCES = [
         'A' => 'NL', 'B' => 'NS', 'C' => 'PE', 'E' => 'NB',
@@ -118,7 +110,7 @@ class CanadianAddress
 
     public static function regulatorFor(?string $province): ?string
     {
-        return self::DEALER_REGULATORS[self::normalizeProvince($province) ?? ''] ?? null;
+        return ProvinceRules::regulator($province)['short'] ?? null;
     }
 
     /** Every IANA zone in use in Canada — the only values a dealer may hold. */

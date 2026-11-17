@@ -8,8 +8,10 @@
         default => 'Cash',
     };
     $included = collect($deal->fees_by_kind['included'])->mapWithKeys(fn ($fee) => [$fee['label'] => '$' . number_format($fee['amount_in_cents'] / 100, 2) . ' included'])->all();
+    $tax = $vehicle->salesTax();
+    $includedPhrase = \App\Support\ProvinceRules::includedFeesPhrase(collect($deal->fees_by_kind['included'])->pluck('label'));
     $atPickup = $deal->fees_by_kind['passThroughTotalInCents'] > 0
-        ? collect($deal->fees_by_kind['passThrough'])->mapWithKeys(fn ($fee) => [$fee['label'] => '$' . number_format($fee['amount_in_cents'] / 100, 2)])->put('HST', 'calculated at pickup')->all()
+        ? collect($deal->fees_by_kind['passThrough'])->mapWithKeys(fn ($fee) => [$fee['label'] => '$' . number_format($fee['amount_in_cents'] / 100, 2)])->put($tax['label'], 'calculated at pickup')->all()
         : [];
 @endphp
 <x-email::layout title="Your reservation is confirmed"
@@ -31,7 +33,7 @@
     ]" />
 
     <x-email::details label="Your all-in price" :rows="['Price' => $vehicle->display_price] + $included" />
-    <x-email::text small>Freight, PDI, admin and the OMVIC fee are already inside this price, with no surprise add-ons. Only HST and licensing are added on top. Your {{ $deposit }} deposit comes straight off the purchase price. It isn't an extra charge.</x-email::text>
+    <x-email::text small>{{ ucfirst($includedPhrase) }} {{ str_contains($includedPhrase, ' & ') || str_contains($includedPhrase, ', ') ? 'are' : 'is' }} already inside this price, with no surprise add-ons. Only {{ $tax['excludes'] }} and licensing are added on top. Your {{ $deposit }} deposit comes straight off the purchase price. It isn't an extra charge.</x-email::text>
 
     @if ($atPickup)
         <x-email::details label="Added at pickup · never financed" :rows="$atPickup" />

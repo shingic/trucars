@@ -201,6 +201,7 @@ new #[Layout('layouts.checkout')] class extends Component {
             ($deal->down_payment_in_cents ?? 0) / 100,
             $deal->term_months ?? 72,
             $deal->protection_snapshot ?? [],
+            $deal->vehicle->salesTax()['rate'],
         );
     }
 

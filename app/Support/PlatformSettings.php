@@ -31,7 +31,7 @@ final class PlatformSettings
         'marketplace_subheadline' => [
             'Marketplace sub-heading',
             'The line under the headline.',
-            'Every car is inspected, certified, and priced all-in — no as-is cars, ever. HST & licensing extra.',
+            'Every car is inspected, certified, and priced all-in — no as-is cars, ever. Sales tax & licensing extra.',
             200,
         ],
         'marketplace_notice' => [

@@ -33,6 +33,18 @@ class ListingMomentumTest extends TestCase
         $this->assertNull($car->fresh()->momentumTag());
     }
 
+    public function test_a_car_live_before_tags_existed_is_not_just_listed_when_updated(): void
+    {
+        $car = $this->car();
+        Vehicle::whereKey($car->id)->update(['first_listed_at' => null]); // as on deploy day
+        $this->travel(10)->days();
+
+        $car->fresh()->update(['kilometres' => 31000]); // e.g. a re-import
+
+        $this->assertNull($car->fresh()->first_listed_at);
+        $this->assertNull($car->fresh()->momentumTag());
+    }
+
     public function test_republishing_does_not_make_a_car_new_again(): void
     {
         $car = $this->car();

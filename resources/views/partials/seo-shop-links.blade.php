@@ -29,7 +29,7 @@
         <div class="seo-why-cols">
             <div>
                 <h3>Overview</h3>
-                <p>{{ $brand }} brings certified pre-owned cars from Canadian dealerships into one place. Every car is inspected and certified by the dealership that sells it, and priced <b>all-in</b>: freight, prep, dealer fees and the regulator fee are already in the number you see. Only HST and licensing are added.</p>
+                <p>{{ $brand }} brings certified pre-owned cars from Canadian dealerships into one place. Every car is inspected and certified by the dealership that sells it, and priced <b>all-in</b>: freight, prep, dealer fees and the regulator fee are already in the number you see. Only sales tax and licensing are added.</p>
                 <ul>
                     <li><b>One price, no add-ons</b> – What's on the listing is what the car costs before tax and licensing.</li>
                     <li><b>Certified, never as-is</b> – Each car passes the dealership's certification inspection before it's listed.</li>

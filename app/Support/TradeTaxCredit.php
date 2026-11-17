@@ -13,31 +13,16 @@ namespace App\Support;
  */
 final class TradeTaxCredit
 {
-    /** Tax a trade-in reduces on a used car bought from a dealer, by province. */
-    public const RATES = [
-        'ON' => 0.13,     // HST
-        'NB' => 0.15, 'NL' => 0.15, 'PE' => 0.15, // HST
-        'NS' => 0.14,     // HST (14% from April 2025)
-        'QC' => 0.14975,  // GST + QST
-        'BC' => 0.12,     // GST + PST
-        'MB' => 0.12,     // GST + RST
-        'SK' => 0.11,     // GST + PST
-        'AB' => 0.05, 'NT' => 0.05, 'NU' => 0.05, 'YT' => 0.05, // GST only
-    ];
-
     /** What the tax is called there, for "about $761 less HST". */
     public static function taxName(?string $province): string
     {
-        return match ($province) {
-            'ON', 'NB', 'NL', 'NS', 'PE' => 'HST',
-            'AB', 'NT', 'NU', 'YT'       => 'GST',
-            default                      => 'sales tax',
-        };
+        return ProvinceRules::salesTax($province)['label'];
     }
 
-    public static function savingsInCents(?string $province, int $tradeValueInCents): int
+    /** Every province lets a dealer trade-in reduce the tax (BC, SK and MB with conditions). BC's rate depends on the car's price. */
+    public static function savingsInCents(?string $province, int $tradeValueInCents, ?int $carPriceInCents = null): int
     {
-        $rate = self::RATES[$province ?? 'ON'] ?? self::RATES['ON'];
+        $rate = ProvinceRules::salesTax($province, $carPriceInCents)['rate'];
 
         return (int) round(max(0, $tradeValueInCents) * $rate);
     }

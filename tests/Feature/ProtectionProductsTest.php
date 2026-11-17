@@ -160,7 +160,7 @@ class ProtectionProductsTest extends TestCase
 
         // The $2,000 GAP and the $249 mats are both financed with the car.
         $this->assertEqualsWithDelta(
-            PaymentEstimate::loanBiweekly(29990 + 2000 + 249, 72),
+            PaymentEstimate::loanBiweekly(29990 + 2000 + 249, 72, 0.12),
             $financing->estimatedBiweekly,
             0.001,
         );

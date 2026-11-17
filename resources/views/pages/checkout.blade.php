@@ -590,7 +590,18 @@ new #[Layout('layouts.checkout')] class extends Component {
     /** The tax the trade saves (on the middle of its estimate), in this dealership's province. */
     public function tradeTaxSavingsInCents(): int
     {
-        return \App\Support\TradeTaxCredit::savingsInCents($this->dealerProvince(), (int) $this->tradeEstimatePointInCents);
+        return \App\Support\TradeTaxCredit::savingsInCents($this->dealerProvince(), (int) $this->tradeEstimatePointInCents, (int) $this->vehicle->price_in_cents);
+    }
+
+    /** The sales tax where the car is picked up: label, "Excludes …" parts and rate. */
+    public function salesTax(): array
+    {
+        return \App\Support\ProvinceRules::salesTax($this->dealerProvince(), (int) $this->vehicle->price_in_cents);
+    }
+
+    public function taxRate(): float
+    {
+        return $this->salesTax()['rate'];
     }
 
     public function dealerProvince(): ?string
@@ -1261,7 +1272,7 @@ new #[Layout('layouts.checkout')] class extends Component {
     {
         // Responsive to the term, down payment and added items the buyer picks
         // here (PaymentEstimate). Illustrative only.
-        return PaymentEstimate::loanBiweekly($this->financedDollars, $this->termMonths) + $this->protectionTotals['biweekly'];
+        return PaymentEstimate::loanBiweekly($this->financedDollars, $this->termMonths, $this->taxRate()) + $this->protectionTotals['biweekly'];
     }
 
     /** Paying in full: the car plus any one-time items. Biweekly-priced items need financing. */
@@ -1298,12 +1309,12 @@ new #[Layout('layouts.checkout')] class extends Component {
      */
     /**
      * What a one-time-priced item (a coverage plan, an accessory) adds to the
-     * biweekly payment when it's rolled into the loan, HST included, at the
+     * biweekly payment when it's rolled into the loan, sales tax included, at the
      * buyer's current term. Shown on the plan cards and in the rail.
      */
     public function financedItemBiweekly(?int $amountInCents): float
     {
-        return $amountInCents === null ? 0.0 : PaymentEstimate::loanBiweekly($amountInCents / 100, $this->termMonths);
+        return $amountInCents === null ? 0.0 : PaymentEstimate::loanBiweekly($amountInCents / 100, $this->termMonths, $this->taxRate());
     }
 
     /**
@@ -1331,8 +1342,8 @@ new #[Layout('layouts.checkout')] class extends Component {
     {
         $total = $this->estimatedBiweekly;
         // The car's share of the loan; one-time items rolled in get their own rail lines.
-        $loanBiweekly = PaymentEstimate::loanBiweekly(max(0, $this->financedDollars - $this->protectionTotals['oneTime']), $this->termMonths);
-        $vehicleBiweekly = $loanBiweekly / 1.13;
+        $loanBiweekly = PaymentEstimate::loanBiweekly(max(0, $this->financedDollars - $this->protectionTotals['oneTime']), $this->termMonths, $this->taxRate());
+        $vehicleBiweekly = $loanBiweekly / (1 + $this->taxRate());
         $taxesBiweekly = $loanBiweekly - $vehicleBiweekly;
 
         $includedFees = [];
@@ -2739,7 +2750,7 @@ new #[Layout('layouts.checkout')] class extends Component {
                 @else
                     <div class="card estimate-note">
                         <div class="en-title">Paying in full</div>
-                        <p class="section-note" style="margin:0;">{{ $this->asMoney($this->priceDollars) }} all-in, plus HST &amp; licensing. The dealership confirms the final out-the-door total before delivery.</p>
+                        <p class="section-note" style="margin:0;">{{ $this->asMoney($this->priceDollars) }} all-in, plus {{ $this->salesTax()['excludes'] }} &amp; licensing. The dealership confirms the final out-the-door total before delivery.</p>
                     </div>
                 @endif
 
@@ -3164,10 +3175,10 @@ new #[Layout('layouts.checkout')] class extends Component {
                                     @endif
 
                                     <div class="rail-group">
-                                        <div class="rail-line head"><span>HST (13%)</span><span>{{ $this->asMoney($this->paymentBreakdown['taxesBiweekly']) }}</span></div>
+                                        <div class="rail-line head"><span>{{ $this->salesTax()['label'] }} ({{ \App\Support\ProvinceRules::ratePercent($this->taxRate()) }})</span><span>{{ $this->asMoney($this->paymentBreakdown['taxesBiweekly']) }}</span></div>
                                     </div>
 
-                                    @include('partials.checkout-protection-lines', ['items' => $this->flaggedProtection(), 'financing' => true, 'termMonths' => $termMonths])
+                                    @include('partials.checkout-protection-lines', ['items' => $this->flaggedProtection(), 'financing' => true, 'termMonths' => $termMonths, 'taxRate' => $this->taxRate()])
 
                                     @if (count($this->paymentBreakdown['passThroughFees']) > 0)
                                         <div class="rail-group">
@@ -3229,9 +3240,9 @@ new #[Layout('layouts.checkout')] class extends Component {
                         </div>
                         <div class="rail-cash">
                             @if ($purchaseType === 'finance')
-                                Estimate only — the dealership's finance office confirms your real rate. Plus HST &amp; licensing.
+                                Estimate only — the dealership's finance office confirms your real rate. Plus licensing.
                             @else
-                                Plus HST &amp; licensing.
+                                Plus {{ $this->salesTax()['excludes'] }} &amp; licensing.
                             @endif
                         </div>
                     </div>

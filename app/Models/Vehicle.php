@@ -79,7 +79,9 @@ class Vehicle extends Model
             $vehicle->photo_count = count(array_filter((array) $vehicle->photos));
             $vehicle->notePriceChange();
 
-            if ($vehicle->is_published && $vehicle->first_listed_at === null) {
+            // Stamped when a car first goes live: created published, or switched
+            // on. A car that was already live before this existed stays unstamped.
+            if ($vehicle->is_published && $vehicle->first_listed_at === null && (! $vehicle->exists || $vehicle->isDirty('is_published'))) {
                 $vehicle->first_listed_at = now();
             }
 
@@ -300,10 +302,22 @@ class Vehicle extends Model
         return Attribute::get(fn (): int => $this->biweeklyAt(7.5, 72));
     }
 
+    /** The province whose rules apply: where the car is picked up (its store, else its dealer). */
+    public function taxProvince(): ?string
+    {
+        return \App\Support\CanadianAddress::normalizeProvince(($this->rooftop ?? $this->dealer)?->province);
+    }
+
+    /** @return array{label: string, excludes: string, rate: float} */
+    public function salesTax(): array
+    {
+        return \App\Support\ProvinceRules::salesTax($this->taxProvince(), (int) $this->price_in_cents);
+    }
+
     /** Biweekly payment on the tax-in price at an annual rate over a term, $0 down. */
     public function biweeklyAt(float $apr, int $termMonths): int
     {
-        $taxedPrice = ($this->price_in_cents / 100) * 1.13;
+        $taxedPrice = ($this->price_in_cents / 100) * (1 + $this->salesTax()['rate']);
         $numberOfPayments = $termMonths / 12 * 26;
 
         if ($apr <= 0) {

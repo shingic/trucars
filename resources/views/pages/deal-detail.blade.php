@@ -1345,7 +1345,7 @@ new #[Layout('layouts.dealer')] #[Title('Reservation')] class extends Component 
                             @endforeach
                             <div class="fee-total"><span>Added at delivery</span><span>{{ $money($feeBuckets['passThroughTotalInCents']) }}</span></div>
                         @endif
-                        <p class="note">Frozen at checkout. Included fees sit inside the advertised all-in price; only at-cost government charges are added at delivery, alongside HST.</p>
+                        <p class="note">Frozen at checkout. Included fees sit inside the advertised all-in price; only at-cost government charges are added at delivery, alongside {{ $deal->vehicle?->salesTax()['excludes'] ?? 'sales tax' }}.</p>
                     @endif
                 </div>
             </details>

@@ -941,12 +941,12 @@ new class extends Component {
                                 {{ $this->formatKm($this->distanceKm()) }} km from {{ \App\Support\ShopperLocation::placeLine($this->shopperLocation()) }}
                             </a>
                         @endif
-                        <div class="pd-note">All-in price — freight, PDI, admin &amp; OMVIC fee included. <b>Excludes HST &amp; licensing.</b></div>
+                        <div class="pd-note">All-in price — {{ \App\Support\ProvinceRules::includedFeesPhrase($vehicle->dealer?->activeFees?->reject(fn ($fee) => $fee->is_pass_through)->pluck('label') ?? []) }} included. <b>{{ \App\Support\ProvinceRules::allInExcludes($vehicle->taxProvince()) }}.</b></div>
                     </div>
                     @php $payment = $this->paymentEstimate(); @endphp
                     <div class="buy-pay">
                         <div class="big">${{ number_format($payment['biweekly']) }}<span class="per"> /biweekly</span></div>
-                        <div class="sub">est. {{ $payment['term'] }} mo · {{ rtrim(rtrim(number_format($payment['apr'], 2), '0'), '.') }}% APR{{ $payment['offer'] ? ' (offer, on approved credit)' : '' }} · $0 down · before HST &amp; licensing</div>
+                        <div class="sub">est. {{ $payment['term'] }} mo · {{ rtrim(rtrim(number_format($payment['apr'], 2), '0'), '.') }}% APR{{ $payment['offer'] ? ' (offer, on approved credit)' : '' }} · $0 down · {{ $vehicle->salesTax()['label'] }} included, before licensing</div>
                     </div>
                     @if ($cert = $this->certification())
                         <div class="buy-cert-mini">
@@ -1024,7 +1024,7 @@ new class extends Component {
         <div class="sb-line">
             <span class="sb-amount">{{ $vehicle->display_price }}</span>
             <span class="sb-bw">or <b>${{ number_format($vehicle->estimated_biweekly) }}</b>/biweekly</span>
-            <span class="sb-allin">All-in · +HST &amp; lic.</span>
+            <span class="sb-allin">All-in · {{ \App\Support\ProvinceRules::shortExtras($vehicle->taxProvince()) }}</span>
         </div>
         <div class="sb-actions">
             @if ($this->favouriteIsVisible())

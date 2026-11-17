@@ -236,7 +236,8 @@ new #[Layout('layouts.dealer')] #[Title('Fee schedule')] class extends Component
         <div>
             <h1>Fee schedule</h1>
             <p>
-                Under OMVIC all-in pricing, your own costs — freight, PDI, admin — live inside the advertised price and
+                @php $regulator = \App\Support\ProvinceRules::regulator(auth()->user()?->portalDealer()?->province); @endphp
+                Under {{ $regulator ? $regulator['short'] . ' ' : 'your province\'s ' }}all-in pricing rules, your own costs — freight, PDI, admin — live inside the advertised price and
                 are shown to buyers as <strong>included</strong>. Only at-cost government charges like licensing and
                 registration are added at delivery. Edit either set below; changes apply to new reservations and never
                 rewrite a buyer's already-agreed numbers.
