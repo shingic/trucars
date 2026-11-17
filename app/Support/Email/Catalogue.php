@@ -10,6 +10,7 @@ use App\Mail\DealerInvitationMail;
 use App\Mail\DocumentReuploadRequested;
 use App\Mail\DocumentsReminder;
 use App\Mail\EmailVerificationCode;
+use App\Mail\PasswordResetLink;
 use App\Mail\FinancingApproved;
 use App\Mail\InsuranceRequested;
 use App\Mail\MoreInfoRequested;
@@ -61,6 +62,7 @@ final class Catalogue
 
         // Account
         'verification_code' => ['name' => 'Verification code', 'group' => self::GROUP_ACCOUNT, 'trigger' => 'When a shopper signs up, or asks for a new code.', 'audience' => 'Shoppers', 'mailable' => EmailVerificationCode::class, 'kind' => null, 'type' => null, 'pausable' => false],
+        'password_reset' => ['name' => 'Password reset link', 'group' => self::GROUP_ACCOUNT, 'trigger' => 'When a shopper taps “Forgot password?” and enters their email.', 'audience' => 'Shoppers', 'mailable' => PasswordResetLink::class, 'kind' => null, 'type' => null, 'pausable' => false],
         'welcome' => ['name' => 'Welcome', 'group' => self::GROUP_ACCOUNT, 'trigger' => 'Once a new shopper confirms their email.', 'audience' => 'Shoppers', 'mailable' => BuyerWelcome::class, 'kind' => null, 'type' => null, 'pausable' => true],
 
         // Reservation
@@ -182,6 +184,7 @@ final class Catalogue
             'saved_still_available' => new SavedCarAlertMail($shopper, $slug, collect(), collect(), collect([$car]), $similar()),
             'back_on_sale'          => new VehicleAvailableAgain($shopper, $car),
             'verification_code'     => new EmailVerificationCode($shopper, '482913'),
+            'password_reset'        => new PasswordResetLink($shopper, url('/reset-password/sample-token?email=' . urlencode($shopper->email))),
             'welcome'               => new BuyerWelcome($shopper),
             'reservation_confirmed' => new ReservationConfirmed($deal()),
             'reservation_submitted' => new ReservationSubmitted($deal()),

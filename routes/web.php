@@ -131,6 +131,8 @@ Route::domain($publicDomain)->middleware(TreatNonCustomersAsGuests::class)->grou
 
     Route::livewire('/login', 'pages::buyer-login')->name('buyer.login');
     Route::livewire('/register', 'pages::buyer-register')->name('buyer.register');
+    Route::livewire('/forgot-password', 'pages::buyer-forgot-password')->name('buyer.password.request');
+    Route::livewire('/reset-password/{token}', 'pages::buyer-reset-password')->name('buyer.password.reset');
 
     // Sign a buyer out. Mirrors dealer.logout on the staff host — full session
     // invalidation and token regeneration — but lands back on the marketplace
