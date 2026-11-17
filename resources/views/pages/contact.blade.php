@@ -106,7 +106,11 @@ new #[Title('Contact us | Trumo')] class extends Component {
         .contact-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px 18px; }
         .contact-grid .full { grid-column:1 / -1; }
         .contact-grid textarea.field-input { min-height:150px; resize:vertical; padding-top:12px; line-height:1.5; }
-        .contact-grid select.field-input { appearance:auto; }
+        /* Safari draws a native select thin and ignores padding: draw our own, chevron included */
+        .contact-grid select.field-input { -webkit-appearance:none; appearance:none; height:50px; padding:0 44px 0 15px; line-height:1.2; cursor:pointer;
+            background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23101828' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat:no-repeat; background-position:right 15px center; background-size:16px; }
+        .contact-grid input.field-input { height:50px; }
         .contact-opt { font-weight:500; color:var(--ink-3); }
         .contact-hp { position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden; }
         .contact-actions { margin-top:22px; display:flex; align-items:center; gap:16px; flex-wrap:wrap; }
