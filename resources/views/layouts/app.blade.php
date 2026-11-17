@@ -270,6 +270,11 @@
                                       @favourites-updated.window="count = $event.detail.count"></span>
                             </a>
 
+                            <a href="{{ route('contact') }}" wire:navigate class="acct-menu-item" @click="open = false">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v12H5.2L4 17.2V4Z"/><path d="M8 9h8M8 12h5"/></svg>
+                                <span class="acct-menu-label">Contact us</span>
+                            </a>
+
                             <div class="acct-menu-sep"></div>
 
                             <form method="POST" action="{{ route('buyer.logout') }}">
@@ -363,6 +368,13 @@
                     <svg class="dr-chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
                 </a>
             @endunless
+            <a href="{{ route('contact') }}" wire:navigate class="drawer-row {{ request()->routeIs('contact') ? 'active' : '' }}" @click="menuOpen = false">
+                <span class="dr-main">
+                    <span class="dr-title">Contact us</span>
+                    <span class="dr-sub">Questions? A real person replies</span>
+                </span>
+                <svg class="dr-chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
+            </a>
         </nav>
 
         <div class="drawer-foot">
@@ -399,6 +411,7 @@
             <a href="{{ route('home') }}" wire:navigate>Home</a>
             <a href="{{ route('shop') }}" wire:navigate>Shop cars</a>
             <a href="{{ route('how-it-works') }}" wire:navigate>How it works</a>
+            <a href="{{ route('contact') }}" wire:navigate>Contact us</a>
             @guest <a href="{{ route('buyer.login') }}" wire:navigate>Sign in</a> @endguest
         </nav>
         <span class="site-foot-legal">© {{ date('Y') }} Trumo. Every price is all-in, with freight, prep and dealer fees included. Sales tax and licensing are extra. Postal area data from <a href="https://www.geonames.org/" target="_blank" rel="noopener" style="color:inherit;">GeoNames</a> (CC BY 4.0).</span>

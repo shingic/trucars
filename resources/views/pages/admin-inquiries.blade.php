@@ -126,7 +126,7 @@ new #[Layout('layouts.dealer')] #[Title('Inquiries')] class extends Component {
                         <a href="{{ url('/cars/' . $lead->vehicle->id) }}" target="_blank" rel="noopener">{{ $lead->vehicle->model_year }} {{ $lead->vehicle->make }} {{ $lead->vehicle->model }}</a>
                         <span class="meta">{{ $lead->vehicle->display_price }} · {{ $lead->dealer?->name }} (internal only)</span>
                     @else
-                        General inquiry
+                        {{ $lead->topic ? 'Contact form · ' . (\App\Models\Lead::TOPICS[$lead->topic] ?? $lead->topic) : 'General inquiry' }}
                     @endif
                 </div>
                 <div class="msg">{{ $lead->message ?: 'No message.' }}</div>

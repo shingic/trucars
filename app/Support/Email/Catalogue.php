@@ -78,6 +78,7 @@ final class Catalogue
 
         // Staff & dealers
         'dealer_invitation' => ['name' => 'Dealer staff invitation', 'group' => self::GROUP_STAFF, 'trigger' => 'When someone is invited to a dealership’s portal.', 'audience' => 'Dealer staff', 'mailable' => DealerInvitationMail::class, 'kind' => null, 'type' => null, 'pausable' => false],
+        'contact_message' => ['name' => 'Contact form message (to Trumo)', 'group' => self::GROUP_STAFF, 'trigger' => 'When someone sends the Contact us form.', 'audience' => 'Trumo staff', 'mailable' => \App\Mail\ContactMessageReceived::class, 'kind' => null, 'type' => null, 'pausable' => false],
         'staff_invitation' => ['name' => 'Trumo staff invitation', 'group' => self::GROUP_STAFF, 'trigger' => 'When someone is invited to the Command Centre.', 'audience' => 'Trumo staff', 'mailable' => StaffInvitationMail::class, 'kind' => null, 'type' => null, 'pausable' => false],
     ];
 
@@ -203,6 +204,7 @@ final class Catalogue
                 'dealer_id' => $car->dealer_id, 'invited_by_user_id' => $shopper->id, 'name' => 'Alex Sample', 'email' => $shopper->email,
                 'token_hash' => hash('sha256', Str::random(40)), 'expires_at' => now()->addDays(7),
             ]), url('/invitation/sample')),
+            'contact_message'       => new \App\Mail\ContactMessageReceived(\App\Models\Lead::create(['name' => 'Alex Sample', 'email' => 'alex@example.com', 'topic' => 'car', 'message' => "Hi, is the 2021 Kicks still available?\nCould I see it Saturday?"])),
             'staff_invitation'      => new StaffInvitationMail(StaffInvitation::create([
                 'invited_by_user_id' => $shopper->id, 'name' => 'Alex Sample', 'email' => $shopper->email, 'permissions' => [],
                 'token_hash' => hash('sha256', Str::random(40)), 'expires_at' => now()->addDays(7),

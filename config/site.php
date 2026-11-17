@@ -8,6 +8,9 @@ return [
     // (not the Command Centre or dealer portal). Set GTM_ID= (empty) to turn it off.
     'gtm_id' => env('GTM_ID', 'GTM-W6W8LT2D'),
 
+    // Where contact-form messages are emailed (they also land in Command Centre › Inquiries).
+    'contact_email' => env('CONTACT_EMAIL', 'shingi@trueleads.ca'),
+
     // Tags on cars. "Just listed" for this many days after a car first goes
     // live; "Price dropped" for this many days after a cut of at least the
     // minimum. "Popular" shows once a car has this many visitors in a day;
