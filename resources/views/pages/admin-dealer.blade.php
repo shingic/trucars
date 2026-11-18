@@ -74,6 +74,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
 
     public string $name = '';
     public string $registrationNumber = '';
+    public string $registeredName = '';
     /** The dealer group, by name; a new name starts a new group. */
     public string $groupName = '';
     /**
@@ -155,6 +156,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
 
         $this->name = $dealer->name;
         $this->registrationNumber = (string) $dealer->registration_number;
+        $this->registeredName = (string) $dealer->registered_name;
         $this->groupName = (string) $dealer->group?->name;
         $this->brandId = $dealer->brand_id ? (string) $dealer->brand_id : null;
         $this->savedBrandId = $dealer->brand_id;
@@ -522,6 +524,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
         $this->validate([
             'name'               => ['required', 'string', 'max:120'],
             'registrationNumber' => ['nullable', 'string', 'max:40'],
+            'registeredName'     => ['nullable', 'string', 'max:160'],
             'groupName'          => ['nullable', 'string', 'max:120'],
             // Chosen once, at creation. An existing dealer's brand changes only
             // through confirmBrandChange(), never through this form.
@@ -574,6 +577,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
             'name'                => trim($this->name),
             'dealer_group_id'     => $group?->id,
             'registration_number' => trim($this->registrationNumber) ?: null,
+            'registered_name'     => trim($this->registeredName) ?: null,
             'street_address'      => trim($this->streetAddress) ?: null,
             'unit'                => trim($this->unit) ?: null,
             'city'                => trim($this->city),
@@ -1386,6 +1390,7 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
                                 <div><span>Public phone</span><b>{{ $dealer->phone ?: '—' }}</b></div>
                                 <div><span>Franchise brand</span><b>{{ $settings['brand']->name ?? 'Not set' }}</b></div>
                                 <div><span>Public email</span><b>{{ $dealer->email ?: '—' }}</b></div>
+                                <div><span>Registered name</span><b>{{ $dealer->registered_name ?: 'Same as public name' }}</b></div>
                                 <div><span>Dealer registration #</span><b>{{ $dealer->registration_number ? trim(($dealer->regulator ?? '') . ' ' . $dealer->registration_number) : '—' }}</b></div>
                                 <div><span>Website</span>@if ($dealer->website)<a href="{{ $dealer->website }}" target="_blank" rel="noopener">{{ preg_replace('#^https?://(www\.)?#', '', rtrim($dealer->website, '/')) }}</a>@else<b>—</b>@endif</div>
                             </div>

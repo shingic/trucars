@@ -7,8 +7,8 @@ use Livewire\Component;
 
 /*
 | Where the shopper is, asked for before any car is shown. Every car is
-| shown by its distance from the shopper (the selling dealership stays
-| anonymous until the deposit is paid), so the shop, vehicle pages, campaign
+| shown by its distance from the shopper (it's pickup only, so how far
+| the store is matters most), so the shop, vehicle pages, campaign
 | storefronts and Saved cars all need it first.
 |
 | A postal code, a city (suggested as they type, from the offline postal

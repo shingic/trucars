@@ -40,6 +40,7 @@
             'Kilometres' => number_format((int) $car->kilometres) . ' km',
             'Where'      => $whereLine($car),
             'All-in price' => $car->display_price,
+            'Sold by'    => ($seller = $car->dealerDisclosure()) ? collect([$seller->name, $seller->registration, $seller->address])->filter()->implode(' · ') : null,
         ]" />
     @endif
 

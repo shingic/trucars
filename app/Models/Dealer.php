@@ -39,6 +39,7 @@ class Dealer extends Model
         'dealer_group_id',
         'feed_rooftop_id',
         'name',
+        'registered_name',
         'street_address',
         'unit',
         'city',
@@ -165,6 +166,7 @@ class Dealer extends Model
         return [
             'id'                  => $this->id,
             'name'                => $this->name,
+            'registered_name'     => $this->registered_name,
             'registration_number' => $this->registration_number,
             'street_address'      => $this->street_address,
             'unit'                => $this->unit,

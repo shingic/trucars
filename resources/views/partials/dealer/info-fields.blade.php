@@ -41,10 +41,17 @@
         <input id="name" type="text" wire:model="name" maxlength="120">
         @error('name') <span class="err">{{ $message }}</span> @enderror
     </div>
+    <div class="field w6">
+        <label for="registeredName">Registered name <span class="opt">(if different)</span></label>
+        <input id="registeredName" type="text" wire:model="registeredName" maxlength="160" placeholder="As registered with OMVIC, VSA or AMVIC">
+        @error('registeredName') <span class="err">{{ $message }}</span> @enderror
+        <span class="hint">Shown on every listing, as advertising rules require. Leave empty when it's the public name.</span>
+    </div>
     <div class="field">
         <label for="registrationNumber">Dealer registration number <span class="opt">(OMVIC, VSA, AMVIC…)</span></label>
         <input id="registrationNumber" type="text" wire:model="registrationNumber" maxlength="40">
         @error('registrationNumber') <span class="err">{{ $message }}</span> @enderror
+        <span class="hint">Shown on every listing. BC listings need it.</span>
     </div>
     <div class="field">
         <label for="groupName">Dealer group <span class="opt">(optional)</span></label>

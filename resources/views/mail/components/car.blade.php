@@ -1,6 +1,7 @@
 {{--
     One car as a row: optional thumbnail, name (linked), a detail line, price.
     The default slot adds a line under the details (e.g. "$2,000 less").
+    Every car names its registered dealer, as dealer advertising rules require.
 --}}
 @props(['car', 'detail' => null, 'thumb' => true])
 @use('App\Support\Email\Theme', 'T')
@@ -19,6 +20,7 @@
             <a href="{{ $href }}" target="_blank" style="font-size:15px; font-weight:700; color:{{ T::INK }}; text-decoration:none;">{{ $name }}</a><br>
             {{ $detail ?? number_format((int) $car->kilometres) . ' km' . ($car->display_location ? ' · ' . $car->display_location : '') }}
             @if (trim($slot) !== '')<br>{{ $slot }}@endif
+            @if ($seller = $car->dealerDisclosure())<br><span style="font-size:12.5px; color:{{ T::MUTED }};">{{ $seller->line() }}</span>@endif
         </td>
         <td valign="top" align="right" style="padding:14px 0 14px 12px; border-bottom:1px solid {{ T::LINE }}; {!! T::FONT !!} font-size:16px; font-weight:700; line-height:1.4; color:{{ T::INK }}; white-space:nowrap;">{{ $car->display_price }}</td>
     </tr>

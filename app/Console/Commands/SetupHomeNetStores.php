@@ -46,6 +46,7 @@ class SetupHomeNetStores extends Command
                 if (blank($existing->feed_file)) {
                     $existing->update(['feed_file' => $store['file']]);
                 }
+                $this->fillRegistration($existing->dealer, $store);
                 $this->line("Already set up: {$existing->dealer->name}");
 
                 continue;
@@ -81,6 +82,7 @@ class SetupHomeNetStores extends Command
                 'longitude'           => $area['longitude'] ?? null,
                 'timezone'            => CanadianAddress::defaultTimezoneFor($province),
                 'phone'               => $store['phone'],
+                'registration_number' => $store['registration'] ?? null,
                 'brand_id'            => $brand->id,
                 'certifies_at_pickup' => true,
                 'status'              => Dealer::STATUS_DRAFT,
@@ -130,6 +132,9 @@ class SetupHomeNetStores extends Command
     {
         $dealer->feed_rooftop_id = $feedId;
         $dealer->certifies_at_pickup = true;
+        if (blank($dealer->registration_number)) {
+            $dealer->registration_number = $store['registration'] ?? null;
+        }
         if ($dealer->brand_id === null) {
             $dealer->brand_id = $brand->id;
         }
@@ -142,6 +147,15 @@ class SetupHomeNetStores extends Command
 
         $this->info("Linked: {$dealer->name} (#{$dealer->id}) is the same store as {$store['name']}; its feed is now {$store['file']}.");
         $this->linked++;
+    }
+
+    /** The dealer number from the store list, onto a store set up before it was recorded. */
+    private function fillRegistration(?Dealer $dealer, array $store): void
+    {
+        if ($dealer !== null && blank($dealer->registration_number) && filled($store['registration'] ?? null)) {
+            $dealer->update(['registration_number' => $store['registration']]);
+            $this->info("Dealer number added: {$dealer->name} #{$store['registration']}");
+        }
     }
 
     /** @param  array<int, array{0: string, 1: int, 2: bool}>  $fees */

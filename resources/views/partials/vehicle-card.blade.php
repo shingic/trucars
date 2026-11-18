@@ -17,8 +17,8 @@
       $badgeLabel           the badge text (defaults to the dealer's inspection program badge
                             when one applies — see VehicleCertification)
       $distanceKm           straight-line km from the shopper, when their location is known
-      $showDealer           name the selling dealership (only on its own campaign storefront;
-                            elsewhere it stays hidden until the buyer's deposit is paid)
+      $showDealer           name the selling dealership (default true: dealer advertising rules
+                            require every listing to say which registered dealer is selling it)
 
     The car's location is always its dealer's address — vehicles carry none of their own.
 
@@ -33,7 +33,7 @@
     $vehicleUrl ??= '/cars/' . $vehicle->id;
     $badgeLabel ??= $vehicle->certifiedBadge();
     $distanceKm ??= null;
-    $showDealer ??= false;
+    $showDealer ??= true;
     $reserved = (bool) ($vehicle->getAttributes()['is_reserved'] ?? false);
 @endphp
 @once
@@ -137,7 +137,7 @@
         </div>
         <div class="vcard-dealer">
             {{ collect([
-                $showDealer ? ucwords(strtolower($vehicle->dealer->name)) : null,
+                $showDealer && $vehicle->dealer ? \App\Support\DealerDisclosure::registeredName($vehicle->dealer->registered_name, $vehicle->dealer->name) : null,
                 $distanceKm !== null ? ($distanceKm < 10 ? number_format($distanceKm, 1) : number_format($distanceKm)) . ' km away' : null,
                 $vehicle->display_location,
             ])->filter()->implode(' · ') }}

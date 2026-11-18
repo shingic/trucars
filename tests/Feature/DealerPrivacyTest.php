@@ -34,18 +34,27 @@ class DealerPrivacyTest extends TestCase
         $this->dealer = $this->makeDealer(['registration_number' => '31234', 'phone' => '604-555-0101']);
     }
 
-    public function test_the_vehicle_page_names_no_dealership(): void
+    /**
+     * Dealer advertising rules (OMVIC, VSA, AMVIC): a listing names the
+     * registered dealer, its registration, and a public way to reach it (the
+     * store's address). The phone and email wait for the deposit.
+     */
+    public function test_the_vehicle_page_names_the_registered_dealer_and_its_address(): void
     {
         $vehicle = $this->vehicle();
 
         $this->get('/cars/' . $vehicle->id)
             ->assertOk()
             ->assertSee('In Chilliwack, BC')
-            ->assertDontSee('Mitsubishi Motors')
-            ->assertDontSee('Chilliwack Mitsubishi')
-            ->assertDontSee('45510 Yale Rd')
-            ->assertDontSee('31234')
+            ->assertSeeInOrder(['Sold by', 'Chilliwack Mitsubishi', 'VSA #31234', '45510 Yale Rd, Chilliwack, BC V2P 2M9'])
             ->assertDontSee('604-555-0101');
+    }
+
+    public function test_the_registered_name_is_shown_when_it_differs_from_the_public_one(): void
+    {
+        $this->dealer->update(['registered_name' => 'Chilliwack Motors Ltd.']);
+
+        $this->get('/cars/' . $this->vehicle()->id)->assertOk()->assertSee('Chilliwack Motors Ltd.');
     }
 
     public function test_the_vehicle_page_shows_the_distance_from_the_shopper(): void
@@ -228,7 +237,7 @@ class DealerPrivacyTest extends TestCase
         $this->assertStringContainsString('Chilliwack Mitsubishi', $checkout->instance()->handoverSummaryLabel());
     }
 
-    public function test_shop_cards_show_distance_and_town_not_the_dealer(): void
+    public function test_shop_cards_show_the_dealer_distance_and_town(): void
     {
         $this->vehicle();
         session([ShopperLocation::SESSION_KEY => ['source' => 'browser', 'label' => 'Vancouver, BC', 'latitude' => 49.28, 'longitude' => -123.12]]);
@@ -237,16 +246,7 @@ class DealerPrivacyTest extends TestCase
             ->assertOk()
             ->assertSee('km away')
             ->assertSee('Chilliwack, BC')
-            ->assertDontSee('Chilliwack Mitsubishi');
-    }
-
-    public function test_only_a_dealers_own_campaign_storefront_names_it_on_cards(): void
-    {
-        $vehicle = $this->vehicle();
-        $card = fn (array $extra) => view('partials.vehicle-card', $extra + ['vehicle' => $vehicle, 'savedVehicleIds' => [], 'favouritesAreVisible' => false])->render();
-
-        $this->assertStringNotContainsString('Chilliwack Mitsubishi', $card([]));
-        $this->assertStringContainsString('Chilliwack Mitsubishi', $card(['showDealer' => true]));
+            ->assertSee('Chilliwack Mitsubishi');
     }
 
     public function test_the_buyer_gets_the_dealership_once_reserved(): void

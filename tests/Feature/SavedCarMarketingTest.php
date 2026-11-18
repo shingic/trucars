@@ -77,7 +77,7 @@ class SavedCarMarketingTest extends TestCase
                 && str_contains($html, '$2,000 less')
                 && str_contains($html, 'Manage email preferences or unsubscribe from all')
                 && str_contains($html, '100 King St W, Toronto')
-                && ! str_contains(strtolower($html), strtolower($this->car->dealer->name));
+                && str_contains($html, 'Sold by Chilliwack Mitsubishi'); // listings name the registered dealer
         });
 
         Carbon::setTestNow(now()->addDay());

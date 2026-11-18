@@ -24,8 +24,7 @@ use Illuminate\Support\Str;
  *
  * The counts behind it are cached for ten minutes. A page is only linked
  * from the footer and listed in the sitemap once it has enough cars to be
- * worth landing on, so nothing thin gets published. The dealership itself
- * is never named.
+ * worth landing on, so nothing thin gets published.
  *
  * Town pages are "cars near this city": every car within NEAR_KM of it,
  * since it's pickup only and a Mississauga shopper happily drives to

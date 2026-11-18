@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\Mail;
  * Timed from their last activity. Stops the moment they pay, unsubscribe or
  * the car is gone. One sequence per shopper (their most recent car), never
  * two emails within 12 hours, nothing overnight, and nothing at all until the
- * business mailing address is set (CASL). Dealers are never named.
+ * business mailing address is set (CASL). Each car names its registered dealer (advertising rules).
  */
 class CheckoutRecovery
 {

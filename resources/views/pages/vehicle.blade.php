@@ -59,7 +59,7 @@ new class extends Component {
     /**
      * Title, description, preview image and Car structured data for the page
      * head. The open-floor URL is always canonical, campaign links included.
-     * Never names the dealership.
+     * The offer names the selling dealer, as the listing itself does.
      */
     private function shareSeo(): void
     {
@@ -97,6 +97,18 @@ new class extends Component {
                     'priceCurrency' => 'CAD',
                     'availability'  => $car->isReserved() ? 'https://schema.org/LimitedAvailability' : 'https://schema.org/InStock',
                     'url'           => $url,
+                    'seller'        => ($seller = $car->dealerDisclosure()) ? array_filter([
+                        '@type'   => 'AutoDealer',
+                        'name'    => $seller->name,
+                        'address' => array_filter([
+                            '@type'           => 'PostalAddress',
+                            'streetAddress'   => $seller->street,
+                            'addressLocality' => $seller->city,
+                            'addressRegion'   => $seller->province,
+                            'postalCode'      => $seller->postalCode,
+                            'addressCountry'  => 'CA',
+                        ]),
+                    ]) : null,
                 ],
             ], fn ($value) => $value !== null && $value !== ''),
         ]);
@@ -712,9 +724,11 @@ new class extends Component {
                 <h1 class="vdp-h1">{{ $vehicle->model_year }} {{ $vehicle->make }} {{ $vehicle->model }}</h1>
                 <p class="vdp-trim">{{ collect([$vehicle->trim, $vehicle->stock_number ? 'Stock #' . $vehicle->stock_number : null])->filter()->implode(' · ') }}</p>
                 {{--
-                    Where the car is, as a distance from the shopper. The selling
-                    dealership's name and address are only shared once the deposit
-                    is paid (My Garage), so shoppers judge it by how far away it is.
+                    Where the car is, as a distance from the shopper, and who is
+                    selling it: dealer advertising rules (OMVIC, VSA, AMVIC) need
+                    every listing to name the registered dealer and give a public
+                    way to reach it. The store's phone and email come with the
+                    deposit (My Garage).
                 --}}
                 @php
                     $here = $this->shopperLocation();
@@ -746,6 +760,14 @@ new class extends Component {
 
                     @if ($km !== null)
                         <p class="loc-note">{{ $this->driveTimeLabel($km) }} to pick it up</p>
+                    @endif
+
+                    @if ($seller = $vehicle->dealerDisclosure())
+                        <div class="loc-seller">
+                            <span class="loc-seller-k">Sold by</span>
+                            <span><b>{{ $seller->name }}</b>{{ $seller->registration ? ' · ' . $seller->registration : '' }}</span>
+                            @if ($seller->address)<span class="loc-seller-addr">{{ $seller->address }}</span>@endif
+                        </div>
                     @endif
                 </div>
                 <dl class="vdp-quickmeta">
@@ -1242,6 +1264,10 @@ new class extends Component {
         .spec .k { color:var(--ink-2); }
         .spec .v { font-weight:600; text-align:right; overflow-wrap:anywhere; }
 
+        .loc-seller { display:flex; flex-wrap:wrap; align-items:baseline; gap:2px 8px; margin-top:12px; padding-top:11px; border-top:1px solid rgba(16,24,40,.1); font-size:14px; color:var(--ink-2); }
+        .loc-seller b { color:var(--ink); font-weight:700; }
+        .loc-seller-k { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; color:var(--ink-3); }
+        .loc-seller-addr { flex-basis:100%; font-size:13.5px; }
         .loc { margin-top:18px; padding:14px 16px; border-radius:8px; background:var(--primary-soft); border-left:4px solid var(--primary); scroll-margin-top:100px; }
         .loc-row { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
         .loc-km { font-family:var(--font-display); font-size:24px; font-weight:700; color:var(--ink); line-height:1.1; }

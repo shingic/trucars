@@ -150,7 +150,7 @@ class SeoPagesTest extends TestCase
         $this->get('/robots.txt')->assertOk()->assertSee('Sitemap: ' . url('/sitemap.xml'));
     }
 
-    public function test_the_vehicle_page_has_a_title_and_car_structured_data_without_the_dealer(): void
+    public function test_the_vehicle_page_has_a_title_and_car_structured_data_naming_the_seller(): void
     {
         $car = Vehicle::where('model', 'RAV4')->first();
 
@@ -161,7 +161,11 @@ class SeoPagesTest extends TestCase
             ->assertSee('<link rel="canonical" href="' . url('/cars/' . $car->id) . '">', false);
 
         preg_match('/<script type="application\/ld\+json">(.*?)<\/script>/s', $response->getContent(), $match);
-        $this->assertStringNotContainsStringIgnoringCase('mitsubishi', $match[1]);
+        $data = json_decode($match[1], true);
+        $this->assertSame(['AutoDealer', 'Chilliwack Mitsubishi', '45510 Yale Rd', 'Chilliwack'], [
+            $data['offers']['seller']['@type'], $data['offers']['seller']['name'],
+            $data['offers']['seller']['address']['streetAddress'], $data['offers']['seller']['address']['addressLocality'],
+        ]);
     }
 
     public function test_the_page_picker_links_to_the_landing_page_itself(): void

@@ -104,7 +104,7 @@ class CheckoutRecoveryTest extends TestCase
         $this->assertSame(['recovery_1h', 'recovery_1d', 'recovery_3d', 'recovery_7d'], MarketingEmail::orderBy('id')->pluck('kind')->all());
     }
 
-    public function test_the_one_day_email_suggests_similar_cars_without_naming_any_dealer(): void
+    public function test_the_one_day_email_suggests_similar_cars_each_naming_its_dealer(): void
     {
         $this->carFor($this->car->dealer, 'Outlander', 3199000, 'SUV');
         $this->startCheckout();
@@ -120,7 +120,7 @@ class CheckoutRecoveryTest extends TestCase
                 && str_contains($html, '100 King St W, Toronto')
                 && str_contains($html, '/email/unsubscribe/')
                 && str_contains($html, 'Manage email preferences or unsubscribe from all')
-                && ! str_contains(strtolower($html), 'chilliwack mitsubishi');
+                && str_contains($html, 'Sold by Chilliwack Mitsubishi');
         });
     }
 

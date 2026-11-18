@@ -28,7 +28,7 @@ use Illuminate\Support\Facades\Mail;
  * At most one email per shopper per run, grouping their cars. Same rules as
  * the checkout reminders: needs the business mailing address, nothing
  * overnight, 12 hours between marketing emails, implied consent (Consent),
- * the shopper's email preferences, and dealers are never named.
+ * the shopper's email preferences, and each car names its registered dealer (advertising rules).
  */
 class SavedCarAlerts
 {

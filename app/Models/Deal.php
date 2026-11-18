@@ -362,14 +362,17 @@ class Deal extends Model
     /** The selling dealer's name as it was at reserve; live name for older deals. */
     public function getSellerNameAttribute(): string
     {
-        return $this->dealer_snapshot['name'] ?? $this->dealer?->name ?? 'The dealership';
+        $dealer = $this->dealer_snapshot ?? $this->dealer?->only(['name', 'registered_name']) ?? [];
+
+        return ($dealer['registered_name'] ?? null) ?: (($dealer['name'] ?? null) ?: 'The dealership');
     }
 
     /**
-     * Who the buyer is dealing with, revealed once the deposit is paid: the
+     * Who the buyer is dealing with, in full once the deposit is paid: the
      * seller's name and registration from the dealer as it was at reserve,
-     * and the address and contact details of the store the car is collected
-     * from. Shoppers never see this before they reserve.
+     * and the address, phone and email of the store the car is collected
+     * from. (Listings show the name, registration and address too, as dealer
+     * advertising rules require; the phone and email come with the deposit.)
      *
      * @return array{name: string, store: ?string, address_lines: list<string>, phone: ?string, email: ?string, registration: ?string, pickup: ?string}
      */

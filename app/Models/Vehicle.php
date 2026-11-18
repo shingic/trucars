@@ -388,6 +388,12 @@ class Vehicle extends Model
         return VehicleCertification::for($this);
     }
 
+    /** The dealer's registered name, registration and address, which every listing shows. */
+    public function dealerDisclosure(): ?\App\Support\DealerDisclosure
+    {
+        return \App\Support\DealerDisclosure::for($this);
+    }
+
     /**
      * The certified tag on cards and the car page: "Certified at pickup" for
      * a car the dealer certifies before handover, otherwise the checklist's
