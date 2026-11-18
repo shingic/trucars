@@ -49,8 +49,37 @@ class SeoPagesTest extends TestCase
         $this->get('/used-cars/fuel/hybrid')->assertOk()->assertSee('2 Certified Pre-owned Hybrid Cars for Sale');
         $this->get('/used-cars/under-20000')->assertOk()->assertSee('2 Certified Pre-owned Cars Under $20,000');
         $this->get('/used-cars/in/chilliwack-bc')->assertOk()
-            ->assertSee('6 Certified Pre-owned Cars for Sale in Chilliwack, BC')
+            ->assertSee('6 Certified Pre-owned Cars for Sale near Chilliwack, BC')
             ->assertSee('<title>Used Cars for Sale in Chilliwack, BC | Certified Pre-owned | Trumo</title>', false);
+    }
+
+    public function test_a_city_page_lists_the_cars_within_driving_distance(): void
+    {
+        $toronto = $this->makeDealer(['name' => 'WILLOWDALE NISSAN', 'city' => 'Toronto', 'province' => 'ON', 'postal_code' => 'M2N 6S6', 'latitude' => 43.7735, 'longitude' => -79.4134]);
+        foreach (range(1, 3) as $i) {
+            $this->vin++;
+            $toronto->vehicles()->create(['make' => 'Nissan', 'model' => 'Rogue', 'vin' => 'JN8AT2MV0LW' . str_pad((string) $this->vin, 6, '0', STR_PAD_LEFT), 'model_year' => 2022, 'kilometres' => 30000, 'condition' => 'USED', 'is_published' => true, 'price_in_cents' => 2900000]);
+        }
+
+        // Mississauga has no dealer, but Toronto is next door.
+        $this->get('/used-cars/in/mississauga-on')->assertOk()
+            ->assertSee('3 Certified Pre-owned Cars for Sale near Mississauga, ON')
+            ->assertSee('<title>Used Cars for Sale in Mississauga, ON | Certified Pre-owned | Trumo</title>', false)
+            ->assertSee('2022 Nissan Rogue')
+            ->assertDontSee('2021 Honda Civic');
+
+        // The Chilliwack cars count for Vancouver and Abbotsford, not Toronto.
+        $this->get('/used-cars/in/vancouver-bc')->assertOk()->assertSee('6 Certified Pre-owned Cars for Sale near Vancouver, BC');
+        $this->get('/used-cars/in/abbotsford-bc')->assertOk();
+
+        // Nothing within reach of Halifax yet: no page and no link.
+        $this->get('/used-cars/in/halifax-ns')->assertNotFound();
+
+        $this->get(route('home'))->assertOk()
+            ->assertSeeInOrder(['>Used Cars in Toronto, ON</a>', '>Used Cars in Vancouver, BC</a>', '>Used Cars in Mississauga, ON</a>'], false)
+            ->assertDontSee('Used Cars in Halifax, NS');
+
+        $this->get('/sitemap.xml')->assertSee(url('/used-cars/in/brampton-on'), false)->assertDontSee(url('/used-cars/in/halifax-ns'), false);
     }
 
     public function test_pages_that_dont_exist_are_not_found(): void

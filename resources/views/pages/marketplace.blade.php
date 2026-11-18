@@ -116,7 +116,7 @@ new class extends Component {
         $pageSuffix = $this->page > 1 ? ' – Page ' . $this->page : '';
 
         $what = $landing ? mb_strtolower($landing->headingSubject()) : 'cars';
-        $where = $landing?->place ? ' in ' . $landing->place : '';
+        $where = $landing?->place ? ' near ' . $landing->place : '';
         $description = $count
             ? "Shop {$count} certified pre-owned {$what}{$where}, priced all-in from \$" . number_format($from)
                 . ($years[0] === $years[1] ? ", {$years[0]} models." : ", {$years[0]}–{$years[1]} models.")
@@ -619,7 +619,7 @@ new class extends Component {
         @endphp
         <h1 class="srp-title">
             @if ($landingType !== null)
-                {{ number_format($landingPlace ? $this->totalCount : $headlineCount) }} Certified Pre-owned {{ $landingHeading }}{{ $landingType === 'price' ? '' : ' for Sale' }}{{ $landingPlace ? ' in ' . $landingPlace : $placeSuffix }}
+                {{ number_format($landingPlace ? $this->totalCount : $headlineCount) }} Certified Pre-owned {{ $landingHeading }}{{ $landingType === 'price' ? '' : ' for Sale' }}{{ $landingPlace ? ' near ' . $landingPlace : $placeSuffix }}
             @elseif ($shopperLocation !== null)
                 {{ number_format($headlineCount) }} Certified Pre-owned {{ $headlineCount === 1 ? 'Car' : 'Cars' }} for Sale{{ $placeSuffix }}
             @else
@@ -628,7 +628,7 @@ new class extends Component {
         </h1>
         <p class="srp-sub">{{ \App\Support\PlatformSettings::get('marketplace_subheadline') }}</p>
         @if ($landingType !== null)
-            <nav class="srp-crumbs" aria-label="Breadcrumb"><a href="{{ route('shop') }}" wire:navigate>All cars</a><span aria-hidden="true">/</span><span>{{ $landingHeading }}{{ $landingPlace ? ' in ' . $landingPlace : '' }}</span></nav>
+            <nav class="srp-crumbs" aria-label="Breadcrumb"><a href="{{ route('shop') }}" wire:navigate>All cars</a><span aria-hidden="true">/</span><span>{{ $landingHeading }}{{ $landingPlace ? ' near ' . $landingPlace : '' }}</span></nav>
         @endif
 
         <div class="loc-bar"
