@@ -57,6 +57,7 @@ class Dealer extends Model
         'cover_photo_path',
         'carfax_enabled',
         'carfax_account_id',
+        'certifies_at_pickup',
         'status',
     ];
 
@@ -111,6 +112,7 @@ class Dealer extends Model
             'latitude'  => 'float',
             'longitude' => 'float',
             'carfax_enabled' => 'boolean',
+            'certifies_at_pickup' => 'boolean',
         ];
     }
 

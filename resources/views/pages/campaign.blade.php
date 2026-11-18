@@ -206,7 +206,7 @@ new class extends Component {
                 @include('partials.vehicle-card', [
                     'vehicle' => $vehicle,
                     'vehicleUrl' => route('campaign.vehicle', ['token' => $this->campaign->token, 'vehicle' => $vehicle->id]),
-                    'badgeLabel' => $vehicle->certification()?->badge ?? 'Manufacturer CPO',
+                    'badgeLabel' => $vehicle->certifiedBadge() ?? 'Manufacturer CPO',
                     'savedVehicleIds' => $savedVehicleIds,
                     'favouritesAreVisible' => $favouritesAreVisible,
                     'showDealer' => true,

@@ -42,6 +42,8 @@ class Vehicle extends Model
         'condition',
         'is_certified',
         'is_manufacturer_certified',
+        'certify_at_pickup',
+        'feed_price_in_cents',
         'transmission',
         'drivetrain',
         'fuel_type',
@@ -57,6 +59,8 @@ class Vehicle extends Model
             'is_published' => 'boolean',
             'is_certified' => 'boolean',
             'is_manufacturer_certified' => 'boolean',
+            'certify_at_pickup' => 'boolean',
+            'feed_price_in_cents' => 'integer',
             'photos' => 'array',
             'first_listed_at' => 'datetime',
             'price_dropped_at' => 'datetime',
@@ -362,6 +366,16 @@ class Vehicle extends Model
     }
 
     /**
+     * The certified tag on cards and the car page: "Certified at pickup" for
+     * a car the dealer certifies before handover, otherwise the checklist's
+     * own badge. Null when the car shows no certified tag.
+     */
+    public function certifiedBadge(?VehicleCertification $certification = null): ?string
+    {
+        return $this->certify_at_pickup ? 'Certified at pickup' : ($certification ?? $this->certification())?->badge;
+    }
+
+    /**
      * The one rule for what a dealer campaign may show: this dealer's own cars
      * that are published, used, flagged manufacturer-certified, of the dealer's
      * confirmed franchise brand, and not already held or sold through a deal.
@@ -386,7 +400,8 @@ class Vehicle extends Model
             ->where('is_published', true)
             ->where('condition', 'USED')
             ->where('is_manufacturer_certified', true)
-            ->whereRaw('lower(make) = ?', [mb_strtolower(trim($dealer->franchise_make))])
+            // Any make of the franchise: a CDJR store's Jeep, a GM store's GMC.
+            ->whereIn(\Illuminate\Support\Facades\DB::raw('lower(make)'), \App\Support\CpoRules::family($dealer->franchise_make))
             // Any live deal (reserved through delivered) takes the car off the
             // shelf. The scope is lifted so a staff preview sees the same truth.
             ->whereDoesntHave('deals', fn (Builder $deals) => $deals

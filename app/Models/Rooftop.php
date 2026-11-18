@@ -47,6 +47,7 @@ class Rooftop extends Model
         'dealer_id', 'name', 'is_primary', 'feed_rooftop_id', 'is_active',
         'street_address', 'unit', 'city', 'province', 'postal_code', 'country',
         'latitude', 'longitude', 'timezone', 'phone', 'email', 'hours', 'pickup_points',
+        'feed_file', 'feed_file_modified_at', 'feed_synced_at', 'feed_error', 'feed_stale_alerted_at',
     ];
 
     /** Keys of the hours column, Monday first. */
@@ -66,6 +67,9 @@ class Rooftop extends Model
             'is_active'     => 'boolean',
             'hours'         => 'array',
             'pickup_points' => 'array',
+            'feed_file_modified_at' => 'datetime',
+            'feed_synced_at' => 'datetime',
+            'feed_stale_alerted_at' => 'datetime',
         ];
     }
 

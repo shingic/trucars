@@ -17,6 +17,7 @@ new #[Layout('layouts.dealer')] #[Title('Fee schedule')] class extends Component
     public string $feeLabel = '';
     public string $feeKind = DealerFee::KIND_INCLUDED;
     public $feeAmount = '';            // entered in dollars; stored in cents
+    public bool $feeAddedToFeedPrice = false; // an included fee the dealer's feed price leaves out
 
     public string $statusMessage = '';
 
@@ -70,6 +71,7 @@ new #[Layout('layouts.dealer')] #[Title('Fee schedule')] class extends Component
         $this->editingFeeId = $fee->id;
         $this->feeLabel = $fee->label;
         $this->feeKind = $fee->kind;
+        $this->feeAddedToFeedPrice = (bool) $fee->added_to_feed_price;
         $this->feeAmount = number_format($fee->amount_in_cents / 100, 2, '.', '');
         $this->statusMessage = '';
         $this->showEditor = true;
@@ -88,6 +90,7 @@ new #[Layout('layouts.dealer')] #[Title('Fee schedule')] class extends Component
         ]);
 
         $amountInCents = (int) round(((float) $validated['feeAmount']) * 100);
+        $addedToFeedPrice = $validated['feeKind'] === DealerFee::KIND_INCLUDED && $this->feeAddedToFeedPrice;
 
         if ($this->editingFeeId === null) {
             // Append new fees to the end of the schedule.
@@ -96,6 +99,7 @@ new #[Layout('layouts.dealer')] #[Title('Fee schedule')] class extends Component
             $this->dealer()->fees()->create([
                 'label'           => $validated['feeLabel'],
                 'kind'            => $validated['feeKind'],
+                'added_to_feed_price' => $addedToFeedPrice,
                 'amount_in_cents' => $amountInCents,
                 'sort_order'      => $nextSortOrder,
             ]);
@@ -107,6 +111,7 @@ new #[Layout('layouts.dealer')] #[Title('Fee schedule')] class extends Component
             $fee->update([
                 'label'           => $validated['feeLabel'],
                 'kind'            => $validated['feeKind'],
+                'added_to_feed_price' => $addedToFeedPrice,
                 'amount_in_cents' => $amountInCents,
             ]);
 
@@ -140,7 +145,7 @@ new #[Layout('layouts.dealer')] #[Title('Fee schedule')] class extends Component
 
     protected function resetEditor(): void
     {
-        $this->reset(['editingFeeId', 'feeLabel', 'feeAmount']);
+        $this->reset(['editingFeeId', 'feeLabel', 'feeAmount', 'feeAddedToFeedPrice']);
         $this->feeKind = DealerFee::KIND_INCLUDED;
         $this->resetValidation();
     }
@@ -210,6 +215,9 @@ new #[Layout('layouts.dealer')] #[Title('Fee schedule')] class extends Component
         .amount-wrap span { position:absolute; left:13px; top:50%; transform:translateY(-50%); color:var(--ink-3); font-size:15px; }
         .amount-wrap input { padding-left:24px; }
 
+        .fee-check { display:flex; gap:10px; align-items:flex-start; font-size:13.5px; color:var(--ink-2); line-height:1.45; cursor:pointer; }
+        .fee-check input { margin-top:3px; width:16px; height:16px; flex:none; accent-color:var(--primary); }
+        .fee-check b { display:block; color:var(--ink); font-size:14px; }
         .kind-toggle { display:flex; gap:0; border:1.5px solid var(--ink); border-radius:8px; }
         .kind-opt { flex:1; background:#fff; padding:11px 13px; text-align:left; transition:background .14s ease, color .14s ease; }
         .kind-opt + .kind-opt { border-left:1.5px solid var(--ink); }
@@ -280,6 +288,16 @@ new #[Layout('layouts.dealer')] #[Title('Fee schedule')] class extends Component
                     @error('feeKind') <span class="err">{{ $message }}</span> @enderror
                 </div>
 
+                @if ($feeKind === \App\Models\DealerFee::KIND_INCLUDED)
+                    <div class="field full">
+                        <label class="fee-check">
+                            <input type="checkbox" wire:model="feeAddedToFeedPrice">
+                            <span><b>My inventory feed's price leaves this out</b>
+                            Trumo adds it to every feed price, so each car's price is all-in. Prices update with the next feed.</span>
+                        </label>
+                    </div>
+                @endif
+
                 <div class="field">
                     <label for="feeAmount">Amount</label>
                     <div class="amount-wrap">
@@ -311,7 +329,7 @@ new #[Layout('layouts.dealer')] #[Title('Fee schedule')] class extends Component
             @forelse ($this->includedFees as $fee)
                 <div class="fee-row" wire:key="fee-{{ $fee->id }}">
                     <span class="lbl">{{ $fee->label }}</span>
-                    <span class="amt incl">{{ $this->asMoney($fee->amount_in_cents / 100) }} · included</span>
+                    <span class="amt incl">{{ $this->asMoney($fee->amount_in_cents / 100) }} · {{ $fee->added_to_feed_price ? 'added to your feed price' : 'included' }}</span>
                     <span class="fee-row-actions">
                         <button type="button" class="icon-btn" wire:click="startEdit({{ $fee->id }})" aria-label="Edit {{ $fee->label }}">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>

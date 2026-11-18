@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Brand extends Model
 {
-    protected $fillable = ['name', 'cpo_program_name', 'cpo_benefits', 'cpo_fine_print', 'cpo_source_url', 'cpo_checked_on', 'cpo_benefits_live'];
+    protected $fillable = ['name', 'cpo_program_name', 'cpo_max_model_years', 'cpo_max_km', 'cpo_benefits', 'cpo_fine_print', 'cpo_source_url', 'cpo_checked_on', 'cpo_benefits_live'];
 
     protected function casts(): array
     {

@@ -46,7 +46,7 @@ final class CertifiedBenefits
 
         $brand = $vehicle->dealer?->brand;
 
-        if ($brand === null || mb_strtolower(trim((string) $vehicle->make)) !== mb_strtolower($brand->name)) {
+        if ($brand === null || ! CpoRules::sameFranchise($vehicle->make, $brand->name)) {
             return null;
         }
 

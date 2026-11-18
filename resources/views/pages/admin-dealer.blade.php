@@ -399,6 +399,22 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
 
     /* ---- changing an existing dealer's brand ---------------------------- */
 
+    /**
+     * Whether the dealer certifies its own brand's eligible used cars before
+     * handover. On: the feed brings in every own-brand used car within the
+     * brand's certified age/km limits, shown "Certified at pickup". Takes
+     * effect at the next feed import.
+     */
+    public function toggleCertifiesAtPickup(): void
+    {
+        abort_unless($this->canManage(), 403);
+
+        $dealer = $this->dealerOrFail();
+        $before = ['certifies_at_pickup' => (bool) $dealer->certifies_at_pickup];
+        $dealer->update(['certifies_at_pickup' => ! $dealer->certifies_at_pickup]);
+        AuditLog::record('dealer.certifies_at_pickup_updated', $dealer, $before, ['certifies_at_pickup' => (bool) $dealer->certifies_at_pickup]);
+    }
+
     public function startBrandChange(): void
     {
         Gate::authorize(Permission::DEALERS_MANAGE);
@@ -1628,6 +1644,12 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
                             <div class="row"><span>Points</span><b>{{ ($settings['checklist'] ?? null) ? $settings['checklist']->points_count : '—' }}</b></div>
                             <div class="row"><span>Shows on</span><b>{{ ($settings['checklist'] ?? null) ? \App\Models\InspectionProgram::APPLIES_TO_LABELS[$settings['checklist']->applies_to] : '—' }}</b></div>
                             <div class="row"><span>Current offers</span><b>{{ $settings['offers'] ?? 0 }}</b></div>
+                            <div class="row">
+                                <span>Certifies at pickup<small style="display:block;font-weight:400;color:var(--ink-3);max-width:420px">Lists the brand’s used cars within its certified age and km limits as “Certified at pickup”. The dealership certifies each one before handover. Applies from the next feed import.</small></span>
+                                <b class="{{ $dealer->certifies_at_pickup ? 'ok' : '' }}">{{ $dealer->certifies_at_pickup ? 'On' : 'Off' }}
+                                    @if ($canManage) <button type="button" class="ebtn" style="margin-left:10px" wire:click="toggleCertifiesAtPickup" wire:confirm="{{ $dealer->certifies_at_pickup ? 'Stop listing cars as certified at pickup? Only cars the feed marks certified will be listed after the next import.' : 'List this dealer’s eligible cars as certified at pickup? Only do this if the dealership has agreed to certify them before handover.' }}">{{ $dealer->certifies_at_pickup ? 'Turn off' : 'Turn on' }}</button> @endif
+                                </b>
+                            </div>
                         </div>
                     </div>
 
@@ -1659,6 +1681,10 @@ new #[Layout('layouts.dealer')] #[Title('Dealer')] class extends Component {
                             <div class="row"><span>Status</span><b class="{{ $dealer->feed_rooftop_id ? 'ok' : 'warn' }}">{{ $dealer->feed_rooftop_id ? 'Connected' : 'Not connected yet' }}</b></div>
                             @foreach ($this->rooftops() as $rooftop)
                                 <div class="row"><span>{{ $rooftop->is_primary ? 'Rooftop id' : $rooftop->display_name }}</span><b class="mono">{{ $rooftop->feed_rooftop_id ?? ($rooftop->is_primary ? 'Set by the first import' : 'Not linked') }}</b></div>
+                            @endforeach
+                            @foreach ($this->rooftops()->whereNotNull('feed_file') as $rooftop)
+                                <div class="row"><span>HomeNet file</span><b class="mono">{{ $rooftop->feed_file }}</b></div>
+                                <div class="row"><span>File last changed</span><b class="{{ $rooftop->feed_error ? 'warn' : '' }}">{{ $rooftop->feed_file_modified_at?->diffForHumans() ?? 'Not pulled yet' }}{{ $rooftop->feed_error ? ' · ' . $rooftop->feed_error : '' }}</b></div>
                             @endforeach
                             <div class="row"><span>Last import</span><b>{{ $import ? $import->created_at->diffForHumans() . ' by ' . ($import->actor_email ?? 'console') : 'Never' }}</b></div>
                             <div class="row"><span>Vehicles</span><b>{{ $stats['live'] }} live of {{ $stats['vehicles'] }}</b></div>

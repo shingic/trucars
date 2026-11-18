@@ -428,7 +428,7 @@ new #[Title('Certified Pre-Owned Cars, All-In Prices | Trumo')] class extends Co
                         <div class="car-photo shot">
                             <img src="{{ $listing->primary_photo_url }}" alt="" loading="lazy">
                             @if ($listing->is_reserved)<span class="reserved">Reserved</span>@endif
-                            @if ($certified = $listing->certification())<span class="cert">{{ $certified->badge }}</span>@endif
+                            @if ($certified = $listing->certifiedBadge())<span class="cert">{{ $certified }}</span>@endif
                         </div>
                         <div class="car-name">{{ $listing->model_year }} {{ $listing->make }} {{ $listing->model }}</div>
                         <div class="car-meta">{{ $listing->display_kilometres }} · {{ $listing->display_location }}</div>

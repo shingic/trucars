@@ -554,10 +554,10 @@ new class extends Component {
                                 Reserved
                             </span>
                         @endif
-                        @if ($this->certification())
+                        @if ($certBadge = $vehicle->certifiedBadge($this->certification()))
                             <span class="gallery-badge">
                                 <span class="dot"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>
-                                {{ $this->certification()->badge }}
+                                {{ $certBadge }}
                             </span>
                         @endif
                         @if (! $reserved && ($tag = $vehicle->momentumTag()))
@@ -764,7 +764,11 @@ new class extends Component {
                             <span class="cpo-seal"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 8 9 8 9s8-4 8-9V6Z"/><path d="m9 12 2 2 4-4"/></svg></span>
                             <div>
                                 <h2>{{ $program->programName }}</h2>
-                                <p>This car is certified under {{ $program->brandName }}’s own program, so it comes with:</p>
+                                @if ($vehicle->certify_at_pickup)
+                                    <p>The dealership certifies this car under {{ $program->brandName }}’s own program before you pick it up, so it comes with:</p>
+                                @else
+                                    <p>This car is certified under {{ $program->brandName }}’s own program, so it comes with:</p>
+                                @endif
                             </div>
                         </div>
                         <ul class="cpo-list">
@@ -801,7 +805,7 @@ new class extends Component {
                         <button type="button" class="cert-toggle" x-on:click="certOpen = ! certOpen" :aria-expanded="certOpen.toString()" aria-controls="cert-body" aria-expanded="false">
                             <span class="cert-headtext">
                                 <span class="cert-title">{{ $cert->name }}</span>
-                                <span class="cert-by">{{ $cert->pointCount }}-point inspection by the selling dealership</span>
+                                <span class="cert-by">{{ $cert->pointCount }}-point inspection by the selling dealership{{ $vehicle->certify_at_pickup ? ', done before you pick it up' : '' }}</span>
                             </span>
                             <span class="cert-toggle-label" x-text="certOpen ? 'Hide' : 'View checklist'">View checklist</span>
                             <svg class="cert-chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m6 9 6 6 6-6"/></svg>
@@ -952,10 +956,18 @@ new class extends Component {
                         <div class="buy-cert-mini">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>
                             <div>
-                                <div class="t">{{ $cert->badge }}</div>
+                                <div class="t">{{ $vehicle->certifiedBadge($cert) }}</div>
                                 <div class="s">{{ $cert->pointCount }}-point inspection
                                     @if ($this->certifiedBenefits()) · <a href="#certified-benefits">{{ count($this->certifiedBenefits()->benefits) }} {{ $this->certifiedBenefits()->brandName }} benefits</a> @endif
                                 </div>
+                            </div>
+                        </div>
+                    @elseif ($vehicle->certify_at_pickup)
+                        <div class="buy-cert-mini">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg>
+                            <div>
+                                <div class="t">Certified at pickup</div>
+                                <div class="s">The dealership certifies this car under {{ $vehicle->make }}’s certified program before you pick it up.</div>
                             </div>
                         </div>
                     @endif

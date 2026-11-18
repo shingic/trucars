@@ -34,6 +34,7 @@ class DealerFee extends Model
         'dealer_id',
         'label',
         'kind',
+        'added_to_feed_price',
         'amount_in_cents',
         'sort_order',
         'is_active',
@@ -52,6 +53,7 @@ class DealerFee extends Model
             'amount_in_cents' => 'integer',
             'sort_order'      => 'integer',
             'is_active'       => 'boolean',
+            'added_to_feed_price' => 'boolean',
         ];
     }
 

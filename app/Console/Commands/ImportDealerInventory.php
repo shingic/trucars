@@ -9,7 +9,9 @@ use App\Models\Dealer;
 use App\Models\Rooftop;
 use App\Models\Vehicle;
 use App\Support\CanadianAddress;
+use App\Support\CpoRules;
 use App\Support\FeedText;
+use App\Support\Feeds\HomeNetRow;
 use Illuminate\Console\Command;
 
 class ImportDealerInventory extends Command
@@ -21,7 +23,7 @@ class ImportDealerInventory extends Command
         {--new-rooftop : With --dealer, add the feed as another rooftop of that dealer}
         {--keep-missing : Leave cars that are no longer in the feed as they are (default: unpublish them)}
         {--brand= : Set the dealer franchise brand (e.g. Nissan) before importing, so its certified cars count as manufacturer CPO}
-        {--publish : Publish the cars this import adds, instead of leaving them for review}
+        {--publish : Publish the cars this import adds (and ones never listed before), instead of leaving them for review}
         {--activate : Make the dealer live once its address is complete}';
 
     protected $description = 'Import a dealer inventory CSV into the dealers and vehicles tables';
@@ -45,6 +47,10 @@ class ImportDealerInventory extends Command
         $delimiter = $this->detectDelimiter($fileHandle);
         $headerColumns = array_map(fn ($column) => FeedText::clean($column), fgetcsv($fileHandle, separator: $delimiter, escape: "\\") ?: []);
 
+        // A HomeNet (Cox) export is read through its own column map; the store
+        // is named after the file, since HomeNet doesn't put one in the rows.
+        $this->homeNetStore = HomeNetRow::matches($headerColumns) ? HomeNetRow::storeIdFor($pathToCsv) : null;
+
         $sharedPhotos = $this->photosOnMoreThanOneCar($fileHandle, $delimiter, $headerColumns);
 
         $dealer = null;
@@ -58,6 +64,8 @@ class ImportDealerInventory extends Command
         $skippedForVinOnOtherRooftop = 0;
         $skippedForNotCpo = 0;
         $skippedForNew = 0;
+        $certifyAtPickupCount = 0;
+        $feesAddedInCents = 0;
 
         /** @var array<string, true> every VIN this rooftop's rows mention, imported or not (non-CPO rows excepted) */
         $vinsInFeed = [];
@@ -73,7 +81,12 @@ class ImportDealerInventory extends Command
 
             // Whatever encoding the dealer's system used, every value is plain
             // UTF-8 before anything reads it ("4Ã—4" → "4×4").
-            $row = array_combine($headerColumns, array_map(fn ($value) => FeedText::clean($value), $rowValues));
+            $row = $this->rowFrom($headerColumns, $rowValues);
+
+            if ($row === null) {
+                $skippedForNotACar++;
+                continue;
+            }
 
             // Resolve the rooftop (and so its dealer) once, from the dealer columns in the file.
             if ($rooftop === null) {
@@ -93,6 +106,8 @@ class ImportDealerInventory extends Command
 
                     return self::FAILURE;
                 }
+
+                $feesAddedInCents = $this->feesAddedToFeedPrice($dealer);
             }
 
             // One file, one rooftop. A row from another rooftop isn't this
@@ -104,10 +119,15 @@ class ImportDealerInventory extends Command
 
             $rowsForRooftop++;
 
-            // Trumo lists certified pre-owned cars only. New cars and plain
-            // used cars are turned away, and don't count as "in the feed" — so
-            // one already listed comes off the marketplace below.
-            if (! $this->isCertifiedPreOwned($row)) {
+            // Trumo lists certified pre-owned cars only: flagged certified by
+            // the feed, or (for a dealer that certifies at pickup) its own
+            // brand's used car within that brand's program limits. New cars
+            // and other used cars are turned away, and don't count as "in the
+            // feed" — so one already listed comes off the marketplace below.
+            $flaggedCertified = $this->isCertifiedPreOwned($row);
+            $atPickup = ! $flaggedCertified && $this->isCertifiableAtPickup($row, $dealer);
+
+            if (! $flaggedCertified && ! $atPickup) {
                 $skippedForNotCpo++;
                 continue;
             }
@@ -136,11 +156,14 @@ class ImportDealerInventory extends Command
                 continue;
             }
 
-            $priceInCents = $this->priceToCents($row['price']);
-            if ($priceInCents === null) {
+            $feedPriceInCents = $this->priceToCents($row['price']);
+            if ($feedPriceInCents === null) {
                 $skippedForNoPrice++;
                 continue;
             }
+
+            // All-in: the fees this dealer leaves out of its feed price go on top.
+            $priceInCents = $feedPriceInCents + $feesAddedInCents;
 
             $condition = 'USED'; // every CPO car is a used car, whatever word the feed used
             $modelYear = (int) $row['year'];
@@ -161,13 +184,19 @@ class ImportDealerInventory extends Command
                 'colour'         => $row['exterior_color'] ?: null,
                 'kilometres'     => $kilometres,
                 'price_in_cents' => $priceInCents,
+                'feed_price_in_cents' => $feedPriceInCents,
                 'transmission'   => $row['transmission'] ?: null,
                 'drivetrain'     => $row['drivetrain'] ?: null,
                 'fuel_type'      => $row['fuel_type'] ?: null,
                 'photos'         => $this->ownPhotos($row, $sharedPhotos),
                 'is_certified'   => $this->looksCertifiable($condition, $modelYear, $kilometres),
-                'is_manufacturer_certified' => $this->isFlaggedManufacturerCertified($row, $condition, $dealer),
+                'is_manufacturer_certified' => $atPickup || $this->isFlaggedManufacturerCertified($row, $condition, $dealer),
+                'certify_at_pickup' => $atPickup,
             ]);
+
+            if ($atPickup) {
+                $certifyAtPickupCount++;
+            }
 
             // New cars arrive unpublished for someone to review. A car that's
             // already listed stays listed — re-importing a feed must never take a
@@ -177,10 +206,13 @@ class ImportDealerInventory extends Command
                 $newCount++;
             }
 
-            $isNew = ! $vehicle->exists;
+            // --publish covers new cars and ones that have never been listed
+            // (e.g. imported for review from an earlier feed). A car that was
+            // live and then taken down keeps first_listed_at, so stays down.
+            $neverListed = ! $vehicle->exists || (! $vehicle->is_published && $vehicle->first_listed_at === null);
             $vehicle->save();
 
-            if ($isNew) {
+            if ($neverListed) {
                 $newVehicleIds[] = $vehicle->id;
             }
 
@@ -213,7 +245,15 @@ class ImportDealerInventory extends Command
         $this->line("Skipped (another rooftop in the file): {$skippedForOtherRooftop}");
         $this->line("Skipped (VIN belongs to another rooftop): {$skippedForVinOnOtherRooftop}");
         $this->info('Marked certified (dev stand-in): ' . $rooftop->vehicles()->where('is_certified', true)->count());
-        $this->info('Manufacturer CPO (feed-flagged, franchise brand): ' . $rooftop->vehicles()->where('is_manufacturer_certified', true)->count());
+        $this->info('Manufacturer CPO (feed-flagged, franchise brand): ' . $rooftop->vehicles()->where('is_manufacturer_certified', true)->where('certify_at_pickup', false)->count());
+
+        if ($dealer->certifies_at_pickup) {
+            $this->info("Certified at pickup (own brand, within the program's age/km limits): {$certifyAtPickupCount}");
+        }
+
+        if ($feesAddedInCents > 0) {
+            $this->info('Fees added to each feed price (all-in): $' . number_format($feesAddedInCents / 100, 2));
+        }
 
         if (blank($dealer->franchise_make)) {
             $this->warn('No franchise brand confirmed for this dealer — none of its stock can qualify as manufacturer CPO.');
@@ -530,7 +570,10 @@ class ImportDealerInventory extends Command
                 continue;
             }
 
-            $row = array_combine($headerColumns, array_map(fn ($value) => FeedText::clean($value), $values));
+            $row = $this->rowFrom($headerColumns, $values);
+            if ($row === null) {
+                continue;
+            }
             $vin = strtoupper(trim($row['vin'] ?? ''));
 
             foreach (array_unique(array_map([$this, 'photoKey'], $this->splitPhotoUrls($row['photos'] ?? ''))) as $key) {
@@ -626,8 +669,51 @@ class ImportDealerInventory extends Command
     {
         return $this->isCertifiedPreOwned($row)
             && $condition === 'USED'
-            && filled($dealer->franchise_make)
-            && strcasecmp(trim($row['make']), trim($dealer->franchise_make)) === 0;
+            && CpoRules::sameFranchise($row['make'], $dealer->franchise_make);
+    }
+
+    /**
+     * A used car the dealer will certify before handover: the dealer has
+     * agreed to certify at pickup, it's the dealer's own brand (any make of
+     * the franchise), and it's within that brand's program age/km limits.
+     *
+     * @param  array<string, string>  $row
+     */
+    private function isCertifiableAtPickup(array $row, Dealer $dealer): bool
+    {
+        return $dealer->certifies_at_pickup
+            && strtoupper(trim($row['condition'] ?? '')) !== 'NEW'
+            && CpoRules::sameFranchise($row['make'], $dealer->franchise_make)
+            && CpoRules::fitsRules($row['make'], (int) $row['year'], (int) $row['mileage']);
+    }
+
+    /** The included fees this dealer's feed price leaves out, added on top so the price is all-in. */
+    private function feesAddedToFeedPrice(Dealer $dealer): int
+    {
+        return (int) $dealer->fees()
+            ->where('is_active', true)
+            ->where('kind', \App\Models\DealerFee::KIND_INCLUDED)
+            ->where('added_to_feed_price', true)
+            ->sum('amount_in_cents');
+    }
+
+    /** The store a HomeNet file belongs to, or null for any other layout. */
+    private ?string $homeNetStore = null;
+
+    /**
+     * One file row as the importer's columns: cleaned to UTF-8, and mapped
+     * from HomeNet's layout when it's a HomeNet file. Null for a row that
+     * isn't a car for sale.
+     *
+     * @param  array<int, string>  $headers
+     * @param  array<int, string>  $values
+     * @return array<string, string>|null
+     */
+    private function rowFrom(array $headers, array $values): ?array
+    {
+        $row = array_combine($headers, array_map(fn ($value) => FeedText::clean($value), $values));
+
+        return $this->homeNetStore === null ? $row : HomeNetRow::toImportRow($row, $this->homeNetStore);
     }
 
     /**

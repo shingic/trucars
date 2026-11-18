@@ -27,3 +27,6 @@ Schedule::command('email-log:prune')->daily();
 
 // Car view counts keep 90 days.
 Schedule::command('vehicles:views --prune')->daily();
+
+// Dealer inventory from HomeNet's FTP: pull and import the files that changed.
+Schedule::command('feeds:sync')->hourly()->withoutOverlapping(30);

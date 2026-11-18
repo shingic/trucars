@@ -75,10 +75,10 @@ class InspectionProgram extends Model
             return $this->dealer_id === $vehicle->dealer_id;
         }
 
-        $make = mb_strtolower(trim((string) $this->make));
-
-        return $make !== ''
-            && mb_strtolower(trim((string) $vehicle->make)) === $make
-            && mb_strtolower(trim((string) $vehicle->dealer?->franchise_make)) === $make;
+        // The car and its dealer are both of this checklist's franchise (a
+        // Chevrolet checklist covers a GM store's GMC; Mazda only Mazda).
+        return filled($this->make)
+            && \App\Support\CpoRules::sameFranchise($vehicle->make, $this->make)
+            && \App\Support\CpoRules::sameFranchise($vehicle->dealer?->franchise_make, $this->make);
     }
 }

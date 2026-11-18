@@ -22,3 +22,6 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# HomeNet uploads dealer inventory files here on the server
+/trumo_homenet

@@ -32,6 +32,10 @@ new #[Layout('layouts.dealer')] #[Title('Certified benefits')] class extends Com
 
     public string $statusMessage = '';
 
+    /** Certified-program limits: cars within them can be certified at pickup. */
+    public $maxModelYears = '';
+    public $maxKm = '';
+
     public function mount(Brand $brand): void
     {
         Gate::authorize(Permission::SETTINGS_MANAGE);
@@ -41,6 +45,8 @@ new #[Layout('layouts.dealer')] #[Title('Certified benefits')] class extends Com
         $this->finePrint = (string) $brand->cpo_fine_print;
         $this->sourceUrl = (string) $brand->cpo_source_url;
         $this->checkedOn = (string) $brand->cpo_checked_on?->toDateString();
+        $this->maxModelYears = (string) ($brand->cpo_max_model_years ?? '');
+        $this->maxKm = (string) ($brand->cpo_max_km ?? '');
 
         if ($this->rows === []) {
             $this->addRow();
@@ -107,12 +113,14 @@ new #[Layout('layouts.dealer')] #[Title('Certified benefits')] class extends Com
             'finePrint'     => ['nullable', 'string', 'max:3000'],
             'sourceUrl'     => [$live ? 'required' : 'nullable', 'url:https', 'max:500'],
             'checkedOn'     => [$live ? 'required' : 'nullable', 'date', 'before_or_equal:today'],
+            'maxModelYears' => ['nullable', 'integer', 'min:1', 'max:15', 'required_with:maxKm'],
+            'maxKm'         => ['nullable', 'integer', 'min:1000', 'max:400000', 'required_with:maxModelYears'],
         ];
     }
 
     private function attributeNames(): array
     {
-        return ['rows.*.title' => 'benefit', 'rows.*.detail' => 'detail', 'sourceUrl' => 'brand page link', 'checkedOn' => 'date checked', 'finePrint' => 'fine print'];
+        return ['maxModelYears' => 'model years', 'maxKm' => 'kilometre limit', 'rows.*.title' => 'benefit', 'rows.*.detail' => 'detail', 'sourceUrl' => 'brand page link', 'checkedOn' => 'date checked', 'finePrint' => 'fine print'];
     }
 
     private function persist(Brand $brand, bool $live): void
@@ -126,6 +134,8 @@ new #[Layout('layouts.dealer')] #[Title('Certified benefits')] class extends Com
             'cpo_source_url'    => trim($this->sourceUrl) ?: null,
             'cpo_checked_on'    => $this->checkedOn ?: null,
             'cpo_benefits_live' => $live,
+            'cpo_max_model_years' => $this->maxModelYears === '' ? null : (int) $this->maxModelYears,
+            'cpo_max_km'          => $this->maxKm === '' ? null : (int) $this->maxKm,
         ]);
 
         $brand->refresh();
@@ -243,6 +253,23 @@ new #[Layout('layouts.dealer')] #[Title('Certified benefits')] class extends Com
                     <label for="programName">Program name <span class="opt">— optional</span></label>
                     <input id="programName" type="text" wire:model.live.debounce.400ms="programName" maxlength="120" placeholder="{{ $brand->name }} Certified Pre-Owned">
                     @error('programName')<span class="err">{{ $message }}</span>@enderror
+                </div>
+            </div>
+
+            <div class="cb-sec">
+                <div class="cb-sec-t">Eligibility</div>
+                <div class="cb-sec-s">The age and kilometre limits for a car to be certified. A dealer that certifies at pickup lists its {{ $brand->name }} used cars within them as “Certified at pickup”. Leave both empty to list only cars the feed marks certified.</div>
+                <div class="f" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+                    <div>
+                        <label for="maxModelYears">Last how many model years</label>
+                        <input id="maxModelYears" type="number" min="1" max="15" wire:model="maxModelYears" placeholder="e.g. 6">
+                        @error('maxModelYears')<span class="err">{{ $message }}</span>@enderror
+                    </div>
+                    <div>
+                        <label for="maxKm">Under how many km</label>
+                        <input id="maxKm" type="number" min="1000" step="1000" wire:model="maxKm" placeholder="e.g. 120000">
+                        @error('maxKm')<span class="err">{{ $message }}</span>@enderror
+                    </div>
                 </div>
             </div>
 

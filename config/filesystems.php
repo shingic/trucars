@@ -35,6 +35,14 @@ return [
 
     'disks' => [
 
+        // The folder HomeNet uploads each store's inventory file to, on this
+        // server (php artisan feeds:sync imports them). Outside the web root.
+        'homenet' => [
+            'driver' => 'local',
+            'root'   => env('HOMENET_FEED_PATH', base_path('trumo_homenet')),
+            'throw'  => false,
+        ],
+
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),

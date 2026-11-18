@@ -31,7 +31,7 @@
 --}}
 @php
     $vehicleUrl ??= '/cars/' . $vehicle->id;
-    $badgeLabel ??= $vehicle->certification()?->badge;
+    $badgeLabel ??= $vehicle->certifiedBadge();
     $distanceKm ??= null;
     $showDealer ??= false;
     $reserved = (bool) ($vehicle->getAttributes()['is_reserved'] ?? false);
