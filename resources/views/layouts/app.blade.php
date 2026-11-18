@@ -412,6 +412,7 @@
             <a href="{{ route('shop') }}" wire:navigate>Shop cars</a>
             <a href="{{ route('how-it-works') }}" wire:navigate>How it works</a>
             <a href="{{ route('contact') }}" wire:navigate>Contact us</a>
+            <a href="{{ route('careers') }}" wire:navigate>Careers</a>
             @guest <a href="{{ route('buyer.login') }}" wire:navigate>Sign in</a> @endguest
         </nav>
         <span class="site-foot-legal">© {{ date('Y') }} Trumo. Every price is all-in, with freight, prep and dealer fees included. Sales tax and licensing are extra. Postal area data from <a href="https://www.geonames.org/" target="_blank" rel="noopener" style="color:inherit;">GeoNames</a> (CC BY 4.0).</span>

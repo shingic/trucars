@@ -87,6 +87,7 @@ Route::domain($publicDomain)->middleware(TreatNonCustomersAsGuests::class)->grou
     Route::get('/robots.txt', fn () => response("User-agent: *\nDisallow: /livewire/\n\nSitemap: " . route('sitemap') . "\n", 200, ['Content-Type' => 'text/plain']));
     Route::livewire('/how-it-works', 'pages::how-it-works')->name('how-it-works');
     Route::livewire('/contact', 'pages::contact')->name('contact');
+    Route::livewire('/careers', 'pages::careers')->name('careers');
 
     // A dealer's storefront photo (public — it's the dealer's own branding).
     Route::get('/media/dealers/{dealer}/cover', function (\App\Models\Dealer $dealer) {

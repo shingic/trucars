@@ -11,6 +11,15 @@ return [
     // Where contact-form messages are emailed (they also land in Command Centre › Inquiries).
     'contact_email' => env('CONTACT_EMAIL', 'shingi@trueleads.ca'),
 
+    // Careers page. Applications (with the CV attached) are emailed here; the
+    // CV isn't kept on our server. Add open roles below; with none, the page
+    // invites general applications. Each role:
+    //   ['title' => 'Customer Success Lead', 'team' => 'Operations',
+    //    'location' => 'Toronto, ON (hybrid)', 'type' => 'Full-time',
+    //    'summary' => 'One or two sentences on the job.']
+    'careers_email' => env('CAREERS_EMAIL', env('CONTACT_EMAIL', 'shingi@trueleads.ca')),
+    'careers_roles' => [],
+
     // Tags on cars. "Just listed" for this many days after a car first goes
     // live; "Price dropped" for this many days after a cut of at least the
     // minimum. "Popular" shows once a car has this many visitors in a day;
