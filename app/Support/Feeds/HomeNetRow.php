@@ -125,10 +125,11 @@ final class HomeNetRow
         $f = mb_strtolower(trim($fuel));
 
         return match (true) {
-            str_contains($f, 'hybrid') => 'Gas/Electric Hybrid',
+            str_contains($f, 'hybrid') => 'Hybrid',
             str_contains($f, 'electric') => 'Electric',
             str_contains($f, 'diesel') => 'Diesel',
-            str_contains($f, 'gasoline'), str_contains($f, 'flex') => 'Gasoline',
+            str_contains($f, 'flex') => 'Flex Fuel',
+            str_contains($f, 'gasoline') => 'Gasoline',
             default => '',
         };
     }

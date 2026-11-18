@@ -92,6 +92,21 @@ class HomeNetImportTest extends TestCase
             ->assertDontSee('Test Mazda DL');
     }
 
+    public function test_every_feed_s_fuel_names_end_up_as_one(): void
+    {
+        foreach (['Gas/Electric Hybrid', 'Gasoline / Electric Hybrid', 'Hybrid Fuel', 'hybrid'] as $hybrid) {
+            $this->assertSame('Hybrid', Vehicle::normalizeFuel($hybrid));
+        }
+        $this->assertSame('Plug-in Hybrid', Vehicle::normalizeFuel('Plug-In Hybrid Electric'));
+        $this->assertSame('Gasoline', Vehicle::normalizeFuel('Gas'));
+        $this->assertSame('Electric', Vehicle::normalizeFuel('Electric Fuel System'));
+        $this->assertSame('Flex Fuel', Vehicle::normalizeFuel('Flex Fuel'));
+        $this->assertNull(Vehicle::normalizeFuel(null));
+
+        $car = $this->makeDealer()->vehicles()->create(['vin' => 'JA4AZ2A31LZ600001', 'make' => 'Mitsubishi', 'model' => 'Outlander PHEV', 'model_year' => 2023, 'kilometres' => 20000, 'condition' => 'USED', 'price_in_cents' => 3000000, 'fuel_type' => 'Gasoline / Electric Hybrid']);
+        $this->assertSame('Hybrid', $car->fuel_type);
+    }
+
     public function test_brand_families_and_program_limits(): void
     {
         $this->assertTrue(CpoRules::sameFranchise('Jeep', 'Ram'));

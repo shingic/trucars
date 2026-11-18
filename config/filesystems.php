@@ -39,7 +39,7 @@ return [
         // server (php artisan feeds:sync imports them). Outside the web root.
         'homenet' => [
             'driver' => 'local',
-            'root'   => env('HOMENET_FEED_PATH', base_path('trumo_homenet')),
+            'root'   => env('HOMENET_FEED_PATH') ?: base_path('trumo_homenet'),
             'throw'  => false,
         ],
 

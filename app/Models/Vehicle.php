@@ -76,12 +76,35 @@ class Vehicle extends Model
      * rooftop. (Bulk query-builder updates skip model events; publish through
      * the model.)
      */
+    /**
+     * One name per fuel, whatever word the dealer's feed used, so the shop's
+     * filter and the fuel pages don't split the same cars in two: "Gas" →
+     * Gasoline, "Gas/Electric Hybrid" or "Gasoline / Electric Hybrid" →
+     * Hybrid ("Plug-in Hybrid" stays its own).
+     */
+    public static function normalizeFuel(?string $fuel): ?string
+    {
+        $f = mb_strtolower(trim((string) $fuel));
+
+        return match (true) {
+            $f === '' => $fuel === null ? null : $fuel,
+            str_contains($f, 'plug'), str_contains($f, 'phev') => 'Plug-in Hybrid',
+            str_contains($f, 'hybrid') => 'Hybrid',
+            str_contains($f, 'electric') => 'Electric',
+            str_contains($f, 'diesel') => 'Diesel',
+            str_contains($f, 'flex') => 'Flex Fuel',
+            in_array($f, ['gas', 'gasoline', 'gasoline fuel', 'petrol', 'regular unleaded', 'premium unleaded'], true) => 'Gasoline',
+            default => $fuel,
+        };
+    }
+
     protected static function booted(): void
     {
         static::saving(function (Vehicle $vehicle) {
             $vehicle->placeAtRooftop();
             $vehicle->photo_count = count(array_filter((array) $vehicle->photos));
             $vehicle->notePriceChange();
+            $vehicle->fuel_type = self::normalizeFuel($vehicle->fuel_type);
 
             // Stamped when a car first goes live: created published, or switched
             // on. A car that was already live before this existed stays unstamped.
