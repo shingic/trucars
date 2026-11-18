@@ -172,7 +172,7 @@ new #[Title('Certified Pre-Owned Cars, All-In Prices | Trumo')] class extends Co
         .stage { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1.08fr); background:var(--primary); overflow:hidden; }
         .stage-copy { padding:64px 48px 60px var(--gut); color:#fff; align-self:center; }
         .stage-kicker { font-size:15px; font-weight:500; letter-spacing:.16em; text-transform:uppercase; color:rgba(255,255,255,.9); margin:0 0 18px; }
-        .stage h1 { font-family:var(--font-ui); font-size:clamp(44px, 5.1vw, 84px); font-weight:800; line-height:1; letter-spacing:-.015em; margin:0; color:#fff; }
+        .stage h1 { font-family:var(--font-ui); font-size:clamp(40px, 4.3vw, 70px); font-weight:800; line-height:1; letter-spacing:-.015em; margin:0; color:#fff; }
         .stage h1 span { display:block; }
         .stage p.lede { font-size:19px; color:rgba(255,255,255,.92); margin:22px 0 0; max-width:540px; line-height:1.5; }
         .hero-search { margin-top:30px; display:flex; align-items:center; gap:10px; max-width:660px; background:#fff; border-radius:10px; padding:8px 8px 8px 20px; }
