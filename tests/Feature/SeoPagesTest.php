@@ -56,23 +56,30 @@ class SeoPagesTest extends TestCase
     public function test_a_city_page_lists_the_cars_within_driving_distance(): void
     {
         $toronto = $this->makeDealer(['name' => 'WILLOWDALE NISSAN', 'city' => 'Toronto', 'province' => 'ON', 'postal_code' => 'M2N 6S6', 'latitude' => 43.7735, 'longitude' => -79.4134]);
-        foreach (range(1, 3) as $i) {
+        $newmarket = $this->makeDealer(['name' => 'NEWMARKET NISSAN', 'city' => 'Newmarket', 'province' => 'ON', 'postal_code' => 'L3Y 4W1', 'latitude' => 44.0565, 'longitude' => -79.4555]);
+        foreach ([[$toronto, 'Rogue'], [$toronto, 'Rogue'], [$toronto, 'Rogue'], [$newmarket, 'Kicks']] as [$dealer, $model]) {
             $this->vin++;
-            $toronto->vehicles()->create(['make' => 'Nissan', 'model' => 'Rogue', 'vin' => 'JN8AT2MV0LW' . str_pad((string) $this->vin, 6, '0', STR_PAD_LEFT), 'model_year' => 2022, 'kilometres' => 30000, 'condition' => 'USED', 'is_published' => true, 'price_in_cents' => 2900000]);
+            $dealer->vehicles()->create(['make' => 'Nissan', 'model' => $model, 'vin' => 'JN8AT2MV0LW' . str_pad((string) $this->vin, 6, '0', STR_PAD_LEFT), 'model_year' => 2022, 'kilometres' => 30000, 'condition' => 'USED', 'is_published' => true, 'price_in_cents' => 2900000]);
         }
 
-        // Mississauga has no dealer, but Toronto is next door.
+        // Mississauga has no store, but Toronto is next door: its cars come first.
         $this->get('/used-cars/in/mississauga-on')->assertOk()
-            ->assertSee('3 Certified Pre-owned Cars for Sale near Mississauga, ON')
+            ->assertSee('4 Certified Pre-owned Cars for Sale near Mississauga, ON')
             ->assertSee('<title>Used Cars for Sale in Mississauga, ON | Certified Pre-owned | Trumo</title>', false)
-            ->assertSee('2022 Nissan Rogue')
-            ->assertDontSee('2021 Honda Civic');
+            ->assertSee('Pickup in Toronto, about 26 km away.', false)
+            ->assertSeeInOrder(['Pickup in Toronto, ON', '3 cars', 'Pickup in Newmarket, ON', '1 car'])
+            ->assertSeeInOrder(['2022 Nissan Rogue', '2022 Nissan Kicks'])
+            ->assertDontSee('2021 Honda Civic')
+            ->assertDontSee('WILLOWDALE');
 
-        // The Chilliwack cars count for Vancouver and Abbotsford, not Toronto.
+        // From Newmarket it's the other way round.
+        $this->get('/used-cars/in/newmarket-on')->assertOk()->assertSeeInOrder(['2022 Nissan Kicks', '2022 Nissan Rogue']);
+
+        // The Chilliwack cars count for Vancouver, not Toronto.
         $this->get('/used-cars/in/vancouver-bc')->assertOk()->assertSee('6 Certified Pre-owned Cars for Sale near Vancouver, BC');
-        $this->get('/used-cars/in/abbotsford-bc')->assertOk();
 
-        // Nothing within reach of Halifax yet: no page and no link.
+        // Suburbs off the list, and towns with nothing near, get no page.
+        $this->get('/used-cars/in/oakville-on')->assertNotFound();
         $this->get('/used-cars/in/halifax-ns')->assertNotFound();
 
         $this->get(route('home'))->assertOk()

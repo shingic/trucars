@@ -29,9 +29,9 @@ use Illuminate\Support\Str;
  *
  * Town pages are "cars near this city": every car within NEAR_KM of it,
  * since it's pickup only and a Mississauga shopper happily drives to
- * Toronto. The towns are MARKET_CITIES plus any town a dealer is in; a town
- * only gets a page when there are cars near it, so Halifax appears by itself
- * once a dealer there lists cars.
+ * Toronto. The towns are any town a store is in, plus the few big
+ * neighbours in MARKET_CITIES; a town only gets a page when there are cars
+ * near it, so Halifax appears by itself once a store there lists cars.
  */
 class SeoCatalog
 {
@@ -47,65 +47,21 @@ class SeoCatalog
     public const NEAR_KM = 100;
 
     /**
-     * Towns worth a page, most searched first (the order the links are shown
-     * in): [city, province, latitude, longitude].
+     * Big towns next to our stores that get a page of their own, most
+     * searched first: [city, province, latitude, longitude]. Towns a store is
+     * actually in get a page anyway. Kept short on purpose: a page per suburb
+     * would just be the same cars under another name.
      */
     public const MARKET_CITIES = [
         ['Toronto', 'ON', 43.7067, -79.3940],
         ['Vancouver', 'BC', 49.2638, -123.1043],
         ['Mississauga', 'ON', 43.6048, -79.6443],
         ['Brampton', 'ON', 43.7112, -79.7590],
-        ['Surrey', 'BC', 49.1271, -122.8219],
-        ['Hamilton', 'ON', 43.2424, -79.8429],
-        ['Burnaby', 'BC', 49.2439, -122.9736],
         ['Markham', 'ON', 43.8753, -79.2883],
         ['Vaughan', 'ON', 43.8361, -79.4983],
-        ['Richmond', 'BC', 49.1633, -123.1225],
-        ['Kitchener', 'ON', 43.4335, -80.4774],
-        ['Abbotsford', 'BC', 49.0606, -122.3032],
-        ['Richmond Hill', 'ON', 43.8908, -79.4223],
-        ['Oakville', 'ON', 43.4506, -79.7069],
-        ['Coquitlam', 'BC', 49.2508, -122.8619],
-        ['Burlington', 'ON', 43.3646, -79.8300],
-        ['Oshawa', 'ON', 43.9328, -78.8710],
-        ['Langley', 'BC', 49.1042, -122.6604],
-        ['Barrie', 'ON', 44.3586, -79.6784],
-        ['Guelph', 'ON', 43.5298, -80.2483],
-        ['Chilliwack', 'BC', 49.1128, -121.8342],
-        ['Cambridge', 'ON', 43.3908, -80.3032],
-        ['Whitby', 'ON', 43.9092, -78.9554],
-        ['Delta', 'BC', 49.0991, -123.0017],
-        ['Ajax', 'ON', 43.8673, -79.0280],
-        ['Waterloo', 'ON', 43.4762, -80.5588],
-        ['Milton', 'ON', 43.5158, -79.8835],
-        ['Maple Ridge', 'BC', 49.2389, -122.5395],
-        ['Pickering', 'ON', 43.8729, -79.1147],
-        ['Newmarket', 'ON', 44.0499, -79.4734],
-        ['New Westminster', 'BC', 49.2044, -122.9191],
-        ['North Vancouver', 'BC', 49.3481, -123.0415],
-        ['Port Coquitlam', 'BC', 49.2781, -122.7633],
-        ['Aurora', 'ON', 44.0001, -79.4663],
-        ['Mission', 'BC', 49.4496, -122.4311],
-        // Further afield: listed only once a dealer near them has cars.
-        ['Ottawa', 'ON', 45.3991, -75.6963],
-        ['Calgary', 'AB', 51.0441, -114.0671],
-        ['Edmonton', 'AB', 53.5398, -113.4932],
-        ['London', 'ON', 42.9664, -81.2417],
-        ['Halifax', 'NS', 44.6356, -63.6101],
-        ['Victoria', 'BC', 48.4275, -123.3624],
-        ['Kelowna', 'BC', 49.9109, -119.4114],
-        ['Windsor', 'ON', 42.2871, -82.9910],
-        ['Kingston', 'ON', 44.2687, -76.5224],
-        ['Dartmouth', 'NS', 44.6926, -63.5287],
-        ['Moncton', 'NB', 46.1185, -64.8683],
-        ['Saint John', 'NB', 45.2836, -66.0535],
-        ['Fredericton', 'NB', 45.9522, -66.6257],
-        ['Sydney', 'NS', 46.1268, -60.1843],
-        ['Nanaimo', 'BC', 49.2008, -123.9970],
-        ['Kamloops', 'BC', 50.6777, -120.3928],
     ];
 
-    private const CACHE_KEY = 'seo:facets:v2';
+    private const CACHE_KEY = 'seo:facets:v3';
 
     private const CACHE_SECONDS = 600;
 
@@ -274,10 +230,43 @@ class SeoCatalog
                     : strcasecmp(trim((string) $place->city), $centre['city']) === 0 && $place->province === $centre['province'];
             })->keys()->all();
 
-            $cities[$slug] = ['city' => $centre['city'], 'province' => $centre['province'], 'slug' => $slug, 'count' => count($ids), 'ids' => $ids];
+            $cities[$slug] = $centre + ['slug' => $slug, 'count' => count($ids), 'ids' => $ids];
         }
 
         return $cities;
+    }
+
+    /**
+     * Where a town page's cars are picked up, closest first: the store towns
+     * (never the dealership) with about how far each is and how many cars.
+     *
+     * @return list<array{town: string, province: string, km: ?int, count: int}>
+     */
+    public static function pickupsNear(string $slug): array
+    {
+        $centre = self::facets()['cities'][$slug] ?? null;
+        if ($centre === null || $centre['ids'] === []) {
+            return [];
+        }
+
+        return Vehicle::query()->listed()->whereIn('id', $centre['ids'])->with(['rooftop', 'dealer'])->get(['id', 'dealer_id', 'rooftop_id'])
+            ->map(fn (Vehicle $car) => $car->locatedAt())->filter()
+            ->groupBy(fn ($place) => mb_convert_case(mb_strtolower(trim((string) $place->city)), MB_CASE_TITLE) . '|' . $place->province)
+            ->map(function (Collection $places, string $key) use ($centre) {
+                [$town, $province] = explode('|', $key);
+                $km = $centre['latitude'] === null ? null : \App\Support\ShopperLocation::distanceKm($centre, $places->first());
+
+                return ['town' => $town, 'province' => $province, 'km' => $km === null ? null : (int) round($km), 'count' => $places->count()];
+            })
+            ->sortBy(fn ($pickup) => $pickup['km'] ?? PHP_INT_MAX)->values()->all();
+    }
+
+    /** A town page's centre, for "closest to Mississauga first". @return array{latitude: float, longitude: float}|null */
+    public static function centreOf(string $slug): ?array
+    {
+        $centre = self::facets()['cities'][$slug] ?? null;
+
+        return $centre && $centre['latitude'] !== null ? ['latitude' => (float) $centre['latitude'], 'longitude' => (float) $centre['longitude']] : null;
     }
 
     private static function priceLanding(int $band): Landing

@@ -76,6 +76,9 @@ new class extends Component {
     public ?string $landingPlace = null;     // "Chilliwack, BC" on a town page
 
     #[Locked]
+    public ?string $landingNear = null;      // "mississauga-on" on a town page
+
+    #[Locked]
     public ?string $landingSingular = null;  // "Honda Civic", "SUV", "hybrid car", for "Why buy your next …"
 
 
@@ -93,6 +96,7 @@ new class extends Component {
             $this->landingType = $landing->type;
             $this->landingHeading = $landing->headingSubject();
             $this->landingPlace = $landing->place;
+            $this->landingNear = $landing->filters['near'] ?? null;
             $this->landingSingular = match ($landing->type) {
                 'make', 'model' => $landing->subject,
                 'body'          => $landing->filters['body'],
@@ -116,10 +120,12 @@ new class extends Component {
         $pageSuffix = $this->page > 1 ? ' – Page ' . $this->page : '';
 
         $what = $landing ? mb_strtolower($landing->headingSubject()) : 'cars';
+        $pickup = isset($this->landingFilters['near']) ? (SeoCatalog::pickupsNear($this->landingFilters['near'])[0] ?? null) : null;
         $where = $landing?->place ? ' near ' . $landing->place : '';
         $description = $count
             ? "Shop {$count} certified pre-owned {$what}{$where}, priced all-in from \$" . number_format($from)
                 . ($years[0] === $years[1] ? ", {$years[0]} models." : ", {$years[0]}–{$years[1]} models.")
+                . ($pickup && $pickup['km'] !== null && $pickup['town'] !== $landing->filters['city'] ? " Pickup in {$pickup['town']}, about {$pickup['km']} km away." : '')
                 . ' Every car is inspected and certified. Reserve online for $150, refundable.'
             : "Certified pre-owned {$what}{$where} on {$brand}. Every car is inspected, certified and priced all-in.";
 
@@ -426,8 +432,23 @@ new class extends Component {
             ->when($this->sort === 'year-new', fn (Builder $query) => $query->orderByDesc('model_year'))
             ->when(in_array($this->sort, ['recommended', 'newest', 'nearest'], true), fn (Builder $query) => $query->latest()->orderByDesc('id'))
             ->get()
-            ->when($this->sort === 'recommended', fn (Collection $vehicles) => RecommendedOrder::apply($vehicles, ShopperLocation::current()))
-            ->when($this->sort === 'nearest' && ShopperLocation::current() !== null, fn (Collection $vehicles) => $this->sortNearestFirst($vehicles));
+            ->when($this->sort === 'recommended' && ! $this->sortsFromTown(), fn (Collection $vehicles) => RecommendedOrder::apply($vehicles, ShopperLocation::current()))
+            ->when(($this->sort === 'nearest' || $this->sortsFromTown()) && $this->sortFrom() !== null, fn (Collection $vehicles) => $this->sortNearestFirst($vehicles));
+    }
+
+    /**
+     * Where "closest first" measures from: the shopper, or on a town page
+     * with no shopper location, the town itself ("closest to Mississauga").
+     */
+    private function sortFrom(): ?array
+    {
+        return ShopperLocation::current() ?? ($this->landingNear ? SeoCatalog::centreOf($this->landingNear) : null);
+    }
+
+    /** A town page seen without a shopper location lists the town's closest cars first. */
+    private function sortsFromTown(): bool
+    {
+        return $this->sort === 'recommended' && $this->landingNear !== null && ShopperLocation::current() === null;
     }
 
     /**
@@ -438,7 +459,7 @@ new class extends Component {
      */
     private function sortNearestFirst(Collection $vehicles): Collection
     {
-        $location = ShopperLocation::current();
+        $location = $this->sortFrom();
 
         return $vehicles
             ->sortBy(fn (Vehicle $vehicle) => [
@@ -629,6 +650,26 @@ new class extends Component {
         <p class="srp-sub">{{ \App\Support\PlatformSettings::get('marketplace_subheadline') }}</p>
         @if ($landingType !== null)
             <nav class="srp-crumbs" aria-label="Breadcrumb"><a href="{{ route('shop') }}" wire:navigate>All cars</a><span aria-hidden="true">/</span><span>{{ $landingHeading }}{{ $landingPlace ? ' near ' . $landingPlace : '' }}</span></nav>
+        @endif
+        {{-- A town page says where its cars are picked up, so it isn't just the shop under another name. --}}
+        @if ($landingNear !== null && ($pickups = \App\Support\Seo\SeoCatalog::pickupsNear($landingNear)) !== [])
+            @php $town = \Illuminate\Support\Str::before($landingPlace, ','); @endphp
+            <section class="town-intro" aria-label="Pickup near {{ $town }}">
+                <p class="town-lede">
+                    Every car here is within about {{ \App\Support\Seo\SeoCatalog::NEAR_KM }} km of {{ $town }}{{ $shopperLocation === null ? ', closest first' : '' }}.
+                    The price is all-in, you reserve online with a $150 refundable deposit, and you pick the car up at the store.
+                </p>
+                <ul class="town-pickups">
+                    @foreach ($pickups as $pickup)
+                        <li>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                            <span><b>Pickup in {{ $pickup['town'] }}, {{ $pickup['province'] }}</b>
+                            · {{ $pickup['km'] === null || ($pickup['town'] === $town && $pickup['km'] < 15) ? 'in ' . $town : 'about ' . $pickup['km'] . ' km away' }}
+                            · {{ $pickup['count'] }} {{ $pickup['count'] === 1 ? 'car' : 'cars' }}</span>
+                        </li>
+                    @endforeach
+                </ul>
+            </section>
         @endif
 
         <div class="loc-bar"
@@ -990,6 +1031,12 @@ new class extends Component {
         .srp-head { margin-bottom:26px; padding-bottom:16px; border-bottom:2px solid var(--ink); }
         .srp-title { font-family:var(--font-display); font-size:clamp(22px, 2vw, 28px); font-weight:700; line-height:1.15; letter-spacing:0; margin:0; }
         .srp-sub { color:var(--ink-2); font-size:16px; margin:8px 0 0; max-width:640px; }
+        .town-intro { margin-top:14px; max-width:860px; }
+        .town-lede { margin:0 0 10px; font-size:15px; color:var(--ink-2); line-height:1.55; }
+        .town-pickups { list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:8px; }
+        .town-pickups li { display:flex; align-items:center; gap:7px; padding:7px 12px; border:1px solid var(--line-strong); border-radius:999px; font-size:13.5px; color:var(--ink-2); background:var(--card); }
+        .town-pickups li svg { color:var(--primary); flex:none; }
+        .town-pickups b { color:var(--ink); font-weight:700; }
         .srp-crumbs { display:flex; gap:8px; align-items:center; margin-top:10px; font-size:13.5px; color:var(--ink-3); }
         .srp-crumbs a { color:var(--ink-2); font-weight:600; }
         .srp-notice { background:#E9F3FF; border-left:4px solid var(--primary); border-radius:10px; color:var(--ink); padding:10px 14px; font-size:14.5px; font-weight:600; margin-bottom:18px; }
